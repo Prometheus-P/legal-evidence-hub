@@ -1,0 +1,169 @@
+# ================================
+#   🚨 Paralegal (LEH) – SECURITY FIRST
+#   GitHub 업로드 금지 파일 총정리
+# ================================
+
+###################################
+# 1. Python (Backend – FastAPI)
+###################################
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.spec
+
+# 가상환경
+venv/
+env/
+.venv/
+.python-version
+
+# 로컬 실행 로그
+*.log
+logs/
+tmp/
+temp/
+
+# 모델 캐시, 임시 파일
+*.pickle
+*.pkl
+*.pt
+*.bin
+*.cache/
+
+
+###################################
+# 2. AI Worker / LLM 파이프라인
+###################################
+ai_worker/storage/
+ai_worker/.cache/
+ai_worker/workflows/local_debug/
+ai_worker/workflows/*.tmp
+workspace/
+rag_cache/
+vector_index/
+
+# OpenAI / Anthropic 임시 키
+*.api_key
+*.token
+
+
+###################################
+# 3. 환경 변수 파일 – 민감 정보 보호
+###################################
+# 템플릿은 허용(.env.example)
+.env
+.env.*
+!.env.example
+
+*.secrets
+secrets.json
+secret.yaml
+secret.key
+credentials/
+config/secret/
+*.pem
+*.key
+*.crt
+
+
+###################################
+# 4. Frontend (Next.js / Node)
+###################################
+node_modules/
+.next/
+dist/
+build/
+out/
+.npm
+.pnpm-store/
+yarn-error.log
+npm-debug.log
+*.lock
+
+
+###################################
+# 5. OS & IDE 설정 – 개발자 환경 파일
+###################################
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.fleet/
+*.swp
+*.swo
+*.orig
+
+
+###################################
+# 6. AWS / Terraform / Infra 보안
+###################################
+# AWS credential files
+.aws/
+~/.aws/
+
+# Terraform sensitive
+*.tfvars
+*.tfstate
+*.tfstate.*
+crash.log
+terraform.tfstate
+terraform.tfstate.backup
+
+# CDK
+cdk.out/
+
+# CloudFormation temp
+*.template.json
+
+
+###################################
+# 7. Docker
+###################################
+docker-compose.override.yml
+docker-data/
+*.pid
+*.sock
+
+
+###################################
+# 8. Database / Storage / Evidence Files
+###################################
+# 법률 증거 파일 무조건 제외
+evidence/
+evidence_raw/
+uploads/
+storage/
+documents_tmp/
+pdf_tmp/
+tmp_exports/
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+*.zip
+
+# SQLite (local test)
+*.db
+*.sqlite3
+
+
+###################################
+# 9. Logs, Reports, Debug Dumps
+###################################
+*.log
+debug.log
+error.log
+*.dump
+*.bak
+
+
+###################################
+# 10. Misc – 민감한 개발 산출물
+###################################
+*.bak
+*.tmp
+*.old
+*.backup

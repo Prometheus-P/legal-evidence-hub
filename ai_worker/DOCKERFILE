@@ -1,0 +1,24 @@
+# ai_worker/Dockerfile
+
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# 워커 의존성
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 워커 코드 복사
+COPY . .
+
+# ⚠ 엔트리포인트: handler.py 기준
+# 필요하면 python -m ai_worker.handler 구조로 바꿔도 됨
+CMD ["python", "handler.py"]

@@ -1,177 +1,293 @@
-# [여기에 팀 이름을 입력하세요] 🤖 LLM Agent 기반 OOO 서비스 개발
+# Team H·P·L 🤖 Legal Evidence Hub (LEH) – AI 파라리걸 & 증거 허브
 
-_본 레포지토리는 'LLM Agent 서비스 개발'을 위한 템플릿입니다._
-_프로젝트를 시작하기 전, 팀원들과 함께 `[ ]`로 표시된 부분을 채워주세요._
+> “변호사는 사건만 생성하고 증거를 S3에 올린다.  
+> AI는 AWS 안에서 증거를 정리·분석해 ‘소장 초안 후보’를 보여준다.  
+> 최종 문서는 언제나 변호사가 직접 결정한다.”
 
-## 1. 👥 팀원 및 역할
+LEH 레포지토리는 위 비전을 **AWS 단일 인프라** 위에서 구현하기 위한  
+PRD, 아키텍처, 설계 문서, 코드, 그리고 협업 규칙을 한 번에 담고 있다.
 
-| 이름 | GitHub |
-| :--- |  :--- |
-| [이름] |  [GitHub ID] |
-| [이름] |  [GitHub ID] |
-| [이름] |  [GitHub ID] |
-| [이름] |  [GitHub ID] |
+---
+
+## 1. 👥 팀 구성 & 역할
+
+### 1.1 팀원 역할
+
+| 코드 | 역할 | 주요 책임 |
+| :--- | :--- | :--- |
+| H | **Backend / Infra** | FastAPI, RDS, S3, 인증·권한, 증거 무결성, 배포 파이프라인 |
+| L | **AI / Data** | AI Worker, STT/OCR, 파서, 요약·라벨링, 임베딩·RAG |
+| P | **Frontend / PM** | React 대시보드, UX, GitHub 운영, 문서 관리, PR 승인 |
 
 ---
 
 ## 2. 🎯 프로젝트 개요
 
-### 2.1. 프로젝트 주제
-- **`[여기에 구체적인 프로젝트 주제를 입력하세요]`**
-- 예: 바이오 연구자를 위한 RAG 기반 논문 분석 및 인사이트 도출 플랫폼
+### 2.1 한 줄 요약
 
-### 2.2. 제작 배경 (해결하고자 하는 문제)
-- `[프로젝트가 해결하고자 하는 핵심 문제를 1~2줄로 요약]`
-- `[이 문제가 왜 중요한지, 현재 어떤 어려움(Pain Point)이 있는지 서술]`
+> **“AWS 안에서 끝나는 이혼 사건 전용 AI 파라리걸 & 증거 허브”**
 
-### 2.3. 핵심 목표 (제공하는 가치)
-- `[위 문제를 해결하기 위해 우리 서비스가 제공하는 핵심 기능 및 가치 서술]`
-- 예:
-    1.  **정보 탐색 시간 단축**: LLM Agent가 ...
-    2.  **도메인 특화 분석**: ...
-    3.  **트렌드 시각화**: ...
+- 증거는 **변호사 소유 AWS S3**에만 저장
+- AI는 증거를 **정리·요약·라벨링·임베딩**하고
+- 변호사에게는 **“소장/준비서면 초안 후보(Preview)”**만 제안
+
+### 2.2 해결하는 문제
+
+기존 로펌/법무법인의 증거 처리 현실:
+
+- 카톡 캡처, 녹취, 사진, PDF가 **카톡/이메일/USB**로 중구난방 도착
+- **수작업 정리 1~2주**, 중요한 증거 누락·오용 리스크
+- 개인정보보호법·AI 규제·증거 무결성(해시, Chain of Custody) 부담
+
+**LEH가 제공하는 것**
+
+1. **증거 적재**
+   - 웹 대시보드에서 사건 생성 → **S3 Presigned URL**로 증거 업로드
+   - 모든 원본은 지정된 **S3 Evidence Bucket**에만 저장
+
+2. **AI 분석 (L)**
+   - S3 Event → AI Worker 자동 실행
+   - 텍스트·이미지·오디오·영상·PDF를 타입별 파서로 처리
+   - **DynamoDB / OpenSearch / RDS**에 구조화 + 임베딩 저장
+
+3. **대시보드 (P)**
+   - 사건별 **증거 타임라인**
+   - 유책사유·유형·날짜 필터
+   - **소장 초안 Preview**(증거 인용 포함) 제공  
+   - 자동 제출/자동 입력은 **금지** (법률사무대리 방지)
+
+4. **백엔드 (H)**
+   - 인증/인가, 증거 업로드 URL 발급, 메타 조회 API
+   - 사건별 RAG 검색 API, Draft Preview API
+   - SHA-256, Audit Log 등 **법적 무결성 기반** 구현
 
 ---
 
-## 3. 🛠️ 기술 스택 (Tech Stack)
+## 3. 🛠 기술 스택
 
-본 프로젝트는 다음 기술 스택을 기반으로 합니다. (팀별 상황에 맞게 수정 가능)
+| 영역 | 기술 | 설명 |
+| :--- | :--- | :--- |
+| Frontend | **React (Next/Vite), TypeScript, Tailwind** | 변호사/스태프용 대시보드 |
+| Backend | **FastAPI, Python** | 인증, 사건/증거/Draft API, Presigned URL, RAG |
+| RDB | **PostgreSQL (RDS)** | 사용자, 사건, 권한, 감사 로그 |
+| Evidence Storage | **AWS S3** | 원본 증거 저장소 |
+| Metadata | **AWS DynamoDB** | 증거 분석 결과 JSON, 타임라인 메타 |
+| RAG | **Amazon OpenSearch** | 사건별 임베딩 인덱스(`case_rag_{case_id}`) |
+| Queue | **S3 Event / (옵션 SQS)** | AI Worker 트리거 |
+| AI | **OpenAI (GPT-4o, Whisper, Vision, Embedding)** | OCR/STT/요약/라벨링/초안 생성 |
+| Observability | **CloudWatch, (옵션 Sentry)** | 로그·모니터링 |
 
-| 구분 | 기술 |
-| :--- | :--- |
-| **Backend / FEP** | Python, FastAPI, (Django), LangChain |
-| **Frontend** | Streamlit, (HTML/JS, React.js) |
-| **Database** | Vector DB (Chroma, FAISS 등), (PostgreSQL) |
-| **AI / ML** | OpenAI API, Gemini API, Hugging Face, (도메인 특화 모델) |
-| **Infra / Tools** | Git, Docker, SonarQube |
+> Google Drive는 사용하지 않으며, 모든 데이터는 **단일 AWS 계정 내부**에서만 저장·처리된다.
 
 ---
 
 ## 4. 🚀 시작하기 (Getting Started)
 
-### 4.1. 개발 환경 통일
-- **Python 버전**: `[예: 3.10.x]`
-- **OS**: `[예: Ubuntu 22.04 LTS 또는 Windows 11]`
-- **주요 라이브러리**: `requirements.txt` 참조
+### 4.1 사전 요구사항
 
-### 4.2. 설치 및 실행
-1.  **레포지토리 복제**
-    ```bash
-    git clone [본 레포지토리 URL]
-    cd [프로젝트 폴더명]
-    ```
+- Python 3.11+
+- Node.js 20+
+- AWS 계정 + IAM (S3, DynamoDB, OpenSearch, RDS 등)
+- OpenAI API 키
+- PostgreSQL 인스턴스 (RDS 또는 로컬)
 
-2.  **가상 환경 생성 및 활성화**
-    ```bash
-    # Windows
-    python -m venv venv
-    .\venv\Scripts\activate
+### 4.2 레포 클론
 
-    # macOS / Linux
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
+```bash
+git clone https://github.com/ORG/REPO.git
+cd REPO
+````
 
-3.  **의존성 설치**
-    ```bash
-    pip install -r requirements.txt
-    ```
+### 4.3 환경 변수 설정
 
-4.  **환경 변수 설정**
-    `.env.example` 파일을 복사하여 `.env` 파일을 생성하고, 필요한 API Key 등을 입력합니다.
-    ```bash
-    cp .env.example .env
-    # .env 파일 열어서 [YOUR_API_KEY] 등 수정
-    ```
+1. 템플릿 복사
 
-5.  **서비스 실행**
-    ```bash
-    # 예: FastAPI 실행
-    uvicorn backend.main:app --reload
-    ```
+```bash
+cp .env.example .env
+```
+
+2. 필수 값 설정 (예시)
+
+- `S3_EVIDENCE_BUCKET`
+- `DDB_EVIDENCE_TABLE`
+- `OPENSEARCH_HOST`
+- `DATABASE_URL` (또는 POSTGRES_* 세트)
+- `OPENAI_API_KEY`
+- 기타 AWS 자격 증명 또는 IAM Role 사용 방식
+
+`.env`는 절대 Git에 커밋하지 않는다.
 
 ---
 
-## 5. 🌳 레포지토리 구조
+### 4.4 백엔드 실행 (FastAPI)
 
+```bash
+cd backend
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# (선택) DB 마이그레이션
+# alembic upgrade head
+
+uvicorn backend.main:app --reload
+# 기본: http://localhost:8000
 ```
-/ 
-├── backend/        # API 서버 (FastAPI/Django 소스코드)
-├── frontend/       # 웹 UI (Streamlit/React 소스코드)
-├── core/           # RAG 파이프라인, 임베딩 등 핵심 AI 로직
-├── scripts/        # 배치 스크립트, 데이터 수집/전처리 유틸리티
-├── notebooks/      # 데이터 탐색, 모델 테스트용 Jupyter Notebook
-├── data/           # (Git-ignored) 원본/전처리 데이터
-├── docs/           # 아키텍처, ERD, WBS 등 문서 산출물
+
+---
+
+### 4.5 AI 워커 실행 (AI Worker)
+
+```bash
+cd ai_worker  # 실제 디렉토리명에 맞춰 수정
+
+# 같은 venv를 사용한다고 가정
+python -m worker.main  # 또는
+python worker/main.py
+```
+
+- S3 Event / SQS 메시지를 받아:
+
+  - S3에서 파일 다운로드
+  - 타입별 파서 실행 (텍스트/이미지/오디오/영상/PDF)
+  - 요약/라벨링/임베딩 생성
+  - DynamoDB + OpenSearch에 결과 반영
+
+---
+
+### 4.6 프론트엔드 실행 (React)
+
+```bash
+cd frontend
+npm install
+npm run dev   # 기본: http://localhost:5173
+```
+
+- `.env` 내 `VITE_API_BASE_URL`(또는 NEXT_PUBLIC_API_BASE_URL)이 FastAPI 주소와 일치해야 한다.
+
+---
+
+## 5. 📁 레포 구조 (요약)
+
+```bash
+/
+├── backend/                 # FastAPI 백엔드 (H 리드)
+│   ├── main.py
+│   ├── api/                # cases, evidence, auth, draft, search 등
+│   ├── models/             # SQLAlchemy 모델
+│   ├── schemas/            # Pydantic 스키마
+│   ├── services/           # S3/DynamoDB/OpenSearch/Auth 등
+│   └── core/               # 설정, 로깅, 보안
 │
-├── .env.example    # 환경 변수 템플릿
-├── requirements.txt# Python 의존성
-└── README.md       # 프로젝트 소개 문서
+├── ai_worker/               # AI 파이프라인 워커 (L 리드)
+│   ├── handler.py          # Lambda 엔트리포인트
+│   ├── processor/          # router, text_parser, ocr, stt, semantic, embed 등
+│   └── utils/              # s3, dynamo, opensearch 유틸
+│
+├── frontend/                # React/Next 대시보드 (P 리드)
+│   └── src/
+│       ├── pages/          # index, cases, cases/[id], settings
+│       ├── components/     # layout, evidence, cases, draft, common
+│       ├── hooks/          # useAuth, useCase, useEvidence, useDraft
+│       ├── api/            # client, cases, evidence, draft
+│       └── types/          # case, evidence, draft
+│
+├── infra/                   # IaC (CDK/Terraform) – 선택
+├── docs/                    # 설계 문서
+│   ├── PRD.md
+│   ├── ARCHITECTURE.md
+│   ├── BACKEND_DESIGN.md
+│   ├── AI_PIPELINE_DESIGN.md
+│   ├── FRONTEND_SPEC.md
+│   ├── API_SPEC.md
+│   └── SECURITY_COMPLIANCE.md
+│
+├── .github/
+│   ├── ISSUE_TEMPLATE/      # 버그/기능/태스크 템플릿
+│   ├── pull_request_template.md
+│   └── workflows/           # CI 설정
+│
+├── .env.example
+├── CONTRIBUTING.md          # GitHub 협업 규칙 (필독)
+├── requirements.txt
+└── README.md                # 본 문서
 ```
 
 ---
 
-## 6. 룰 & 가이드라인 (Rules & Guidelines)
+## 6. 🔁 협업 방식 (요약)
 
-### 6.1. 핵심 수행 규칙
-1.  **매일 오전 10시 KST** : 팀 스크럼 진행 (어제 한 일, 오늘 할 일, 장애물 공유)
-2.  **문서화**: 아키텍처, ERD 등 주요 산출물은 **[Notion 링크]`** 에 문서화하고 팀원과 공유합니다.
-3.  **환경 통일**: Python 및 주요 라이브러리 버전을 통일하여 개발 환경 차이로 인한 문제를 방지합니다. (`requirements.txt` 준수)
-4.  **보안**: API Key, DB 접속 정보 등 민감 정보는 `.env` 파일을 사용하며, 절대로 Git에 커밋하지 않습니다. (`.gitignore` 확인)
+> 상세 규칙은 **`CONTRIBUTING.md`** 참고. 아래는 핵심 요약만 적는다.
 
-### 6.2. Git 브랜치 전략
-본 프로젝트는 **Git Flow**를 기반으로 한 브랜치 전략을 따릅니다.
+### 6.1 브랜치 전략
 
--   **`master`**: 최종 릴리즈(배포) 브랜치. (7주차 발표회)
--   **`develop`**: 개발의 중심이 되는 브랜치.
--   **`feature/[기능명]`**: 신규 기능 개발 브랜치. (예: `feature/pdf-processing`)
-    -   개발 완료 후 `develop` 브랜치로 Pull Request(PR)
--   **`hotfix/[버그명]`**: `master` 브랜치의 긴급 버그 수정.
-
-
-```
-[개발 플로우]
-
-feature 브랜치 생성 (git checkout -b feature/my-feature develop)
-
-기능 개발 및 커밋
-
-develop 브랜치로 PR 요청 (코드 리뷰 진행)
-
-develop 브랜치에 Merge
+```text
+main  ←  dev  ←  feat/*
 ```
 
+- **main**
+
+  - 항상 배포 가능한 상태
+  - 직접 push 금지
+  - **오직 PR(dev → main)**로만 변경
+
+- **dev**
+
+  - 통합 개발 브랜치
+  - H/L/P 모두 자유롭게 push 가능 (테스트 통과를 전제)
+  - 대규모 리팩토링/AI Vibe Coding 등도 dev에서 진행
+
+- **feat/***
+
+  - 필요할 때만 사용하는 작업용 브랜치
+  - 예: `feat/parser-unify`, `feat/ai-routing-v2`
+  - 작업 완료 후 dev에 merge, 브랜치 삭제 가능
+
+- **문서-only 예외**
+
+  - `docs/*.md`, `CONTRIBUTING.md`, `README.md` 등 **문서만 수정**하는 경우
+    → main에 직접 push 허용 (코드 변경 포함 시 반드시 PR)
+
+### 6.2 PR 규칙 (요약)
+
+- 방향: **항상 `dev → main`**
+- 최소 1명 리뷰 (기본 승인자: P 또는 지정된 Owner)
+- PR 템플릿 필수 사용:
+
+  - Summary / Changed Files / Impact / Testing 간단히 기입
+
 ---
 
-## 7. 🗓️ 프로젝트 로드맵 (7-Week Plan)
+## 7. 📚 문서 허브
 
-| 주차 | 핵심 목표 | 주요 산출물 |
-| :--- | :--- | :--- |
-| **1주차** | **기획 및 아키텍처 설계** | 시스템 아키텍처, ERD, WBS |
-| **2주차** | **데이터 수집 및 전처리** | 데이터 수집/전처리/배치 모듈 코드 |
-| **3주차** | **임베딩 및 벡터 DB 구축** | 임베딩 추출/DB 저장 모듈 코드 |
-| **4주차** | **핵심 로직 구현 (RAG/Agent)** | RAG 응답 기능 소스코드 |
-| **5주차** | **애플리케이션 기능 개발** | 유사도 검색, 비교, 추천 기능 코드 |
-| **6주차** | **UI/UX 구현 및 고도화** | 트렌드 분석/웹 UI 소스코드 |
-| **7주차** | **최적화, 테스트 및 배포** | **동작하는 웹 서비스 (최종 산출물)** |
-
----
-
-## 8. 📄 산출물 링크 (Documentation)
-
-> 팀의 Notion, Fimga 등 관련 링크를 업데이트하세요.
-
--   **[➡️ 서비스 기획서 및 요구사항 명세서]([링크])`**
--   **[➡️ 시스템 아키텍처 다이어그램]([링크])`**
--   **[➡️ 데이터베이스 ERD]([링크])`**
--   **[➡️ 팀 WBS / Scrum 보드]([링크])`**
+- **제품 요구사항** → `docs/PRD.md`
+- **전체 시스템 아키텍처** → `docs/ARCHITECTURE.md`
+- **백엔드 설계** → `docs/BACKEND_DESIGN.md`
+- **AI 파이프라인 설계** → `docs/AI_PIPELINE_DESIGN.md`
+- **프론트엔드 명세** → `docs/FRONTEND_SPEC.md`
+- **API 명세** → `docs/API_SPEC.md`
+- **보안·법적 컴플라이언스** → `docs/SECURITY_COMPLIANCE.md`
+- **Git 협업 규칙** → `CONTRIBUTING.md`
 
 ---
 
-## 9. 🏁 최종 결과물 (Final Deliverables)
+## 8. 🏁 최종 산출물
 
-1.  **웹 UI 기반 서비스**: `[최종 배포된 서비스 URL]`
-2.  **데이터 처리 모듈**: 데이터 수집, 전처리, 배치 프로세싱 모듈 소스코드
-3.  **임베딩 및 DB 모듈**: 임베딩 추출 및 Vector DB 저장 모듈 소스코드
-4.  **핵심 기능 모듈**: RAG 응답, 유사 논문 추천, 비교, 트렌드 분석 모듈 코드
-5.  **최종 발표 자료 및 데모 영상**
+1. **운영 가능한 변호사 대시보드**
+
+   - 사건 생성, 증거 업로드, 타임라인, 필터, Draft Preview
+
+2. **AI 기반 증거 분석 파이프라인**
+
+   - S3 Event → AI Worker → DynamoDB/OpenSearch/RDS → API
+
+3. **법적·보안 기준을 충족하는 설계**
+
+   - 사건별 RAG 격리, Audit Log, PIPA/변호사법 대응
+
+4. **정리된 설계 문서 & 협업 규칙**
+
+   - PRD/Architecture/Design 문서 + GitHub 템플릿/CI

@@ -1,0 +1,42 @@
+# .github/workflows/deploy-paralegal.yml
+
+name: Deploy Paralegal to Oracle
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'ai_worker/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/deploy-paralegal.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy project files to Oracle
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "./"
+          target: ${{ secrets.APP_DIR }}
+
+      - name: Deploy via SSH (docker compose up)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.APP_DIR }}
+            docker compose down || true
+            docker compose up -d --build
