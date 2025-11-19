@@ -1,42 +1,68 @@
 # .github/workflows/deploy-paralegal.yml
 
-name: Deploy Paralegal to Oracle
+name: Deploy LEH to AWS
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'backend/**'
-      - 'ai_worker/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/deploy-paralegal.yml'
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy project files to Oracle
-        uses: appleboy/scp-action@v0.1.7
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "./"
-          target: ${{ secrets.APP_DIR }}
+          aws-region: ap-northeast-2
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
-      - name: Deploy via SSH (docker compose up)
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ${{ secrets.APP_DIR }}
-            docker compose down || true
-            docker compose up -d --build
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 1. Backend 배포 (ECR Push Only - 추후 App Runner/ECS 연동 필요)
+      - name: Build & Push Backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: leh-backend
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      # 2. AI Worker 배포 (ECR Push + Lambda Update)
+      - name: Build & Push AI Worker
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: leh-ai-worker
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Docker 빌드 및 푸시
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./ai_worker
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          # [핵심] Lambda 함수 코드를 새 이미지로 교체
+          aws lambda update-function-code \
+            --function-name leh-ai-worker \
+            --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # 3. Frontend 배포 (S3 Sync + CloudFront Invalidation)
+      - name: Deploy Frontend to S3
+        run: |
+          cd frontend
+          npm install && npm run build
+          # S3 업로드
+          aws s3 sync ./dist s3://${{ secrets.S3_FRONTEND_BUCKET }} --delete
+          # (선택) CloudFront 캐시 무효화 (배포 즉시 반영)
+          # aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"

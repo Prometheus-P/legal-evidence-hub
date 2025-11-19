@@ -413,14 +413,12 @@ main  ←  dev  ←  feat/*
 
 ## 7. 📚 문서 허브
 
-- **제품 요구사항** → `docs/PRD.md`
-- **전체 시스템 아키텍처** → `docs/ARCHITECTURE.md`
-- **백엔드 설계** → `docs/BACKEND_DESIGN.md`
-- **AI 파이프라인 설계** → `docs/AI_PIPELINE_DESIGN.md`
-- **프론트엔드 명세** → `docs/FRONTEND_SPEC.md`
-- **API 명세** → `docs/API_SPEC.md`
-- **보안·법적 컴플라이언스** → `docs/SECURITY_COMPLIANCE.md`
-- **Git 협업 규칙** → `CONTRIBUTING.md`
+- **제품 요구사항** → `docs/specs/PRD.md`
+- **시스템 아키텍처** → `docs/specs/ARCHITECTURE.md`
+- **기술 설계 (BE/FE/AI)** → `docs/specs/*_DESIGN.md`
+- **운영/비즈니스 (New)** → `docs/business/`, `infra/docs/RUNBOOK.md`
+- **법적 고지 (New)** → `docs/legal/TERMS_AND_PRIVACY.md`
+- **Git 협업 규칙** → `docs/guides/CONTRIBUTING.md`
 
 ---
 
