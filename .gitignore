@@ -33,6 +33,12 @@ temp/
 *.bin
 *.cache/
 
+###################################
+# 11. Personal Local Files
+###################################
+# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
+/CLAUDE.md
+/claude.md
 
 ###################################
 # 2. AI Worker / LLM 파이프라인

@@ -233,6 +233,264 @@ git push origin dev
 3. **Never skip git pull before feature branch**: Old code resurrection ❌
 4. **Never push to main directly**: L role forbidden ❌
 
+---
+
+### 📝 Local-First Development (로컬 우선 개발)
+
+**핵심 원칙 (2025-11-19):**
+> Commit은 자주, Push는 신중하게!
+> 로컬에서 충분히 테스트하고, 확신이 생길 때만 GitHub에 올리자.
+
+#### Why Local-First?
+
+**문제상황:**
+- 테스트 안 된 코드를 dev에 push → 팀원(H, P) 작업 방해
+- 실험적 코드가 remote에 올라감 → 혼란 발생
+- 버그 있는 코드 push → 팀 전체 시간 낭비
+
+**해결책:**
+- ✅ **로컬 = 실험장**: 마음껏 시도하고 커밋
+- ✅ **Remote = 검증된 코드만**: 테스트 통과한 것만 push
+- ✅ **커밋 = 세이브 포인트**: 롤백 가능하게 자주 커밋
+- ✅ **Push = 팀 공유**: 책임감 있게 공유
+
+---
+
+#### 🔄 Local-First Workflow
+
+```bash
+# ========================================
+# Phase 1: 작업 시작 (Local)
+# ========================================
+git checkout dev
+git pull origin dev
+git checkout -b feat/new-feature  # 또는 dev에서 직접
+
+# ========================================
+# Phase 2: 개발 + 로컬 커밋 (반복 가능)
+# ========================================
+
+# 첫 번째 시도
+# ... 코드 작성 ...
+git add ai_worker/parser.py
+git commit -m "feat: add initial parser structure"
+
+# 두 번째 시도
+# ... 수정 ...
+git commit -m "refactor: improve error handling"
+
+# 세 번째 시도
+# ... 버그 수정 ...
+git commit -m "fix: handle edge case for empty input"
+
+# 🔑 핵심: commit은 자주! 아직 push 안 함!
+
+# ========================================
+# Phase 3: 로컬 테스트 (필수!)
+# ========================================
+
+# 단위 테스트
+pytest tests/test_parser.py
+
+# 전체 테스트
+pytest ai_worker/tests/ -v
+
+# 커버리지 체크
+pytest --cov=ai_worker --cov-report=term
+
+# 린트 체크 (선택)
+flake8 ai_worker/
+black --check ai_worker/
+
+# ✅ 모든 테스트 통과 확인!
+
+# ========================================
+# Phase 4: Push 전 최종 검증
+# ========================================
+
+# 커밋 히스토리 확인
+git log --oneline -5
+
+# 변경사항 총정리
+git diff origin/dev...HEAD
+
+# 브랜치 확인 (절대 main 아닌지!)
+git branch
+# ✅ * dev or * feat/xxx
+
+# Remote 상태 확인
+git fetch origin
+git status
+
+# ========================================
+# Phase 5: Push (확신이 생겼을 때만!)
+# ========================================
+
+# ✅ 체크리스트:
+# - 모든 테스트 통과?
+# - 코드 리뷰 (본인)?
+# - 팀에 영향 없나?
+# - 커밋 메시지 명확한가?
+
+# 이제 push!
+git push origin dev
+```
+
+---
+
+#### 🧪 Push 전 필수 체크리스트
+
+**절대 push하면 안 되는 경우:**
+- ❌ 테스트 실패
+- ❌ 린트 에러
+- ❌ 실험적/불완전한 코드
+- ❌ TODO 주석만 잔뜩
+- ❌ 디버깅 print문 남아있음
+- ❌ 하드코딩된 테스트 데이터
+
+**Push해도 되는 조건:**
+- ✅ 모든 테스트 통과
+- ✅ 로컬에서 충분히 검증
+- ✅ 코드 리뷰 완료 (본인)
+- ✅ 커밋 메시지 명확
+- ✅ 팀원에게 영향 최소화
+
+---
+
+#### 🎯 실전 시나리오
+
+**시나리오 1: 새로운 파서 구현**
+```bash
+# 1. 작업 시작
+git checkout dev && git pull origin dev
+
+# 2. 개발 (여러 번 커밋)
+# ... BaseParser 구조 작성 ...
+git commit -m "feat: add BaseParser abstract class"
+
+# ... ImageParser 구현 ...
+git commit -m "feat: implement ImageParser with Vision API"
+
+# ... 버그 수정 ...
+git commit -m "fix: handle None response from API"
+
+# 3. 로컬 테스트
+pytest tests/test_image_parser.py -v
+# ✅ 5 passed
+
+# 4. 확신이 생김! Push
+git push origin dev
+```
+
+**시나리오 2: 버그 수정 (긴급)**
+```bash
+# 1. 빠르게 수정
+# ... 버그 수정 ...
+git commit -m "fix: critical bug in audio parsing"
+
+# 2. 최소 테스트만 빠르게
+pytest tests/test_audio_parser.py
+# ✅ passed
+
+# 3. 긴급이므로 바로 push (단, 테스트는 필수!)
+git push origin dev
+
+# 4. 팀에 알림
+# "긴급 버그 수정 push했습니다. 확인 부탁드립니다."
+```
+
+**시나리오 3: 실험적 기능 (아직 불확실)**
+```bash
+# 1. 실험적 시도
+# ... 새로운 알고리즘 시도 ...
+git commit -m "experiment: try new emotion detection approach"
+
+# 2. 테스트 결과가 애매함
+pytest tests/
+# ⚠️ Some tests fail, accuracy not good
+
+# 3. ❌ Push 하지 않음!
+# 로컬에만 커밋 유지, 계속 실험
+
+# 4. 나중에 개선 후
+# ... 알고리즘 개선 ...
+git commit -m "refactor: improve emotion detection accuracy"
+pytest tests/  # ✅ All passed
+
+# 5. 이제 push
+git push origin dev
+```
+
+---
+
+#### 💡 유용한 팁
+
+**1. 로컬 커밋 정리하기 (push 전)**
+```bash
+# 여러 커밋을 하나로 합치기 (squash)
+git rebase -i HEAD~3  # 최근 3개 커밋 정리
+
+# 또는 커밋 메시지만 수정
+git commit --amend -m "feat: complete image parser implementation"
+```
+
+**2. Push 실수 방지**
+```bash
+# Push 전에 미리 보기
+git push --dry-run origin dev
+
+# 강제 push 비활성화 (안전장치)
+git config --global push.default simple
+```
+
+**3. 로컬 테스트 자동화**
+```bash
+# .git/hooks/pre-push 생성
+#!/bin/bash
+echo "🧪 Running tests before push..."
+pytest ai_worker/tests/
+if [ $? -ne 0 ]; then
+    echo "❌ Tests failed! Push cancelled."
+    exit 1
+fi
+echo "✅ Tests passed! Proceeding with push."
+```
+
+---
+
+#### 🚨 Anti-Patterns (하지 말 것!)
+
+**❌ Bad: 테스트 없이 바로 push**
+```bash
+# ... 코드 작성 ...
+git add . && git commit -m "feat: new feature"
+git push origin dev  # ❌ 테스트 안 함!
+```
+
+**✅ Good: 테스트 후 push**
+```bash
+# ... 코드 작성 ...
+git commit -m "feat: new feature"
+pytest tests/ -v     # ✅ 테스트 먼저!
+git push origin dev
+```
+
+**❌ Bad: 실험 코드를 바로 push**
+```bash
+git commit -m "trying something..."
+git push origin dev  # ❌ 불확실한 코드 공유
+```
+
+**✅ Good: 확신이 생길 때까지 로컬에만**
+```bash
+git commit -m "experiment: trying new approach"
+# ... 여러 번 시도 ...
+# ... 테스트 통과 후에만 ...
+git push origin dev  # ✅ 검증 완료
+```
+
+---
+
 ### Code Safety
 1. **Test before pushing to dev**: Run local tests
 2. **Use pytest for AI Worker**: `pytest ai_worker/tests/`
