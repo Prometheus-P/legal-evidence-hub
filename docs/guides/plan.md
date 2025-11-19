@@ -18,7 +18,7 @@
 2. 구조 변경(Tidy)과 기능 변경(Behavior)을 **같은 커밋에 섞지 않는다.**
 3. 가능할수록 **API/사용자 행동 레벨 테스트**부터 시작한다.
 4. AI 관련 코드는 **모델 호출을 전부 mock**하고, 프로토콜/계약만 테스트한다.
-5. `main`, `dev` 브랜치에 대한 배포는 **GitHub Actions + Oracle Cloud**가 담당하며,  
+5. `main`, `dev` 브랜치에 대한 배포는 **GitHub Actions + AWS (OIDC)**가 담당하며,  
    배포 전 단계에서 **모든 테스트가 통과**해야 한다.
 
 ---
@@ -184,9 +184,9 @@
 
 ---
 
-## 5. CI/CD (GitHub Actions + Oracle Cloud, 담당: P)
+## 5. CI/CD (GitHub Actions + AWS, 담당: P)
 
-> P는 **GitHub Actions 워크플로우와 Oracle Cloud 배포 파이프라인**을 총괄한다.  
+> P는 **GitHub Actions 워크플로우와 AWS 배포 파이프라인**을 총괄한다.  
 > 아래 항목들은 CI/CD 시스템에 대한 **테스트 우선 개발 항목**이다.
 
 ### 5.1 공통 CI (dev, main 공통)
@@ -199,29 +199,28 @@
 - [ ] CI는 Pull Request 기준으로:
   - `dev` 대상 PR 에서는 테스트 + 빌드까지 수행하고 결과를 PR에 코멘트해야 한다.
 
-### 5.2 dev 브랜치 → Oracle Cloud “dev 환경” 자동 배포
+### 5.2 dev 브랜치 → AWS “dev 환경” 자동 배포
 
 - [ ] `push` 또는 `merge` to `dev` 발생 시:
   - CI가 성공한 후에만 `cd-dev.yml` 워크플로우가 실행돼야 한다.
 - [ ] `cd-dev.yml` 은:
-  - Frontend 빌드 결과를 Oracle Cloud(예: OCI Object Storage or OCI Web App) dev 버킷/앱에 배포해야 한다.
-  - Backend / AI Worker 컨테이너 이미지를 빌드하고, Oracle Cloud Container Registry 에 푸시한 뒤, dev 환경 인스턴스를 롤링 업데이트해야 한다.
-- [ ] `dev` 배포 job 은:
-  - GitHub Actions → Oracle Cloud 인증에 **OIDC 또는 단기 토큰**을 사용해야 하며, 레포에 장기 Access Key 를 커밋하거나 평문 Secret 으로 노출하지 않아야 한다 (설정 검사 테스트).
+  - **OIDC 인증**을 통해 AWS 권한을 획득해야 한다 (Access Key 하드코딩 금지).
+  - Frontend 빌드 결과를 **AWS S3 (Dev Bucket)**으로 동기화(Sync)해야 한다.
+  - Backend / AI Worker 컨테이너 이미지를 빌드하고, **AWS ECR**에 푸시한 뒤, Lambda/ECS 서비스를 업데이트해야 한다.
 
-### 5.3 main 브랜치 → Oracle Cloud “prod 환경” 자동 배포
+### 5.3 main 브랜치 → AWS “prod 환경” 자동 배포
 
 - [ ] `main` 브랜치에 PR이 merge되면:
   - CI가 다시 전체 테스트를 실행하고 통과할 경우에만 `cd-main.yml` 이 실행돼야 한다.
 - [ ] `cd-main.yml` 은:
-  - dev 와 다른 Oracle Cloud 리소스(Prod 환경)에 배포해야 하며, dev/prod 환경변수 세트가 분리되어야 한다.
+  - dev 와 다른 AWS 계정 또는 리소스(Prod 환경)에 배포해야 하며, 환경변수 세트가 분리되어야 한다.
 - [ ] main 배포는:
-  - 사람이 수동으로 승인해야 하는 단계(예: `environment: production` + required reviewers)를 포함해야 한다 (GitHub Environment 정책 테스트).
+  - 사람이 수동으로 승인해야 하는 단계(예: `environment: production` + required reviewers)를 포함해야 한다.
 
 ### 5.4 CI/CD 보안 테스트
 
 - [ ] `.github/workflows/*.yml` 에서:
-  - AWS, Oracle Cloud 자격증명 값이 직접 하드코딩되어 있지 않은지 검사하는 정적 테스트를 추가한다.
+  - AWS Access Key ID / Secret Key 가 직접 하드코딩되어 있지 않은지 검사하는 정적 테스트를 추가한다.
 - [ ] Secrets 사용 시:
   - `secrets.XXX` 참조만 있어야 하며, 워크플로우 상에서 echo 로 출력되지 않는지 검사하는 테스트를 추가한다.
 
