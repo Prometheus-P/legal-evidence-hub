@@ -46,12 +46,62 @@ main  ←  [PR ONLY, P approves]  ←  dev  ←  feat/*
                                  YOU WORK HERE
 ```
 
+### 🚨 CRITICAL: Safe Workflow to Prevent Code Conflicts
+
+**LESSON LEARNED (2025-11-19):**
+> Never create a feature branch without `git pull origin dev` first!
+> Old local dev state can restore previously deleted files and cause conflicts.
+
+---
+
+## ⚠️ Phase 0: Pre-Work Safety Checklist (MANDATORY)
+
+**Execute EVERY TIME before starting new work:**
+
+```bash
+# Step 1: Verify current location
+git branch
+# ✅ Confirm you're on 'dev'
+# ❌ If on 'main', STOP and switch to dev
+
+# Step 2: Check for uncommitted changes
+git status
+# ✅ "nothing to commit, working tree clean"
+# ❌ If dirty, commit or stash first
+
+# Step 3: ⚠️ MOST CRITICAL - Always fetch and pull!
+git fetch origin
+git pull origin dev
+# 🔴 NEVER SKIP THIS STEP!
+# Even if it says "Already up to date", run it!
+
+# Step 4: Verify you have latest commits
+git log --oneline -5
+# Check H and P teammates' recent work
+
+# Step 5: NOW create feature branch
+git checkout -b feat/your-feature-name
+
+# Step 6: Double-check you're on correct branch
+git branch
+# ✅ * feat/your-feature-name
+```
+
+**Why This Matters:**
+- Teammates (H, P) push to dev while you work
+- Without `git pull`, your local dev is outdated
+- Creating branch from old dev = old deleted code comes back
+- Merge conflicts and restored deleted files = BAD! ❌
+
+---
+
 ### Daily Workflow for L
 
-1. **Always start from dev**
+1. **Always start from dev with Phase 0 checklist**
    ```bash
    git checkout dev
-   git pull origin dev
+   git fetch origin        # Check remote state
+   git pull origin dev     # ⚠️ NEVER SKIP!
    ```
 
 2. **Work on dev or feature branch**
@@ -129,11 +179,59 @@ git branch
 
 ## 🛡️ Safety Guidelines
 
-### Git Safety
+### Git Safety (Updated 2025-11-19)
+
+#### 🔴 Phase 0: Before Starting Work
+1. **ALWAYS git pull origin dev first**: Prevents old code resurrection ⚠️
+2. **Never skip git fetch**: Even if "Already up to date" ⚠️
+3. **Check teammates' recent commits**: `git log --oneline -5` ✅
+
+#### 🟡 During Work
+1. **Use dev for experiments**: dev is your playground ✅
+2. **Create feat/* for big changes**: Isolate complex work ✅
+3. **Commit frequently**: Small, focused commits ✅
+
+#### 🟢 Before Commit (Triple Check)
+```bash
+# Step 1: Review ALL changes
+git diff
+# Read every line - no surprises!
+
+# Step 2: Stage files carefully
+git add [specific-files]
+# ❌ AVOID: git add .
+# ✅ PREFER: git add ai_worker/handler.py src/parser.py
+
+# Step 3: Review staged changes
+git diff --staged
+# Final check before commit
+
+# Step 4: Commit with clear message
+git commit -m "feat: [detailed description]"
+```
+
+#### 🔵 Before Push (Final Safety Check)
+```bash
+# Step 1: Verify current branch (MOST CRITICAL!)
+git branch
+# ✅ * dev or * feat/xxx
+# ❌ * main → STOP IMMEDIATELY!
+
+# Step 2: Check for remote updates
+git fetch origin
+
+# Step 3: Pull if needed
+git pull origin dev
+
+# Step 4: NOW safe to push
+git push origin dev
+```
+
+#### ❌ Absolute Don'ts
 1. **Never force push to main**: `git push -f origin main` ❌
-2. **Always check branch before push**: `git branch` ✅
-3. **Use dev for experiments**: dev is your playground ✅
-4. **Create feat/* for big changes**: Isolate complex work ✅
+2. **Never git add . blindly**: Review each file ❌
+3. **Never skip git pull before feature branch**: Old code resurrection ❌
+4. **Never push to main directly**: L role forbidden ❌
 
 ### Code Safety
 1. **Test before pushing to dev**: Run local tests
