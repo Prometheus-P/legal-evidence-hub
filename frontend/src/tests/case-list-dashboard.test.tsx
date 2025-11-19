@@ -38,13 +38,12 @@ describe('Plan 3.3 - Case List Dashboard Requirements', () => {
     });
 
     describe('카드 레이아웃 색상 규칙', () => {
-        test('카드 배경은 Calm Grey 또는 white를 사용해야 한다', () => {
+        test('카드 배경은 Calm Grey 톤을 사용해야 한다', () => {
             const { container } = render(<CaseCard caseData={mockCase} />);
             const card = container.querySelector('.card');
 
             expect(card).toBeInTheDocument();
-            // Card should have white or calm-grey background
-            expect(card).toHaveClass('bg-white');
+            expect(card).toHaveClass('bg-calm-grey');
         });
 
         test('제목은 Deep Trust Blue 색상을 사용해야 한다', () => {

@@ -17,7 +17,7 @@ export default function CaseCard({ caseData }: CaseCardProps) {
 
     return (
         <Link href={`/cases/${caseData.id}`}>
-            <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer hover:ring-2 hover:ring-accent/50 hover:shadow-md transition-all duration-300 bg-white">
+            <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer hover:ring-2 hover:ring-accent/50 hover:shadow-md transition-all duration-300 bg-calm-grey">
                 <div>
                     <div className="flex justify-between items-start mb-4">
                         <div>

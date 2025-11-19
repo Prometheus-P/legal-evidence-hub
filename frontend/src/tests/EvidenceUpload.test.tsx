@@ -7,7 +7,7 @@ describe('EvidenceUpload', () => {
         const handleUpload = jest.fn();
         render(<EvidenceUpload onUpload={handleUpload} />);
 
-        expect(screen.getByText(/파일을 여기에 드래그하거나 클릭하여 업로드/i)).toBeInTheDocument();
+        expect(screen.getByText(/파일을 끌어다 놓거나 클릭하여 업로드/i)).toBeInTheDocument();
     });
 
     it('calls onUpload when file is selected', () => {
@@ -37,7 +37,7 @@ describe('EvidenceUpload', () => {
         // screen.getByLabelText(...) should return the input.
         // Let's trust getByLabelText.
 
-        fireEvent.change(screen.getByLabelText(/파일을 여기에 드래그하거나 클릭하여 업로드/i), { target: { files: [file] } });
+        fireEvent.change(screen.getByLabelText(/파일을 끌어다 놓거나 클릭하여 업로드/i), { target: { files: [file] } });
 
         expect(handleUpload).toHaveBeenCalledTimes(1);
         expect(handleUpload).toHaveBeenCalledWith([file]);

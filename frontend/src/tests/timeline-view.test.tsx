@@ -32,7 +32,7 @@ describe('Plan 3.5 - Timeline View Requirements', () => {
             render(<Timeline items={mockEvidence} onSelect={mockOnSelect} />);
 
             // Check for date display (multiple dates will exist)
-            const dates = screen.getAllByText(/5\/1\/2024|5\/3\/2024/);
+            const dates = screen.getAllByText(/2024\.\s*5\.\s*1\.|2024\.\s*5\.\s*3\./);
             expect(dates.length).toBeGreaterThan(0);
         });
         test('타임라인 아이템은 요약 텍스트를 포함해야 한다', () => {

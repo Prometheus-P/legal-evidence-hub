@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { RouterContext } from 'next/dist/shared/lib/router-context';
+import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtime';
 import { NextRouter } from 'next/router';
 import CaseCard from '@/components/cases/CaseCard';
 import { Case } from '@/types/case';
