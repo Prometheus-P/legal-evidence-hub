@@ -108,28 +108,61 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         parsed_result = parser.parse(local_path)
         logger.info(f"Parsed {object_key} with {parser.__class__.__name__}")
 
-        # TODO: 메타데이터 저장
-        # metadata_store = MetadataStore()
-        # metadata_store.save(parsed_result)
+        # 메타데이터 저장 (DynamoDB)
+        metadata_store = MetadataStore()
+        file_metadata = metadata_store.save_evidence_file(
+            case_id=bucket_name,  # S3 bucket을 case_id로 사용
+            file_path=object_key,
+            file_type=file_extension,
+            source_type=parsed_result[0].metadata.get("source_type", "unknown") if parsed_result else "unknown"
+        )
+        logger.info(f"Saved metadata for {object_key}: file_id={file_metadata['file_id']}")
 
-        # TODO: 벡터 임베딩 및 저장
-        # vector_store = VectorStore()
-        # vector_store.index(parsed_result)
+        # 벡터 임베딩 및 저장 (Qdrant/OpenSearch)
+        vector_store = VectorStore()
+        chunk_ids = []
+        for idx, message in enumerate(parsed_result):
+            chunk_id = vector_store.add_evidence(
+                case_id=bucket_name,
+                file_id=file_metadata['file_id'],
+                content=message.content,
+                metadata={
+                    "sender": message.sender,
+                    "timestamp": message.timestamp.isoformat() if message.timestamp else None,
+                    "chunk_index": idx,
+                    **message.metadata
+                }
+            )
+            chunk_ids.append(chunk_id)
+        logger.info(f"Indexed {len(chunk_ids)} chunks to vector store")
 
-        # TODO: 분석 엔진 실행
-        # summarizer = EvidenceSummarizer()
-        # summary = summarizer.summarize(parsed_result)
+        # 분석 엔진 실행 (Summarizer + Article 840 Tagger)
+        summarizer = EvidenceSummarizer()
+        tagger = Article840Tagger()
 
-        # tagger = Article840Tagger()
-        # tags = tagger.tag(parsed_result)
+        summaries = []
+        tags_list = []
+        for message in parsed_result:
+            # 요약 생성 (필요시)
+            # summary = summarizer.summarize(message)
+            # summaries.append(summary)
+
+            # Article 840 태깅
+            tagging_result = tagger.tag(message)
+            tags_list.append({
+                "categories": [cat.value for cat in tagging_result.categories],
+                "confidence": tagging_result.confidence,
+                "matched_keywords": tagging_result.matched_keywords
+            })
 
         return {
             "status": "processed",
             "file": object_key,
             "parser_type": parser.__class__.__name__,
-            "bucket": bucket_name
-            # "summary": summary,
-            # "tags": tags
+            "bucket": bucket_name,
+            "file_id": file_metadata['file_id'],
+            "chunks_indexed": len(chunk_ids),
+            "tags": tags_list
         }
 
     except Exception as e:
