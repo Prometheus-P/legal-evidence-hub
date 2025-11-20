@@ -1,12 +1,16 @@
 import Link from 'next/link';
+import { useState } from 'react';
 import { Case } from '@/types/case';
-import { FileText, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
 
 interface CaseCardProps {
     caseData: Case;
+    onStatusChange?: (caseId: string, newStatus: 'open' | 'closed') => void;
 }
 
-export default function CaseCard({ caseData }: CaseCardProps) {
+export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'ready': return 'text-success-green';
@@ -15,9 +19,24 @@ export default function CaseCard({ caseData }: CaseCardProps) {
         }
     };
 
+    const handleStatusChange = (e: React.MouseEvent, newStatus: 'open' | 'closed') => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onStatusChange) {
+            onStatusChange(caseData.id, newStatus);
+        }
+        setIsStatusDropdownOpen(false);
+    };
+
+    const toggleStatusDropdown = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsStatusDropdownOpen(!isStatusDropdownOpen);
+    };
+
     return (
         <Link href={`/cases/${caseData.id}`}>
-            <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer hover:ring-2 hover:ring-accent/50 transition-all duration-300 bg-white">
+            <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer hover:ring-2 hover:ring-accent/50 hover:shadow-md transition-all duration-300 bg-calm-grey">
                 <div>
                     <div className="flex justify-between items-start mb-4">
                         <div>
@@ -26,10 +45,35 @@ export default function CaseCard({ caseData }: CaseCardProps) {
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">{caseData.clientName}</p>
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${caseData.status === 'open' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                            {caseData.status.toUpperCase()}
-                        </span>
+                        <div className="relative">
+                            <button
+                                onClick={toggleStatusDropdown}
+                                className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${caseData.status === 'open' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                    }`}
+                                aria-label="상태 변경"
+                            >
+                                <span>{caseData.status === 'open' ? '진행 중' : '종결'}</span>
+                                <ChevronDown className="w-3 h-3" />
+                            </button>
+                            {isStatusDropdownOpen && (
+                                <div className="absolute right-0 mt-1 w-32 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                    <button
+                                        role="option"
+                                        onClick={(e) => handleStatusChange(e, 'open')}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        진행 중
+                                    </button>
+                                    <button
+                                        role="option"
+                                        onClick={(e) => handleStatusChange(e, 'closed')}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        종결
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="space-y-3">

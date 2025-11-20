@@ -159,13 +159,13 @@ async def health_check():
 # ============================================
 # API 엔드포인트는 app/api/ 디렉토리에 위치 (BACKEND_SERVICE_REPOSITORY_GUIDE.md 기준)
 
-# TODO: 인증 라우터
-# from app.api import auth
-# app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+# 인증 라우터
+from app.api import auth
+app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
-# TODO: 사건 라우터
-# from app.api import cases
-# app.include_router(cases.router, prefix="/cases", tags=["Cases"])
+# 사건 라우터
+from app.api import cases
+app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # TODO: 증거 라우터
 # from app.api import evidence

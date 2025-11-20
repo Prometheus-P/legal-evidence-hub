@@ -168,3 +168,68 @@ def sample_user_data():
         "name": "테스트 사용자",
         "role": "lawyer"
     }
+
+
+@pytest.fixture
+def test_user(test_env):
+    """
+    Create a real user in the database for authentication tests
+
+    Password: correct_password123
+    """
+    from app.db.session import get_db, init_db
+    from app.db.models import Base, User
+    from app.core.security import hash_password
+    from sqlalchemy.orm import Session
+
+    # Initialize database
+    init_db()
+
+    # Create user
+    db: Session = next(get_db())
+    try:
+        user = User(
+            email="test@example.com",
+            hashed_password=hash_password("correct_password123"),
+            name="테스트 사용자",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        yield user
+
+        # Cleanup - delete in correct order to respect foreign keys
+        # Delete case_members first
+        from app.db.models import Case, CaseMember
+        db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
+        # Delete cases created by user
+        db.query(Case).filter(Case.created_by == user.id).delete()
+        # Delete user
+        db.delete(user)
+        db.commit()
+    finally:
+        db.close()
+
+        # Drop tables after test
+        from app.db.session import engine
+        Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def auth_headers(test_user):
+    """
+    Generate authentication headers with JWT token for test_user
+
+    Returns:
+        dict: Headers with Authorization Bearer token
+    """
+    from app.core.security import create_access_token
+
+    # Create JWT token for test user
+    token = create_access_token(data={"sub": test_user.id, "role": test_user.role})
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }

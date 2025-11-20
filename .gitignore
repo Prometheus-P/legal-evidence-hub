@@ -6,52 +6,44 @@
 ###################################
 # 1. Python (Backend – FastAPI)
 ###################################
-__pycache__/
+# Python 컴파일 파일 (확장자 기반)
 *.pyc
 *.pyo
 *.pyd
 *.so
-*.egg-info/
-*.spec
+*.pickle
+*.pkl
+*.pt
+*.bin
 
-# 가상환경
+# Python 폴더 패턴
+__pycache__/
+*.egg-info/
+*.cache/
+.pytest_cache/
+
+# 가상환경 (필수 폴더 패턴)
 venv/
 env/
 .venv/
 .python-version
 
-# 로컬 실행 로그
+# 로그 및 임시 파일
 *.log
 logs/
 tmp/
 temp/
 
-# 모델 캐시, 임시 파일
-*.pickle
-*.pkl
-*.pt
-*.bin
-*.cache/
-
-###################################
-# 11. Personal Local Files
-###################################
-# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
-/CLAUDE.md
-/claude.md
-
 ###################################
 # 2. AI Worker / LLM 파이프라인
 ###################################
+# 특정 폴더만 제외 (AI Worker 내부)
 ai_worker/storage/
 ai_worker/.cache/
 ai_worker/workflows/local_debug/
-ai_worker/workflows/*.tmp
-workspace/
-rag_cache/
-vector_index/
 
-# OpenAI / Anthropic 임시 키
+# 임시 파일 (확장자 기반)
+*.tmp
 *.api_key
 *.token
 
@@ -137,19 +129,17 @@ docker-data/
 ###################################
 # 8. Database / Storage / Evidence Files
 ###################################
-# 법률 증거 파일 무조건 제외
-evidence/
+# 법률 증거 파일 저장 폴더만 제외
 evidence_raw/
 uploads/
-storage/
-documents_tmp/
-pdf_tmp/
-tmp_exports/
+
+# 문서 파일 (확장자 기반)
 *.pdf
 *.docx
 *.xlsx
 *.pptx
 *.zip
+*.hwp
 
 # SQLite (local test)
 *.db
@@ -157,11 +147,9 @@ tmp_exports/
 
 
 ###################################
-# 9. Logs, Reports, Debug Dumps
+# 9. Logs, Reports, Debug Dumps (확장자 기반)
 ###################################
 *.log
-debug.log
-error.log
 *.dump
 *.bak
 
@@ -173,3 +161,10 @@ error.log
 *.tmp
 *.old
 *.backup
+
+
+###################################
+# 11. Personal Local Files
+###################################
+# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
+/CLAUDE.md

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { Plus } from 'lucide-react';
 import CaseCard from '@/components/cases/CaseCard';
+import AddCaseModal from '@/components/cases/AddCaseModal'; // 모달 컴포넌트 임포트
 import { Case } from '@/types/case';
 
 // Mock Data for MVP
@@ -37,6 +38,7 @@ const MOCK_CASES: Case[] = [
 
 export default function CasesPage() {
     const [cases] = useState<Case[]>(MOCK_CASES);
+    const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 추가
 
     return (
         <div className="min-h-screen bg-calm-grey">
@@ -61,7 +63,10 @@ export default function CasesPage() {
                         <h2 className="text-3xl font-bold text-gray-900">나의 사건</h2>
                         <p className="mt-1 text-gray-500">진행 중인 사건을 한눈에 확인하고 관리하세요.</p>
                     </div>
-                    <button className="btn-primary flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
+                    <button 
+                        onClick={() => setIsModalOpen(true)} // onClick 핸들러 추가
+                        className="btn-primary flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                    >
                         <Plus className="w-5 h-5 mr-2" />
                         새 사건 등록
                     </button>
@@ -81,6 +86,9 @@ export default function CasesPage() {
                     </div>
                 )}
             </main>
+
+            {/* 모달 렌더링 */}
+            <AddCaseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
     );
 }
