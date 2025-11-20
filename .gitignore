@@ -20,6 +20,7 @@
 __pycache__/
 *.egg-info/
 *.cache/
+.pytest_cache/
 
 # 가상환경 (필수 폴더 패턴)
 venv/
