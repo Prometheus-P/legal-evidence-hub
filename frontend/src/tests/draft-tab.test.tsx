@@ -65,4 +65,28 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
             expect(evidenceItems.length).toBeGreaterThan(0);
         });
     });
+
+    describe('Plan 3.12 - Rich Text Editor', () => {
+        test('에디터는 textarea가 아닌 contentEditable 요소여야 하며, 서식 버튼 클릭 시 execCommand가 호출되어야 한다', () => {
+            renderCaseDetail();
+
+            // 툴바 확인
+            const toolbar = screen.getByTestId('draft-toolbar-panel');
+            expect(toolbar).toBeInTheDocument();
+
+            // contentEditable 요소 확인
+            const editor = screen.getByTestId('draft-editor-content');
+            expect(editor).toHaveAttribute('contenteditable', 'true');
+
+            // execCommand 모의 함수 설정
+            document.execCommand = jest.fn();
+
+            // Bold 버튼 클릭
+            const boldBtn = screen.getByLabelText(/bold/i);
+            fireEvent.click(boldBtn);
+
+            // execCommand 호출 확인
+            expect(document.execCommand).toHaveBeenCalledWith('bold', false, undefined);
+        });
+    });
 });

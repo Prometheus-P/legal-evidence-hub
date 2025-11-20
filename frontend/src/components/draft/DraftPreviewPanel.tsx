@@ -1,4 +1,4 @@
-import { Loader2, FileText, Download, Sparkles } from 'lucide-react';
+import { Loader2, FileText, Download, Sparkles, Bold, Italic, Underline, List } from 'lucide-react';
 import { DraftCitation } from '@/types/draft';
 
 interface DraftPreviewPanelProps {
@@ -17,6 +17,10 @@ export default function DraftPreviewPanel({
     onGenerate,
 }: DraftPreviewPanelProps) {
     const buttonLabel = hasExistingDraft ? '초안 재생성' : '초안 생성';
+
+    const handleFormat = (command: string) => {
+        document.execCommand(command, false, undefined);
+    };
 
     return (
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6" aria-label="Draft preview">
@@ -41,7 +45,35 @@ export default function DraftPreviewPanel({
             >
                 <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-deep-trust-blue" />
-                    Zen Mode Editor
+                    <div className="h-4 w-px bg-gray-300 mx-2" />
+                    <button
+                        type="button"
+                        aria-label="Bold"
+                        onClick={() => handleFormat('bold')}
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    >
+                        <Bold className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label="Italic"
+                        onClick={() => handleFormat('italic')}
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    >
+                        <Italic className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                        type="button"
+                        aria-label="Underline"
+                        onClick={() => handleFormat('underline')}
+                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    >
+                        <Underline className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <div className="h-4 w-px bg-gray-300 mx-2" />
+                    <button type="button" aria-label="List" className="p-1 hover:bg-gray-200 rounded transition-colors">
+                        <List className="w-4 h-4 text-gray-700" />
+                    </button>
                 </div>
                 <button
                     type="button"
@@ -57,10 +89,13 @@ export default function DraftPreviewPanel({
                 data-zen-mode="true"
                 className="relative rounded-2xl border border-gray-100 bg-white shadow-inner focus-within:border-deep-trust-blue transition-colors"
             >
-                <textarea
+                <div
+                    data-testid="draft-editor-content"
+                    contentEditable
+                    suppressContentEditableWarning
                     aria-label="Draft content"
-                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400"
-                    defaultValue={draftText}
+                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400 overflow-auto"
+                    dangerouslySetInnerHTML={{ __html: draftText }}
                 />
                 <div className="absolute top-4 right-6 text-xs text-gray-400">자동 저장 준비 중</div>
             </div>
