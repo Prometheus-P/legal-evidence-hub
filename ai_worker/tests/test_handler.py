@@ -213,6 +213,72 @@ class TestUnsupportedFileTypes:
         assert route_parser('.exe') is None
 
 
+class TestFileProcessing:
+    """파일 타입별 처리 테스트 (2.2)"""
+
+    @patch('handler.boto3')
+    def test_download_file_from_s3(self, mock_boto3):
+        """
+        Given: S3에 PDF 파일이 존재
+        When: route_and_process() 호출
+        Then: S3에서 파일을 /tmp로 다운로드
+        """
+        # Given
+        mock_s3_client = Mock()
+        mock_boto3.client.return_value = mock_s3_client
+        bucket = "test-bucket"
+        key = "test-file.pdf"
+
+        # When
+        with patch('handler.route_parser') as mock_parser:
+            mock_parser_instance = Mock()
+            mock_parser_instance.parse.return_value = {
+                "content": "test content",
+                "metadata": {}
+            }
+            mock_parser.return_value = mock_parser_instance
+
+            route_and_process(bucket, key)
+
+        # Then: S3 client가 파일을 다운로드했는지 확인
+        mock_boto3.client.assert_called_once_with('s3')
+        mock_s3_client.download_file.assert_called_once()
+        # 다운로드 위치가 /tmp인지 확인
+        call_args = mock_s3_client.download_file.call_args[0]
+        assert call_args[0] == bucket
+        assert call_args[1] == key
+        assert '/tmp' in call_args[2] or 'tmp' in call_args[2].lower()
+
+    @patch('handler.boto3')
+    def test_execute_parser_on_downloaded_file(self, mock_boto3):
+        """
+        Given: S3에서 파일을 다운로드
+        When: route_and_process() 호출
+        Then: 적절한 파서로 파일을 파싱
+        """
+        # Given
+        mock_s3_client = Mock()
+        mock_boto3.client.return_value = mock_s3_client
+        bucket = "test-bucket"
+        key = "document.txt"
+
+        # When
+        with patch('handler.route_parser') as mock_parser:
+            mock_parser_instance = Mock()
+            mock_parser_instance.parse.return_value = {
+                "content": "parsed text content",
+                "metadata": {"type": "text"}
+            }
+            mock_parser.return_value = mock_parser_instance
+
+            result = route_and_process(bucket, key)
+
+        # Then: 파서가 실행되었는지 확인
+        mock_parser_instance.parse.assert_called_once()
+        # 파싱 결과가 반환에 포함되는지 확인
+        assert result["status"] == "processed"
+
+
 class TestErrorHandling:
     """에러 처리 테스트"""
 
