@@ -20,6 +20,7 @@
 __pycache__/
 *.egg-info/
 *.cache/
+.pytest_cache/
 
 # 가상환경 (필수 폴더 패턴)
 venv/
@@ -161,3 +162,10 @@ uploads/
 *.tmp
 *.old
 *.backup
+
+
+###################################
+# 11. Personal Local Files
+###################################
+# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
+/CLAUDE.md
