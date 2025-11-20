@@ -1,14 +1,22 @@
 """
 Evidence Service - Business logic for evidence management
-Handles presigned URL generation and evidence metadata
+Handles presigned URL generation and evidence metadata retrieval
 """
 
 from sqlalchemy.orm import Session
+from typing import List
+from datetime import datetime
 import uuid
-from app.db.schemas import PresignedUrlRequest, PresignedUrlResponse
+from app.db.schemas import (
+    PresignedUrlRequest,
+    PresignedUrlResponse,
+    EvidenceSummary,
+    EvidenceDetail
+)
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.s3 import generate_presigned_upload_url
+from app.utils.dynamo import get_evidence_by_case, get_evidence_by_id
 from app.core.config import settings
 from app.middleware import NotFoundError, PermissionError
 
@@ -74,4 +82,88 @@ class EvidenceService:
             upload_url=presigned_data["upload_url"],
             fields=presigned_data["fields"],
             evidence_temp_id=evidence_temp_id
+        )
+
+    def get_evidence_list(self, case_id: str, user_id: str) -> List[EvidenceSummary]:
+        """
+        Get list of evidence for a case
+
+        Args:
+            case_id: Case ID
+            user_id: User ID requesting access
+
+        Returns:
+            List of evidence summary
+
+        Raises:
+            NotFoundError: Case not found
+            PermissionError: User does not have access to case
+        """
+        # Check if case exists
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
+
+        # Check if user has access to case
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Get evidence metadata from DynamoDB
+        evidence_list = get_evidence_by_case(case_id)
+
+        # Convert to EvidenceSummary schema
+        return [
+            EvidenceSummary(
+                id=evidence["id"],
+                case_id=evidence["case_id"],
+                type=evidence["type"],
+                filename=evidence["filename"],
+                created_at=datetime.fromisoformat(evidence["created_at"]),
+                status=evidence.get("status", "pending")
+            )
+            for evidence in evidence_list
+        ]
+
+    def get_evidence_detail(self, evidence_id: str, user_id: str) -> EvidenceDetail:
+        """
+        Get detailed evidence metadata with AI analysis results
+
+        Args:
+            evidence_id: Evidence ID
+            user_id: User ID requesting access
+
+        Returns:
+            Evidence detail with AI analysis
+
+        Raises:
+            NotFoundError: Evidence not found
+            PermissionError: User does not have access to case
+        """
+        # Get evidence metadata from DynamoDB
+        evidence = get_evidence_by_id(evidence_id)
+        if not evidence:
+            raise NotFoundError("Evidence")
+
+        # Check if user has access to the case
+        case_id = evidence["case_id"]
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Convert to EvidenceDetail schema
+        return EvidenceDetail(
+            id=evidence["id"],
+            case_id=evidence["case_id"],
+            type=evidence["type"],
+            filename=evidence["filename"],
+            s3_key=evidence["s3_key"],
+            content_type=evidence.get("content_type", "application/octet-stream"),
+            created_at=datetime.fromisoformat(evidence["created_at"]),
+            status=evidence.get("status", "pending"),
+            ai_summary=evidence.get("ai_summary"),
+            labels=evidence.get("labels", []),
+            insights=evidence.get("insights", []),
+            content=evidence.get("content"),
+            speaker=evidence.get("speaker"),
+            timestamp=datetime.fromisoformat(evidence["timestamp"]) if evidence.get("timestamp") else None,
+            opensearch_id=evidence.get("opensearch_id")
         )
