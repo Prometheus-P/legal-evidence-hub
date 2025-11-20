@@ -84,7 +84,7 @@ export default function CaseDetailPage() {
     const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
 
     const handleUpload = (files: File[]) => {
-        console.log('Uploading files:', files);
+        if (files.length === 0) return;
         // TODO: Implement actual upload logic
         alert(`${files.length}개의 파일이 업로드 대기열에 추가되었습니다.`);
     };
