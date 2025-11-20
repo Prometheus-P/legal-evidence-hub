@@ -19,6 +19,10 @@ import { downloadDraftAsDocx } from '@/services/documentService';
 describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
     const renderCaseDetail = () => render(<CaseDetailPage />);
 
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('AI disclaimer visibility', () => {
         test('shows the explicit disclaimer that AI generated the draft and lawyers are responsible', () => {
             renderCaseDetail();
@@ -126,6 +130,20 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
                 // 서비스 함수 호출 확인
                 expect(downloadDraftAsDocx).toHaveBeenCalled();
             });
+        });
+    });
+
+    describe('Plan 3.12 - HWP/Word 변환 다운로드', () => {
+        test('사용자는 DOCX/HWP 두 가지 다운로드 옵션을 볼 수 있고 HWP 클릭 시 변환 서비스가 호출된다', () => {
+            renderCaseDetail();
+
+            const docxButton = screen.getByRole('button', { name: /DOCX/i });
+            expect(docxButton).toBeInTheDocument();
+
+            const hwpButton = screen.getByRole('button', { name: /HWP/i });
+            fireEvent.click(hwpButton);
+
+            expect(downloadDraftAsDocx).toHaveBeenCalledWith(expect.any(String), 'case-draft-tab', 'hwp');
         });
     });
 });

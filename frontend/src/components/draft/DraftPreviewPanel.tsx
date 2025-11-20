@@ -1,5 +1,6 @@
 import { Loader2, FileText, Download, Sparkles, Bold, Italic, Underline, List } from 'lucide-react';
 import { DraftCitation } from '@/types/draft';
+import { DraftDownloadFormat } from '@/services/documentService';
 
 interface DraftPreviewPanelProps {
     draftText: string;
@@ -7,7 +8,7 @@ interface DraftPreviewPanelProps {
     isGenerating: boolean;
     hasExistingDraft: boolean;
     onGenerate: () => void;
-    onDownload?: () => void;
+    onDownload?: (format?: DraftDownloadFormat) => void;
 }
 
 export default function DraftPreviewPanel({
@@ -22,6 +23,11 @@ export default function DraftPreviewPanel({
 
     const handleFormat = (command: string) => {
         document.execCommand(command, false, undefined);
+    };
+
+    const handleDownload = (format: DraftDownloadFormat) => {
+        if (!onDownload) return;
+        onDownload(format);
     };
 
     return (
@@ -77,14 +83,24 @@ export default function DraftPreviewPanel({
                         <List className="w-4 h-4 text-gray-700" />
                     </button>
                 </div>
-                <button
-                    type="button"
-                    onClick={onDownload}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
-                >
-                    <Download className="w-4 h-4" />
-                    DOCX
-                </button>
+                <div className="inline-flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => handleDownload('docx')}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
+                    >
+                        <Download className="w-4 h-4" />
+                        DOCX
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleDownload('hwp')}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
+                    >
+                        <Download className="w-4 h-4" />
+                        HWP
+                    </button>
+                </div>
             </div>
 
             <div

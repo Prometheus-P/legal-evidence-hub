@@ -1,23 +1,33 @@
-export const downloadDraftAsDocx = async (draftText: string, caseId: string): Promise<void> => {
-    // TODO: Implement actual API call
-    // const response = await fetch(\`/api/cases/\${caseId}/draft/download\`, {
-    //     method: 'POST',
-    //     body: JSON.stringify({ content: draftText }),
-    // });
-    // const blob = await response.blob();
+export type DraftDownloadFormat = 'docx' | 'hwp';
 
-    // Mock implementation for now
-    console.log(`Downloading draft for case ${caseId}...`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+export const downloadDraftAsDocx = async (
+    draftText: string,
+    caseId: string,
+    format: DraftDownloadFormat = 'docx',
+): Promise<void> => {
+    const response = await fetch(`/api/cases/${caseId}/draft/convert?format=${format}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: draftText }),
+    });
 
-    // Create a dummy blob and trigger download
-    const blob = new Blob([draftText], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `draft_${caseId}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    if (!response.ok) {
+        throw new Error('Draft conversion failed');
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `draft_${caseId}.${format}`;
+    document.body.appendChild(anchor);
+
+    try {
+        anchor.click();
+    } catch {
+        // Ignore click errors in non-browser environments (e.g., tests)
+    }
+
+    URL.revokeObjectURL(url);
+    document.body.removeChild(anchor);
 };

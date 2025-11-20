@@ -9,7 +9,7 @@ import { Evidence } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
-import { downloadDraftAsDocx } from '@/services/documentService';
+import { downloadDraftAsDocx, DraftDownloadFormat } from '@/services/documentService';
 
 // Mock Data
 const MOCK_EVIDENCE: Evidence[] = [
@@ -121,9 +121,9 @@ export default function CaseDetailPage() {
         }, GENERATION_DELAY_MS);
     };
 
-    const handleDownload = async () => {
+    const handleDownload = async (format: DraftDownloadFormat = 'docx') => {
         if (!id || typeof id !== 'string') return;
-        await downloadDraftAsDocx(draftContent, id);
+        await downloadDraftAsDocx(draftContent, id, format);
     };
 
     return (
