@@ -7,6 +7,7 @@ import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
 import { Evidence } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
+import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
 
 // Mock Data
@@ -79,6 +80,7 @@ export default function CaseDetailPage() {
     const [draftCitations, setDraftCitations] = useState<DraftCitation[]>(INITIAL_CITATIONS);
     const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
     const [hasGeneratedDraft, setHasGeneratedDraft] = useState(true);
+    const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
 
     const handleUpload = (files: File[]) => {
         console.log('Uploading files:', files);
@@ -86,7 +88,12 @@ export default function CaseDetailPage() {
         alert(`${files.length}개의 파일이 업로드 대기열에 추가되었습니다.`);
     };
 
-    const handleGenerateDraft = () => {
+    const openDraftModal = () => {
+        setIsDraftModalOpen(true);
+    };
+
+    const handleGenerateDraft = (selectedEvidenceIds: string[]) => {
+        setIsDraftModalOpen(false);
         if (isGeneratingDraft) return;
 
         setIsGeneratingDraft(true);
@@ -94,7 +101,7 @@ export default function CaseDetailPage() {
             setDraftContent((prev) =>
                 prev.includes('업데이트')
                     ? INITIAL_DRAFT_CONTENT
-                    : `${prev}\n\n※ ${new Date().toLocaleString('ko-KR')} 업데이트: 최신 증거를 기반으로 핵심 주장이 재정리되었습니다.`,
+                    : `${prev}\n\n※ ${new Date().toLocaleString('ko-KR')} 업데이트: 선택된 ${selectedEvidenceIds.length}건의 증거를 기반으로 핵심 주장이 재정리되었습니다.`,
             );
             setDraftCitations((prev) =>
                 prev.length > 2
@@ -132,7 +139,10 @@ export default function CaseDetailPage() {
                         </div>
                     </div>
                     <div className="flex space-x-3">
-                        <button className="btn-primary bg-deep-trust-blue hover:bg-slate-700">
+                        <button
+                            onClick={openDraftModal}
+                            className="btn-primary bg-deep-trust-blue hover:bg-slate-700"
+                        >
                             Draft 작성
                         </button>
                     </div>
@@ -168,10 +178,17 @@ export default function CaseDetailPage() {
                         citations={draftCitations}
                         isGenerating={isGeneratingDraft}
                         hasExistingDraft={hasGeneratedDraft}
-                        onGenerate={handleGenerateDraft}
+                        onGenerate={openDraftModal}
                     />
                 </section>
             </main>
+
+            <DraftGenerationModal
+                isOpen={isDraftModalOpen}
+                onClose={() => setIsDraftModalOpen(false)}
+                onGenerate={handleGenerateDraft}
+                evidenceList={evidenceList}
+            />
         </div>
     );
 }
