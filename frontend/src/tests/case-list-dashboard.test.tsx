@@ -48,4 +48,20 @@ describe('plan 3.10: 사건 등록/관리', () => {
     expect(screen.getByLabelText(/의뢰인 이름/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/사건 설명/i)).toBeInTheDocument();
   });
+
+  it('사건 카드에서 진행 상황을 변경할 수 있는 드롭다운이 표시되어야 한다.', async () => {
+    const user = userEvent.setup();
+    render(<CasesPage />);
+
+    // 첫 번째 사건 카드에서 상태 변경 버튼 찾기
+    const statusButtons = screen.getAllByRole('button', { name: /상태 변경/i });
+    expect(statusButtons.length).toBeGreaterThan(0);
+
+    // 상태 변경 버튼 클릭
+    await user.click(statusButtons[0]);
+
+    // 드롭다운 옵션 확인
+    expect(await screen.findByRole('option', { name: /진행 중/i })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: /종결/i })).toBeInTheDocument();
+  });
 });
