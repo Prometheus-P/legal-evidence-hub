@@ -1,8 +1,10 @@
 """
 Text Parser Module
 Parses plain text and PDF files
+Auto-detects KakaoTalk format and delegates to KakaoTalkParser
 """
 
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -23,12 +25,13 @@ class TextParser(BaseParser):
     def parse(self, filepath: str) -> List[Message]:
         """
         텍스트 파일 파싱
+        KakaoTalk 형식 자동 감지 및 위임
 
         Args:
             filepath: 텍스트/PDF 파일 경로
 
         Returns:
-            List[Message]: 파싱된 메시지 (1개)
+            List[Message]: 파싱된 메시지
 
         Raises:
             FileNotFoundError: 파일이 존재하지 않을 때
@@ -40,25 +43,46 @@ class TextParser(BaseParser):
         path = Path(filepath)
 
         if extension == ".txt":
+            # 먼저 파일 내용을 읽어서 KakaoTalk 형식인지 확인
             content = self._parse_text_file(filepath)
+
+            # KakaoTalk 형식이면 KakaoTalkParser로 위임
+            if self._is_kakaotalk_format(content):
+                from .kakaotalk import KakaoTalkParser
+                kakao_parser = KakaoTalkParser()
+                return kakao_parser.parse(filepath)
+
+            # 일반 텍스트 처리
+            message = Message(
+                content=content,
+                sender="System",
+                timestamp=datetime.now(),
+                metadata={
+                    "source_type": "text",
+                    "filename": path.name,
+                    "filepath": str(path.absolute()),
+                    "extension": extension
+                }
+            )
+            return [message]
+
         elif extension == ".pdf":
             content = self._parse_pdf_file(filepath)
+            message = Message(
+                content=content,
+                sender="System",
+                timestamp=datetime.now(),
+                metadata={
+                    "source_type": "text",
+                    "filename": path.name,
+                    "filepath": str(path.absolute()),
+                    "extension": extension
+                }
+            )
+            return [message]
+
         else:
             raise ValueError(f"Unsupported file format: {extension}")
-
-        message = Message(
-            content=content,
-            sender="System",
-            timestamp=datetime.now(),
-            metadata={
-                "source_type": "text",
-                "filename": path.name,
-                "filepath": str(path.absolute()),
-                "extension": extension
-            }
-        )
-
-        return [message]
 
     def _parse_text_file(self, filepath: str) -> str:
         """
@@ -106,3 +130,25 @@ class TextParser(BaseParser):
 
         content = "\n".join(text_parts)
         return content.strip()
+
+    def _is_kakaotalk_format(self, content: str) -> bool:
+        """
+        KakaoTalk 채팅 형식인지 감지
+
+        Args:
+            content: 파일 내용
+
+        Returns:
+            bool: KakaoTalk 형식이면 True
+        """
+        # KakaoTalk 형식 패턴: "YYYY년 M월 D일 오전/오후 H:MM, 발신자 : 내용"
+        kakao_pattern = re.compile(
+            r"\d{4}년 \d{1,2}월 \d{1,2}일 (오전|오후) \d{1,2}:\d{2}, .+ : "
+        )
+
+        # 첫 100줄 정도만 검사 (성능 최적화)
+        lines = content.split('\n')[:100]
+
+        # 최소 2개 이상의 메시지 패턴이 있으면 KakaoTalk 형식으로 판단
+        match_count = sum(1 for line in lines if kakao_pattern.search(line))
+        return match_count >= 2
