@@ -200,7 +200,13 @@ def test_user(test_env):
 
         yield user
 
-        # Cleanup
+        # Cleanup - delete in correct order to respect foreign keys
+        # Delete case_members first
+        from app.db.models import Case, CaseMember
+        db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
+        # Delete cases created by user
+        db.query(Case).filter(Case.created_by == user.id).delete()
+        # Delete user
         db.delete(user)
         db.commit()
     finally:
@@ -209,3 +215,21 @@ def test_user(test_env):
         # Drop tables after test
         from app.db.session import engine
         Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def auth_headers(test_user):
+    """
+    Generate authentication headers with JWT token for test_user
+
+    Returns:
+        dict: Headers with Authorization Bearer token
+    """
+    from app.core.security import create_access_token
+
+    # Create JWT token for test user
+    token = create_access_token(data={"sub": test_user.id, "role": test_user.role})
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
