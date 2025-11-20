@@ -161,3 +161,10 @@ uploads/
 *.tmp
 *.old
 *.backup
+
+
+###################################
+# 11. Personal Local Files
+###################################
+# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
+/CLAUDE.md

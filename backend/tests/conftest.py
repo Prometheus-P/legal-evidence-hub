@@ -168,3 +168,44 @@ def sample_user_data():
         "name": "테스트 사용자",
         "role": "lawyer"
     }
+
+
+@pytest.fixture
+def test_user(test_env):
+    """
+    Create a real user in the database for authentication tests
+
+    Password: correct_password123
+    """
+    from app.db.session import get_db, init_db
+    from app.db.models import Base, User
+    from app.core.security import hash_password
+    from sqlalchemy.orm import Session
+
+    # Initialize database
+    init_db()
+
+    # Create user
+    db: Session = next(get_db())
+    try:
+        user = User(
+            email="test@example.com",
+            hashed_password=hash_password("correct_password123"),
+            name="테스트 사용자",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        yield user
+
+        # Cleanup
+        db.delete(user)
+        db.commit()
+    finally:
+        db.close()
+
+        # Drop tables after test
+        from app.db.session import engine
+        Base.metadata.drop_all(bind=engine)

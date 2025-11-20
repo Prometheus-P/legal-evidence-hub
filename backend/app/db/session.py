@@ -1,0 +1,87 @@
+"""
+Database session management for SQLAlchemy
+Connection pooling and session lifecycle
+"""
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
+from typing import Generator
+from app.core.config import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+# ============================================
+# Database Engine & Session Factory
+# ============================================
+
+# Create engine with connection pooling
+# TODO: Implement actual database connection when RDS is ready
+# For now, we'll use an in-memory SQLite for testing
+engine = None
+SessionLocal = None
+
+
+def init_db():
+    """
+    Initialize database engine and session factory
+    Should be called during application startup
+    """
+    global engine, SessionLocal
+
+    try:
+        # Use SQLite for local development/testing
+        # In production, use settings.database_url_computed for PostgreSQL
+        database_url = "sqlite:///./leh_local.db"
+
+        logger.info(f"Initializing database with URL: {database_url}")
+
+        engine = create_engine(
+            database_url,
+            connect_args={"check_same_thread": False} if "sqlite" in database_url else {},
+            pool_pre_ping=True,
+            echo=settings.APP_DEBUG
+        )
+
+        SessionLocal = sessionmaker(
+            autocommit=False,
+            autoflush=False,
+            bind=engine
+        )
+
+        # Create tables
+        from app.db.models import Base
+        Base.metadata.create_all(bind=engine)
+
+        logger.info("Database initialized successfully")
+
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
+
+
+def get_db() -> Generator[Session, None, None]:
+    """
+    FastAPI dependency for database session
+
+    Yields:
+        SQLAlchemy Session
+
+    Usage:
+        @router.get("/cases")
+        def get_cases(db: Session = Depends(get_db)):
+            ...
+    """
+    if SessionLocal is None:
+        init_db()
+
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
