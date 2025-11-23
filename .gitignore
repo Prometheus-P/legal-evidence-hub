@@ -1,176 +1,145 @@
-# ================================
-#   🚨 Paralegal (LEH) – SECURITY FIRST
-#   GitHub 업로드 금지 파일 총정리
-# ================================
+# ==============================================================================
+# 🚨 LEH Project - HYBRID .gitignore
+# Security First + Project Specific + Optimized Defaults
+# ==============================================================================
 
-###################################
-# 1. Python (Backend – FastAPI)
-###################################
-# Python 컴파일 파일 (확장자 기반)
-*.pyc
-*.pyo
-*.pyd
-*.so
-*.pickle
-*.pkl
-*.pt
-*.bin
-
-# Python 폴더 패턴
-__pycache__/
-*.egg-info/
-*.cache/
-.pytest_cache/
-
-# 가상환경 (필수 폴더 패턴)
-venv/
-env/
-.venv/
-.python-version
-
-# 로그 및 임시 파일
-*.log
-logs/
-tmp/
-temp/
-
-###################################
-# 2. AI Worker / LLM 파이프라인
-###################################
-# 특정 폴더만 제외 (AI Worker 내부)
-ai_worker/storage/
-ai_worker/.cache/
-ai_worker/workflows/local_debug/
-
-# 임시 파일 (확장자 기반)
-*.tmp
-*.api_key
-*.token
-
-
-###################################
-# 3. 환경 변수 파일 – 민감 정보 보호
-###################################
-# 템플릿은 허용(.env.example)
+# ==============================================================================
+# 1. SECURITY & CREDENTIALS (ABSOLUTE BLOCK)
+# ==============================================================================
 .env
 .env.*
 !.env.example
-
-*.secrets
-secrets.json
-secret.yaml
-secret.key
-credentials/
-config/secret/
 *.pem
 *.key
+*.cert
 *.crt
-
-
-###################################
-# 4. Frontend (Next.js / Node)
-###################################
-node_modules/
-.next/
-dist/
-build/
-out/
-.npm
-.pnpm-store/
-yarn-error.log
-npm-debug.log
-*.lock
-
-
-###################################
-# 5. OS & IDE 설정 – 개발자 환경 파일
-###################################
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-.fleet/
-*.swp
-*.swo
-*.orig
-.agent/
-
-
-###################################
-# 6. AWS / Terraform / Infra 보안
-###################################
-# AWS credential files
+*.p12
+secrets.json
+credentials.json
+*.api_key
+*.token
+# AWS / Cloud Configs
 .aws/
 ~/.aws/
-
-# Terraform sensitive
 *.tfvars
-*.tfstate
-*.tfstate.*
-crash.log
-terraform.tfstate
-terraform.tfstate.backup
 
-# CDK
-cdk.out/
+# ==============================================================================
+# 2. PYTHON (Backend & AI Worker)
+# ==============================================================================
+# Byte-compiled / Optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
 
-# CloudFormation temp
-*.template.json
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+.python-version
 
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
 
-###################################
-# 7. Docker
-###################################
-docker-compose.override.yml
+# Unit Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ==============================================================================
+# 3. NODE.JS & NEXT.JS (Frontend)
+# ==============================================================================
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js Build Output
+.next/
+out/
+
+# Production Build
+build/
+dist/
+
+# Debug Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================================================================
+# 4. IDE & EDITOR (Collaboration Friendly)
+# ==============================================================================
+# VS Code - Ignore personal settings, allow shared configs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (IntelliJ, PyCharm)
+.idea/
+
+# Fleet
+.fleet/
+
+# Vim / Emacs / OS
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==============================================================================
+# 5. PROJECT SPECIFIC (LEH) - CAREFULLY SCOPED
+# ==============================================================================
+# AI Worker Data & Temp
+ai_worker/data/
+ai_worker/temp/
+ai_worker/.cache/
+
+# Evidence Files (Raw uploads)
+# Note: We track docs/pdf, so we only ignore raw evidence uploads
+evidence_raw/
+uploads/
+
+# Docker
 docker-data/
 *.pid
 *.sock
 
-
-###################################
-# 8. Database / Storage / Evidence Files
-###################################
-# 법률 증거 파일 저장 폴더만 제외
-evidence_raw/
-uploads/
-
-# 문서 파일 (확장자 기반)
-*.pdf
-*.docx
-*.xlsx
-*.pptx
-*.zip
-*.hwp
-
-# SQLite (local test)
-*.db
-*.sqlite3
-
-
-###################################
-# 9. Logs, Reports, Debug Dumps (확장자 기반)
-###################################
-*.log
-*.dump
-*.bak
-
-
-###################################
-# 10. Misc – 민감한 개발 산출물
-###################################
-*.bak
-*.tmp
-*.old
-*.backup
-
-
-###################################
-# 11. Personal Local Files
-###################################
-# Personal CLAUDE.md at root (docs/guides/claude.md is tracked)
+# Agent & Personal Configs
+.agent/
+.claude/
 /CLAUDE.md
 
-# Personal Claude configuration directory
-.claude/
+# 개인 파일들 담아주세요
+.local/
 
-.agent/
+# ==============================================================================
+# 6. FILE EXTENSIONS (CAUTION: Only generic binaries/logs)
+# ==============================================================================
+# Logs & Databases
+*.log
+*.sqlite3
+*.db
+*.dump
+
+# Binary / Media (Locally generated)
+# Note: PDFs in 'docs/' folders SHOULD be tracked.
+# Only ignore these if they are in root or temp folders, but gitignore is recursive.
+# Strategy: Ignore specific heavy media folders instead of global extensions if possible.
+# For now, keeping global ignore for heavy binaries to prevent accidental commit,
+# but using ! to allow specific documentation paths if needed.
+
+*.pdf
