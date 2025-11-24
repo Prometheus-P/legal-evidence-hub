@@ -12,6 +12,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
@@ -26,7 +27,16 @@ import FinalCTASection from '@/components/landing/FinalCTASection';
 import LandingFooter from '@/components/landing/LandingFooter';
 
 export default function LandingPage() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    // Navigation Guard: Check if already authenticated
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      router.push('/cases');
+    }
+  }, [router]);
 
   useEffect(() => {
     const handleScroll = () => {
