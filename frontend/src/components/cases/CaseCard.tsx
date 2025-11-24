@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Case } from '@/types/case';
 import { FileText, Clock, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
 
@@ -10,6 +12,11 @@ interface CaseCardProps {
 
 export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -90,7 +97,7 @@ export default function CaseCard({ caseData, onStatusChange }: CaseCardProps) {
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                             <Clock className="w-4 h-4 mr-2" />
-                            <span>최근 업데이트: {new Date(caseData.lastUpdated).toLocaleDateString()}</span>
+                            <span>최근 업데이트: {mounted ? new Date(caseData.lastUpdated).toLocaleDateString('ko-KR') : '로딩 중...'}</span>
                         </div>
                     </div>
                 </div>
