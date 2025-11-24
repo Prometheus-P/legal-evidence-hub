@@ -44,6 +44,7 @@ export default function HeroSection() {
                 src="/images/hero-dashboard.png"
                 alt="Legal Evidence Hub 제품 미리보기 - 증거 관리 대시보드"
                 fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 className="object-cover"
                 priority
                 onError={(e) => {

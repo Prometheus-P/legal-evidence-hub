@@ -22,6 +22,15 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/',
 }));
 
+// Mock IntersectionObserver
+const mockIntersectionObserver = jest.fn();
+mockIntersectionObserver.mockReturnValue({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+});
+window.IntersectionObserver = mockIntersectionObserver as any;
+
 describe('Landing Page Integration', () => {
   describe('Section Rendering', () => {
     it('should render navigation bar', () => {

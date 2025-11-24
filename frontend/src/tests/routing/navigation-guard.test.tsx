@@ -23,6 +23,15 @@ jest.mock('next/navigation', () => ({
     useRouter: jest.fn(),
 }));
 
+// Mock IntersectionObserver
+const mockIntersectionObserver = jest.fn();
+mockIntersectionObserver.mockReturnValue({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+});
+window.IntersectionObserver = mockIntersectionObserver as any;
+
 describe('Plan 3.19.2 - Navigation Guard', () => {
     let mockPush: jest.Mock;
     let mockReplace: jest.Mock;
