@@ -459,16 +459,18 @@
   - 스크린샷: Blur placeholder (next/image)
   - 스크롤 애니메이션: Intersection Observer API 사용
 
-- [ ] **반응형 디자인**
+- [x] **반응형 디자인**
   - 모바일: 1-Column 레이아웃
   - 태블릿: 2-Column 레이아웃
   - 데스크톱: 3-Column 레이아웃 (섹션별 적용)
+  - ✅ **구현 완료**: `responsive.test.tsx` 15개 테스트, SolutionSection/PricingSection에 `md:grid-cols-2` 추가
 
-- [ ] **접근성**
+- [x] **접근성**
   - Semantic HTML (section, article, nav)
   - ARIA labels for CTA buttons
   - Focus visible for keyboard navigation
   - Color contrast ratio ≥ 4.5:1 (WCAG AA)
+  - ✅ **구현 완료**: `accessibility.test.tsx` 26개 테스트, Skip Navigation Link, aria-labels, focus-visible 스타일 추가
 
 - [ ] **SEO 최적화**
   - `<title>`: "Legal Evidence Hub - AI 이혼 소송 증거 분석 솔루션"
@@ -512,10 +514,11 @@
   - Navigation 메뉴바의 LEH 로고 클릭 → 홈(/) 페이지로 이동
   - Footer의 회사명/로고 클릭 → 홈(/) 페이지로 이동
 
-- [ ] **반응형 테스트**
+- [x] **반응형 테스트**
   - Mobile (375px): 모든 섹션 1-Column
   - Tablet (768px): 일부 섹션 2-Column
   - Desktop (1440px): 3-Column 레이아웃
+  - ✅ **테스트 완료**: `src/tests/landing/responsive.test.tsx` (15 tests passing)
 
 - [ ] **성능 테스트**
   - Lighthouse Score: Performance ≥ 90

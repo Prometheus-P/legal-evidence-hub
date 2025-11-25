@@ -49,7 +49,8 @@ describe('LandingNav Component', () => {
     it('should render CTA button with primary styling', () => {
       render(<LandingNav />);
 
-      const ctaButton = screen.getByRole('link', { name: '무료체험' });
+      // aria-label takes precedence for accessible name
+      const ctaButton = screen.getByRole('link', { name: /무료체험/i });
       expect(ctaButton).toBeInTheDocument();
       expect(ctaButton).toHaveClass('btn-primary');
     });

@@ -35,7 +35,8 @@ export default function FinalCTASection() {
             {/* Primary CTA */}
             <Link
               href="/signup"
-              className="btn-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-shadow"
+              className="btn-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-shadow focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="무료로 시작하기 - 14일 무료 체험, 신용카드 필요 없음"
             >
               무료로 시작하기
             </Link>
@@ -43,7 +44,8 @@ export default function FinalCTASection() {
             {/* Secondary CTA */}
             <Link
               href="mailto:sales@legalevidence.hub"
-              className="bg-gray-100 text-deep-trust-blue text-lg px-8 py-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              className="bg-gray-100 text-deep-trust-blue text-lg px-8 py-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-deep-trust-blue focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="영업팀과 상담하기 - 이메일 문의"
             >
               영업팀과 상담하기
             </Link>

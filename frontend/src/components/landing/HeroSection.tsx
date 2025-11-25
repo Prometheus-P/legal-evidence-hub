@@ -30,7 +30,8 @@ export default function HeroSection() {
             <div className="pt-4">
               <Link
                 href="/signup"
-                className="btn-primary text-lg px-8 py-4 inline-block shadow-lg hover:shadow-xl transition-shadow"
+                className="btn-primary text-lg px-8 py-4 inline-block shadow-lg hover:shadow-xl transition-shadow focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="무료로 시작하기 - 14일 무료 체험"
               >
                 무료로 시작하기
               </Link>

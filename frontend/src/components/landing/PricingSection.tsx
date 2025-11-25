@@ -134,11 +134,12 @@ export default function PricingSection() {
                 <div className="pt-4">
                   <Link
                     href="/signup"
-                    className={`block w-full py-3 rounded-lg font-semibold transition-colors ${
+                    className={`block w-full py-3 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                       plan.popular
-                        ? 'btn-primary'
-                        : 'bg-gray-100 text-deep-trust-blue hover:bg-gray-200'
+                        ? 'btn-primary focus-visible:ring-accent'
+                        : 'bg-gray-100 text-deep-trust-blue hover:bg-gray-200 focus-visible:ring-deep-trust-blue'
                     }`}
+                    aria-label={`${plan.name} 플랜 시작하기 - ${plan.price}/${plan.period}`}
                   >
                     시작하기
                   </Link>
