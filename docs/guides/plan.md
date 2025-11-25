@@ -96,14 +96,14 @@
   - MVP: In-memory 업데이트 (권한 테이블은 추후 구현).
   - Admin 권한 필요.
 
-### 1.8 회원가입 (Signup)
+### 1.8 회원가입 (Signup) ✅
 
-- [ ] `POST /auth/signup` 호출 시:
+- [x] `POST /auth/signup` 호출 시:
   - 이메일 중복 검사를 수행하고, 중복이면 409를 반환해야 한다.
   - 비밀번호를 bcrypt로 해싱하여 저장해야 한다.
   - 기본 역할은 `LAWYER`로 설정해야 한다.
   - 신규 사용자 생성 후 JWT 토큰을 발급해야 한다.
-- [ ] Signup 요청 시 이용약관 동의(`accept_terms`)가 `true`가 아니면 400을 반환해야 한다.
+- [x] Signup 요청 시 이용약관 동의(`accept_terms`)가 `true`가 아니면 400을 반환해야 한다.
 
 ### 1.9 Article 840 태그 연동
 

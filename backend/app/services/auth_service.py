@@ -9,7 +9,8 @@ from app.repositories.user_repository import UserRepository
 from app.core.security import verify_password, create_access_token, get_token_expire_seconds
 from app.db.models import User
 from app.db.schemas import TokenResponse, UserOut
-from app.middleware.error_handler import AuthenticationError
+from app.middleware.error_handler import AuthenticationError, ConflictError, ValidationError
+from app.db.models import UserRole
 
 
 class AuthService:
@@ -79,6 +80,76 @@ class AuthService:
             email=user.email,
             name=user.name,
             role=user.role
+        )
+
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=expires_in,
+            user=user_out
+        )
+
+    def signup(
+        self,
+        email: str,
+        password: str,
+        name: str,
+        accept_terms: bool
+    ) -> TokenResponse:
+        """
+        Register a new user and generate JWT token
+
+        Args:
+            email: User's email
+            password: Plain text password (will be hashed with bcrypt)
+            name: User's name
+            accept_terms: Terms acceptance flag
+
+        Returns:
+            TokenResponse with access_token, token_type, expires_in, and user info
+
+        Raises:
+            ValidationError: If accept_terms is not True
+            ConflictError: If email already exists
+        """
+        # Validate terms acceptance
+        if not accept_terms:
+            raise ValidationError("이용약관 동의가 필요합니다.")
+
+        # Check for duplicate email
+        if self.user_repo.exists(email):
+            raise ConflictError("이미 등록된 이메일입니다.")
+
+        # Create user with LAWYER role (default for signup)
+        user = self.user_repo.create(
+            email=email,
+            password=password,
+            name=name,
+            role=UserRole.LAWYER
+        )
+
+        # Commit transaction
+        self.session.commit()
+        self.session.refresh(user)
+
+        # Create JWT token
+        token_data = {
+            "sub": user.id,
+            "role": user.role.value,
+            "email": user.email
+        }
+
+        access_token = create_access_token(data=token_data)
+        expires_in = get_token_expire_seconds()
+
+        # Build response
+        user_out = UserOut(
+            id=user.id,
+            email=user.email,
+            name=user.name,
+            role=user.role,
+            status=user.status,
+            created_at=user.created_at
         )
 
         return TokenResponse(

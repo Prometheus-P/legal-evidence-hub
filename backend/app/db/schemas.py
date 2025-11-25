@@ -18,6 +18,14 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=8)
 
 
+class SignupRequest(BaseModel):
+    """Signup request schema"""
+    email: EmailStr
+    password: str = Field(..., min_length=8)
+    name: str = Field(..., min_length=1, max_length=100)
+    accept_terms: bool = Field(..., description="이용약관 동의 필수")
+
+
 class UserOut(BaseModel):
     """User output schema (without sensitive data)"""
     id: str
