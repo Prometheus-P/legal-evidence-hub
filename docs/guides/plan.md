@@ -126,18 +126,18 @@
   - 해당 케이스의 모든 멤버 목록을 반환해야 한다.
   - 각 멤버의 이름, 이메일, 권한 레벨을 포함해야 한다.
 
-### 1.11 감사 로그 (Audit Log)
+### 1.11 감사 로그 (Audit Log) ✅
 
-- [ ] Audit Log 자동 기록 미들웨어 구현:
+- [x] Audit Log 자동 기록 미들웨어 구현:
   - 모든 API 요청에 대해 사용자 ID, 액션(HTTP 메서드 + 경로), 타임스탬프를 `audit_logs` 테이블에 저장해야 한다.
   - 민감한 엔드포인트(로그인, 증거 조회, 삭제 등)만 선택적으로 기록해야 한다.
-- [ ] `GET /admin/audit` 호출 시:
+- [x] `GET /admin/audit` 호출 시:
   - 날짜 범위 필터링(`start_date`, `end_date`)을 지원해야 한다.
   - 사용자별 필터링(`user_id`)을 지원해야 한다.
   - 액션 타입 필터링(`actions`: LOGIN, VIEW, CREATE, UPDATE, DELETE)을 지원해야 한다.
   - 페이지네이션을 지원해야 한다.
   - Admin 권한 필요.
-- [ ] `GET /admin/audit/export` 호출 시:
+- [x] `GET /admin/audit/export` 호출 시:
   - CSV 형식으로 감사 로그를 다운로드할 수 있어야 한다.
   - 필터링 조건을 동일하게 적용해야 한다.
 

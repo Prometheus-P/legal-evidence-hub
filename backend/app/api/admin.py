@@ -4,8 +4,11 @@ Requires Admin role for all endpoints
 """
 
 from fastapi import APIRouter, Depends, status, Query
-from typing import Optional
+from fastapi.responses import StreamingResponse
+from typing import Optional, List
 from sqlalchemy.orm import Session
+from datetime import datetime
+from io import StringIO
 
 from app.db.session import get_db
 from app.core.dependencies import require_admin
@@ -16,10 +19,14 @@ from app.db.schemas import (
     UserListResponse,
     RolePermissionsResponse,
     UpdateRolePermissionsRequest,
-    RolePermissions
+    RolePermissions,
+    AuditAction,
+    AuditLogListRequest,
+    AuditLogListResponse
 )
 from app.services.user_management_service import UserManagementService
 from app.services.role_management_service import RoleManagementService
+from app.services.audit_log_service import AuditLogService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -205,3 +212,134 @@ def update_role_permissions(
     )
 
     return updated_permissions
+
+
+@router.get(
+    "/audit",
+    response_model=AuditLogListResponse,
+    status_code=status.HTTP_200_OK,
+    summary="감사 로그 조회",
+    description="사용자 활동 감사 로그를 조회합니다. 날짜, 사용자, 액션별 필터링과 페이지네이션을 지원합니다."
+)
+def get_audit_logs(
+    start_date: Optional[datetime] = Query(None, description="시작 날짜 (UTC)"),
+    end_date: Optional[datetime] = Query(None, description="종료 날짜 (UTC)"),
+    user_id: Optional[str] = Query(None, description="사용자 ID 필터"),
+    actions: Optional[List[AuditAction]] = Query(None, description="액션 타입 필터"),
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    page_size: int = Query(50, ge=1, le=100, description="페이지 크기"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    감사 로그 조회 API
+
+    **Query Parameters:**
+    - start_date: 시작 날짜 (UTC, ISO 8601 형식)
+    - end_date: 종료 날짜 (UTC, ISO 8601 형식)
+    - user_id: 사용자 ID 필터 (특정 사용자의 로그만 조회)
+    - actions: 액션 타입 필터 (여러 개 선택 가능)
+      - LOGIN, LOGOUT, SIGNUP
+      - CREATE_CASE, VIEW_CASE, UPDATE_CASE, DELETE_CASE
+      - UPLOAD_EVIDENCE, VIEW_EVIDENCE, DELETE_EVIDENCE
+      - INVITE_USER, DELETE_USER, UPDATE_PERMISSIONS
+      - GENERATE_DRAFT
+    - page: 페이지 번호 (1부터 시작)
+    - page_size: 페이지 크기 (1-100)
+
+    **Response:**
+    - 200: 감사 로그 목록 (페이지네이션 포함)
+    - logs: 로그 목록 (사용자 이름, 이메일 포함)
+    - total: 전체 로그 개수
+    - page: 현재 페이지
+    - page_size: 페이지 크기
+    - total_pages: 전체 페이지 수
+
+    **Errors:**
+    - 401: 인증되지 않은 사용자
+    - 403: Admin 권한 없음
+
+    **Authentication:**
+    - Requires Admin role
+
+    **Notes:**
+    - 로그는 최신순으로 정렬됩니다 (timestamp DESC)
+    - 모든 날짜는 UTC 기준입니다
+    - 사용자 정보 (이름, 이메일)는 JOIN하여 포함됩니다
+    """
+    service = AuditLogService(db)
+
+    request = AuditLogListRequest(
+        start_date=start_date,
+        end_date=end_date,
+        user_id=user_id,
+        actions=actions,
+        page=page,
+        page_size=page_size
+    )
+
+    return service.get_audit_logs(request)
+
+
+@router.get(
+    "/audit/export",
+    status_code=status.HTTP_200_OK,
+    summary="감사 로그 CSV 내보내기",
+    description="감사 로그를 CSV 형식으로 다운로드합니다. 동일한 필터링 조건을 적용합니다."
+)
+def export_audit_logs(
+    start_date: Optional[datetime] = Query(None, description="시작 날짜 (UTC)"),
+    end_date: Optional[datetime] = Query(None, description="종료 날짜 (UTC)"),
+    user_id: Optional[str] = Query(None, description="사용자 ID 필터"),
+    actions: Optional[List[AuditAction]] = Query(None, description="액션 타입 필터"),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    감사 로그 CSV 내보내기 API
+
+    **Query Parameters:**
+    - start_date: 시작 날짜 (UTC, ISO 8601 형식)
+    - end_date: 종료 날짜 (UTC, ISO 8601 형식)
+    - user_id: 사용자 ID 필터
+    - actions: 액션 타입 필터 (여러 개 선택 가능)
+
+    **Response:**
+    - 200: CSV 파일 (text/csv)
+    - Content-Disposition: attachment; filename="audit_logs_YYYYMMDD_HHMMSS.csv"
+
+    **CSV Format:**
+    - Header: ID,User ID,User Email,User Name,Action,Object ID,Timestamp
+    - Data: One row per log entry
+    - Timestamp format: YYYY-MM-DD HH:MM:SS (UTC)
+
+    **Errors:**
+    - 401: 인증되지 않은 사용자
+    - 403: Admin 권한 없음
+
+    **Authentication:**
+    - Requires Admin role
+
+    **Notes:**
+    - 모든 로그를 한 번에 내보냅니다 (페이지네이션 없음)
+    - 로그는 최신순으로 정렬됩니다
+    - 대량의 로그를 내보낼 경우 시간이 걸릴 수 있습니다
+    """
+    service = AuditLogService(db)
+
+    csv_content = service.export_audit_logs_csv(
+        start_date=start_date,
+        end_date=end_date,
+        user_id=user_id,
+        actions=actions
+    )
+
+    # Generate filename with current timestamp
+    filename = f"audit_logs_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+
+    # Return CSV as streaming response
+    return StreamingResponse(
+        iter([csv_content]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

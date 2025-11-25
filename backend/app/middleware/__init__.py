@@ -12,6 +12,7 @@ from .error_handler import (
     register_exception_handlers
 )
 from .security import SecurityHeadersMiddleware, HTTPSRedirectMiddleware
+from .audit_log import AuditLogMiddleware
 
 __all__ = [
     "LEHException",
@@ -22,5 +23,6 @@ __all__ = [
     "ValidationError",
     "register_exception_handlers",
     "SecurityHeadersMiddleware",
-    "HTTPSRedirectMiddleware"
+    "HTTPSRedirectMiddleware",
+    "AuditLogMiddleware"
 ]
