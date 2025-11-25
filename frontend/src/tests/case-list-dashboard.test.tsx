@@ -10,11 +10,21 @@ jest.mock('next/router', () => ({
       pathname: '/cases',
       query: '',
       asPath: '/cases',
+      replace: jest.fn(),
+      push: jest.fn(),
     };
   },
 }));
 
 describe('plan 3.10: 사건 등록/관리', () => {
+  beforeEach(() => {
+    // Mock authToken for navigation guard
+    localStorage.setItem('authToken', 'mock-test-token');
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
   it("대시보드에서 '새 사건 등록' 버튼을 클릭하면 사건 등록 모달이 열려야 한다.", async () => {
     const user = userEvent.setup();
     render(<CasesPage />);
