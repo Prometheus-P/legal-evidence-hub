@@ -243,7 +243,7 @@
 
 #### 2.7.2 Qdrant 연동 (L 담당)
 
-> **OpenSearch 완전 대체**: Qdrant Cloud 또는 Self-hosted Qdrant 사용
+> **Qdrant 완전 대체**: Qdrant Cloud 또는 Self-hosted Qdrant 사용
 
 - [ ] Qdrant 클라이언트 설정:
   - **Qdrant Cloud**: `QDRANT_URL`, `QDRANT_API_KEY` 환경변수 사용
@@ -256,7 +256,7 @@
   - `upsert_vector(evidence_id, embedding, metadata)`: 벡터 저장/업데이트
   - `search_similar(query_embedding, case_id, top_k)`: 유사 벡터 검색
   - `delete_by_case(case_id)`: 케이스 삭제 시 관련 벡터 일괄 삭제
-- [ ] Backend RAG 검색 함수 수정 (`backend/app/utils/opensearch.py` → `qdrant.py`):
+- [ ] Backend RAG 검색 함수 수정 (`backend/app/utils/qdrant.py` → `qdrant.py`):
   - `search_evidence_by_semantic(case_id, query, top_k)`: Qdrant 검색으로 교체
 - [ ] 테스트 항목:
   - 벡터 저장 후 검색 시 동일 문서가 최상위에 나오는지 확인

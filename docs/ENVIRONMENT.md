@@ -25,7 +25,7 @@ This document outlines the technical environment, dependencies, and infrastructu
 - **Language:** Python 3.11+
 - **Key Libraries:**
     - `openai`: LLM integration
-    - `opensearch-py`: Vector search
+    - `qdrant-py`: Vector search
     - `boto3`: AWS services (S3, DynamoDB)
     - `ffmpeg-python`: Audio/Video processing
     - `pypdf`: PDF processing
@@ -40,13 +40,13 @@ The project uses Docker for containerization.
     - `frontend`: Next.js application
     - `ai_worker`: Background worker for AI tasks
     - `db`: PostgreSQL database
-    - `opensearch`: Vector database (if self-hosted)
+    - `qdrant`: Vector database (if self-hosted)
 
 ### Database
 - **Primary DB:** PostgreSQL (Relational Data)
     - Driver: `psycopg2-binary`
     - Migrations: Alembic
-- **Vector DB:** OpenSearch (Semantic Search)
+- **Vector DB:** Qdrant (Semantic Search)
 - **NoSQL:** DynamoDB (Metadata - optional/hybrid)
 
 ### External Services (AWS)

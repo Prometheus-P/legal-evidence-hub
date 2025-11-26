@@ -4,8 +4,7 @@ Test suite for Draft Preview API endpoint
 Tests for:
 - POST /cases/{case_id}/draft-preview - Generate draft preview with RAG
 
-Note: This uses Mock OpenSearch and OpenAI for local development.
-      Real AWS OpenSearch and OpenAI API integration will be added later.
+Note: This uses Qdrant (in-memory mode) and OpenAI for RAG search.
 """
 
 import pytest

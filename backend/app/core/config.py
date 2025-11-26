@@ -89,13 +89,14 @@ class Settings(BaseSettings):
     DDB_CASE_SUMMARY_TABLE: str = Field(default="leh_case_summary", env="DDB_CASE_SUMMARY_TABLE")
 
     # ============================================
-    # OpenSearch Settings
+    # Qdrant Settings (Vector Database for RAG)
     # ============================================
-    OPENSEARCH_HOST: str = Field(default="", env="OPENSEARCH_HOST")
-    OPENSEARCH_USERNAME: str = Field(default="", env="OPENSEARCH_USERNAME")
-    OPENSEARCH_PASSWORD: str = Field(default="", env="OPENSEARCH_PASSWORD")
-    OPENSEARCH_CASE_INDEX_PREFIX: str = Field(default="case_rag_", env="OPENSEARCH_CASE_INDEX_PREFIX")
-    OPENSEARCH_DEFAULT_TOP_K: int = Field(default=5, env="OPENSEARCH_DEFAULT_TOP_K")
+    QDRANT_HOST: str = Field(default="", env="QDRANT_HOST")  # Empty = in-memory mode
+    QDRANT_PORT: int = Field(default=6333, env="QDRANT_PORT")
+    QDRANT_API_KEY: str = Field(default="", env="QDRANT_API_KEY")
+    QDRANT_USE_HTTPS: bool = Field(default=False, env="QDRANT_USE_HTTPS")
+    QDRANT_COLLECTION_PREFIX: str = Field(default="case_rag_", env="QDRANT_COLLECTION_PREFIX")
+    QDRANT_DEFAULT_TOP_K: int = Field(default=5, env="QDRANT_DEFAULT_TOP_K")
 
     # ============================================
     # OpenAI / LLM Settings

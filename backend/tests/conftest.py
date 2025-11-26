@@ -20,7 +20,7 @@ def test_env():
         "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db",
         "S3_EVIDENCE_BUCKET": "test-bucket",
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
-        "OPENSEARCH_HOST": "https://test-opensearch.local",
+        "QDRANT_HOST": "",  # Empty = in-memory mode for tests
         "OPENAI_API_KEY": "test-openai-key",
     }
 
@@ -103,13 +103,13 @@ def mock_dynamodb_client():
 
 
 @pytest.fixture(scope="function")
-def mock_opensearch_client():
+def mock_qdrant_client():
     """
-    Mock OpenSearch client
+    Mock Qdrant client
     """
-    with patch('opensearchpy.OpenSearch') as mock_os:
+    with patch('qdrant_client.QdrantClient') as mock_qdrant:
         mock_client = Mock()
-        mock_os.return_value = mock_client
+        mock_qdrant.return_value = mock_client
         yield mock_client
 
 

@@ -54,7 +54,7 @@ AWS SDK 버전 업그레이드나 서비스 변경 시 전체 코드가 영향 �
 backend/app/utils/
 ├── s3.py         # S3 Adapter
 ├── dynamo.py     # DynamoDB Adapter
-├── opensearch.py # OpenSearch Adapter
+├── qdrant.py # Qdrant Adapter
 └── openai_client.py  # OpenAI Adapter
 ```
 
@@ -122,7 +122,7 @@ def create_evidence_metadata(
 |------|-----------|------|
 | 사건 생성/수정 | RDS PostgreSQL | 트랜잭션, 관계형 데이터 |
 | 증거 메타데이터 조회 | DynamoDB | 고속 key-value 조회 |
-| 의미 검색 (RAG) | OpenSearch | 벡터 유사도 검색 |
+| 의미 검색 (RAG) | Qdrant | 벡터 유사도 검색 |
 | Draft 생성 | GPT-4o + RAG | AI 생성 |
 
 ### 원칙

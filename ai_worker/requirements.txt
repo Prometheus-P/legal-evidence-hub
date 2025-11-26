@@ -7,7 +7,7 @@ pydantic>=2.5.0
 
 # AWS SDKs
 boto3>=1.34                    # S3, DynamoDB, Lambda
-opensearch-py>=2.5             # OpenSearch (replaces ChromaDB for AWS)
+qdrant-client>=1.7.0           # Qdrant vector database for RAG
 redis>=5.0                     # Cache/Session management
 
 # AI & LLM

@@ -1,6 +1,6 @@
 """
 Draft Service - Business logic for draft generation with RAG
-Orchestrates OpenSearch RAG + OpenAI GPT-4o for draft preview
+Orchestrates Qdrant RAG + OpenAI GPT-4o for draft preview
 """
 
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ from app.db.schemas import (
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.dynamo import get_evidence_by_case
-from app.utils.opensearch import search_evidence_by_semantic
+from app.utils.qdrant import search_evidence_by_semantic
 from app.utils.openai_client import generate_chat_completion
 from app.middleware import NotFoundError, PermissionError, ValidationError
 
@@ -53,7 +53,7 @@ class DraftService:
         Process:
         1. Validate case access
         2. Retrieve evidence metadata from DynamoDB
-        3. Perform semantic search in OpenSearch (RAG)
+        3. Perform semantic search in Qdrant (RAG)
         4. Build GPT-4o prompt with RAG context
         5. Generate draft text
         6. Extract citations
@@ -92,7 +92,7 @@ class DraftService:
             if ev.get("status") == "done"
         ]
 
-        # 3. Perform semantic RAG search in OpenSearch
+        # 3. Perform semantic RAG search in Qdrant
         rag_results = self._perform_rag_search(case_id, request.sections)
 
         # 4. Build GPT-4o prompt with RAG context
@@ -123,7 +123,7 @@ class DraftService:
 
     def _perform_rag_search(self, case_id: str, sections: List[str]) -> List[dict]:
         """
-        Perform semantic search in OpenSearch for RAG context
+        Perform semantic search in Qdrant for RAG context
 
         Args:
             case_id: Case ID

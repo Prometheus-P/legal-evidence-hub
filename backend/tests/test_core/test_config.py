@@ -141,14 +141,14 @@ class TestSettings:
         assert settings.JWT_SECRET == "weak"
         # Future: should raise ValidationError
 
-    def test_opensearch_case_index_prefix(self, test_env):
-        """Test that OpenSearch case index prefix is correct"""
+    def test_qdrant_collection_prefix(self, test_env):
+        """Test that Qdrant collection prefix is correct"""
         settings = Settings()
 
-        assert settings.OPENSEARCH_CASE_INDEX_PREFIX == "case_rag_"
+        assert settings.QDRANT_COLLECTION_PREFIX == "case_rag_"
 
-    def test_opensearch_default_top_k(self, test_env):
-        """Test that OpenSearch default top-k is 5"""
+    def test_qdrant_default_top_k(self, test_env):
+        """Test that Qdrant default top-k is 5"""
         settings = Settings()
 
-        assert settings.OPENSEARCH_DEFAULT_TOP_K == 5
+        assert settings.QDRANT_DEFAULT_TOP_K == 5
