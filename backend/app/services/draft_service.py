@@ -24,7 +24,7 @@ from app.middleware import NotFoundError, PermissionError, ValidationError
 # Optional: python-docx for DOCX generation
 try:
     from docx import Document
-    from docx.shared import Pt, Inches
+    from docx.shared import Pt, Inches  # noqa: F401
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     DOCX_AVAILABLE = True
 except ImportError:
@@ -87,10 +87,8 @@ class DraftService:
             raise ValidationError("사건에 증거가 하나도 없습니다. 증거를 업로드한 후 초안을 생성해 주세요.")
 
         # Filter for completed evidence only (status="done")
-        completed_evidence = [
-            ev for ev in evidence_list
-            if ev.get("status") == "done"
-        ]
+        # Note: Currently filtering for reference, may be used for future enhancements
+        _ = [ev for ev in evidence_list if ev.get("status") == "done"]
 
         # 3. Perform semantic RAG search in Qdrant
         rag_results = self._perform_rag_search(case_id, request.sections)
@@ -432,11 +430,10 @@ class DraftService:
         # In production, use reportlab or weasyprint for proper PDF generation
         try:
             from reportlab.lib.pagesizes import A4
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.styles import getSampleStyleSheet
             from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
             from reportlab.lib.units import inch
-            from reportlab.pdfbase import pdfmetrics
-            from reportlab.pdfbase.ttfonts import TTFont
+            from reportlab.pdfbase.ttfonts import TTFont  # noqa: F401
 
             file_buffer = BytesIO()
             doc = SimpleDocTemplate(file_buffer, pagesize=A4)

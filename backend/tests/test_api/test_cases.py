@@ -9,7 +9,6 @@ Tests for:
 - DELETE /cases/{id} - Soft delete case
 """
 
-import pytest
 from fastapi import status
 
 

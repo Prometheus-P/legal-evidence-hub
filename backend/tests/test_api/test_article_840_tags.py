@@ -8,7 +8,6 @@ Tests the following endpoints:
 
 import pytest
 from unittest.mock import Mock, patch
-from datetime import datetime
 from app.db.schemas import Article840Category
 
 

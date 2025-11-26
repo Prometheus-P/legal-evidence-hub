@@ -5,7 +5,7 @@ Environment variables and application settings using Pydantic Settings
 
 from typing import List
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
+from pydantic import Field
 
 
 class Settings(BaseSettings):

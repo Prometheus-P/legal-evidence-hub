@@ -3,10 +3,10 @@ Tests for CaseRepository
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 from datetime import datetime, timezone
 from app.repositories.case_repository import CaseRepository
-from app.db.models import Case, CaseMember
+from app.db.models import Case
 
 
 @pytest.fixture
@@ -57,7 +57,7 @@ class TestCaseRepositoryCreate:
         created_by = "user_456"
 
         # Act
-        result = case_repository.create(title, description, created_by)
+        case_repository.create(title, description, created_by)
 
         # Assert
         mock_session.add.assert_called_once()
@@ -83,7 +83,7 @@ class TestCaseRepositoryCreate:
         created_by = "user_456"
 
         # Act
-        result = case_repository.create(title, None, created_by)
+        case_repository.create(title, None, created_by)
 
         # Assert
         added_case = mock_session.add.call_args[0][0]

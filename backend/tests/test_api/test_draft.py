@@ -7,7 +7,6 @@ Tests for:
 Note: This uses Qdrant (in-memory mode) and OpenAI for RAG search.
 """
 
-import pytest
 from fastapi import status
 
 

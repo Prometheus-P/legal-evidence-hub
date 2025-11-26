@@ -3,14 +3,12 @@ Tests for EvidenceService
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, timezone
+from unittest.mock import Mock, patch
 from app.services.evidence_service import EvidenceService
 from app.db.schemas import (
     PresignedUrlRequest,
     UploadCompleteRequest,
-    Article840Category,
-    Article840Tags
+    Article840Category
 )
 from app.db.models import Case
 from app.middleware import NotFoundError, PermissionError

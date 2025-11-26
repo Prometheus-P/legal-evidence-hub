@@ -123,7 +123,7 @@ class TestUserRepositoryCreate:
         name = "새 사용자"
 
         # Act
-        result = user_repository.create(email, password, name)
+        user_repository.create(email, password, name)
 
         # Assert
         mock_hash.assert_called_once_with(password)
@@ -146,7 +146,7 @@ class TestUserRepositoryCreate:
         mock_hash.return_value = "hashed_password_123"
 
         # Act
-        result = user_repository.create(
+        user_repository.create(
             email="admin@example.com",
             password="adminpass",
             name="관리자",
@@ -224,7 +224,7 @@ class TestUserRepositoryGetAll:
         mock_session.query.return_value = mock_query
 
         # Act
-        result = user_repository.get_all(email="test")
+        user_repository.get_all(email="test")
 
         # Assert
         mock_query.filter.assert_called_once()
@@ -242,7 +242,7 @@ class TestUserRepositoryGetAll:
         mock_session.query.return_value = mock_query
 
         # Act
-        result = user_repository.get_all(role=UserRole.LAWYER)
+        user_repository.get_all(role=UserRole.LAWYER)
 
         # Assert
         mock_query.filter.assert_called_once()
@@ -260,7 +260,7 @@ class TestUserRepositoryGetAll:
         mock_session.query.return_value = mock_query
 
         # Act
-        result = user_repository.get_all(status=UserStatus.ACTIVE)
+        user_repository.get_all(status=UserStatus.ACTIVE)
 
         # Assert
         mock_query.filter.assert_called_once()

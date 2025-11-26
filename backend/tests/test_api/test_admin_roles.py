@@ -93,22 +93,22 @@ class TestGetAdminRoles:
 
         # Check ADMIN permissions
         admin_role = next(r for r in data["roles"] if r["role"] == "admin")
-        assert admin_role["cases"]["view"] == True
-        assert admin_role["cases"]["edit"] == True
-        assert admin_role["cases"]["delete"] == True
-        assert admin_role["admin"]["view"] == True
+        assert admin_role["cases"]["view"]
+        assert admin_role["cases"]["edit"]
+        assert admin_role["cases"]["delete"]
+        assert admin_role["admin"]["view"]
 
         # Check LAWYER permissions
         lawyer_role = next(r for r in data["roles"] if r["role"] == "lawyer")
-        assert lawyer_role["cases"]["view"] == True
-        assert lawyer_role["cases"]["edit"] == True
-        assert lawyer_role["admin"]["view"] == False
+        assert lawyer_role["cases"]["view"]
+        assert lawyer_role["cases"]["edit"]
+        assert not lawyer_role["admin"]["view"]
 
         # Check STAFF permissions
         staff_role = next(r for r in data["roles"] if r["role"] == "staff")
-        assert staff_role["cases"]["view"] == True
-        assert staff_role["cases"]["edit"] == False
-        assert staff_role["cases"]["delete"] == False
+        assert staff_role["cases"]["view"]
+        assert not staff_role["cases"]["edit"]
+        assert not staff_role["cases"]["delete"]
 
     def test_should_return_403_when_non_admin_tries_to_get_roles(
         self, client: TestClient, auth_headers
@@ -174,9 +174,9 @@ class TestPutAdminRolesPermissions:
         assert response.status_code == 200
         data = response.json()
         assert data["role"] == "lawyer"
-        assert data["cases"]["view"] == True
-        assert data["cases"]["delete"] == False
-        assert data["evidence"]["edit"] == False
+        assert data["cases"]["view"]
+        assert not data["cases"]["delete"]
+        assert not data["evidence"]["edit"]
 
     def test_should_return_403_when_non_admin_tries_to_update_permissions(
         self, client: TestClient, auth_headers

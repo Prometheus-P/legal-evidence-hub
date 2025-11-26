@@ -16,6 +16,9 @@ from fastapi.responses import JSONResponse
 
 # Import configuration and middleware
 from app.core.config import settings
+
+# Import API routers
+from app.api import auth, admin, cases, evidence
 from app.middleware import (
     register_exception_handlers,
     SecurityHeadersMiddleware,
@@ -167,19 +170,15 @@ async def health_check():
 # API 엔드포인트는 app/api/ 디렉토리에 위치 (BACKEND_SERVICE_REPOSITORY_GUIDE.md 기준)
 
 # 인증 라우터
-from app.api import auth
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 # 관리자 라우터
-from app.api import admin
 app.include_router(admin.router, tags=["Admin"])
 
 # 사건 라우터
-from app.api import cases
 app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # 증거 라우터
-from app.api import evidence
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
 # Note: Draft endpoints are integrated into cases router (POST /cases/{case_id}/draft-preview)

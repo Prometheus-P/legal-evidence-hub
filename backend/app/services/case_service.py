@@ -5,7 +5,7 @@ Implements Service pattern per BACKEND_SERVICE_REPOSITORY_GUIDE.md
 
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import Case, CaseMemberRole, User
+from app.db.models import CaseMemberRole
 from app.db.schemas import (
     CaseCreate,
     CaseUpdate,
@@ -18,7 +18,7 @@ from app.db.schemas import (
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.repositories.user_repository import UserRepository
-from app.middleware import NotFoundError, PermissionError, ValidationError
+from app.middleware import NotFoundError, PermissionError
 
 
 class CaseService:

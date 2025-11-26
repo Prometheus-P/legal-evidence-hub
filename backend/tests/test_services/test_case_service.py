@@ -3,7 +3,7 @@ Tests for CaseService
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock
 from app.services.case_service import CaseService
 from app.db.schemas import CaseCreate, CaseUpdate, CaseMemberAdd, CaseMemberPermission
 from app.db.models import Case, CaseMember, CaseMemberRole, User, UserRole
@@ -103,7 +103,7 @@ class TestCaseServiceCreate:
         case_service.case_repo.create.return_value = sample_case
 
         # Act
-        result = case_service.create_case(case_data, user_id)
+        case_service.create_case(case_data, user_id)
 
         # Assert
         case_service.case_repo.create.assert_called_once_with(
@@ -203,7 +203,7 @@ class TestCaseServiceUpdate:
         case_service.member_repo.get_member.return_value = sample_member
 
         # Act
-        result = case_service.update_case(case_id, update_data, user_id)
+        case_service.update_case(case_id, update_data, user_id)
 
         # Assert
         assert sample_case.title == "수정된 제목"
@@ -298,7 +298,7 @@ class TestCaseServiceMembers:
         case_service.member_repo.get_all_members.return_value = []
 
         # Act
-        result = case_service.add_case_members(case_id, members_to_add, owner_id)
+        case_service.add_case_members(case_id, members_to_add, owner_id)
 
         # Assert
         case_service.member_repo.add_members_batch.assert_called_once()

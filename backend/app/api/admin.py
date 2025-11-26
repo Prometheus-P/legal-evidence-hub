@@ -8,7 +8,6 @@ from fastapi.responses import StreamingResponse
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from datetime import datetime
-from io import StringIO
 
 from app.db.session import get_db
 from app.core.dependencies import require_admin

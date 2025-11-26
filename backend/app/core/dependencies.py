@@ -6,7 +6,7 @@ Supports both:
 2. HTTP-only cookies (access_token) - for browser clients
 """
 
-from fastapi import Depends, Header, Cookie, Request
+from fastapi import Depends, Header, Cookie
 from typing import Optional
 from sqlalchemy.orm import Session
 from app.core.security import decode_access_token

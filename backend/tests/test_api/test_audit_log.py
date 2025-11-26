@@ -10,7 +10,7 @@ Tests the following endpoints:
 import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
-from app.db.models import User, UserRole, AuditLog
+from app.db.models import UserRole, AuditLog
 from app.db.schemas import AuditAction
 
 
@@ -160,12 +160,11 @@ class TestAuditLogAPI:
         end_date = now.isoformat()
 
         with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+             patch("app.services.audit_log_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_with_pagination.return_value = ([], 0)
 
-            mock_user_repo_instance = mock_user_repo.return_value
 
             # Call API with date filters
             response = client.get(
@@ -361,12 +360,11 @@ class TestAuditLogAPI:
         start_date = (now - timedelta(days=7)).isoformat()
 
         with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+             patch("app.services.audit_log_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_for_export.return_value = []
 
-            mock_user_repo_instance = mock_user_repo.return_value
 
             # Call API with filters
             response = client.get(

@@ -3,7 +3,7 @@ SQLAlchemy ORM Models for LEH Backend
 Database tables: users, cases, case_members, audit_logs
 """
 
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Table
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone

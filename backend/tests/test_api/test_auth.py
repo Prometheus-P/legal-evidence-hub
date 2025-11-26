@@ -11,8 +11,6 @@ Tests for:
 - JWT validation and user context
 """
 
-import pytest
-from datetime import datetime, timezone
 from fastapi import status
 from app.core.security import create_access_token, create_refresh_token
 

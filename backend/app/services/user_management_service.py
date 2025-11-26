@@ -8,7 +8,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.repositories.user_repository import UserRepository
 from app.repositories.invite_token_repository import InviteTokenRepository
-from app.db.models import User, UserRole, UserStatus
+from app.db.models import UserRole, UserStatus
 from app.db.schemas import InviteResponse, UserOut
 from app.middleware.error_handler import ValidationError, NotFoundError
 from app.core.config import settings

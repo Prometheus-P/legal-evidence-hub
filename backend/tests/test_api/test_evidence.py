@@ -7,7 +7,6 @@ Tests for:
 - Presigned URL expiration validation
 """
 
-import pytest
 from fastapi import status
 
 
