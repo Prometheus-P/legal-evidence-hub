@@ -47,6 +47,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         {/* Navigation buttons */}
         <div className="flex items-center space-x-1">
           <button
+            type="button"
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -55,6 +56,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronsLeft className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -63,6 +65,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -71,6 +74,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
             <ChevronRight className="w-4 h-4" />
           </button>
           <button
+            type="button"
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
             className="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
