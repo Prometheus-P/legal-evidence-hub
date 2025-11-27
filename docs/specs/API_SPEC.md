@@ -220,7 +220,7 @@ json
 - 설명:
 
   - 사건을 “종료” 상태로 전환
-  - OpenSearch 사건 인덱스 삭제
+  - Qdrant 사건 인덱스 삭제
   - DynamoDB 메타데이터 soft-delete
   - S3 원본 증거는 유지 (법무법인 책임) — PRD 규칙 따름
 
@@ -447,7 +447,7 @@ json
 
 ### `GET /cases/{case_id}/search` [미구현]
 
-- 설명: 사건별 증거를 기반으로 한 의미 검색 (OpenSearch + 임베딩)
+- 설명: 사건별 증거를 기반으로 한 의미 검색 (Qdrant + 임베딩)
 
 - 쿼리 파라미터:
 

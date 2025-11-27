@@ -17,7 +17,12 @@ class TestSettings:
 
         assert settings.APP_ENV == "local"
         assert settings.APP_DEBUG is True
-        assert settings.JWT_SECRET == "test-secret-key-do-not-use-in-production"
+        # JWT_SECRET can be either conftest default or CI env value
+        assert settings.JWT_SECRET in [
+            "test-secret-key-do-not-use-in-production",
+            "test-secret-key-for-ci-pipeline-32chars",
+            "test_secret_key_for_ci_pipeline_32chars"
+        ]
         assert settings.S3_EVIDENCE_BUCKET == "test-bucket"
 
     def test_settings_default_values(self):
@@ -151,16 +156,16 @@ class TestSettings:
         assert settings.JWT_SECRET == "weak"
         # Future: should raise ValidationError
 
-    def test_opensearch_case_index_prefix(self, test_env):
-        """Test that OpenSearch case index prefix is correct"""
+    def test_qdrant_collection_prefix(self, test_env):
+        """Test that Qdrant collection prefix is correct"""
         from app.core.config import Settings
         settings = Settings()
 
-        assert settings.OPENSEARCH_CASE_INDEX_PREFIX == "case_rag_"
+        assert settings.QDRANT_COLLECTION_PREFIX == "case_rag_"
 
-    def test_opensearch_default_top_k(self, test_env):
-        """Test that OpenSearch default top-k is 5"""
+    def test_qdrant_default_top_k(self, test_env):
+        """Test that Qdrant default top-k is 5"""
         from app.core.config import Settings
         settings = Settings()
 
-        assert settings.OPENSEARCH_DEFAULT_TOP_K == 5
+        assert settings.QDRANT_DEFAULT_TOP_K == 5

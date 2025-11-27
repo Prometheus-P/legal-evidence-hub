@@ -12,7 +12,7 @@ AWS Lambda 기반 AI Worker로, S3에 업로드된 증거 파일을 자동으로
 - S3 ObjectCreated 이벤트를 트리거로 증거 파일 자동 처리
 - 다양한 파일 타입 (이미지, PDF, 오디오, 비디오, 텍스트) 지원
 - GPT-4o, Whisper, Vision API를 활용한 AI 분석
-- DynamoDB/OpenSearch에 구조화된 데이터 저장
+- DynamoDB/Qdrant에 구조화된 데이터 저장
 
 ### 주요 기능
 1. **멀티 파서 시스템**: 파일 타입별 최적화된 파서
@@ -42,7 +42,7 @@ route_and_process()
     ├─ Embed (벡터화)
     └─ Store (저장)
         ├─ DynamoDB (메타데이터)
-        └─ OpenSearch (벡터 인덱스)
+        └─ Qdrant (벡터 인덱스)
 ```
 
 ---
@@ -74,7 +74,7 @@ ai_worker/
 │   │   └── legal_vectorizer.py # 법률 벡터화
 │   ├── storage/               # 저장소 레이어
 │   │   ├── metadata_store.py  # DynamoDB 메타데이터
-│   │   ├── vector_store.py    # OpenSearch 벡터 DB
+│   │   ├── vector_store.py    # Qdrant 벡터 DB
 │   │   ├── search_engine.py   # 검색 엔진
 │   │   └── storage_manager.py # 통합 저장 관리자
 │   └── user_rag/              # 사용자 RAG (하이브리드 검색)
@@ -157,7 +157,8 @@ OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 # AWS Resources
 S3_EVIDENCE_BUCKET=leh-evidence-bucket
 DYNAMODB_TABLE_EVIDENCE_METADATA=leh-evidence-metadata
-OPENSEARCH_ENDPOINT=https://...
+QDRANT_HOST=localhost
+QDRANT_PORT=6333
 ```
 
 전체 환경 변수 목록은 `.env.example` 참고.
@@ -181,7 +182,7 @@ OPENSEARCH_ENDPOINT=https://...
 6. Embed: OpenAI Embedding API → 1536-dim vector
 7. Store:
    - DynamoDB: 메타데이터 (파일명, 타입, 감정, 요약, 태그)
-   - OpenSearch: 벡터 인덱스 (case_rag_123)
+   - Qdrant: 벡터 인덱스 (case_rag_123)
 8. Response: {"status": "processed", "file": "...", "parser_type": "ImageVisionParser"}
 ```
 
@@ -198,7 +199,7 @@ OPENSEARCH_ENDPOINT=https://...
    - Summarizer: "배우자 간 외도 관련 대화, 감정적 충돌"
    - Article840Tagger: "제1호: 배우자의 부정행위 (신뢰도: 0.8)"
 6. Embed: 전사 텍스트 → 벡터화
-7. Store: DynamoDB + OpenSearch
+7. Store: DynamoDB + Qdrant
 8. Response: {"status": "processed", ...}
 ```
 
@@ -236,7 +237,7 @@ pytest tests/src/test_integration_e2e.py     # End-to-End
 [pytest]
 env =
     PYTEST_MOCK_S3=true
-    PYTEST_MOCK_OPENSEARCH=true
+    PYTEST_MOCK_QDRANT=true
 ```
 
 ---
@@ -291,7 +292,7 @@ print(json.dumps(result, indent=2))
 
 3. **의존성 병합**:
    - `leh-ai-pipeline/requirements.txt` + `ai_worker/requirements.txt`
-   - ChromaDB (로컬) → OpenSearch (AWS)
+   - ChromaDB (로컬) → Qdrant (Vector DB)
 
 4. **환경 설정**:
    - `.env.example` 생성 (AWS 리소스 경로 매핑)

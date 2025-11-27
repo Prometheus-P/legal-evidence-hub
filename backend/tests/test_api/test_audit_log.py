@@ -10,7 +10,7 @@ Tests the following endpoints:
 import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
-from app.db.models import User, UserRole, AuditLog
+from app.db.models import UserRole, AuditLog
 from app.db.schemas import AuditAction
 
 
@@ -85,7 +85,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_pagination(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -111,7 +111,7 @@ class TestAuditLogAPI:
             # Call API
             response = client.get(
                 "/admin/audit?page=1&page_size=10",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -145,7 +145,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_date_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
     ):
         """
@@ -160,17 +160,16 @@ class TestAuditLogAPI:
         end_date = now.isoformat()
 
         with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+             patch("app.services.audit_log_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_with_pagination.return_value = ([], 0)
 
-            mock_user_repo_instance = mock_user_repo.return_value
 
             # Call API with date filters
             response = client.get(
                 f"/admin/audit?start_date={start_date}&end_date={end_date}",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -184,7 +183,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_user_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -211,7 +210,7 @@ class TestAuditLogAPI:
             # Call API with user_id filter
             response = client.get(
                 "/admin/audit?user_id=user_lawyer1",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -227,7 +226,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_actions_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -257,7 +256,7 @@ class TestAuditLogAPI:
             # Call API with actions filter
             response = client.get(
                 "/admin/audit?actions=LOGIN&actions=CREATE_CASE",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -300,7 +299,7 @@ class TestAuditLogAPI:
     def test_export_audit_logs_csv(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -324,7 +323,7 @@ class TestAuditLogAPI:
             # Call API
             response = client.get(
                 "/admin/audit/export",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -347,7 +346,7 @@ class TestAuditLogAPI:
     def test_export_audit_logs_with_filters(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
     ):
         """
@@ -361,17 +360,16 @@ class TestAuditLogAPI:
         start_date = (now - timedelta(days=7)).isoformat()
 
         with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+             patch("app.services.audit_log_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_for_export.return_value = []
 
-            mock_user_repo_instance = mock_user_repo.return_value
 
             # Call API with filters
             response = client.get(
                 f"/admin/audit/export?start_date={start_date}&user_id=user_lawyer1&actions=LOGIN",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response

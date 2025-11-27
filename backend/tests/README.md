@@ -167,7 +167,7 @@ pytest.ini에 정의된 마커들:
 - `mock_db_session` - Mock 데이터베이스 세션
 - `mock_s3_client` - Mock boto3 S3 클라이언트
 - `mock_dynamodb_client` - Mock DynamoDB 클라이언트
-- `mock_opensearch_client` - Mock OpenSearch 클라이언트
+- `mock_qdrant_client` - Mock Qdrant 클라이언트
 - `mock_openai_client` - Mock OpenAI 클라이언트
 
 ### 샘플 데이터
@@ -309,6 +309,6 @@ GitHub Actions에서 테스트 실행:
 - [ ] API 라우터 테스트 (auth, cases, evidence, draft)
 - [ ] S3 서비스 테스트
 - [ ] DynamoDB 서비스 테스트
-- [ ] OpenSearch 서비스 테스트
+- [ ] Qdrant 서비스 테스트
 - [ ] Draft 생성 서비스 테스트 (GPT-4o 통합)
 - [ ] E2E 테스트 (전체 플로우)

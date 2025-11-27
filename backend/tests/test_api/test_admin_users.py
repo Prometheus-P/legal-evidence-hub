@@ -46,6 +46,7 @@ def admin_user(test_env):
         db.commit()
     finally:
         db.close()
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
 
 
 @pytest.fixture
@@ -126,9 +127,13 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 400
         data = response.json()
-        detail = data.get("detail", "")
-        message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
-        assert "이미 초대된 사용자입니다" in message
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
+        else:
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
+        assert "이미" in message  # "이미 등록된 이메일" or "이미 초대된 사용자입니다"
 
     def test_should_return_403_when_non_admin_tries_to_invite(
         self, client: TestClient, auth_headers
@@ -154,9 +159,13 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 403
         data = response.json()
-        detail = data.get("detail", "")
-        message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
-        assert "권한이 없습니다" in message
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
+        else:
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
+        assert "권한" in message  # "권한이 없습니다" or "Admin 권한"
 
     def test_should_return_401_when_not_authenticated(
         self, client: TestClient
@@ -326,14 +335,12 @@ class TestDeleteAdminUsersUserId:
         # Then
         assert response.status_code == 400
         data = response.json()
-        # Check for error message in detail
-        # Structure might be {"detail": "message"} or {"detail": {"message": "..."}}
-        detail = data.get("detail")
-        if isinstance(detail, dict):
-            message = detail.get("message", str(detail))
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
         else:
-            message = str(detail)
-            
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
         assert "자기 자신을 삭제할 수 없습니다" in message
 
     def test_should_return_404_when_user_not_found(

@@ -127,6 +127,7 @@ class CaseOut(BaseModel):
     status: CaseStatus
     created_by: str
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -243,6 +244,7 @@ class EvidenceSummary(BaseModel):
     case_id: str
     type: str  # text, image, audio, video, pdf
     filename: str
+    size: int  # File size in bytes
     created_at: datetime
     status: str  # pending, processing, done, error
     article_840_tags: Optional[Article840Tags] = None  # Article 840 tagging
@@ -254,6 +256,7 @@ class EvidenceDetail(BaseModel):
     case_id: str
     type: str
     filename: str
+    size: int  # File size in bytes
     s3_key: str
     content_type: str
     created_at: datetime
@@ -266,7 +269,7 @@ class EvidenceDetail(BaseModel):
     content: Optional[str] = None  # Full STT/OCR text
     speaker: Optional[str] = None  # For audio/video
     timestamp: Optional[datetime] = None  # Event timestamp in evidence
-    opensearch_id: Optional[str] = None  # RAG index reference
+    qdrant_id: Optional[str] = None  # RAG index reference (Qdrant point ID)
     article_840_tags: Optional[Article840Tags] = None  # Article 840 tagging
 
 

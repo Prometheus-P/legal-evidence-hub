@@ -6,6 +6,49 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch, MagicMock
 import os
+from pathlib import Path
+
+
+def pytest_configure(config):
+    """
+    Configure environment for pytest.
+
+    In CI environment (TESTING=true):
+      - Set test-specific environment variables if not already set
+      - These must be set BEFORE any app modules are imported
+
+    In local environment:
+      - Load .env file for integration tests
+    """
+    # CI environment: set test defaults if not already set
+    if os.environ.get("TESTING") == "true":
+        # These defaults are used in CI when env vars are not explicitly set
+        # DATABASE_URL should be set by CI workflow, but provide fallback
+        defaults = {
+            "APP_ENV": "local",
+            "APP_DEBUG": "true",
+            "JWT_SECRET": "test-secret-key-for-ci-pipeline-32chars",
+            "S3_EVIDENCE_BUCKET": "test-bucket",
+            "DDB_EVIDENCE_TABLE": "test-evidence-table",
+            "QDRANT_HOST": "",  # Empty = in-memory mode for tests
+            "OPENAI_API_KEY": "test-openai-key",
+        }
+        for key, value in defaults.items():
+            if not os.environ.get(key):
+                os.environ[key] = value
+        return
+
+    # Local environment: load .env file
+    # Skip if DATABASE_URL is already set (indicates pre-configured env)
+    if os.environ.get("DATABASE_URL"):
+        return
+
+    # Load .env from backend directory for local integration tests
+    from dotenv import load_dotenv
+    backend_dir = Path(__file__).parent.parent
+    env_path = backend_dir / ".env"
+    if env_path.exists():
+        load_dotenv(env_path, override=True)
 
 
 # ============================================
@@ -50,29 +93,40 @@ def mock_aws_services():
 def test_env():
     """
     Set up test environment variables and initialize database
+
+    Respects CI environment variables if already set (e.g., DATABASE_URL from GitHub Actions)
+    For local development, uses SQLite database
     """
     import os as os_module
 
-    # Clean up any existing test database
+    # Clean up any existing test database (for local SQLite)
     if os_module.path.exists("./test.db"):
         os_module.remove("./test.db")
 
-    test_env_vars = {
+    # Default test values - only used if not already set in environment
+    # Use SQLite for local testing, PostgreSQL for CI
+    defaults = {
         "APP_ENV": "local",
         "APP_DEBUG": "true",
         "JWT_SECRET": "test-secret-key-do-not-use-in-production",
-        "DATABASE_URL": "sqlite:///./test.db",
+        "DATABASE_URL": "sqlite:///./test.db",  # Local default, CI overrides this
         "S3_EVIDENCE_BUCKET": "test-bucket",
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
-        "OPENSEARCH_HOST": "https://test-opensearch.local",
+        "QDRANT_HOST": "",  # Empty = in-memory mode for tests
         "OPENAI_API_KEY": "test-openai-key",
     }
 
-    # Store original env vars
+    # Store original env vars and set defaults only if not already set
     original_env = {}
-    for key, value in test_env_vars.items():
+    test_env_vars = {}
+    for key, default_value in defaults.items():
         original_env[key] = os.environ.get(key)
-        os.environ[key] = value
+        # Use existing env var if set, otherwise use default
+        if os.environ.get(key):
+            test_env_vars[key] = os.environ[key]
+        else:
+            os.environ[key] = default_value
+            test_env_vars[key] = default_value
 
     # Patch global settings
     from app.core.config import settings
@@ -100,7 +154,7 @@ def test_env():
         else:
             os.environ[key] = original_value
 
-    # Clean up test database file
+    # Clean up test database file (for local SQLite)
     if os_module.path.exists("./test.db"):
         os_module.remove("./test.db")
 
@@ -168,13 +222,13 @@ def mock_dynamodb_client():
 
 
 @pytest.fixture(scope="function")
-def mock_opensearch_client():
+def mock_qdrant_client():
     """
-    Mock OpenSearch client
+    Mock Qdrant client
     """
-    with patch('opensearchpy.OpenSearch') as mock_os:
+    with patch('qdrant_client.QdrantClient') as mock_qdrant:
         mock_client = Mock()
-        mock_os.return_value = mock_client
+        mock_qdrant.return_value = mock_client
         yield mock_client
 
 
@@ -243,7 +297,7 @@ def test_user(test_env):
     Password: correct_password123
     """
     from app.db.session import get_db
-    from app.db.models import User, Case, CaseMember
+    from app.db.models import User, Case, CaseMember, InviteToken
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -264,7 +318,9 @@ def test_user(test_env):
         yield user
 
         # Cleanup - delete in correct order to respect foreign keys
-        # Delete case_members first
+        # Delete invite tokens first
+        db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
+        # Delete case_members
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
         # Delete cases created by user
         db.query(Case).filter(Case.created_by == user.id).delete()
@@ -273,6 +329,7 @@ def test_user(test_env):
         db.commit()
     finally:
         db.close()
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
 
 
 @pytest.fixture
@@ -287,6 +344,70 @@ def auth_headers(test_user):
 
     # Create JWT token for test user
     token = create_access_token(data={"sub": test_user.id, "role": test_user.role})
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }
+
+
+@pytest.fixture
+def admin_user(test_env):
+    """
+    Create admin user in the database for admin tests
+
+    Password: admin_password123
+    """
+    from app.db.session import get_db, init_db
+    from app.db.models import User
+    from app.core.security import hash_password
+    from sqlalchemy.orm import Session
+
+    # Initialize database
+    init_db()
+
+    # Create admin user
+    db: Session = next(get_db())
+    try:
+        admin = User(
+            email="admin@example.com",
+            hashed_password=hash_password("admin_password123"),
+            name="Admin User",
+            role="admin"
+        )
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+
+        yield admin
+
+        # Cleanup
+        from app.db.models import Case, CaseMember, InviteToken
+        # Delete invite tokens created by admin
+        db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
+        # Delete case_members
+        db.query(CaseMember).filter(CaseMember.user_id == admin.id).delete()
+        # Delete cases
+        db.query(Case).filter(Case.created_by == admin.id).delete()
+        # Delete admin user
+        db.delete(admin)
+        db.commit()
+    finally:
+        db.close()
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
+
+
+@pytest.fixture
+def admin_auth_headers(admin_user):
+    """
+    Generate authentication headers with JWT token for admin_user
+
+    Returns:
+        dict: Headers with Authorization Bearer token
+    """
+    from app.core.security import create_access_token
+
+    # Create JWT token for admin user
+    token = create_access_token(data={"sub": admin_user.id, "role": admin_user.role})
 
     return {
         "Authorization": f"Bearer {token}"

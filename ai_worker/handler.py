@@ -118,7 +118,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         )
         logger.info(f"Saved metadata for {object_key}: file_id={file_metadata['file_id']}")
 
-        # 벡터 임베딩 및 저장 (Qdrant/OpenSearch)
+        # 벡터 임베딩 및 저장 (Qdrant)
         vector_store = VectorStore()
         chunk_ids = []
         for idx, message in enumerate(parsed_result):

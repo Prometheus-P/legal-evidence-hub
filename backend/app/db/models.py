@@ -3,7 +3,7 @@ SQLAlchemy ORM Models for LEH Backend
 Database tables: users, cases, case_members, audit_logs
 """
 
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Table
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -80,6 +80,7 @@ class Case(Base):
     status = Column(SQLEnum(CaseStatus), nullable=False, default=CaseStatus.ACTIVE)
     created_by = Column(String, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     owner = relationship("User", back_populates="created_cases", foreign_keys=[created_by])

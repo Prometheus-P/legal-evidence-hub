@@ -2,7 +2,7 @@
 
 **작성일:** 2025-11-18
 **담당자:** H (Backend/Infra)
-**기술 스택:** FastAPI, PostgreSQL, AWS (S3, DynamoDB, OpenSearch)
+**기술 스택:** FastAPI, PostgreSQL, AWS (S3, DynamoDB, Qdrant)
 
 ---
 
@@ -19,7 +19,7 @@
 2. **PostgreSQL 데이터베이스 설계 및 구현**
 3. **S3 Presigned URL 발급 로직**
 4. **JWT 인증/인가 시스템**
-5. **DynamoDB/OpenSearch 조회 및 연동**
+5. **DynamoDB/Qdrant 조회 및 연동**
 6. **Draft Preview API (GPT-4o + RAG 오케스트레이션)**
 7. **AWS 인프라 설정 및 배포**
 
@@ -87,7 +87,7 @@
    - `POST /evidence/upload-complete` - 업로드 완료 알림
    - S3 Event 설정 (Lambda 트리거용)
 
-### Phase 5: 증거 조회 (DynamoDB/OpenSearch 연동) (2주차)
+### Phase 5: 증거 조회 (DynamoDB/Qdrant 연동) (2주차)
 ✅ AI Worker가 저장한 데이터 조회
 
 10. **DynamoDB 연동**
@@ -95,8 +95,8 @@
     - `GET /cases/{id}/evidence` - 증거 리스트 조회
     - 필터링 (type, label, 날짜 범위)
 
-11. **OpenSearch 연동**
-    - OpenSearch Python 클라이언트 설정
+11. **Qdrant 연동**
+    - Qdrant Python 클라이언트 설정
     - `GET /cases/{id}/search` - RAG 검색 API
     - 사건별 인덱스 쿼리 (`case_rag_{case_id}`)
 
@@ -110,7 +110,7 @@
 13. **Draft 생성 로직**
     - `POST /cases/{id}/draft-preview`
     - DynamoDB에서 증거 목록 조회
-    - OpenSearch RAG 검색
+    - Qdrant RAG 검색
     - GPT-4o 프롬프트 생성 및 호출
     - 증거 인용문(citations) 구조화
 
@@ -162,7 +162,7 @@
 ### 데이터베이스
 - **PostgreSQL** (RDS) - 정형 데이터
 - **DynamoDB** - 증거 메타데이터 (AI Worker가 저장)
-- **OpenSearch** - RAG 검색용 벡터 DB
+- **Qdrant** - RAG 검색용 벡터 DB
 
 ### AWS 서비스
 - **S3** - 증거 원본 저장
@@ -186,7 +186,7 @@ pydantic-settings==2.1.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 boto3==1.29.7
-opensearch-py==2.4.0
+qdrant-py==2.4.0
 openai==1.3.0
 python-multipart==0.0.6
 python-docx==1.1.0
@@ -220,11 +220,11 @@ backend/
 │   │   ├── case_service.py      # 사건 관련 비즈니스 로직
 │   │   ├── evidence_service.py  # S3 연동 및 Dynamo 조회
 │   │   ├── draft_service.py     # Draft 생성(LLM 호출)
-│   │   └── search_service.py    # OpenSearch 쿼리
+│   │   └── search_service.py    # Qdrant 쿼리
 │   ├── utils/
 │   │   ├── s3.py                # Presigned URL 생성기
 │   │   ├── dynamo.py            # DynamoDB Helper
-│   │   ├── opensearch.py        # OS Helper
+│   │   ├── qdrant.py        # OS Helper
 │   │   └── time.py              # 공통 시간/타임존 처리
 │   └── middleware/
 │       ├── auth_middleware.py   # JWT 인증 미들웨어

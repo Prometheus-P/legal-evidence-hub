@@ -5,7 +5,7 @@ Implements Service pattern per BACKEND_SERVICE_REPOSITORY_GUIDE.md
 
 from sqlalchemy.orm import Session
 from typing import List
-from app.db.models import Case, CaseMemberRole, User
+from app.db.models import CaseMemberRole
 from app.db.schemas import (
     CaseCreate,
     CaseUpdate,
@@ -18,7 +18,12 @@ from app.db.schemas import (
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.repositories.user_repository import UserRepository
-from app.middleware import NotFoundError, PermissionError, ValidationError
+from app.middleware import NotFoundError, PermissionError
+from app.utils.qdrant import delete_case_collection
+from app.utils.dynamo import clear_case_evidence
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CaseService:
@@ -178,11 +183,27 @@ class CaseService:
         if not member or member.role != "owner":
             raise PermissionError("Only case owner can delete the case")
 
-        # Soft delete
+        # Soft delete case in RDS
         self.case_repo.soft_delete(case_id)
 
-        # TODO: Trigger OpenSearch index deletion
-        # This will be implemented when OpenSearch integration is added
+        # Delete Qdrant RAG collection for this case
+        try:
+            deleted = delete_case_collection(case_id)
+            if deleted:
+                logger.info(f"Deleted Qdrant collection for case {case_id}")
+            else:
+                logger.warning(f"Qdrant collection for case {case_id} not found or already deleted")
+        except Exception as e:
+            logger.error(f"Failed to delete Qdrant collection for case {case_id}: {e}")
+            # Continue with deletion even if Qdrant fails
+
+        # Clear DynamoDB evidence metadata for this case
+        try:
+            cleared_count = clear_case_evidence(case_id)
+            logger.info(f"Cleared {cleared_count} evidence items from DynamoDB for case {case_id}")
+        except Exception as e:
+            logger.error(f"Failed to clear DynamoDB evidence for case {case_id}: {e}")
+            # Continue with deletion even if DynamoDB fails
 
         self.db.commit()
 

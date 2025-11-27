@@ -111,7 +111,7 @@ class TestEvidenceDetail:
         """
         # Given: Create case
         case_response = client.post("/cases", json={"title": "상세 증거 사건"}, headers=auth_headers)
-        case_id = case_response.json()["id"]
+        case_response.json()["id"]
 
         # TODO: Insert mock evidence with full metadata
         # evidence_id = "ev_mock123"

@@ -226,7 +226,7 @@ class TestCaseSharing:
 
         # Assert response
         assert response.status_code == 403
-        assert "owner or admin" in response.json()["detail"].lower()
+        assert "owner or admin" in response.json()["error"]["message"].lower()
 
     def test_add_case_members_with_nonexistent_user_fails(
         self,
@@ -275,7 +275,7 @@ class TestCaseSharing:
 
         # Assert response
         assert response.status_code == 404
-        assert "user" in response.json()["detail"].lower()
+        assert "user" in response.json()["error"]["message"].lower()
 
     def test_add_case_members_admin_can_add(
         self,
@@ -441,7 +441,7 @@ class TestCaseSharing:
 
         # Assert response
         assert response.status_code == 403
-        assert "access" in response.json()["detail"].lower()
+        assert "access" in response.json()["error"]["message"].lower()
 
     def test_add_existing_member_updates_permission(
         self,

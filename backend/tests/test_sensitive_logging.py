@@ -10,10 +10,10 @@ Focus: 실제로 로그에 노출될 수 있는 경로 테스트
 4. 증거 내용 로깅 (민감한 증거 내용 노출 방지)
 """
 
-import pytest
 import logging
 from fastapi import status
 from unittest.mock import patch, MagicMock
+import pytest
 
 
 class TestSensitiveDataLogging:

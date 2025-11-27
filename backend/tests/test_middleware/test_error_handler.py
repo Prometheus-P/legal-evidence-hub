@@ -8,7 +8,7 @@ import pytest
 from fastapi import status
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock
 import json
 
 from app.middleware.error_handler import (

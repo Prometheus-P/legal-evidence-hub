@@ -1,6 +1,6 @@
 """
 Draft Service - Business logic for draft generation with RAG
-Orchestrates OpenSearch RAG + OpenAI GPT-4o for draft preview
+Orchestrates Qdrant RAG + OpenAI GPT-4o for draft preview
 """
 
 from sqlalchemy.orm import Session
@@ -17,14 +17,14 @@ from app.db.schemas import (
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.dynamo import get_evidence_by_case
-from app.utils.opensearch import search_evidence_by_semantic
+from app.utils.qdrant import search_evidence_by_semantic
 from app.utils.openai_client import generate_chat_completion
 from app.middleware import NotFoundError, PermissionError, ValidationError
 
 # Optional: python-docx for DOCX generation
 try:
     from docx import Document
-    from docx.shared import Pt, Inches
+    from docx.shared import Pt, Inches  # noqa: F401
     from docx.enum.text import WD_ALIGN_PARAGRAPH
     DOCX_AVAILABLE = True
 except ImportError:
@@ -53,7 +53,7 @@ class DraftService:
         Process:
         1. Validate case access
         2. Retrieve evidence metadata from DynamoDB
-        3. Perform semantic search in OpenSearch (RAG)
+        3. Perform semantic search in Qdrant (RAG)
         4. Build GPT-4o prompt with RAG context
         5. Generate draft text
         6. Extract citations
@@ -87,12 +87,10 @@ class DraftService:
             raise ValidationError("사건에 증거가 하나도 없습니다. 증거를 업로드한 후 초안을 생성해 주세요.")
 
         # Filter for completed evidence only (status="done")
-        completed_evidence = [
-            ev for ev in evidence_list
-            if ev.get("status") == "done"
-        ]
+        # Note: Currently filtering for reference, may be used for future enhancements
+        _ = [ev for ev in evidence_list if ev.get("status") == "done"]
 
-        # 3. Perform semantic RAG search in OpenSearch
+        # 3. Perform semantic RAG search in Qdrant
         rag_results = self._perform_rag_search(case_id, request.sections)
 
         # 4. Build GPT-4o prompt with RAG context
@@ -123,7 +121,7 @@ class DraftService:
 
     def _perform_rag_search(self, case_id: str, sections: List[str]) -> List[dict]:
         """
-        Perform semantic search in OpenSearch for RAG context
+        Perform semantic search in Qdrant for RAG context
 
         Args:
             case_id: Case ID
@@ -432,11 +430,10 @@ class DraftService:
         # In production, use reportlab or weasyprint for proper PDF generation
         try:
             from reportlab.lib.pagesizes import A4
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.styles import getSampleStyleSheet
             from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
             from reportlab.lib.units import inch
-            from reportlab.pdfbase import pdfmetrics
-            from reportlab.pdfbase.ttfonts import TTFont
+            from reportlab.pdfbase.ttfonts import TTFont  # noqa: F401
 
             file_buffer = BytesIO()
             doc = SimpleDocTemplate(file_buffer, pagesize=A4)

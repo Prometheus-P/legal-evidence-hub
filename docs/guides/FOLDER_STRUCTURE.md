@@ -36,7 +36,7 @@ backend/
 │   ├── utils/
 │   │   ├── s3.py            # S3 Adapter
 │   │   ├── dynamo.py        # DynamoDB Adapter
-│   │   ├── opensearch.py    # OpenSearch Adapter
+│   │   ├── qdrant.py    # Qdrant Adapter
 │   │   └── openai_client.py # OpenAI Adapter
 │   └── middleware/
 │       ├── auth_middleware.py
@@ -88,7 +88,7 @@ ai_worker/
 │   │   └── hybrid_search.py
 │   └── storage/             # 저장소 연동
 │       ├── metadata_store.py  # DynamoDB
-│       └── vector_store.py    # OpenSearch
+│       └── vector_store.py    # Qdrant
 ├── tests/
 │   ├── test_parsers/
 │   └── conftest.py
@@ -102,7 +102,7 @@ ai_worker/
 | `handler.py` | 오케스트레이션 | 파서 선택, 워크플로우 조정 |
 | `parsers/` | 파일 파싱 | AI API 호출 (OCR, STT, Vision) |
 | `analysis/` | 분석 실행 | LLM 호출, 라벨링 |
-| `storage/` | 저장소 연동 | DynamoDB, OpenSearch |
+| `storage/` | 저장소 연동 | DynamoDB, Qdrant |
 
 ---
 

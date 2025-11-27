@@ -16,6 +16,9 @@ from fastapi.responses import JSONResponse
 
 # Import configuration and middleware
 from app.core.config import settings
+
+# Import API routers
+from app.api import auth, admin, cases, evidence
 from app.middleware import (
     register_exception_handlers,
     SecurityHeadersMiddleware,
@@ -56,7 +59,8 @@ async def lifespan(_app: FastAPI):
     logger.info("📍 CORS origins: %s", settings.cors_origins_list)
 
     # Note: Database connection pool is managed per-request via get_db()
-    # Note: AWS services (S3, DynamoDB, OpenSearch) currently use mock implementations
+    # Note: AWS services (S3, DynamoDB) currently use mock implementations
+    # Note: Qdrant client is initialized on-demand in utils/qdrant.py (in-memory mode for local dev)
     # Note: OpenAI client is initialized on-demand in utils/openai_client.py
 
     logger.info("✅ Startup complete")
@@ -166,19 +170,15 @@ async def health_check():
 # API 엔드포인트는 app/api/ 디렉토리에 위치 (BACKEND_SERVICE_REPOSITORY_GUIDE.md 기준)
 
 # 인증 라우터
-from app.api import auth
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
 # 관리자 라우터
-from app.api import admin
 app.include_router(admin.router, tags=["Admin"])
 
 # 사건 라우터
-from app.api import cases
 app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # 증거 라우터
-from app.api import evidence
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
 # Note: Draft endpoints are integrated into cases router (POST /cases/{case_id}/draft-preview)
