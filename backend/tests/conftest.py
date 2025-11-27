@@ -283,3 +283,67 @@ def auth_headers(test_user):
     return {
         "Authorization": f"Bearer {token}"
     }
+
+
+@pytest.fixture
+def admin_user(test_env):
+    """
+    Create admin user in the database for admin tests
+
+    Password: admin_password123
+    """
+    from app.db.session import get_db, init_db
+    from app.db.models import User
+    from app.core.security import hash_password
+    from sqlalchemy.orm import Session
+
+    # Initialize database
+    init_db()
+
+    # Create admin user
+    db: Session = next(get_db())
+    try:
+        admin = User(
+            email="admin@example.com",
+            hashed_password=hash_password("admin_password123"),
+            name="Admin User",
+            role="admin"
+        )
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+
+        yield admin
+
+        # Cleanup
+        from app.db.models import Case, CaseMember, InviteToken
+        # Delete invite tokens created by admin
+        db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
+        # Delete case_members
+        db.query(CaseMember).filter(CaseMember.user_id == admin.id).delete()
+        # Delete cases
+        db.query(Case).filter(Case.created_by == admin.id).delete()
+        # Delete admin user
+        db.delete(admin)
+        db.commit()
+    finally:
+        db.close()
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
+
+
+@pytest.fixture
+def admin_auth_headers(admin_user):
+    """
+    Generate authentication headers with JWT token for admin_user
+
+    Returns:
+        dict: Headers with Authorization Bearer token
+    """
+    from app.core.security import create_access_token
+
+    # Create JWT token for admin user
+    token = create_access_token(data={"sub": admin_user.id, "role": admin_user.role})
+
+    return {
+        "Authorization": f"Bearer {token}"
+    }

@@ -85,7 +85,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_pagination(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -111,7 +111,7 @@ class TestAuditLogAPI:
             # Call API
             response = client.get(
                 "/admin/audit?page=1&page_size=10",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -145,7 +145,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_date_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
     ):
         """
@@ -169,7 +169,7 @@ class TestAuditLogAPI:
             # Call API with date filters
             response = client.get(
                 f"/admin/audit?start_date={start_date}&end_date={end_date}",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -183,7 +183,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_user_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -210,7 +210,7 @@ class TestAuditLogAPI:
             # Call API with user_id filter
             response = client.get(
                 "/admin/audit?user_id=user_lawyer1",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -226,7 +226,7 @@ class TestAuditLogAPI:
     def test_get_audit_logs_with_actions_filter(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -256,7 +256,7 @@ class TestAuditLogAPI:
             # Call API with actions filter
             response = client.get(
                 "/admin/audit?actions=LOGIN&actions=CREATE_CASE",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -299,7 +299,7 @@ class TestAuditLogAPI:
     def test_export_audit_logs_csv(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
         sample_audit_logs,
         sample_users_map,
@@ -323,7 +323,7 @@ class TestAuditLogAPI:
             # Call API
             response = client.get(
                 "/admin/audit/export",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response
@@ -346,7 +346,7 @@ class TestAuditLogAPI:
     def test_export_audit_logs_with_filters(
         self,
         client,
-        auth_headers,
+        admin_auth_headers,
         sample_admin_user,
     ):
         """
@@ -369,7 +369,7 @@ class TestAuditLogAPI:
             # Call API with filters
             response = client.get(
                 f"/admin/audit/export?start_date={start_date}&user_id=user_lawyer1&actions=LOGIN",
-                headers=auth_headers
+                headers=admin_auth_headers
             )
 
         # Assert response

@@ -131,7 +131,7 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 400
         data = response.json()
-        assert "이미 등록된 이메일" in data["detail"]["message"]
+        assert "이미 등록된 이메일" in data["error"]["message"]
 
     def test_should_return_403_when_non_admin_tries_to_invite(
         self, client: TestClient, auth_headers
@@ -157,7 +157,7 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 403
         data = response.json()
-        assert "Admin 권한" in data["detail"]["message"]
+        assert "Admin 권한" in data["error"]["message"]
 
     def test_should_return_401_when_not_authenticated(
         self, client: TestClient
@@ -327,7 +327,7 @@ class TestDeleteAdminUsersUserId:
         # Then
         assert response.status_code == 400
         data = response.json()
-        assert "자기 자신을 삭제할 수 없습니다" in data["detail"]["message"]
+        assert "자기 자신을 삭제할 수 없습니다" in data["error"]["message"]
 
     def test_should_return_404_when_user_not_found(
         self, client: TestClient, admin_auth_headers
