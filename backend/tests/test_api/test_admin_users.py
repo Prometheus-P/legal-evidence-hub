@@ -15,7 +15,7 @@ def admin_user(test_env):
     Password: admin_password123
     """
     from app.db.session import get_db, init_db
-    from app.db.models import Base, User
+    from app.db.models import User
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -50,10 +50,7 @@ def admin_user(test_env):
         db.commit()
     finally:
         db.close()
-
-        # Drop tables after test
-        from app.db.session import engine
-        Base.metadata.drop_all(bind=engine)
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
 
 
 @pytest.fixture

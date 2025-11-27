@@ -230,7 +230,7 @@ def test_user(test_env):
     Password: correct_password123
     """
     from app.db.session import get_db, init_db
-    from app.db.models import Base, User
+    from app.db.models import User
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
@@ -254,7 +254,8 @@ def test_user(test_env):
 
         # Cleanup - delete in correct order to respect foreign keys
         # Delete case_members first
-        from app.db.models import Case, CaseMember
+        from app.db.models import Case, CaseMember, InviteToken
+        db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
         # Delete cases created by user
         db.query(Case).filter(Case.created_by == user.id).delete()
@@ -263,10 +264,7 @@ def test_user(test_env):
         db.commit()
     finally:
         db.close()
-
-        # Drop tables after test
-        from app.db.session import engine
-        Base.metadata.drop_all(bind=engine)
+        # Note: Tables are NOT dropped to allow other fixtures/tests to reuse the schema
 
 
 @pytest.fixture
