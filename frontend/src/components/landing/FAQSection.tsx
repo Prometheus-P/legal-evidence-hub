@@ -63,7 +63,7 @@ export default function FAQSection() {
       <div className="max-w-3xl mx-auto">
         <div className="space-y-8">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             자주 묻는 질문
           </h2>
 
@@ -77,7 +77,7 @@ export default function FAQSection() {
                   className="w-full flex justify-between items-center text-left"
                   aria-expanded={openIndex === index}
                 >
-                  <h3 className="text-lg font-semibold text-deep-trust-blue pr-8">
+                  <h3 className="text-lg font-semibold text-secondary pr-8">
                     {faq.question}
                   </h3>
                   <ChevronDown
@@ -94,7 +94,7 @@ export default function FAQSection() {
                     openIndex === index ? 'max-h-96 mt-4' : 'max-h-0'
                   }`}
                 >
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-neutral-600 leading-relaxed">
                     {faq.answer}
                   </p>
                 </div>

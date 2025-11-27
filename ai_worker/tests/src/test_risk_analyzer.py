@@ -3,7 +3,6 @@ Test suite for RiskAnalyzer
 Following TDD approach: RED-GREEN-REFACTOR
 """
 
-import pytest
 from datetime import datetime
 from src.analysis.risk_analyzer import RiskAnalyzer, RiskAssessment, RiskLevel
 from src.parsers.base import Message

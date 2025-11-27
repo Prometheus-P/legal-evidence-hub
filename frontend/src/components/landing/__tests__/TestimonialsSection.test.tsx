@@ -29,7 +29,7 @@ describe('TestimonialsSection Component', () => {
       render(<TestimonialsSection />);
 
       const title = screen.getByRole('heading', { name: /이미 사용 중인 변호사님들의 평가/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -202,7 +202,7 @@ describe('TestimonialsSection Component', () => {
       const { container } = render(<TestimonialsSection />);
 
       const section = container.querySelector('section');
-      expect(section).toHaveClass('bg-calm-grey');
+      expect(section).toHaveClass('bg-neutral-50');
     });
 
     it('should use Deep Trust Blue for reviewer names', () => {
@@ -210,7 +210,7 @@ describe('TestimonialsSection Component', () => {
 
       // Names should use Deep Trust Blue
       const section = container.querySelector('section');
-      const nameElements = section?.querySelectorAll('.text-deep-trust-blue');
+      const nameElements = section?.querySelectorAll('.text-secondary');
       expect(nameElements?.length).toBeGreaterThanOrEqual(4); // Section title + 3 names
     });
 
@@ -219,7 +219,7 @@ describe('TestimonialsSection Component', () => {
 
       // Testimonial text should be readable gray
       const section = container.querySelector('section');
-      const textElements = section?.querySelectorAll('.text-gray-600');
+      const textElements = section?.querySelectorAll('.text-neutral-600');
       expect(textElements?.length).toBeGreaterThanOrEqual(3);
     });
   });

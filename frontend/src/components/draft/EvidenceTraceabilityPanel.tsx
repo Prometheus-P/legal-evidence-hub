@@ -109,29 +109,29 @@ export default function EvidenceTraceabilityPanel({
                 <div className="p-6 space-y-6">
                     {/* Evidence Metadata */}
                     <section>
-                        <h3 className="text-sm font-semibold text-deep-trust-blue mb-3">증거 정보</h3>
-                        <div className="space-y-2 bg-calm-grey rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-secondary mb-3">증거 정보</h3>
+                        <div className="space-y-2 bg-neutral-50 rounded-lg p-4">
                             <div className="flex items-center gap-2 text-sm">
                                 <FileText className="w-4 h-4 text-gray-500" />
-                                <span className="text-gray-600">파일명:</span>
+                                <span className="text-neutral-600">파일명:</span>
                                 <span className="font-medium text-gray-800">{evidence.filename}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                                 <Tag className="w-4 h-4 text-gray-500" />
-                                <span className="text-gray-600">유형:</span>
+                                <span className="text-neutral-600">유형:</span>
                                 <span className="font-medium text-gray-800">{evidence.type}</span>
                             </div>
                             {evidence.speaker && (
                                 <div className="flex items-center gap-2 text-sm">
                                     <User className="w-4 h-4 text-gray-500" />
-                                    <span className="text-gray-600">화자:</span>
+                                    <span className="text-neutral-600">화자:</span>
                                     <span className="font-medium text-gray-800">{evidence.speaker}</span>
                                 </div>
                             )}
                             {evidence.timestamp && (
                                 <div className="flex items-center gap-2 text-sm">
                                     <Clock className="w-4 h-4 text-gray-500" />
-                                    <span className="text-gray-600">시점:</span>
+                                    <span className="text-neutral-600">시점:</span>
                                     <span className="font-medium text-gray-800">
                                         {new Date(evidence.timestamp).toLocaleString('ko-KR')}
                                     </span>
@@ -140,7 +140,7 @@ export default function EvidenceTraceabilityPanel({
                             {evidence.labels && evidence.labels.length > 0 && (
                                 <div className="flex items-start gap-2 text-sm">
                                     <Tag className="w-4 h-4 text-gray-500 mt-0.5" />
-                                    <span className="text-gray-600">라벨:</span>
+                                    <span className="text-neutral-600">라벨:</span>
                                     <div className="flex flex-wrap gap-1">
                                         {evidence.labels.map((label) => (
                                             <span
@@ -158,8 +158,8 @@ export default function EvidenceTraceabilityPanel({
 
                     {/* Original Evidence Content with Highlight */}
                     <section>
-                        <h3 className="text-sm font-semibold text-deep-trust-blue mb-3">원본 증거</h3>
-                        <div className="bg-calm-grey rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-secondary mb-3">원본 증거</h3>
+                        <div className="bg-neutral-50 rounded-lg p-4">
                             <p
                                 data-testid="highlighted-evidence"
                                 className="text-sm text-gray-800 leading-relaxed bg-yellow-200 p-2 rounded"
@@ -171,21 +171,21 @@ export default function EvidenceTraceabilityPanel({
 
                     {/* AI Generation Context */}
                     <section>
-                        <h3 className="text-sm font-semibold text-deep-trust-blue mb-3">AI 근거 데이터</h3>
-                        <div className="bg-calm-grey rounded-lg p-4 space-y-3">
+                        <h3 className="text-sm font-semibold text-secondary mb-3">AI 근거 데이터</h3>
+                        <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
                             <div>
-                                <h4 className="text-xs font-medium text-gray-600 mb-1">사용된 프롬프트</h4>
-                                <p className="text-xs text-gray-700 leading-relaxed">
+                                <h4 className="text-xs font-medium text-neutral-600 mb-1">사용된 프롬프트</h4>
+                                <p className="text-xs text-neutral-700 leading-relaxed">
                                     {evidence.aiPrompt || '프롬프트 정보 없음'}
                                 </p>
                             </div>
                             <div>
-                                <h4 className="text-xs font-medium text-gray-600 mb-1">생성 모델</h4>
-                                <p className="text-xs text-gray-700">GPT-4o</p>
+                                <h4 className="text-xs font-medium text-neutral-600 mb-1">생성 모델</h4>
+                                <p className="text-xs text-neutral-700">GPT-4o</p>
                             </div>
                             <div>
-                                <h4 className="text-xs font-medium text-gray-600 mb-1">증거 ID</h4>
-                                <p className="text-xs font-mono text-gray-700">{evidence.id}</p>
+                                <h4 className="text-xs font-medium text-neutral-600 mb-1">증거 ID</h4>
+                                <p className="text-xs font-mono text-neutral-700">{evidence.id}</p>
                             </div>
                         </div>
                     </section>

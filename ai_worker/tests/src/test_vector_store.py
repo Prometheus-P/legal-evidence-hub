@@ -5,7 +5,6 @@ Test suite for VectorStore (ChromaDB)
 import pytest
 import shutil
 from pathlib import Path
-from datetime import datetime
 from src.storage.vector_store import VectorStore
 
 

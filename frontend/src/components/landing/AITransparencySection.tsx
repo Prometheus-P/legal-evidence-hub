@@ -50,13 +50,13 @@ export default function AITransparencySection() {
 
   return (
     <section
-      className="py-20 px-6 bg-calm-grey"
+      className="py-20 px-6 bg-neutral-50"
       aria-label="AI 투명성 및 보안"
     >
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             법률 컴플라이언스 준수
           </h2>
 
@@ -64,7 +64,7 @@ export default function AITransparencySection() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Left Column: AI Transparency */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-deep-trust-blue">
+              <h3 className="text-2xl font-bold text-secondary">
                 AI 투명성
               </h3>
 
@@ -77,7 +77,7 @@ export default function AITransparencySection() {
                         className="w-6 h-6 text-accent flex-shrink-0 mt-1"
                         aria-label={feature.ariaLabel}
                       />
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="text-neutral-600 leading-relaxed">
                         {feature.text}
                       </p>
                     </div>
@@ -88,7 +88,7 @@ export default function AITransparencySection() {
 
             {/* Right Column: Security & Compliance */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-deep-trust-blue">
+              <h3 className="text-2xl font-bold text-secondary">
                 보안 및 규정 준수
               </h3>
 
@@ -101,7 +101,7 @@ export default function AITransparencySection() {
                         className="w-6 h-6 text-accent flex-shrink-0 mt-1"
                         aria-label={feature.ariaLabel}
                       />
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="text-neutral-600 leading-relaxed">
                         {feature.text}
                       </p>
                     </div>

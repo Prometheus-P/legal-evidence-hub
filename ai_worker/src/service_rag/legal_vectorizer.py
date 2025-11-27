@@ -3,11 +3,10 @@ Legal Knowledge Vectorizer Module
 법률 문서(법령, 판례)를 벡터화하여 저장
 """
 
-import uuid
-from typing import List, Optional
+from typing import List
 from src.storage.vector_store import VectorStore
 from src.storage.storage_manager import get_embedding
-from src.service_rag.schemas import Statute, CaseLaw, LegalChunk
+from src.service_rag.schemas import Statute, CaseLaw
 
 
 class LegalVectorizer:

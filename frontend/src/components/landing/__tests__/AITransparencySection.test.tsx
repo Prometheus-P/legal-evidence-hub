@@ -31,7 +31,7 @@ describe('AITransparencySection Component', () => {
       render(<AITransparencySection />);
 
       const title = screen.getByRole('heading', { name: /법률 컴플라이언스 준수/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -201,7 +201,7 @@ describe('AITransparencySection Component', () => {
       const { container } = render(<AITransparencySection />);
 
       const section = container.querySelector('section');
-      expect(section).toHaveClass('bg-calm-grey');
+      expect(section).toHaveClass('bg-neutral-50');
     });
 
     it('should use Deep Trust Blue for headings', () => {
@@ -209,7 +209,7 @@ describe('AITransparencySection Component', () => {
 
       const headings = screen.getAllByRole('heading', { level: 3 });
       headings.forEach((heading) => {
-        expect(heading).toHaveClass('text-deep-trust-blue');
+        expect(heading).toHaveClass('text-secondary');
       });
     });
 
@@ -223,7 +223,7 @@ describe('AITransparencySection Component', () => {
       ];
 
       features.forEach((feature) => {
-        expect(feature).toHaveClass('text-gray-600');
+        expect(feature).toHaveClass('text-neutral-600');
       });
     });
   });

@@ -44,7 +44,7 @@ export function EvidenceDataTable({ items }: EvidenceDataTableProps) {
         <Filter className="w-5 h-5 text-gray-400" />
 
         <div className="flex items-center space-x-2">
-          <label htmlFor="type-filter" className="text-sm font-medium text-gray-700">
+          <label htmlFor="type-filter" className="text-sm font-medium text-neutral-700">
             유형 필터:
           </label>
           <select
@@ -63,7 +63,7 @@ export function EvidenceDataTable({ items }: EvidenceDataTableProps) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <label htmlFor="date-filter" className="text-sm font-medium text-gray-700">
+          <label htmlFor="date-filter" className="text-sm font-medium text-neutral-700">
             날짜 필터:
           </label>
           <select
@@ -103,7 +103,7 @@ export function EvidenceDataTable({ items }: EvidenceDataTableProps) {
                   <button
                     type="button"
                     onClick={() => table.getColumn('filename')?.toggleSorting()}
-                    className="flex items-center space-x-1 hover:text-deep-trust-blue transition-colors"
+                    className="flex items-center space-x-1 hover:text-secondary transition-colors"
                   >
                     <span>파일명</span>
                     <ArrowUpDown className="w-4 h-4" />
@@ -122,7 +122,7 @@ export function EvidenceDataTable({ items }: EvidenceDataTableProps) {
                   <button
                     type="button"
                     onClick={() => table.getColumn('uploadDate')?.toggleSorting()}
-                    className="flex items-center space-x-1 hover:text-deep-trust-blue transition-colors"
+                    className="flex items-center space-x-1 hover:text-secondary transition-colors"
                   >
                     <span>업로드 날짜</span>
                     <ArrowUpDown className="w-4 h-4" />
@@ -188,7 +188,7 @@ export function EvidenceDataTable({ items }: EvidenceDataTableProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         type="button"
-                        className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                        className="text-gray-400 hover:text-neutral-600 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                         aria-label={`${evidence.filename} 추가 작업`}
                       >
                         <MoreVertical className="w-5 h-5" />

@@ -13,7 +13,6 @@ from typing import Dict, Any, Optional
 
 # Import AI Pipeline modules
 from src.parsers import (
-    ImageOCRParser,
     ImageVisionParser,
     PDFParser,
     AudioParser,
@@ -22,7 +21,6 @@ from src.parsers import (
 from src.parsers.text import TextParser
 from src.storage.metadata_store import MetadataStore
 from src.storage.vector_store import VectorStore
-from src.analysis.summarizer import EvidenceSummarizer
 from src.analysis.article_840_tagger import Article840Tagger
 from src.utils.logging_filter import SensitiveDataFilter
 
@@ -138,17 +136,11 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             chunk_ids.append(chunk_id)
         logger.info(f"Indexed {len(chunk_ids)} chunks to vector store")
 
-        # 분석 엔진 실행 (Summarizer + Article 840 Tagger)
-        summarizer = EvidenceSummarizer()
+        # 분석 엔진 실행 (Article 840 Tagger)
         tagger = Article840Tagger()
 
-        summaries = []
         tags_list = []
         for message in parsed_result:
-            # 요약 생성 (필요시)
-            # summary = summarizer.summarize(message)
-            # summaries.append(summary)
-
             # Article 840 태깅
             tagging_result = tagger.tag(message)
             tags_list.append({

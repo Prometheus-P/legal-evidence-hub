@@ -42,8 +42,8 @@ describe('HeroSection Component', () => {
     it('should have CTA button with primary styling', () => {
       render(<HeroSection />);
 
-      const ctaButton = screen.getByRole('link', { name: /무료로 시작하기/i });
-      expect(ctaButton).toHaveClass('btn-primary');
+      const ctaButton = screen.getByRole('button', { name: /무료로 시작하기/i });
+      expect(ctaButton).toHaveClass('bg-primary');
     });
 
     it('should link CTA button to signup page', () => {
@@ -78,7 +78,7 @@ describe('HeroSection Component', () => {
       const headline = screen.getByRole('heading', {
         name: /증거 정리 시간 90% 단축/i,
       });
-      expect(headline).toHaveClass('text-deep-trust-blue');
+      expect(headline).toHaveClass('text-secondary');
     });
 
     it('should have large font size for headline', () => {
@@ -106,7 +106,7 @@ describe('HeroSection Component', () => {
       const subheadline = screen.getByText(
         /AI가 이혼 소송 증거를 자동 분석하고 초안을 작성합니다/i
       );
-      expect(subheadline).toHaveClass('text-gray-600');
+      expect(subheadline).toHaveClass('text-neutral-600');
     });
 
     it('should follow 8pt grid spacing', () => {
@@ -195,7 +195,7 @@ describe('HeroSection Component', () => {
     it('should have CTA button in prominent position', () => {
       render(<HeroSection />);
 
-      const ctaButton = screen.getByRole('link', { name: /무료로 시작하기/i });
+      const ctaButton = screen.getByRole('button', { name: /무료로 시작하기/i });
       // Should have large padding for prominence
       expect(ctaButton).toHaveClass('px-8');
       expect(ctaButton).toHaveClass('py-4');
@@ -204,7 +204,7 @@ describe('HeroSection Component', () => {
     it('should have large text size for CTA', () => {
       render(<HeroSection />);
 
-      const ctaButton = screen.getByRole('link', { name: /무료로 시작하기/i });
+      const ctaButton = screen.getByRole('button', { name: /무료로 시작하기/i });
       expect(ctaButton).toHaveClass('text-lg');
     });
   });

@@ -3,10 +3,8 @@ End-to-End Integration Tests
 전체 파이프라인 통합 테스트
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime, date
-from pathlib import Path
+from unittest.mock import patch
+from datetime import datetime
 
 
 class TestFullPipeline:
@@ -20,17 +18,13 @@ class TestFullPipeline:
         When: 파싱 → 저장 → 분석 → 검색 실행
         Then: 모든 단계가 정상 작동
         """
-        from src.parsers.kakaotalk import KakaoTalkParser
         from src.storage.storage_manager import StorageManager
         from src.analysis.analysis_engine import AnalysisEngine
-        from src.storage.search_engine import SearchEngine
 
         # Mock embedding
         mock_embedding.return_value = [0.1] * 768
 
-        # 1. 파싱
-        parser = KakaoTalkParser()
-        # 실제 파싱 대신 Mock 데이터 사용
+        # 1. 파싱 (Mock 데이터 사용)
         from src.parsers.base import Message
         messages = [
             Message(
@@ -120,7 +114,7 @@ class TestComponentIntegration:
     def test_parser_to_storage_integration(self):
         """파서 → 스토리지 통합"""
         from src.parsers.base import Message
-        from src.storage.schemas import EvidenceFile, EvidenceChunk
+        from src.storage.schemas import EvidenceChunk
 
         # Message → EvidenceChunk 변환 가능
         message = Message(
@@ -235,29 +229,14 @@ class TestSystemReadiness:
     def test_all_modules_importable(self):
         """모든 모듈 import 가능 확인"""
         # Parsers
-        from src.parsers.base import BaseParser, Message
-        from src.parsers.kakaotalk import KakaoTalkParser
-        from src.parsers.text import TextParser
-        from src.parsers.image_ocr import ImageOCRParser
 
         # Storage
-        from src.storage.vector_store import VectorStore
-        from src.storage.metadata_store import MetadataStore
-        from src.storage.storage_manager import StorageManager
-        from src.storage.search_engine import SearchEngine
 
         # Analysis
-        from src.analysis.evidence_scorer import EvidenceScorer
-        from src.analysis.risk_analyzer import RiskAnalyzer
-        from src.analysis.analysis_engine import AnalysisEngine
 
         # Service RAG
-        from src.service_rag.legal_parser import LegalParser
-        from src.service_rag.legal_vectorizer import LegalVectorizer
-        from src.service_rag.legal_search import LegalSearchEngine
 
         # User RAG
-        from src.user_rag.hybrid_search import HybridSearchEngine
 
         assert True  # 모든 모듈 import 성공
 

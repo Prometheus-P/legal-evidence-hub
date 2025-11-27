@@ -4,8 +4,8 @@ Following TDD approach: RED-GREEN-REFACTOR
 """
 
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from datetime import datetime
+from unittest.mock import patch
 from src.storage.search_engine import SearchEngine, SearchResult
 from src.storage.storage_manager import StorageManager
 

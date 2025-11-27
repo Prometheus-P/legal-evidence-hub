@@ -178,9 +178,9 @@ export default function AuditLogPage() {
       case 'VIEW':
         return 'text-blue-600 bg-blue-50';
       case 'LOGIN':
-        return 'text-gray-600 bg-gray-50';
+        return 'text-neutral-600 bg-gray-50';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'text-neutral-600 bg-gray-50';
     }
   };
 
@@ -219,26 +219,26 @@ export default function AuditLogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-calm-grey p-8">
+    <div className="min-h-screen bg-neutral-50 p-8">
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="mb-6">
         <ol className="flex items-center space-x-2 text-sm">
           <li>
-            <a href="/admin" className="text-gray-600 hover:text-deep-trust-blue">
+            <a href="/admin" className="text-neutral-600 hover:text-secondary">
               Admin
             </a>
           </li>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <li>
-            <span className="text-deep-trust-blue font-semibold">Audit Log</span>
+            <span className="text-secondary font-semibold">Audit Log</span>
           </li>
         </ol>
       </nav>
 
       {/* Page Title */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-deep-trust-blue">활동 로그</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-secondary">활동 로그</h1>
+        <p className="text-neutral-600 mt-2">
           시스템 사용자 활동 기록 및 보안 상태 모니터링
         </p>
       </div>
@@ -251,7 +251,7 @@ export default function AuditLogPage() {
         >
           <h2
             id="security-status-title"
-            className="text-xl font-semibold text-deep-trust-blue mb-6"
+            className="text-xl font-semibold text-secondary mb-6"
           >
             보안 상태
           </h2>
@@ -263,8 +263,8 @@ export default function AuditLogPage() {
                 <Lock className="w-6 h-6 text-success-green" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">암호화 상태</p>
-                <p className="text-lg font-semibold text-deep-trust-blue mt-1">
+                <p className="text-sm text-neutral-600">암호화 상태</p>
+                <p className="text-lg font-semibold text-secondary mt-1">
                   암호화 활성
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -279,8 +279,8 @@ export default function AuditLogPage() {
                 <Shield className="w-6 h-6 text-success-green" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">PIPA 준수</p>
-                <p className="text-lg font-semibold text-deep-trust-blue mt-1">
+                <p className="text-sm text-neutral-600">PIPA 준수</p>
+                <p className="text-lg font-semibold text-secondary mt-1">
                   {securityStatus.pipa.compliant ? 'PIPA Compliant' : 'Non-Compliant'}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
@@ -295,8 +295,8 @@ export default function AuditLogPage() {
                 <CheckCircle2 className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">마지막 감사</p>
-                <p className="text-lg font-semibold text-deep-trust-blue mt-1">
+                <p className="text-sm text-neutral-600">마지막 감사</p>
+                <p className="text-lg font-semibold text-secondary mt-1">
                   {securityStatus.lastAudit}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">정기 보안 감사 완료</p>
@@ -311,14 +311,14 @@ export default function AuditLogPage() {
         className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-6"
         aria-labelledby="filters-title"
       >
-        <h2 id="filters-title" className="text-lg font-semibold text-deep-trust-blue mb-4">
+        <h2 id="filters-title" className="text-lg font-semibold text-secondary mb-4">
           필터
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Date Range Filter */}
           <div>
-            <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="start-date" className="block text-sm font-medium text-neutral-700 mb-2">
               시작 날짜
             </label>
             <input
@@ -332,7 +332,7 @@ export default function AuditLogPage() {
           </div>
 
           <div>
-            <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="end-date" className="block text-sm font-medium text-neutral-700 mb-2">
               종료 날짜
             </label>
             <input
@@ -347,7 +347,7 @@ export default function AuditLogPage() {
 
           {/* User Filter */}
           <div>
-            <label htmlFor="user-filter" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="user-filter" className="block text-sm font-medium text-neutral-700 mb-2">
               사용자 선택
             </label>
             <select
@@ -371,7 +371,7 @@ export default function AuditLogPage() {
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                className="w-full px-4 py-2 bg-gray-200 text-neutral-700 rounded-md hover:bg-gray-300 transition-colors"
               >
                 필터 초기화
               </button>
@@ -381,7 +381,7 @@ export default function AuditLogPage() {
 
         {/* Action Type Filters */}
         <div className="mt-4">
-          <p className="block text-sm font-medium text-gray-700 mb-2">작업 유형</p>
+          <p className="block text-sm font-medium text-neutral-700 mb-2">작업 유형</p>
           <div className="flex flex-wrap gap-3">
             {(['LOGIN', 'VIEW', 'CREATE', 'UPDATE', 'DELETE'] as const).map((action) => (
               <label key={action} className="flex items-center space-x-2 cursor-pointer">
@@ -392,7 +392,7 @@ export default function AuditLogPage() {
                   className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent"
                   aria-label={action}
                 />
-                <span className="text-sm text-gray-700">{action}</span>
+                <span className="text-sm text-neutral-700">{action}</span>
               </label>
             ))}
           </div>
@@ -406,10 +406,10 @@ export default function AuditLogPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 id="audit-log-title" className="text-xl font-semibold text-deep-trust-blue">
+            <h2 id="audit-log-title" className="text-xl font-semibold text-secondary">
               활동 로그
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-neutral-600 mt-1">
               총 {filteredLogs.length} 개의 로그
             </p>
           </div>
@@ -427,7 +427,7 @@ export default function AuditLogPage() {
         {filteredLogs.length === 0 ? (
           <div className="text-center py-12">
             <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">로그가 없습니다</p>
+            <p className="text-neutral-600">로그가 없습니다</p>
             <p className="text-sm text-gray-500 mt-2">
               필터 조건을 변경하거나 초기화해 주세요
             </p>
@@ -439,31 +439,31 @@ export default function AuditLogPage() {
                 <tr className="border-b border-gray-200">
                   <th
                     scope="col"
-                    className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue"
+                    className="text-left py-3 px-4 text-sm font-semibold text-secondary"
                   >
                     날짜/시간
                   </th>
                   <th
                     scope="col"
-                    className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue"
+                    className="text-left py-3 px-4 text-sm font-semibold text-secondary"
                   >
                     사용자
                   </th>
                   <th
                     scope="col"
-                    className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue"
+                    className="text-left py-3 px-4 text-sm font-semibold text-secondary"
                   >
                     작업
                   </th>
                   <th
                     scope="col"
-                    className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue"
+                    className="text-left py-3 px-4 text-sm font-semibold text-secondary"
                   >
                     대상
                   </th>
                   <th
                     scope="col"
-                    className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue"
+                    className="text-left py-3 px-4 text-sm font-semibold text-secondary"
                   >
                     IP 주소
                   </th>
@@ -472,7 +472,7 @@ export default function AuditLogPage() {
               <tbody>
                 {filteredLogs.map((log) => (
                   <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">
+                    <td className="py-3 px-4 text-sm text-neutral-700">
                       {new Date(log.timestamp).toLocaleString('ko-KR')}
                     </td>
                     <td className="py-3 px-4">
@@ -491,8 +491,8 @@ export default function AuditLogPage() {
                         <span className="ml-1">{log.action}</span>
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{log.target}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600 font-mono">
+                    <td className="py-3 px-4 text-sm text-neutral-700">{log.target}</td>
+                    <td className="py-3 px-4 text-sm text-neutral-600 font-mono">
                       {log.ipAddress}
                     </td>
                   </tr>
@@ -504,7 +504,7 @@ export default function AuditLogPage() {
 
         {/* Pagination (placeholder for future implementation) */}
         <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-gray-600">페이지 1 / 1</p>
+          <p className="text-sm text-neutral-600">페이지 1 / 1</p>
           <div className="flex space-x-2">
             <button
               disabled

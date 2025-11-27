@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-calm-grey">
+    <div className="min-h-screen bg-neutral-50">
       <Head>
         <title>사용자 및 역할 관리 | Legal Evidence Hub</title>
       </Head>
@@ -71,10 +71,10 @@ export default function AdminUsersPage() {
             <p className="text-xs text-gray-500 uppercase tracking-wide">
               Admin
             </p>
-            <h1 className="text-2xl font-bold text-deep-trust-blue">
+            <h1 className="text-2xl font-bold text-secondary">
               사용자 및 역할 관리
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-neutral-600 mt-1">
               로펌 내 사용자 현황을 한눈에 보고, 초대 및 권한을 관리합니다.
             </p>
           </div>
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
               <h2 className="text-lg font-semibold text-gray-900">
                 사용자 목록
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-neutral-600 mt-1">
                 이름, 이메일, 역할, 상태를 기준으로 사용자를 관리합니다.
               </p>
             </div>
@@ -119,31 +119,31 @@ export default function AdminUsersPage() {
                 <tr>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     이름
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     이메일
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     역할
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     상태
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     액션
                   </th>
@@ -157,8 +157,8 @@ export default function AdminUsersPage() {
                     aria-label={user.name}
                   >
                     <td className="px-4 py-3 text-gray-900">{user.name}</td>
-                    <td className="px-4 py-3 text-gray-700">{user.email}</td>
-                    <td className="px-4 py-3 text-gray-700">{user.role}</td>
+                    <td className="px-4 py-3 text-neutral-700">{user.email}</td>
+                    <td className="px-4 py-3 text-neutral-700">{user.role}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -166,7 +166,7 @@ export default function AdminUsersPage() {
                             ? 'bg-emerald-50 text-emerald-700'
                             : user.status === 'invited'
                             ? 'bg-blue-50 text-blue-700'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-gray-100 text-neutral-600'
                         }`}
                       >
                         {user.status === 'active'
@@ -203,7 +203,7 @@ export default function AdminUsersPage() {
           </div>
 
           {inviteMessage && (
-            <div className="mt-4 rounded-md bg-accent/10 text-deep-trust-blue px-4 py-3 text-sm">
+            <div className="mt-4 rounded-md bg-accent/10 text-secondary px-4 py-3 text-sm">
               {inviteMessage}
             </div>
           )}

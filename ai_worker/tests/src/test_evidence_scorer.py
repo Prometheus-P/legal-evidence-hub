@@ -3,7 +3,6 @@ Test suite for EvidenceScorer
 Following TDD approach: RED-GREEN-REFACTOR
 """
 
-import pytest
 from datetime import datetime
 from src.analysis.evidence_scorer import EvidenceScorer, ScoringResult
 from src.parsers.base import Message

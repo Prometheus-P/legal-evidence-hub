@@ -28,7 +28,7 @@ describe('SolutionSection Component', () => {
       render(<SolutionSection />);
 
       const title = screen.getByRole('heading', { name: /legal evidence hub가 해결합니다/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -237,7 +237,7 @@ describe('SolutionSection Component', () => {
       const { container } = render(<SolutionSection />);
 
       const section = container.querySelector('section');
-      expect(section).toHaveClass('bg-calm-grey');
+      expect(section).toHaveClass('bg-neutral-50');
     });
 
     it('should use appropriate text colors', () => {
@@ -251,7 +251,7 @@ describe('SolutionSection Component', () => {
       ];
 
       descriptions.forEach((desc) => {
-        expect(desc).toHaveClass('text-gray-600');
+        expect(desc).toHaveClass('text-neutral-600');
       });
     });
   });

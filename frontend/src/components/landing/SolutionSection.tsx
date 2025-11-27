@@ -39,13 +39,13 @@ export default function SolutionSection() {
 
   return (
     <section
-      className="py-20 px-6 bg-calm-grey"
+      className="py-20 px-6 bg-neutral-50"
       aria-label="솔루션 핵심 기능"
     >
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             Legal Evidence Hub가 해결합니다
           </h2>
 
@@ -67,12 +67,12 @@ export default function SolutionSection() {
                   </div>
 
                   {/* Feature Title */}
-                  <h3 className="text-2xl font-bold text-deep-trust-blue">
+                  <h3 className="text-2xl font-bold text-secondary">
                     {feature.title}
                   </h3>
 
                   {/* Feature Description */}
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-neutral-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>

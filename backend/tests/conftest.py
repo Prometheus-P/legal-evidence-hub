@@ -4,7 +4,7 @@ Pytest configuration and shared fixtures for LEH Backend tests
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 import os
 from pathlib import Path
 
@@ -51,19 +51,65 @@ def pytest_configure(config):
         load_dotenv(env_path, override=True)
 
 
+# ============================================
+# Auto-use AWS Mocking Fixtures
+# ============================================
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_aws_services():
+    """
+    Mock all AWS services (S3, DynamoDB) at session level
+    to prevent tests from requiring real AWS credentials
+    """
+    mock_boto3_client = MagicMock()
+    mock_boto3_resource = MagicMock()
+
+    # Mock DynamoDB Table
+    mock_table = MagicMock()
+    mock_table.query.return_value = {"Items": []}
+    mock_table.scan.return_value = {"Items": []}
+    mock_table.get_item.return_value = {"Item": None}
+    mock_table.put_item.return_value = {}
+    mock_boto3_resource.return_value.Table.return_value = mock_table
+
+    # Mock S3 client
+    mock_s3 = MagicMock()
+    mock_s3.generate_presigned_url.return_value = "https://test-bucket.s3.amazonaws.com/presigned-url"
+    mock_s3.generate_presigned_post.return_value = {
+        "url": "https://test-bucket.s3.amazonaws.com",
+        "fields": {"key": "test-key"}
+    }
+    mock_boto3_client.return_value = mock_s3
+
+    with patch('boto3.client', mock_boto3_client), \
+         patch('boto3.resource', mock_boto3_resource):
+        yield {
+            "s3": mock_s3,
+            "dynamodb_table": mock_table,
+        }
+
+
 @pytest.fixture(scope="session")
 def test_env():
     """
-    Set up test environment variables
+    Set up test environment variables and initialize database
 
     Respects CI environment variables if already set (e.g., DATABASE_URL from GitHub Actions)
+    For local development, uses SQLite database
     """
+    import os as os_module
+
+    # Clean up any existing test database (for local SQLite)
+    if os_module.path.exists("./test.db"):
+        os_module.remove("./test.db")
+
     # Default test values - only used if not already set in environment
+    # Use SQLite for local testing, PostgreSQL for CI
     defaults = {
         "APP_ENV": "local",
         "APP_DEBUG": "true",
         "JWT_SECRET": "test-secret-key-do-not-use-in-production",
-        "DATABASE_URL": "postgresql://test_user:test_pass@localhost:5432/test_db",
+        "DATABASE_URL": "sqlite:///./test.db",  # Local default, CI overrides this
         "S3_EVIDENCE_BUCKET": "test-bucket",
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
         "QDRANT_HOST": "",  # Empty = in-memory mode for tests
@@ -82,7 +128,24 @@ def test_env():
             os.environ[key] = default_value
             test_env_vars[key] = default_value
 
+    # Patch global settings
+    from app.core.config import settings
+    original_db_url = settings.DATABASE_URL
+    settings.DATABASE_URL = test_env_vars["DATABASE_URL"]
+
+    # Initialize database and create tables for all tests
+    from app.db.session import init_db, engine
+    from app.db.models import Base
+    init_db()
+
     yield test_env_vars
+
+    # Drop tables and cleanup
+    if engine is not None:
+        Base.metadata.drop_all(bind=engine)
+
+    # Restore global settings
+    settings.DATABASE_URL = original_db_url
 
     # Restore original env vars
     for key, original_value in original_env.items():
@@ -90,6 +153,10 @@ def test_env():
             os.environ.pop(key, None)
         else:
             os.environ[key] = original_value
+
+    # Clean up test database file (for local SQLite)
+    if os_module.path.exists("./test.db"):
+        os_module.remove("./test.db")
 
 
 @pytest.fixture(scope="function")
@@ -229,14 +296,12 @@ def test_user(test_env):
 
     Password: correct_password123
     """
-    from app.db.session import get_db, init_db
-    from app.db.models import User
+    from app.db.session import get_db
+    from app.db.models import User, Case, CaseMember, InviteToken
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
-    # Initialize database
-    init_db()
-
+    # Database is already initialized by test_env fixture
     # Create user
     db: Session = next(get_db())
     try:
@@ -253,9 +318,9 @@ def test_user(test_env):
         yield user
 
         # Cleanup - delete in correct order to respect foreign keys
-        # Delete case_members first
-        from app.db.models import Case, CaseMember, InviteToken
+        # Delete invite tokens first
         db.query(InviteToken).filter(InviteToken.created_by == user.id).delete()
+        # Delete case_members
         db.query(CaseMember).filter(CaseMember.user_id == user.id).delete()
         # Delete cases created by user
         db.query(Case).filter(Case.created_by == user.id).delete()

@@ -42,7 +42,7 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
                 e.currentTarget.style.display = 'none';
               }}
             />
-            <span className="text-2xl font-bold text-deep-trust-blue">LEH</span>
+            <span className="text-2xl font-bold text-secondary">LEH</span>
           </Link>
         </div>
 
@@ -50,25 +50,25 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
         <div className="flex items-center space-x-8">
           <Link
             href="#features"
-            className="text-sm font-medium text-gray-700 hover:text-deep-trust-blue transition-colors"
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
           >
             기능
           </Link>
           <Link
             href="#pricing"
-            className="text-sm font-medium text-gray-700 hover:text-deep-trust-blue transition-colors"
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
           >
             가격
           </Link>
           <Link
             href="#testimonials"
-            className="text-sm font-medium text-gray-700 hover:text-deep-trust-blue transition-colors"
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
           >
             고객사례
           </Link>
           <Link
             href="/login"
-            className="text-sm font-medium text-gray-700 hover:text-deep-trust-blue transition-colors"
+            className="text-sm font-medium text-neutral-700 hover:text-secondary transition-colors"
           >
             로그인
           </Link>

@@ -14,14 +14,12 @@ def admin_user(test_env):
 
     Password: admin_password123
     """
-    from app.db.session import get_db, init_db
-    from app.db.models import User
+    from app.db.session import get_db
+    from app.db.models import User, Case, CaseMember, InviteToken
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
-    # Initialize database
-    init_db()
-
+    # Database is already initialized by test_env fixture
     # Create admin user
     db: Session = next(get_db())
     try:
@@ -37,9 +35,11 @@ def admin_user(test_env):
 
         yield admin
 
-        # Cleanup
-        from app.db.models import Case, CaseMember, InviteToken
-        db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
+        # Cleanup - delete in correct order to respect foreign keys
+        try:
+            db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
+        except Exception:
+            pass
         db.query(CaseMember).filter(CaseMember.user_id == admin.id).delete()
         db.query(Case).filter(Case.created_by == admin.id).delete()
         db.delete(admin)

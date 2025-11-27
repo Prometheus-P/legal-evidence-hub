@@ -125,7 +125,7 @@ describe('SocialProofSection Component', () => {
       render(<SocialProofSection />);
 
       const trustBadge = screen.getByText(/로펌 사용 중/);
-      expect(trustBadge).toHaveClass('text-gray-700');
+      expect(trustBadge).toHaveClass('text-neutral-700');
     });
 
     it('should use accent color for rating', () => {

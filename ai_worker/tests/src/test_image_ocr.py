@@ -5,7 +5,6 @@ Following TDD approach: RED-GREEN-REFACTOR
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 from datetime import datetime
 from src.parsers.image_ocr import ImageOCRParser
 from src.parsers.base import Message

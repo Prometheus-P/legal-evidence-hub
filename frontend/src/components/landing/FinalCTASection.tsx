@@ -11,22 +11,20 @@
  */
 
 import Link from 'next/link';
+import { Button } from '@/components/primitives';
 
 export default function FinalCTASection() {
   return (
-    <section
-      className="py-20 px-6 bg-calm-grey"
-      aria-label="최종 행동 유도"
-    >
+    <section className="py-20 px-6 bg-neutral-50" aria-label="최종 행동 유도">
       <div className="max-w-4xl mx-auto">
         <div className="text-center space-y-8">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue">
+          <h2 className="text-4xl font-bold text-secondary">
             지금 바로 시작하세요
           </h2>
 
           {/* Subtext */}
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-neutral-600">
             14일 무료 체험, 신용카드 필요 없음
           </p>
 
@@ -35,19 +33,29 @@ export default function FinalCTASection() {
             {/* Primary CTA */}
             <Link
               href="/signup"
-              className="btn-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-shadow focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
               aria-label="무료로 시작하기 - 14일 무료 체험, 신용카드 필요 없음"
             >
-              무료로 시작하기
+              <Button
+                variant="primary"
+                size="lg"
+                className="text-lg px-8 py-4 shadow-lg hover:shadow-xl"
+              >
+                무료로 시작하기
+              </Button>
             </Link>
 
             {/* Secondary CTA */}
             <Link
               href="mailto:sales@legalevidence.hub"
-              className="bg-gray-100 text-deep-trust-blue text-lg px-8 py-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors focus-visible:ring-2 focus-visible:ring-deep-trust-blue focus-visible:ring-offset-2 focus-visible:outline-none"
               aria-label="영업팀과 상담하기 - 이메일 문의"
             >
-              영업팀과 상담하기
+              <Button
+                variant="ghost"
+                size="lg"
+                className="text-lg px-8 py-4 bg-neutral-100 hover:bg-neutral-200"
+              >
+                영업팀과 상담하기
+              </Button>
             </Link>
           </div>
         </div>

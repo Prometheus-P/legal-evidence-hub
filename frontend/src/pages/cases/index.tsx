@@ -56,14 +56,14 @@ export default function CasesPage() {
     // Show nothing while checking auth to prevent content flash
     if (isAuthChecking) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-calm-grey">
+            <div className="min-h-screen flex items-center justify-center bg-neutral-50">
                 <div className="text-gray-500">로딩 중...</div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-calm-grey">
+        <div className="min-h-screen bg-neutral-50">
             <Head>
                 <title>사건 목록 | Legal Evidence Hub</title>
             </Head>
@@ -71,9 +71,9 @@ export default function CasesPage() {
             {/* Header / Navigation (To be separated later) */}
             <nav className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-deep-trust-blue">LEH</h1>
+                    <h1 className="text-2xl font-bold text-secondary">LEH</h1>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-600">변호사님, 환영합니다.</span>
+                        <span className="text-sm text-neutral-600">변호사님, 환영합니다.</span>
                         <button className="text-sm text-gray-500 hover:text-gray-800">로그아웃</button>
                     </div>
                 </div>

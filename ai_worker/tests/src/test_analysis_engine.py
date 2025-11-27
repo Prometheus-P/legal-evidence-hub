@@ -3,7 +3,6 @@ Test suite for AnalysisEngine
 Following TDD approach: RED-GREEN-REFACTOR
 """
 
-import pytest
 from datetime import datetime
 from src.analysis.analysis_engine import AnalysisEngine, AnalysisResult
 from src.analysis.evidence_scorer import ScoringResult
@@ -160,8 +159,7 @@ class TestResultStructure:
 
     def test_analysis_result_creation(self):
         """AnalysisResult 생성 테스트"""
-        from src.analysis.evidence_scorer import ScoringResult
-        from src.analysis.risk_analyzer import RiskAssessment, RiskLevel
+        from src.analysis.risk_analyzer import RiskLevel
 
         result = AnalysisResult(
             case_id="test_case",

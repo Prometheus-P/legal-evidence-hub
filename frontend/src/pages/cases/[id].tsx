@@ -145,7 +145,7 @@ export default function CaseDetailPage() {
     );
 
     return (
-        <div className="min-h-screen bg-calm-grey">
+        <div className="min-h-screen bg-neutral-50">
             <Head>
                 <title>사건 상세 | Legal Evidence Hub</title>
             </Head>
@@ -158,7 +158,7 @@ export default function CaseDetailPage() {
                             <ArrowLeft className="w-6 h-6" />
                         </Link>
                         <div>
-                            <h1 className="text-xl font-bold text-deep-trust-blue">김철수 이혼 소송</h1>
+                            <h1 className="text-xl font-bold text-secondary">김철수 이혼 소송</h1>
                             <p className="text-xs text-gray-500">Case ID: {id}</p>
                         </div>
                     </div>
@@ -185,8 +185,8 @@ export default function CaseDetailPage() {
                         <p className="text-base font-semibold text-gray-900">{evidenceList.length}건 처리 중</p>
                         <p className="text-xs text-gray-500">AI 분석 상태는 실시간으로 반영됩니다.</p>
                     </div>
-                    <div className="flex items-center space-x-2 bg-calm-grey rounded-xl px-4 py-3">
-                        <Shield className="w-5 h-5 text-deep-trust-blue" />
+                    <div className="flex items-center space-x-2 bg-neutral-50 rounded-xl px-4 py-3">
+                        <Shield className="w-5 h-5 text-secondary" />
                         <div>
                             <p className="text-sm font-semibold text-gray-800">모든 데이터는 암호화되어 저장됩니다.</p>
                             <p className="text-xs text-gray-500">Calm Control · Sage & Caregiver</p>
@@ -204,7 +204,7 @@ export default function CaseDetailPage() {
                                 aria-selected={isActive}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex flex-col rounded-xl border px-4 py-3 text-left transition-all ${
-                                    isActive ? 'border-accent bg-accent/10 text-deep-trust-blue shadow-sm' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                                    isActive ? 'border-accent bg-accent/10 text-secondary shadow-sm' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
                                 }`}
                             >
                                 <span className="text-sm font-semibold">{tab.label}</span>
@@ -233,8 +233,8 @@ export default function CaseDetailPage() {
                                     aria-live="polite"
                                     className={`flex items-start space-x-2 rounded-lg px-4 py-3 text-sm ${
                                         uploadFeedback.tone === 'success'
-                                            ? 'bg-accent/10 text-deep-trust-blue'
-                                            : 'bg-gray-100 text-gray-700'
+                                            ? 'bg-accent/10 text-secondary'
+                                            : 'bg-gray-100 text-neutral-700'
                                     }`}
                                 >
                                     <CheckCircle2 className="w-4 h-4 mt-0.5 text-accent" />
@@ -251,7 +251,7 @@ export default function CaseDetailPage() {
                                     </h2>
                                     <p className="text-xs text-gray-500">상태 컬럼을 통해 AI 분석 파이프라인의 진행 상황을 확인하세요.</p>
                                 </div>
-                                <button className="flex items-center text-sm text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md shadow-sm">
+                                <button className="flex items-center text-sm text-neutral-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md shadow-sm">
                                     <Filter className="w-4 h-4 mr-2" />
                                     뷰 필터
                                 </button>
@@ -267,7 +267,7 @@ export default function CaseDetailPage() {
                         <p className="text-sm text-gray-500">
                             상대방의 주장을 기록하고, RAG 기반으로 자동 추천되는 증거를 매칭할 수 있도록 준비 중입니다. 지금은 사건 노트에 주요 쟁점을 메모해 두세요.
                         </p>
-                        <div className="bg-calm-grey rounded-xl p-4 text-sm text-gray-600">⚙️ 곧 제공될 기능: 주장 카드 추가, AI 추천 증거 목록, 신뢰도 퍼센티지 뱃지</div>
+                        <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-600">⚙️ 곧 제공될 기능: 주장 카드 추가, AI 추천 증거 목록, 신뢰도 퍼센티지 뱃지</div>
                     </section>
                 )}
 

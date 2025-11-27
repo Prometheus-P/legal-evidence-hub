@@ -4,8 +4,7 @@ Following TDD approach: RED-GREEN-REFACTOR
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock, mock_open
-from pathlib import Path
+from unittest.mock import patch, MagicMock, mock_open
 from datetime import datetime, timedelta
 from src.parsers.audio_parser import AudioParser
 from src.parsers.base import Message

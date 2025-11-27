@@ -318,7 +318,7 @@ describe('Plan 3.17 - AI Traceability Panel', () => {
             // Section headings에서 Deep Trust Blue 텍스트 색상 확인
             const sectionHeadings = container.querySelectorAll('h3');
             expect(sectionHeadings.length).toBeGreaterThan(0);
-            expect(sectionHeadings[0]).toHaveClass('text-deep-trust-blue');
+            expect(sectionHeadings[0]).toHaveClass('text-secondary');
         });
 
         test('Evidence 참조 hover 시 Clarity Teal 색상이 적용되어야 한다', () => {

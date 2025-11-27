@@ -48,7 +48,7 @@ export default function TemplateManagerPage() {
     };
 
     return (
-        <div className="min-h-screen bg-calm-grey">
+        <div className="min-h-screen bg-neutral-50">
             <Head>
                 <title>템플릿 관리 | Legal Evidence Hub</title>
             </Head>
@@ -57,8 +57,8 @@ export default function TemplateManagerPage() {
                 <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wide">Template Center</p>
-                        <h1 className="text-2xl font-bold text-deep-trust-blue">템플릿 관리</h1>
-                        <p className="text-sm text-gray-600 mt-1">변호사 전용 문서 양식을 업로드하고 재사용하세요.</p>
+                        <h1 className="text-2xl font-bold text-secondary">템플릿 관리</h1>
+                        <p className="text-sm text-neutral-600 mt-1">변호사 전용 문서 양식을 업로드하고 재사용하세요.</p>
                     </div>
                 </div>
             </header>
@@ -67,7 +67,7 @@ export default function TemplateManagerPage() {
                 <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <form className="space-y-4" onSubmit={handleUpload}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <label className="flex flex-col text-sm text-gray-700">
+                            <label className="flex flex-col text-sm text-neutral-700">
                                 <span className="font-semibold mb-2">양식 이름</span>
                                 <input
                                     aria-label="양식 이름"
@@ -79,7 +79,7 @@ export default function TemplateManagerPage() {
                                 />
                             </label>
 
-                            <label className="flex flex-col text-sm text-gray-700">
+                            <label className="flex flex-col text-sm text-neutral-700">
                                 <span className="font-semibold mb-2">템플릿 파일</span>
                                 <input
                                     aria-label="템플릿 파일"
@@ -132,9 +132,9 @@ export default function TemplateManagerPage() {
                                 {templates.map((template) => (
                                     <tr key={template.id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{template.name}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">{template.updatedAt}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">{template.uses}회</td>
-                                        <td className="px-4 py-3 text-right text-sm text-gray-600 space-x-2">
+                                        <td className="px-4 py-3 text-sm text-neutral-600">{template.updatedAt}</td>
+                                        <td className="px-4 py-3 text-sm text-neutral-600">{template.uses}회</td>
+                                        <td className="px-4 py-3 text-right text-sm text-neutral-600 space-x-2">
                                             <button
                                                 type="button"
                                                 onClick={() => handleApply(template.id)}

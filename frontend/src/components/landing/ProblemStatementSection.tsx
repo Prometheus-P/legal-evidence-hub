@@ -47,7 +47,7 @@ export default function ProblemStatementSection() {
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             이런 고민 있으셨나요?
           </h2>
 
@@ -69,7 +69,7 @@ export default function ProblemStatementSection() {
                   </div>
 
                   {/* Pain Point Text */}
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-neutral-700 leading-relaxed">
                     {point.text}
                   </p>
                 </div>

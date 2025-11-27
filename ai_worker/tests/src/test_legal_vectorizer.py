@@ -6,7 +6,7 @@ Following TDD approach: RED-GREEN-REFACTOR
 import pytest
 from unittest.mock import Mock, patch
 from src.service_rag.legal_vectorizer import LegalVectorizer
-from src.service_rag.schemas import Statute, CaseLaw, LegalChunk
+from src.service_rag.schemas import Statute, CaseLaw
 from datetime import date
 
 

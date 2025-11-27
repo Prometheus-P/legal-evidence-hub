@@ -259,14 +259,14 @@ describe('Plan 3.17 - Audit Log Page (활동 로그 페이지)', () => {
 
       // h1 heading으로 활동 로그 찾기
       const mainHeading = screen.getByRole('heading', { level: 1, name: /활동 로그/i });
-      expect(mainHeading).toHaveClass('text-deep-trust-blue');
+      expect(mainHeading).toHaveClass('text-secondary');
     });
 
     it('should apply Calm Grey background to page', () => {
       const { container } = render(<AuditLogPage />);
 
       const pageContainer = container.querySelector('.min-h-screen');
-      expect(pageContainer).toHaveClass('bg-calm-grey');
+      expect(pageContainer).toHaveClass('bg-neutral-50');
     });
 
     it('should use semantic colors for action type badges', () => {

@@ -30,7 +30,7 @@ describe('ProblemStatementSection Component', () => {
       render(<ProblemStatementSection />);
 
       const title = screen.getByRole('heading', { name: /이런 고민 있으셨나요\?/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -167,7 +167,7 @@ describe('ProblemStatementSection Component', () => {
       // Pain point text should be readable gray
       const painPoints = screen.getAllByText(/시나요\?|시죠\?/);
       painPoints.forEach((point) => {
-        expect(point).toHaveClass('text-gray-700');
+        expect(point).toHaveClass('text-neutral-700');
       });
     });
   });

@@ -28,6 +28,7 @@ describe('Frontend Style Rules', () => {
         const tailwindConfigPath = path.join(projectRoot, 'tailwind.config.js');
         const configContent = fs.readFileSync(tailwindConfigPath, 'utf-8');
 
-        expect(configContent).toMatch(/fontFamily:\s*{[^}]*sans:\s*\["var\(--font-pretendard\)"/);
+        // Check for fontFamily with Pretendard (using either single or double quotes)
+        expect(configContent).toMatch(/fontFamily:\s*{[^}]*sans:\s*\[['"]var\(--font-pretendard\)['"]/);
     });
 });

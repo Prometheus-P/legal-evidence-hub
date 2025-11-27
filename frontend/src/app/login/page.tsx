@@ -25,13 +25,13 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-calm-grey">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-deep-trust-blue mb-2">
             Legal Evidence Hub
           </h1>
-          <p className="text-gray-600">로그인하여 시작하세요</p>
+          <p className="text-neutral-600">로그인하여 시작하세요</p>
         </div>
         <LoginForm />
       </div>

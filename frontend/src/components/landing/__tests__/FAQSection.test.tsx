@@ -31,7 +31,7 @@ describe('FAQSection Component', () => {
       render(<FAQSection />);
 
       const title = screen.getByRole('heading', { name: /자주 묻는 질문/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -237,7 +237,7 @@ describe('FAQSection Component', () => {
 
       // Questions should use Deep Trust Blue
       const section = container.querySelector('section');
-      const questionElements = section?.querySelectorAll('.text-deep-trust-blue');
+      const questionElements = section?.querySelectorAll('.text-secondary');
       expect(questionElements?.length).toBeGreaterThanOrEqual(6); // Section title + 5 questions
     });
 
@@ -250,7 +250,7 @@ describe('FAQSection Component', () => {
       if (button) fireEvent.click(button);
 
       const answer = screen.getByText(/AI는 초안 작성을 보조하는 도구/i);
-      expect(answer).toHaveClass('text-gray-600');
+      expect(answer).toHaveClass('text-neutral-600');
     });
   });
 

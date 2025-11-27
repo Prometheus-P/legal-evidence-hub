@@ -223,7 +223,7 @@ describe('LandingFooter Component', () => {
 
       const footer = container.querySelector('footer');
       // Text should be light colored
-      const lightText = footer?.querySelectorAll('.text-gray-300, .text-white');
+      const lightText = footer?.querySelectorAll('.text-neutral-300, .text-white');
       expect(lightText?.length).toBeGreaterThanOrEqual(1);
     });
   });

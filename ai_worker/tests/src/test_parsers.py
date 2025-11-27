@@ -5,7 +5,6 @@ Following TDD approach: RED-GREEN-REFACTOR
 
 import pytest
 from datetime import datetime
-from pathlib import Path
 from src.parsers.base import BaseParser, Message
 
 
@@ -270,7 +269,7 @@ class TestTextParser:
         timestamp = messages[0].timestamp
 
         # 타임스탬프가 최근 1분 이내인지 확인
-        from datetime import datetime, timedelta
+        from datetime import datetime
         now = datetime.now()
         assert abs((now - timestamp).total_seconds()) < 60
 

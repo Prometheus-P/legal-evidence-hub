@@ -52,7 +52,7 @@ export default function HowItWorksSection() {
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             4단계로 완성되는 초안
           </h2>
 
@@ -77,18 +77,18 @@ export default function HowItWorksSection() {
                   {/* Icon */}
                   <div className="flex justify-center">
                     <IconComponent
-                      className="w-8 h-8 text-deep-trust-blue"
+                      className="w-8 h-8 text-secondary"
                       aria-label={step.ariaLabel}
                     />
                   </div>
 
                   {/* Step Title */}
-                  <h3 className="text-xl font-bold text-deep-trust-blue">
+                  <h3 className="text-xl font-bold text-secondary">
                     {step.title}
                   </h3>
 
                   {/* Step Description */}
-                  <p className="text-gray-600">
+                  <p className="text-neutral-600">
                     {step.description}
                   </p>
                 </div>

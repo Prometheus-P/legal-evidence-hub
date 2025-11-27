@@ -100,8 +100,8 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
     test('HeroSection primary CTA should have aria-label', () => {
       const { container } = render(<HeroSection />);
 
-      // Find the primary CTA button/link
-      const primaryCTA = container.querySelector('a.btn-primary');
+      // Find the primary CTA button (Button primitive with aria-label)
+      const primaryCTA = container.querySelector('button.bg-primary');
       expect(primaryCTA).toBeInTheDocument();
       expect(primaryCTA).toHaveAttribute('aria-label');
     });
@@ -109,9 +109,10 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
     test('FinalCTASection primary CTA should have aria-label', () => {
       const { container } = render(<FinalCTASection />);
 
-      const primaryCTA = container.querySelector('a.btn-primary');
-      expect(primaryCTA).toBeInTheDocument();
-      expect(primaryCTA).toHaveAttribute('aria-label');
+      // Find the primary CTA button (Button primitive with aria-label on Link)
+      const primaryLink = container.querySelector('a[href="/signup"]');
+      expect(primaryLink).toBeInTheDocument();
+      expect(primaryLink).toHaveAttribute('aria-label');
     });
 
     test('FinalCTASection secondary CTA should have aria-label', () => {
@@ -152,7 +153,8 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
     test('HeroSection CTA should have focus-visible styles', () => {
       const { container } = render(<HeroSection />);
 
-      const primaryCTA = container.querySelector('a.btn-primary');
+      // Button primitive has focus-visible styles
+      const primaryCTA = container.querySelector('button.bg-primary');
       expect(primaryCTA).toBeInTheDocument();
 
       // Check for focus-visible classes
@@ -175,7 +177,9 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
     test('FinalCTASection buttons should have focus-visible styles', () => {
       const { container } = render(<FinalCTASection />);
 
-      const primaryCTA = container.querySelector('a.btn-primary');
+      // Button primitive has focus-visible styles
+      const primaryCTA = container.querySelector('button.bg-primary');
+      expect(primaryCTA).toBeInTheDocument();
       expect(primaryCTA?.className).toMatch(/focus-visible:/);
     });
   });
@@ -193,18 +197,18 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
 
       const heading = container.querySelector('h1');
       expect(heading).toBeInTheDocument();
-      expect(heading).toHaveClass('text-deep-trust-blue');
+      expect(heading).toHaveClass('text-secondary');
     });
 
     test('SolutionSection headings should use deep-trust-blue', () => {
       const { container } = render(<SolutionSection />);
 
       const mainHeading = container.querySelector('h2');
-      expect(mainHeading).toHaveClass('text-deep-trust-blue');
+      expect(mainHeading).toHaveClass('text-secondary');
 
       const cardHeadings = container.querySelectorAll('h3');
       cardHeadings.forEach((h3) => {
-        expect(h3).toHaveClass('text-deep-trust-blue');
+        expect(h3).toHaveClass('text-secondary');
       });
     });
 
@@ -212,7 +216,7 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
       const { container } = render(<PricingSection />);
 
       const mainHeading = container.querySelector('h2');
-      expect(mainHeading).toHaveClass('text-deep-trust-blue');
+      expect(mainHeading).toHaveClass('text-secondary');
     });
 
     test('Body text should use gray-600 or darker for contrast', () => {
@@ -222,7 +226,7 @@ describe('Plan 3.19.2 - Accessibility (WCAG 2.1 AA)', () => {
       expect(paragraph).toBeInTheDocument();
 
       // Should use gray-600 (which has sufficient contrast on light bg)
-      expect(paragraph).toHaveClass('text-gray-600');
+      expect(paragraph).toHaveClass('text-neutral-600');
     });
   });
 

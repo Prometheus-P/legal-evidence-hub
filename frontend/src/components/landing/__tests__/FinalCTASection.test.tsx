@@ -22,11 +22,11 @@ describe('FinalCTASection Component', () => {
       expect(title).toBeInTheDocument();
     });
 
-    it('should style title with Deep Trust Blue', () => {
+    it('should style title with secondary color', () => {
       render(<FinalCTASection />);
 
       const title = screen.getByRole('heading', { name: /지금 바로 시작하세요/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -58,11 +58,11 @@ describe('FinalCTASection Component', () => {
       expect(screen.getByText(/신용카드 필요 없음/i)).toBeInTheDocument();
     });
 
-    it('should style subtext with gray color', () => {
+    it('should style subtext with neutral color', () => {
       render(<FinalCTASection />);
 
       const subtext = screen.getByText(/14일 무료 체험, 신용카드 필요 없음/i);
-      expect(subtext).toHaveClass('text-gray-600');
+      expect(subtext).toHaveClass('text-neutral-600');
     });
   });
 
@@ -74,11 +74,11 @@ describe('FinalCTASection Component', () => {
       expect(button).toBeInTheDocument();
     });
 
-    it('should style primary button with btn-primary class', () => {
+    it('should style primary button with primary variant', () => {
       render(<FinalCTASection />);
 
-      const button = screen.getByRole('link', { name: /무료로 시작하기/i });
-      expect(button).toHaveClass('btn-primary');
+      const button = screen.getByRole('button', { name: /무료로 시작하기/i });
+      expect(button).toHaveClass('bg-primary');
     });
 
     it('should link to signup page', () => {
@@ -91,7 +91,7 @@ describe('FinalCTASection Component', () => {
     it('should have large button size', () => {
       render(<FinalCTASection />);
 
-      const button = screen.getByRole('link', { name: /무료로 시작하기/i });
+      const button = screen.getByRole('button', { name: /무료로 시작하기/i });
       // Should have large padding for prominent CTA
       expect(button).toHaveClass('px-8');
       expect(button).toHaveClass('py-4');
@@ -109,11 +109,11 @@ describe('FinalCTASection Component', () => {
     it('should style secondary button differently from primary', () => {
       render(<FinalCTASection />);
 
-      const button = screen.getByRole('link', { name: /영업팀과 상담하기/i });
-      // Should NOT have btn-primary class
-      expect(button).not.toHaveClass('btn-primary');
-      // Should have gray or outline styling
-      expect(button).toHaveClass('bg-gray-100');
+      const button = screen.getByRole('button', { name: /영업팀과 상담하기/i });
+      // Should NOT have bg-primary class
+      expect(button).not.toHaveClass('bg-primary');
+      // Should have neutral background styling
+      expect(button).toHaveClass('bg-neutral-100');
     });
 
     it('should link to contact page or email', () => {
@@ -194,18 +194,18 @@ describe('FinalCTASection Component', () => {
       expect(section).toHaveClass('px-6');
     });
 
-    it('should use calm background color', () => {
+    it('should use neutral background color', () => {
       const { container } = render(<FinalCTASection />);
 
       const section = container.querySelector('section');
-      expect(section).toHaveClass('bg-calm-grey');
+      expect(section).toHaveClass('bg-neutral-50');
     });
 
-    it('should use Deep Trust Blue for title', () => {
+    it('should use secondary color for title', () => {
       render(<FinalCTASection />);
 
       const title = screen.getByRole('heading', { name: /지금 바로 시작하세요/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
   });
 

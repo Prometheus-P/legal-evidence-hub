@@ -53,14 +53,14 @@ export default function DraftPreviewPanel({
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6" aria-label="Draft preview">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-neutral-600 leading-relaxed">
                         이 문서는 AI가 생성한 초안이며, 최종 책임은 변호사에게 있습니다.
                     </p>
                     <p className="text-xs text-gray-400 mt-2">
                         실제 제출 전 반드시 모든 내용을 검토하고 사실 관계를 확인해 주세요.
                     </p>
                 </div>
-                <div className="inline-flex items-center text-xs uppercase tracking-wide text-deep-trust-blue font-semibold">
+                <div className="inline-flex items-center text-xs uppercase tracking-wide text-secondary font-semibold">
                     <Sparkles className="w-4 h-4 mr-1 text-accent" />
                     AI Draft
                 </div>
@@ -68,10 +68,10 @@ export default function DraftPreviewPanel({
 
             <div
                 data-testid="draft-toolbar-panel"
-                className="flex items-center justify-between bg-calm-grey/70 border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-500 tracking-wide"
+                className="flex items-center justify-between bg-neutral-50/70 border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-500 tracking-wide"
             >
                 <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-deep-trust-blue" />
+                    <FileText className="w-4 h-4 text-secondary" />
                     <div className="h-4 w-px bg-gray-300 mx-2" />
                     <button
                         type="button"
@@ -79,7 +79,7 @@ export default function DraftPreviewPanel({
                         onClick={() => handleFormat('bold')}
                         className="p-1 hover:bg-gray-200 rounded transition-colors"
                     >
-                        <Bold className="w-4 h-4 text-gray-700" />
+                        <Bold className="w-4 h-4 text-neutral-700" />
                     </button>
                     <button
                         type="button"
@@ -87,7 +87,7 @@ export default function DraftPreviewPanel({
                         onClick={() => handleFormat('italic')}
                         className="p-1 hover:bg-gray-200 rounded transition-colors"
                     >
-                        <Italic className="w-4 h-4 text-gray-700" />
+                        <Italic className="w-4 h-4 text-neutral-700" />
                     </button>
                     <button
                         type="button"
@@ -95,18 +95,18 @@ export default function DraftPreviewPanel({
                         onClick={() => handleFormat('underline')}
                         className="p-1 hover:bg-gray-200 rounded transition-colors"
                     >
-                        <Underline className="w-4 h-4 text-gray-700" />
+                        <Underline className="w-4 h-4 text-neutral-700" />
                     </button>
                     <div className="h-4 w-px bg-gray-300 mx-2" />
                     <button type="button" aria-label="List" className="p-1 hover:bg-gray-200 rounded transition-colors">
-                        <List className="w-4 h-4 text-gray-700" />
+                        <List className="w-4 h-4 text-neutral-700" />
                     </button>
                 </div>
                 <div className="inline-flex items-center gap-2">
                     <button
                         type="button"
                         onClick={() => handleDownload('docx')}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors"
                     >
                         <Download className="w-4 h-4" />
                         DOCX
@@ -114,7 +114,7 @@ export default function DraftPreviewPanel({
                     <button
                         type="button"
                         onClick={() => handleDownload('hwp')}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-deep-trust-blue hover:text-accent transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors"
                     >
                         <Download className="w-4 h-4" />
                         HWP
@@ -133,7 +133,7 @@ export default function DraftPreviewPanel({
                     suppressContentEditableWarning
                     aria-label="Draft content"
                     onClick={handleEditorClick}
-                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400 overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-deep-trust-blue [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-accent [&_.evidence-ref]:decoration-dotted"
+                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 leading-relaxed focus:outline-none resize-none placeholder:text-gray-400 overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-secondary [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-accent [&_.evidence-ref]:decoration-dotted"
                     dangerouslySetInnerHTML={{ __html: draftText }}
                 />
                 <div className="absolute top-4 right-6 text-xs text-gray-400">자동 저장 준비 중</div>
@@ -156,17 +156,17 @@ export default function DraftPreviewPanel({
                     )}
                 </button>
                 <div className="text-sm text-gray-500">
-                    최신 초안 기준 <span className="font-semibold text-deep-trust-blue">실제 증거 인용</span> {citations.length}건
+                    최신 초안 기준 <span className="font-semibold text-secondary">실제 증거 인용</span> {citations.length}건
                 </div>
             </div>
 
             <div className="border-t border-gray-100 pt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Citations</h4>
+                <h4 className="text-sm font-semibold text-neutral-700 mb-3">Citations</h4>
                 <div className="space-y-3">
                     {citations.map((citation) => (
-                        <div key={citation.evidenceId} className="rounded-lg border border-gray-100 bg-calm-grey/60 p-3">
+                        <div key={citation.evidenceId} className="rounded-lg border border-gray-100 bg-neutral-50/60 p-3">
                             <p className="text-xs text-gray-500 mb-1">{citation.title}</p>
-                            <p className="text-sm text-gray-700 leading-relaxed">&ldquo;{citation.quote}&rdquo;</p>
+                            <p className="text-sm text-neutral-700 leading-relaxed">&ldquo;{citation.quote}&rdquo;</p>
                         </div>
                     ))}
                     {citations.length === 0 && (

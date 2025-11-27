@@ -127,28 +127,28 @@ export default function BillingPage({}: BillingPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-calm-grey p-8">
+    <div className="min-h-screen bg-neutral-50 p-8">
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="mb-6">
         <ol className="flex items-center space-x-2 text-sm">
           <li>
-            <a href="/settings" className="text-gray-600 hover:text-deep-trust-blue">
+            <a href="/settings" className="text-neutral-600 hover:text-secondary">
               Settings
             </a>
           </li>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <li>
-            <span className="text-deep-trust-blue font-semibold">Billing</span>
+            <span className="text-secondary font-semibold">Billing</span>
           </li>
         </ol>
       </nav>
 
       {/* Page Title */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-deep-trust-blue">
+        <h1 className="text-3xl font-bold text-secondary">
           빌링 및 구독 관리
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-neutral-600 mt-2">
           구독 플랜, 결제 수단, 사용량을 관리합니다
         </p>
       </div>
@@ -156,36 +156,36 @@ export default function BillingPage({}: BillingPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Current Plan Information Card */}
         <section
-          className="bg-calm-grey border border-gray-200 rounded-lg p-6 shadow-sm"
+          className="bg-neutral-50 border border-gray-200 rounded-lg p-6 shadow-sm"
           aria-labelledby="current-plan-title"
         >
           <h2
             id="current-plan-title"
-            className="text-xl font-semibold text-deep-trust-blue mb-4"
+            className="text-xl font-semibold text-secondary mb-4"
           >
             현재 구독 플랜
           </h2>
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-gray-600">플랜 이름</p>
-              <p className="text-2xl font-bold text-deep-trust-blue mt-1">
+              <p className="text-sm text-neutral-600">플랜 이름</p>
+              <p className="text-2xl font-bold text-secondary mt-1">
                 {currentPlan.name}
               </p>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">월 요금</p>
-                <p className="text-xl font-semibold text-deep-trust-blue mt-1">
+                <p className="text-sm text-neutral-600">월 요금</p>
+                <p className="text-xl font-semibold text-secondary mt-1">
                   ₩{currentPlan.price.toLocaleString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">다음 결제일</p>
+                <p className="text-sm text-neutral-600">다음 결제일</p>
                 <div className="flex items-center mt-1">
                   <Calendar className="w-4 h-4 text-accent mr-1" />
-                  <p className="text-sm font-medium text-deep-trust-blue">
+                  <p className="text-sm font-medium text-secondary">
                     {currentPlan.nextBillingDate}
                   </p>
                 </div>
@@ -202,7 +202,7 @@ export default function BillingPage({}: BillingPageProps) {
               </button>
               <button
                 onClick={() => handlePlanChange('downgrade')}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 text-neutral-700 rounded-md hover:bg-gray-300 transition-colors"
                 aria-label="Downgrade plan"
               >
                 다운그레이드
@@ -213,12 +213,12 @@ export default function BillingPage({}: BillingPageProps) {
 
         {/* Payment Method Card */}
         <section
-          className="bg-calm-grey border border-gray-200 rounded-lg p-6 shadow-sm"
+          className="bg-neutral-50 border border-gray-200 rounded-lg p-6 shadow-sm"
           aria-labelledby="payment-method-title"
         >
           <h2
             id="payment-method-title"
-            className="text-xl font-semibold text-deep-trust-blue mb-4"
+            className="text-xl font-semibold text-secondary mb-4"
           >
             결제 수단
           </h2>
@@ -229,23 +229,23 @@ export default function BillingPage({}: BillingPageProps) {
                 <CreditCard className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-600">카드 유형</p>
-                <p className="text-lg font-semibold text-deep-trust-blue">
+                <p className="text-sm text-neutral-600">카드 유형</p>
+                <p className="text-lg font-semibold text-secondary">
                   {paymentMethod.type} •••• {paymentMethod.last4}
                 </p>
               </div>
             </div>
 
             <div>
-              <p className="text-sm text-gray-600">만료일</p>
-              <p className="text-sm font-medium text-deep-trust-blue mt-1">
+              <p className="text-sm text-neutral-600">만료일</p>
+              <p className="text-sm font-medium text-secondary mt-1">
                 {paymentMethod.expiryDate}
               </p>
             </div>
 
             <button
               onClick={handleUpdatePaymentMethod}
-              className="w-full px-4 py-2 bg-white border border-gray-300 text-deep-trust-blue rounded-md hover:bg-gray-50 transition-colors mt-4"
+              className="w-full px-4 py-2 bg-white border border-gray-300 text-secondary rounded-md hover:bg-gray-50 transition-colors mt-4"
               aria-label="Update payment method"
             >
               결제 수단 변경
@@ -256,12 +256,12 @@ export default function BillingPage({}: BillingPageProps) {
 
       {/* Usage Metering Section */}
       <section
-        className="bg-calm-grey border border-gray-200 rounded-lg p-6 shadow-sm mb-8"
+        className="bg-neutral-50 border border-gray-200 rounded-lg p-6 shadow-sm mb-8"
         aria-labelledby="usage-metering-title"
       >
         <h2
           id="usage-metering-title"
-          className="text-xl font-semibold text-deep-trust-blue mb-6"
+          className="text-xl font-semibold text-secondary mb-6"
         >
           사용량 현황
         </h2>
@@ -272,7 +272,7 @@ export default function BillingPage({}: BillingPageProps) {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 <TrendingUp className="w-5 h-5 text-accent mr-2" />
-                <h3 id="ai-token-usage-label" className="text-lg font-semibold text-deep-trust-blue">
+                <h3 id="ai-token-usage-label" className="text-lg font-semibold text-secondary">
                   AI 토큰 사용량
                 </h3>
               </div>
@@ -286,10 +286,10 @@ export default function BillingPage({}: BillingPageProps) {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">
+                <span className="text-neutral-600">
                   {aiTokenUsage.used.toLocaleString()} / {aiTokenUsage.limit.toLocaleString()} {aiTokenUsage.unit}
                 </span>
-                <span className="font-semibold text-deep-trust-blue">
+                <span className="font-semibold text-secondary">
                   {aiTokenPercentage.toFixed(1)}%
                 </span>
               </div>
@@ -317,7 +317,7 @@ export default function BillingPage({}: BillingPageProps) {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 <Database className="w-5 h-5 text-accent mr-2" />
-                <h3 id="storage-usage-label" className="text-lg font-semibold text-deep-trust-blue">
+                <h3 id="storage-usage-label" className="text-lg font-semibold text-secondary">
                   스토리지 사용량
                 </h3>
               </div>
@@ -331,10 +331,10 @@ export default function BillingPage({}: BillingPageProps) {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">
+                <span className="text-neutral-600">
                   {storageUsage.used} / {storageUsage.limit} {storageUsage.unit}
                 </span>
-                <span className="font-semibold text-deep-trust-blue">
+                <span className="font-semibold text-secondary">
                   {storagePercentage.toFixed(1)}%
                 </span>
               </div>
@@ -361,12 +361,12 @@ export default function BillingPage({}: BillingPageProps) {
 
       {/* Billing History Section */}
       <section
-        className="bg-calm-grey border border-gray-200 rounded-lg p-6 shadow-sm"
+        className="bg-neutral-50 border border-gray-200 rounded-lg p-6 shadow-sm"
         aria-labelledby="billing-history-title"
       >
         <h2
           id="billing-history-title"
-          className="text-xl font-semibold text-deep-trust-blue mb-6"
+          className="text-xl font-semibold text-secondary mb-6"
         >
           청구서 내역
         </h2>
@@ -375,19 +375,19 @@ export default function BillingPage({}: BillingPageProps) {
           <table className="w-full" role="table" aria-label="Billing history table">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   청구서 번호
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   날짜
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   금액
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   상태
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   작업
                 </th>
               </tr>
@@ -395,13 +395,13 @@ export default function BillingPage({}: BillingPageProps) {
             <tbody>
               {billingHistory.map((invoice) => (
                 <tr key={invoice.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4 text-sm text-gray-700">
+                  <td className="py-3 px-4 text-sm text-neutral-700">
                     {invoice.id}
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-700">
+                  <td className="py-3 px-4 text-sm text-neutral-700">
                     {invoice.date}
                   </td>
-                  <td className="py-3 px-4 text-sm font-medium text-deep-trust-blue">
+                  <td className="py-3 px-4 text-sm font-medium text-secondary">
                     ₩{invoice.amount.toLocaleString()}
                   </td>
                   <td className="py-3 px-4">
@@ -449,13 +449,13 @@ export default function BillingPage({}: BillingPageProps) {
             <div className="flex items-center justify-between mb-6">
               <h3
                 id="plan-change-modal-title"
-                className="text-2xl font-bold text-deep-trust-blue"
+                className="text-2xl font-bold text-secondary"
               >
                 {selectedPlanChange === 'upgrade' ? '플랜 업그레이드' : '플랜 다운그레이드'}
               </h3>
               <button
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-neutral-600"
                 aria-label="Close modal"
               >
                 <X className="w-6 h-6" />
@@ -463,14 +463,14 @@ export default function BillingPage({}: BillingPageProps) {
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-600 mb-4">
+              <p className="text-neutral-600 mb-4">
                 {selectedPlanChange === 'upgrade'
                   ? 'Enterprise 플랜으로 업그레이드하시겠습니까?'
                   : 'Basic 플랜으로 다운그레이드하시겠습니까?'}
               </p>
-              <div className="bg-calm-grey p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">새로운 월 요금</p>
-                <p className="text-2xl font-bold text-deep-trust-blue">
+              <div className="bg-neutral-50 p-4 rounded-lg">
+                <p className="text-sm text-neutral-600 mb-1">새로운 월 요금</p>
+                <p className="text-2xl font-bold text-secondary">
                   ₩{selectedPlanChange === 'upgrade' ? '199,000' : '49,000'}
                 </p>
               </div>
@@ -479,7 +479,7 @@ export default function BillingPage({}: BillingPageProps) {
             <div className="flex space-x-3">
               <button
                 onClick={handleCloseModal}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 text-neutral-700 rounded-md hover:bg-gray-300 transition-colors"
               >
                 취소
               </button>

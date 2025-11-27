@@ -24,11 +24,11 @@ describe('PricingSection Component', () => {
       expect(title).toBeInTheDocument();
     });
 
-    it('should style title with Deep Trust Blue', () => {
+    it('should style title with secondary color', () => {
       render(<PricingSection />);
 
       const title = screen.getByRole('heading', { name: /투명한 가격, 숨은 비용 없음/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -121,11 +121,11 @@ describe('PricingSection Component', () => {
       expect(screen.getByText(/14일 무료 체험/i)).toBeInTheDocument();
     });
 
-    it('should emphasize free trial with accent styling', () => {
-      const { container } = render(<PricingSection />);
+    it('should emphasize free trial with primary color styling', () => {
+      render(<PricingSection />);
 
       const trialBadge = screen.getByText(/14일 무료 체험/i);
-      expect(trialBadge).toHaveClass('text-accent');
+      expect(trialBadge).toHaveClass('text-primary');
     });
   });
 
@@ -138,18 +138,18 @@ describe('PricingSection Component', () => {
       expect(checkIcons.length).toBeGreaterThanOrEqual(9); // 3+ features per plan × 3 plans
     });
 
-    it('should style checkmarks with accent color', () => {
+    it('should style checkmarks with primary color', () => {
       const { container } = render(<PricingSection />);
 
       const checkIcons = container.querySelectorAll('svg');
-      // Most icons should be checkmarks with accent color
-      let accentCheckCount = 0;
+      // Most icons should be checkmarks with primary color
+      let primaryCheckCount = 0;
       checkIcons.forEach((icon) => {
-        if (icon.classList.contains('text-accent')) {
-          accentCheckCount++;
+        if (icon.classList.contains('text-primary')) {
+          primaryCheckCount++;
         }
       });
-      expect(accentCheckCount).toBeGreaterThanOrEqual(9);
+      expect(primaryCheckCount).toBeGreaterThanOrEqual(9);
     });
   });
 
@@ -183,7 +183,7 @@ describe('PricingSection Component', () => {
 
       // Professional card should have special styling (border or scale)
       const section = container.querySelector('section');
-      const highlightedCards = section?.querySelectorAll('.border-accent, .ring-accent, .scale-105');
+      const highlightedCards = section?.querySelectorAll('.ring-primary, .scale-105');
       expect(highlightedCards?.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -258,7 +258,7 @@ describe('PricingSection Component', () => {
       expect(section).toHaveClass('bg-white');
     });
 
-    it('should use Deep Trust Blue for plan names', () => {
+    it('should use secondary color for plan names', () => {
       render(<PricingSection />);
 
       const planNames = [
@@ -268,11 +268,11 @@ describe('PricingSection Component', () => {
       ];
 
       planNames.forEach((name) => {
-        expect(name).toHaveClass('text-deep-trust-blue');
+        expect(name).toHaveClass('text-secondary');
       });
     });
 
-    it('should use gray text for descriptions', () => {
+    it('should use neutral text color for descriptions', () => {
       render(<PricingSection />);
 
       const descriptions = [
@@ -282,7 +282,7 @@ describe('PricingSection Component', () => {
       ];
 
       descriptions.forEach((desc) => {
-        expect(desc).toHaveClass('text-gray-600');
+        expect(desc).toHaveClass('text-neutral-600');
       });
     });
   });
@@ -305,18 +305,18 @@ describe('PricingSection Component', () => {
       expect(planHeadings.length).toBe(3);
     });
 
-    it('should have aria-labels for checkmark icons', () => {
+    it('should hide decorative checkmark icons from screen readers', () => {
       const { container } = render(<PricingSection />);
 
       const checkIcons = container.querySelectorAll('svg');
-      // Checkmark icons should have aria-labels
-      let checkIconsWithLabels = 0;
+      // Decorative checkmark icons should have aria-hidden="true"
+      let hiddenIcons = 0;
       checkIcons.forEach((icon) => {
-        if (icon.getAttribute('aria-label')) {
-          checkIconsWithLabels++;
+        if (icon.getAttribute('aria-hidden') === 'true') {
+          hiddenIcons++;
         }
       });
-      expect(checkIconsWithLabels).toBeGreaterThanOrEqual(9);
+      expect(hiddenIcons).toBeGreaterThanOrEqual(9);
     });
   });
 

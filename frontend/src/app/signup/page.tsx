@@ -71,18 +71,18 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-calm-grey">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-deep-trust-blue mb-2">
             무료로 시작하기
           </h1>
-          <p className="text-gray-600">14일 무료 체험, 신용카드 필요 없음</p>
+          <p className="text-neutral-600">14일 무료 체험, 신용카드 필요 없음</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-2">
               이름
             </label>
             <input
@@ -98,7 +98,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
               이메일
             </label>
             <input
@@ -114,7 +114,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="law-firm" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="law-firm" className="block text-sm font-medium text-neutral-700 mb-2">
               소속 (선택)
             </label>
             <input
@@ -129,7 +129,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
               비밀번호
             </label>
             <input
@@ -153,7 +153,7 @@ export default function SignupPage() {
               onChange={(e) => setAcceptTerms(e.target.checked)}
               className="h-4 w-4 text-accent focus:ring-accent border-gray-300 rounded"
             />
-            <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="accept-terms" className="ml-2 block text-sm text-neutral-700">
               <a href="/terms" className="text-accent hover:underline">이용약관</a> 및{' '}
               <a href="/privacy" className="text-accent hover:underline">개인정보처리방침</a>에 동의합니다
             </label>

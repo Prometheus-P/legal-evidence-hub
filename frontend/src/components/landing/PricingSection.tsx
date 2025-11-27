@@ -12,6 +12,7 @@
 
 import { Check } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/primitives';
 
 export default function PricingSection() {
   const plans = [
@@ -66,52 +67,45 @@ export default function PricingSection() {
   ];
 
   return (
-    <section
-      className="py-20 px-6 bg-white"
-      aria-label="가격 플랜"
-    >
+    <section className="py-20 px-6 bg-white" aria-label="가격 플랜">
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
           <div className="text-center space-y-4">
-            <h2 className="text-4xl font-bold text-deep-trust-blue">
+            <h2 className="text-4xl font-bold text-secondary">
               투명한 가격, 숨은 비용 없음
             </h2>
-            <p className="text-xl text-accent font-semibold">
-              14일 무료 체험
-            </p>
+            <p className="text-xl text-primary font-semibold">14일 무료 체험</p>
           </div>
 
-          {/* Pricing Cards Grid - Responsive: 1-col mobile, 2-col tablet, 3-col desktop */}
+          {/* Pricing Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan) => (
               <div
                 key={plan.id}
                 className={`bg-white rounded-xl shadow-lg p-8 text-center space-y-6 transition-transform hover:shadow-xl ${
-                  plan.popular ? 'ring-2 ring-accent scale-105' : ''
+                  plan.popular ? 'ring-2 ring-primary scale-105' : ''
                 }`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
                   <div className="inline-block">
-                    <span className="bg-accent text-white text-sm font-semibold px-4 py-1 rounded-full">
+                    <span className="bg-primary text-primary-contrast text-sm font-semibold px-4 py-1 rounded-full">
                       가장 인기
                     </span>
                   </div>
                 )}
 
                 {/* Plan Name */}
-                <h3 className="text-2xl font-bold text-deep-trust-blue">
-                  {plan.name}
-                </h3>
+                <h3 className="text-2xl font-bold text-secondary">{plan.name}</h3>
 
                 {/* Price */}
                 <div className="space-y-1">
-                  <div className="text-4xl font-bold text-deep-trust-blue">
+                  <div className="text-4xl font-bold text-secondary">
                     {plan.price}
-                    <span className="text-lg text-gray-600">/{plan.period}</span>
+                    <span className="text-lg text-neutral-600">/{plan.period}</span>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-neutral-600">
                     {plan.target}
                     {plan.customFeatures && `, ${plan.customFeatures}`}
                   </p>
@@ -122,10 +116,10 @@ export default function PricingSection() {
                   {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start space-x-3">
                       <Check
-                        className="w-5 h-5 text-accent flex-shrink-0 mt-0.5"
-                        aria-label="체크 아이콘"
+                        className="w-5 h-5 text-primary flex-shrink-0 mt-0.5"
+                        aria-hidden="true"
                       />
-                      <span className="text-gray-600">{feature}</span>
+                      <span className="text-neutral-600">{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -134,14 +128,15 @@ export default function PricingSection() {
                 <div className="pt-4">
                   <Link
                     href="/signup"
-                    className={`block w-full py-3 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
-                      plan.popular
-                        ? 'btn-primary focus-visible:ring-accent'
-                        : 'bg-gray-100 text-deep-trust-blue hover:bg-gray-200 focus-visible:ring-deep-trust-blue'
-                    }`}
                     aria-label={`${plan.name} 플랜 시작하기 - ${plan.price}/${plan.period}`}
                   >
-                    시작하기
+                    <Button
+                      variant={plan.popular ? 'primary' : 'ghost'}
+                      fullWidth
+                      className={!plan.popular ? 'bg-neutral-100 hover:bg-neutral-200' : ''}
+                    >
+                      시작하기
+                    </Button>
                   </Link>
                 </div>
               </div>

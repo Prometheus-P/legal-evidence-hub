@@ -54,7 +54,7 @@ export default function ClientCommunicationHub() {
     };
 
     return (
-        <div className="min-h-screen bg-calm-grey">
+        <div className="min-h-screen bg-neutral-50">
             <Head>
                 <title>의뢰인 소통 허브 | Legal Evidence Hub</title>
             </Head>
@@ -63,8 +63,8 @@ export default function ClientCommunicationHub() {
                 <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
                     <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wide">Client Communication</p>
-                        <h1 className="text-2xl font-bold text-deep-trust-blue">의뢰인 소통 허브</h1>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <h1 className="text-2xl font-bold text-secondary">의뢰인 소통 허브</h1>
+                        <p className="text-sm text-neutral-600 mt-1">
                             {clientName}님의 {caseLabel} 사건 정보를 확인하고 공유하세요.
                         </p>
                     </div>
@@ -77,8 +77,8 @@ export default function ClientCommunicationHub() {
                         role="tab"
                         aria-selected={activeTab === 'info'}
                         className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'info'
-                                ? 'bg-white text-deep-trust-blue border-deep-trust-blue'
-                                : 'bg-gray-100 text-gray-600 border-transparent'
+                                ? 'bg-white text-secondary border-deep-trust-blue'
+                                : 'bg-gray-100 text-neutral-600 border-transparent'
                             }`}
                         onClick={() => setActiveTab('info')}
                     >
@@ -88,8 +88,8 @@ export default function ClientCommunicationHub() {
                         role="tab"
                         aria-selected={activeTab === 'share'}
                         className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'share'
-                                ? 'bg-white text-deep-trust-blue border-deep-trust-blue'
-                                : 'bg-gray-100 text-gray-600 border-transparent'
+                                ? 'bg-white text-secondary border-deep-trust-blue'
+                                : 'bg-gray-100 text-neutral-600 border-transparent'
                             }`}
                         onClick={() => setActiveTab('share')}
                     >
@@ -102,14 +102,14 @@ export default function ClientCommunicationHub() {
                         <div className="flex items-start justify-between">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900">의뢰인 정보 입력</h2>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-neutral-600 mt-1">
                                     사건을 원활히 진행하기 위해 연락처를 최신으로 유지해 주세요.
                                 </p>
                             </div>
                         </div>
 
                         <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={handleSave}>
-                            <label className="flex flex-col text-sm text-gray-700">
+                            <label className="flex flex-col text-sm text-neutral-700">
                                 <span className="font-medium mb-1">의뢰인 이름</span>
                                 <input
                                     aria-label="의뢰인 이름"
@@ -119,7 +119,7 @@ export default function ClientCommunicationHub() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                                 />
                             </label>
-                            <label className="flex flex-col text-sm text-gray-700">
+                            <label className="flex flex-col text-sm text-neutral-700">
                                 <span className="font-medium mb-1">연락처</span>
                                 <input
                                     aria-label="연락처"
@@ -130,7 +130,7 @@ export default function ClientCommunicationHub() {
                                     placeholder="010-1234-5678"
                                 />
                             </label>
-                            <label className="flex flex-col text-sm text-gray-700">
+                            <label className="flex flex-col text-sm text-neutral-700">
                                 <span className="font-medium mb-1">이메일</span>
                                 <input
                                     aria-label="이메일"
@@ -141,7 +141,7 @@ export default function ClientCommunicationHub() {
                                     placeholder="client@example.com"
                                 />
                             </label>
-                            <label className="flex flex-col text-sm text-gray-700 md:col-span-2">
+                            <label className="flex flex-col text-sm text-neutral-700 md:col-span-2">
                                 <span className="font-medium mb-1">사건 메모</span>
                                 <textarea
                                     aria-label="사건 메모"
@@ -165,7 +165,7 @@ export default function ClientCommunicationHub() {
                         </form>
 
                         {savedMessage && (
-                            <div className="rounded-lg bg-accent/10 text-deep-trust-blue px-4 py-3 text-sm">
+                            <div className="rounded-lg bg-accent/10 text-secondary px-4 py-3 text-sm">
                                 {savedMessage}
                             </div>
                         )}
@@ -177,7 +177,7 @@ export default function ClientCommunicationHub() {
                         <div className="flex items-start justify-between">
                             <div>
                                 <h2 className="text-lg font-semibold text-gray-900">증거 목록 공유</h2>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-neutral-600 mt-1">
                                     제공된 증거는 열람용이며 수정할 수 없습니다. 고지사항을 확인해 주세요.
                                 </p>
                             </div>
@@ -187,16 +187,16 @@ export default function ClientCommunicationHub() {
                             <table className="min-w-full divide-y divide-gray-200 border border-gray-100 rounded-lg" aria-label="증거 목록 공유 테이블">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                             제목
                                         </th>
-                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                             유형
                                         </th>
-                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                             업로드 일시
                                         </th>
-                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                             요약
                                         </th>
                                     </tr>
@@ -205,9 +205,9 @@ export default function ClientCommunicationHub() {
                                     {SHARED_EVIDENCES.map((item) => (
                                         <tr key={item.id} className="hover:bg-gray-50">
                                             <td className="px-4 py-3 text-sm text-gray-900">{item.title}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">{item.type}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">{item.uploadedAt}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-700">{item.summary}</td>
+                                            <td className="px-4 py-3 text-sm text-neutral-600">{item.type}</td>
+                                            <td className="px-4 py-3 text-sm text-neutral-600">{item.uploadedAt}</td>
+                                            <td className="px-4 py-3 text-sm text-neutral-700">{item.summary}</td>
                                         </tr>
                                     ))}
                                 </tbody>

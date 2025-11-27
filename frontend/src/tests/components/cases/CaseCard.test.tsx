@@ -48,7 +48,7 @@ describe('CaseCard (plan 3.3)', () => {
         );
 
         const title = screen.getByRole('heading', { name: mockCase.title });
-        expect(title).toHaveClass('text-deep-trust-blue');
+        expect(title).toHaveClass('text-secondary');
 
         expect(screen.getByText(`증거 ${mockCase.evidenceCount}건`)).toBeInTheDocument();
         expect(screen.getByText(/최근 업데이트:/)).toBeInTheDocument();
@@ -56,6 +56,6 @@ describe('CaseCard (plan 3.3)', () => {
 
         const card = title.closest('div.card');
         expect(card).not.toBeNull();
-        expect(card).toHaveClass('bg-calm-grey');
+        expect(card).toHaveClass('bg-neutral-50');
     });
 });

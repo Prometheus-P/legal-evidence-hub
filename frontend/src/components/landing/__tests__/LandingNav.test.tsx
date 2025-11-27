@@ -141,7 +141,7 @@ describe('LandingNav Component', () => {
       render(<LandingNav />);
 
       const logo = screen.getByText('LEH');
-      expect(logo).toHaveClass('text-deep-trust-blue');
+      expect(logo).toHaveClass('text-secondary');
     });
   });
 

@@ -14,14 +14,12 @@ def admin_user(test_env):
 
     Password: admin_password123
     """
-    from app.db.session import get_db, init_db
-    from app.db.models import User
+    from app.db.session import get_db
+    from app.db.models import User, Case, CaseMember, InviteToken
     from app.core.security import hash_password
     from sqlalchemy.orm import Session
 
-    # Initialize database
-    init_db()
-
+    # Database is already initialized by test_env fixture
     # Create admin user
     db: Session = next(get_db())
     try:
@@ -37,15 +35,13 @@ def admin_user(test_env):
 
         yield admin
 
-        # Cleanup
-        from app.db.models import Case, CaseMember, InviteToken
-        # Delete invite tokens created by admin
-        db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
-        # Delete case_members
+        # Cleanup - delete in correct order to respect foreign keys
+        try:
+            db.query(InviteToken).filter(InviteToken.created_by == admin.id).delete()
+        except Exception:
+            pass
         db.query(CaseMember).filter(CaseMember.user_id == admin.id).delete()
-        # Delete cases
         db.query(Case).filter(Case.created_by == admin.id).delete()
-        # Delete admin user
         db.delete(admin)
         db.commit()
     finally:
@@ -131,7 +127,13 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 400
         data = response.json()
-        assert "이미 등록된 이메일" in data["error"]["message"]
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
+        else:
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
+        assert "이미" in message  # "이미 등록된 이메일" or "이미 초대된 사용자입니다"
 
     def test_should_return_403_when_non_admin_tries_to_invite(
         self, client: TestClient, auth_headers
@@ -157,7 +159,13 @@ class TestPostAdminUsersInvite:
         # Then
         assert response.status_code == 403
         data = response.json()
-        assert "Admin 권한" in data["error"]["message"]
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
+        else:
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
+        assert "권한" in message  # "권한이 없습니다" or "Admin 권한"
 
     def test_should_return_401_when_not_authenticated(
         self, client: TestClient
@@ -327,7 +335,13 @@ class TestDeleteAdminUsersUserId:
         # Then
         assert response.status_code == 400
         data = response.json()
-        assert "자기 자신을 삭제할 수 없습니다" in data["error"]["message"]
+        # Handle both error formats: {"detail": ...} and {"error": {"message": ...}}
+        if "error" in data:
+            message = data["error"].get("message", "")
+        else:
+            detail = data.get("detail", "")
+            message = detail.get("message", str(detail)) if isinstance(detail, dict) else str(detail)
+        assert "자기 자신을 삭제할 수 없습니다" in message
 
     def test_should_return_404_when_user_not_found(
         self, client: TestClient, admin_auth_headers

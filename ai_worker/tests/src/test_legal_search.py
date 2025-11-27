@@ -3,7 +3,6 @@ Test suite for LegalSearchEngine
 Basic tests for legal knowledge search
 """
 
-import pytest
 from unittest.mock import Mock, patch
 from src.service_rag.legal_search import LegalSearchEngine
 from src.service_rag.schemas import LegalSearchResult

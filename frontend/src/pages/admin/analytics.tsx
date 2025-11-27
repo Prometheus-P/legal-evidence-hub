@@ -137,9 +137,9 @@ export default function AnalyticsDashboard() {
       case 'medium':
         return 'text-yellow-600 bg-yellow-50';
       case 'low':
-        return 'text-gray-600 bg-gray-50';
+        return 'text-neutral-600 bg-gray-50';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'text-neutral-600 bg-gray-50';
     }
   };
 
@@ -163,18 +163,18 @@ export default function AnalyticsDashboard() {
   const totalEvidence = evidenceTypes.reduce((sum, type) => sum + type.count, 0);
 
   return (
-    <div className="min-h-screen bg-calm-grey p-8">
+    <div className="min-h-screen bg-neutral-50 p-8">
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="mb-6">
         <ol className="flex items-center space-x-2 text-sm">
           <li>
-            <a href="/admin" className="text-gray-600 hover:text-deep-trust-blue">
+            <a href="/admin" className="text-neutral-600 hover:text-secondary">
               Admin
             </a>
           </li>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <li>
-            <span className="text-deep-trust-blue font-semibold">Analytics</span>
+            <span className="text-secondary font-semibold">Analytics</span>
           </li>
         </ol>
       </nav>
@@ -182,17 +182,17 @@ export default function AnalyticsDashboard() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-deep-trust-blue">성과 분석</h1>
-          <p className="text-gray-600 mt-2">시스템 효율성 및 팀 활동 현황</p>
+          <h1 className="text-3xl font-bold text-secondary">성과 분석</h1>
+          <p className="text-neutral-600 mt-2">시스템 효율성 및 팀 활동 현황</p>
         </div>
 
         <div className="flex items-center space-x-3">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-neutral-600">
             마지막 업데이트: {lastUpdated}
           </div>
           <button
             onClick={handleRefresh}
-            className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-neutral-700 rounded-md hover:bg-gray-50 transition-colors"
             aria-label="새로고침"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -219,12 +219,12 @@ export default function AnalyticsDashboard() {
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm text-gray-600">{metric.label}</p>
+                <p className="text-sm text-neutral-600">{metric.label}</p>
                 <div className="flex items-baseline mt-2">
-                  <p className="text-5xl font-bold text-deep-trust-blue">
+                  <p className="text-5xl font-bold text-secondary">
                     {metric.value.toLocaleString()}
                   </p>
-                  <span className="text-xl text-gray-600 ml-2">{metric.unit}</span>
+                  <span className="text-xl text-neutral-600 ml-2">{metric.unit}</span>
                 </div>
               </div>
               <div className="w-12 h-12 bg-success-green bg-opacity-10 rounded-lg flex items-center justify-center">
@@ -241,7 +241,7 @@ export default function AnalyticsDashboard() {
               <span className="text-sm font-medium text-success-green">
                 +{metric.change}%
               </span>
-              <span className="text-sm text-gray-600 ml-2">지난 달 대비</span>
+              <span className="text-sm text-neutral-600 ml-2">지난 달 대비</span>
             </div>
           </div>
         ))}
@@ -257,7 +257,7 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center justify-between mb-6">
             <h2
               id="monthly-chart-title"
-              className="text-xl font-semibold text-deep-trust-blue"
+              className="text-xl font-semibold text-secondary"
             >
               월별 사건 수
             </h2>
@@ -278,7 +278,7 @@ export default function AnalyticsDashboard() {
           <div className="space-y-3" role="img" aria-label="월별 사건 수 차트">
             {monthlyData.map((data, index) => (
               <div key={index} className="flex items-center">
-                <div className="w-12 text-sm text-gray-600">{data.month}</div>
+                <div className="w-12 text-sm text-neutral-600">{data.month}</div>
                 <div className="flex-1 mx-4">
                   <div className="w-full bg-gray-200 rounded-full h-8 relative">
                     <div
@@ -306,7 +306,7 @@ export default function AnalyticsDashboard() {
         >
           <h2
             id="evidence-chart-title"
-            className="text-xl font-semibold text-deep-trust-blue mb-6"
+            className="text-xl font-semibold text-secondary mb-6"
           >
             증거 유형별 분포
           </h2>
@@ -322,13 +322,13 @@ export default function AnalyticsDashboard() {
                       className="w-4 h-4 rounded-sm mr-3"
                       style={{ backgroundColor: type.color }}
                     ></div>
-                    <span className="text-sm text-gray-700">{type.type}</span>
+                    <span className="text-sm text-neutral-700">{type.type}</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-deep-trust-blue mr-3">
+                    <span className="text-sm font-medium text-secondary mr-3">
                       {type.count}건
                     </span>
-                    <span className="text-sm text-gray-600 w-16 text-right">
+                    <span className="text-sm text-neutral-600 w-16 text-right">
                       {percentage}%
                     </span>
                   </div>
@@ -349,7 +349,7 @@ export default function AnalyticsDashboard() {
       >
         <h2
           id="team-activity-title"
-          className="text-xl font-semibold text-deep-trust-blue mb-6"
+          className="text-xl font-semibold text-secondary mb-6"
         >
           팀 활동
         </h2>
@@ -358,19 +358,19 @@ export default function AnalyticsDashboard() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   팀원
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   처리 사건
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   업로드 증거
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   활동 레벨
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-deep-trust-blue">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-secondary">
                   마지막 활동
                 </th>
               </tr>
@@ -389,10 +389,10 @@ export default function AnalyticsDashboard() {
                         <p className="text-xs text-gray-500">{member.email}</p>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
+                    <td className="py-3 px-4 text-sm text-neutral-700">
                       {member.casesHandled}건
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
+                    <td className="py-3 px-4 text-sm text-neutral-700">
                       {member.evidenceUploaded}건
                     </td>
                     <td className="py-3 px-4">
@@ -404,7 +404,7 @@ export default function AnalyticsDashboard() {
                         {getActivityLevelText(member.activityLevel)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
+                    <td className="py-3 px-4 text-sm text-neutral-600">
                       {new Date(member.lastActive).toLocaleString('ko-KR')}
                     </td>
                   </tr>

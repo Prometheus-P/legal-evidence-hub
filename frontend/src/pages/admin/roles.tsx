@@ -86,7 +86,7 @@ export default function AdminRolesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-calm-grey">
+    <div className="min-h-screen bg-neutral-50">
       <Head>
         <title>권한 설정 | Legal Evidence Hub</title>
       </Head>
@@ -97,10 +97,10 @@ export default function AdminRolesPage() {
             <p className="text-xs text-gray-500 uppercase tracking-wide">
               Admin
             </p>
-            <h1 className="text-2xl font-bold text-deep-trust-blue">
+            <h1 className="text-2xl font-bold text-secondary">
               권한 설정
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-neutral-600 mt-1">
               역할별 권한 매트릭스를 통해 Admin, Attorney, Staff 권한을 관리합니다.
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function AdminRolesPage() {
             <h2 className="text-lg font-semibold text-gray-900">
               역할별 권한 매트릭스
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-neutral-600 mt-1">
               각 역할별로 사건 접근 및 관리자 기능 권한을 세밀하게 제어합니다.
             </p>
           </div>
@@ -127,7 +127,7 @@ export default function AdminRolesPage() {
                 <tr>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                   >
                     역할
                   </th>
@@ -135,7 +135,7 @@ export default function AdminRolesPage() {
                     <th
                       key={key}
                       scope="col"
-                      className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      className="px-4 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider"
                     >
                       {PERMISSION_LABELS[key]}
                     </th>
@@ -175,7 +175,7 @@ export default function AdminRolesPage() {
           </div>
 
           {saveMessage && (
-            <div className="mt-4 rounded-md bg-accent/10 text-deep-trust-blue px-4 py-3 text-sm">
+            <div className="mt-4 rounded-md bg-accent/10 text-secondary px-4 py-3 text-sm">
               {saveMessage}
             </div>
           )}

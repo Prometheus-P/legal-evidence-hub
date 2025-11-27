@@ -7,9 +7,8 @@ Phase 1: 2.1 Event 파싱 테스트
 - 지원하지 않는 파일 확장자 DLQ 전송
 """
 
-import pytest
 import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from handler import handle, route_and_process, route_parser
 
 
@@ -341,7 +340,6 @@ class TestErrorHandling:
         result = handle(event, context)
 
         # Then
-        result_body = json.loads(result["body"])
         # 에러가 발생하더라도 statusCode는 200이어야 함 (Lambda 재시도 방지)
         assert result["statusCode"] == 200
 

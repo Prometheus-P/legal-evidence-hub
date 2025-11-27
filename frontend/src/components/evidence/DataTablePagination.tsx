@@ -15,7 +15,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
     <div className="flex items-center justify-between px-4 py-4 bg-white border-t border-gray-200">
       {/* Page info */}
       <div className="flex items-center space-x-2">
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-neutral-700">
           페이지{' '}
           <span className="font-medium">
             {table.getState().pagination.pageIndex + 1}

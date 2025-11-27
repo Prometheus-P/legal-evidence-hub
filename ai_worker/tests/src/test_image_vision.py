@@ -8,11 +8,8 @@ Then: 감정, 맥락, 분위기 정보 추출
 
 import unittest
 from unittest.mock import MagicMock, patch, mock_open
-from datetime import datetime
-from pathlib import Path
 
 from src.parsers.image_vision import ImageVisionParser, VisionAnalysis
-from src.parsers.base import Message
 
 
 class TestImageVisionParserInitialization(unittest.TestCase):

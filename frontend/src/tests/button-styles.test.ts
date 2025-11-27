@@ -19,12 +19,12 @@ describe('Button Style Rules', () => {
         }
     });
 
-    test('tailwind.config.js should define accent color as #1ABC9C', () => {
-        const tailwindConfigPath = path.join(projectRoot, 'tailwind.config.js');
-        const configContent = fs.readFileSync(tailwindConfigPath, 'utf-8');
+    test('design tokens should define primary color as #1ABC9C', () => {
+        const tokensPath = path.join(projectRoot, 'src/styles/tokens.css');
+        const tokensContent = fs.readFileSync(tokensPath, 'utf-8');
 
-        // Check that accent color is defined as #1ABC9C
-        expect(configContent).toMatch(/accent:\s*{[^}]*DEFAULT:\s*["']#1ABC9C["']/);
+        // Check that primary color is defined as #1ABC9C in design tokens
+        expect(tokensContent).toMatch(/--color-primary:\s*#1ABC9C/);
     });
 
     test('Destructive action buttons should use semantic-error color (#E74C3C)', () => {
@@ -42,11 +42,11 @@ describe('Button Style Rules', () => {
         }
     });
 
-    test('tailwind.config.js should define semantic-error color as #E74C3C', () => {
-        const tailwindConfigPath = path.join(projectRoot, 'tailwind.config.js');
-        const configContent = fs.readFileSync(tailwindConfigPath, 'utf-8');
+    test('design tokens should define error color as #E74C3C', () => {
+        const tokensPath = path.join(projectRoot, 'src/styles/tokens.css');
+        const tokensContent = fs.readFileSync(tokensPath, 'utf-8');
 
-        // Check that semantic-error color is defined as #E74C3C
-        expect(configContent).toMatch(/["']semantic-error["']:\s*["']#E74C3C["']/);
+        // Check that error color is defined as #E74C3C in design tokens
+        expect(tokensContent).toMatch(/--color-error:\s*#E74C3C/);
     });
 });

@@ -7,9 +7,8 @@ Then: ffmpeg로 오디오 추출 → Whisper STT → Message 리스트 반환
 """
 
 import unittest
-from unittest.mock import MagicMock, patch, mock_open
-from datetime import datetime, timedelta
-from pathlib import Path
+from unittest.mock import MagicMock, patch
+from datetime import datetime
 
 from src.parsers.video_parser import VideoParser
 from src.parsers.base import BaseParser, Message

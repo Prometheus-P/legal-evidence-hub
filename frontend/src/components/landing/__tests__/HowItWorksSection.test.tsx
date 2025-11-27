@@ -29,7 +29,7 @@ describe('HowItWorksSection Component', () => {
       render(<HowItWorksSection />);
 
       const title = screen.getByRole('heading', { name: /4단계로 완성되는 초안/i });
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use appropriate heading level (h2)', () => {
@@ -173,7 +173,7 @@ describe('HowItWorksSection Component', () => {
       const icons = container.querySelectorAll('svg');
       // At least the first 4 icons should use Deep Trust Blue
       for (let i = 0; i < Math.min(4, icons.length); i++) {
-        expect(icons[i]).toHaveClass('text-deep-trust-blue');
+        expect(icons[i]).toHaveClass('text-secondary');
       }
     });
   });
@@ -254,7 +254,7 @@ describe('HowItWorksSection Component', () => {
 
       // Step titles should use Deep Trust Blue
       const section = container.querySelector('section');
-      const titles = section?.querySelectorAll('.text-deep-trust-blue');
+      const titles = section?.querySelectorAll('.text-secondary');
       expect(titles?.length).toBeGreaterThanOrEqual(5); // Section title + 4 step titles
     });
 
@@ -269,7 +269,7 @@ describe('HowItWorksSection Component', () => {
       ];
 
       descriptions.forEach((desc) => {
-        expect(desc).toHaveClass('text-gray-600');
+        expect(desc).toHaveClass('text-neutral-600');
       });
     });
   });

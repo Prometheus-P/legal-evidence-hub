@@ -120,13 +120,13 @@ describe('Plan 3.18 - Analytics Dashboard (성과 분석 대시보드)', () => {
     it('should use Deep Trust Blue for title', () => {
       render(<AnalyticsDashboard />);
       const title = screen.getByText(/성과 분석/i);
-      expect(title).toHaveClass('text-deep-trust-blue');
+      expect(title).toHaveClass('text-secondary');
     });
 
     it('should use Calm Grey background', () => {
       const { container } = render(<AnalyticsDashboard />);
       const page = container.querySelector('.min-h-screen');
-      expect(page).toHaveClass('bg-calm-grey');
+      expect(page).toHaveClass('bg-neutral-50');
     });
 
     it('should use large font for KPI numbers', () => {

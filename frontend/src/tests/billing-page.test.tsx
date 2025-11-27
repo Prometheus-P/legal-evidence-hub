@@ -74,7 +74,7 @@ describe('Plan 3.16 - Billing Page (구독 현황 페이지)', () => {
 
       // 현재 구독 플랜 섹션을 찾음 (aria-labelledby로 찾기)
       const planSection = screen.getByRole('region', { name: /현재 구독 플랜/i });
-      expect(planSection).toHaveClass('bg-calm-grey');
+      expect(planSection).toHaveClass('bg-neutral-50');
     });
 
     it('should show active subscription badge with Success Green', () => {
@@ -273,7 +273,7 @@ describe('Plan 3.16 - Billing Page (구독 현황 페이지)', () => {
 
       // 섹션 제목은 Deep Trust Blue 사용
       const sectionTitle = screen.getByText(/현재 구독 플랜/i);
-      expect(sectionTitle).toHaveClass('text-deep-trust-blue');
+      expect(sectionTitle).toHaveClass('text-secondary');
     });
 
     it('should apply subtle shadow on card hover (Calm Control)', () => {

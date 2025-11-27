@@ -42,13 +42,13 @@ export default function TestimonialsSection() {
 
   return (
     <section
-      className="py-20 px-6 bg-calm-grey"
+      className="py-20 px-6 bg-neutral-50"
       aria-label="고객 후기"
     >
       <div className="max-w-7xl mx-auto">
         <div className="space-y-12">
           {/* Section Title */}
-          <h2 className="text-4xl font-bold text-deep-trust-blue text-center">
+          <h2 className="text-4xl font-bold text-secondary text-center">
             이미 사용 중인 변호사님들의 평가
           </h2>
 
@@ -86,7 +86,7 @@ export default function TestimonialsSection() {
 
                 {/* Reviewer Info */}
                 <div>
-                  <h3 className="text-lg font-bold text-deep-trust-blue">
+                  <h3 className="text-lg font-bold text-secondary">
                     {testimonial.name}
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -95,7 +95,7 @@ export default function TestimonialsSection() {
                 </div>
 
                 {/* Testimonial Quote */}
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-neutral-600 leading-relaxed">
                   "{testimonial.quote}"
                 </p>
               </div>

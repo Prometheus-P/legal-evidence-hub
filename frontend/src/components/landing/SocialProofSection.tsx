@@ -29,8 +29,8 @@ export default function SocialProofSection() {
         <div className="space-y-8">
           {/* Trust Badge */}
           <div className="space-y-2">
-            <p className="text-lg text-gray-700">
-              <span className="font-bold text-deep-trust-blue">50개</span> 로펌 사용 중
+            <p className="text-lg text-neutral-700">
+              <span className="font-bold text-secondary">50개</span> 로펌 사용 중
             </p>
             <p className="text-sm text-gray-500">신뢰받는 주요 로펌들이 선택한 솔루션</p>
           </div>
@@ -48,7 +48,7 @@ export default function SocialProofSection() {
             </div>
             <p className="text-lg">
               <span className="font-bold text-accent">5.0</span>
-              <span className="text-gray-600"> / 5.0 만점</span>
+              <span className="text-neutral-600"> / 5.0 만점</span>
             </p>
           </div>
 
