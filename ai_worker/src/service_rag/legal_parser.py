@@ -5,7 +5,7 @@ Legal Parser Module
 
 import re
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from src.service_rag.schemas import Statute, CaseLaw
 

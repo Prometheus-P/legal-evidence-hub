@@ -4,7 +4,6 @@ Advanced search functionality with filtering and context expansion
 """
 
 from typing import List, Dict, Any, Optional
-from datetime import datetime
 from .schemas import SearchResult
 
 

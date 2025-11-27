@@ -7,7 +7,6 @@ Focus: 실제로 로그에 노출될 수 있는 경로 테스트
 2. 에러 메시지 로깅 (handler.py:169)
 """
 
-import pytest
 import logging
 from unittest.mock import patch, MagicMock
 from handler import handle
@@ -171,7 +170,7 @@ class TestSensitiveDataLogging:
             # Then: 로그에 민감한 메시지가 그대로 노출되지 않아야 함
             log_output = caplog.text
             assert sensitive_message not in log_output, \
-                f"민감한 메시지가 에러 로그에 노출되었습니다!"
+                "민감한 메시지가 에러 로그에 노출되었습니다!"
 
     def test_s3_event_with_user_ip_sanitized(self, caplog):
         """

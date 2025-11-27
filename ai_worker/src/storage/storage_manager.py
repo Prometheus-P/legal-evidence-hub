@@ -4,14 +4,13 @@ Integrates parsers, vector store, and metadata store
 """
 
 import os
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from pathlib import Path
 from .vector_store import VectorStore
 from .metadata_store import MetadataStore
 from .schemas import EvidenceFile, EvidenceChunk
 from ..parsers.kakaotalk import KakaoTalkParser
 from ..parsers.text import TextParser
-from ..parsers.base import Message
 
 
 def get_embedding(text: str) -> List[float]:

@@ -4,12 +4,8 @@ Following TDD approach: RED-GREEN-REFACTOR
 """
 
 import pytest
-from pathlib import Path
-from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from src.storage.storage_manager import StorageManager
-from src.parsers.kakaotalk import KakaoTalkParser
-from src.parsers.text import TextParser
 
 
 @pytest.fixture

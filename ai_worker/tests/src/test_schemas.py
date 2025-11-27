@@ -2,7 +2,6 @@
 Test suite for data schemas
 """
 
-import pytest
 from datetime import datetime
 from src.storage.schemas import EvidenceFile, EvidenceChunk, generate_file_id, generate_chunk_id
 

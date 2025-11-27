@@ -6,11 +6,9 @@ Phase 7: E2E 통합 테스트
 - S3 이벤트 → Lambda 핸들러 → 전체 파이프라인 검증
 """
 
-import pytest
 import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from datetime import datetime
-from pathlib import Path
 
 
 class TestPDFProcessingE2E:

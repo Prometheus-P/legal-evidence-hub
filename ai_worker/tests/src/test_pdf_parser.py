@@ -4,8 +4,7 @@ Following TDD approach: RED-GREEN-REFACTOR
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+from unittest.mock import patch, MagicMock
 from datetime import datetime
 from src.parsers.pdf_parser import PDFParser
 from src.parsers.base import Message
@@ -151,7 +150,7 @@ class TestMultiPagePDF:
         messages = parser.parse("test.pdf")
 
         assert len(messages) == 5
-        assert f"[Page 5]" in messages[4].content
+        assert "[Page 5]" in messages[4].content
 
 
 class TestEdgeCases:

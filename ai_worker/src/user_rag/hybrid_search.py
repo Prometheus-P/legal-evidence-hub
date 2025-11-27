@@ -3,7 +3,7 @@ Hybrid Search Engine Module
 증거 검색 + 법률 지식 검색 통합
 """
 
-from typing import List, Optional
+from typing import List
 from src.storage.search_engine import SearchEngine
 from src.service_rag.legal_search import LegalSearchEngine
 from src.user_rag.schemas import HybridSearchResult
