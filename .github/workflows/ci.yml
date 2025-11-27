@@ -98,11 +98,17 @@ jobs:
       - name: Run Ruff linter
         run: ruff check .
 
+      - name: Initialize database tables
+        env:
+          DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
+          JWT_SECRET: test_secret_key_for_ci_pipeline_32chars
+        run: python -c "from app.db.session import init_db; init_db()"
+
       - name: Run pytest
         timeout-minutes: 5
         env:
           DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
-          JWT_SECRET_KEY: test_secret_key_for_ci_pipeline_32chars
+          JWT_SECRET: test_secret_key_for_ci_pipeline_32chars
           TESTING: true
         run: pytest --cov=app --cov-report=xml -v --timeout=60
 
