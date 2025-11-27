@@ -11,9 +11,13 @@ from pathlib import Path
 
 def pytest_configure(config):
     """
-    Load .env file for integration tests
+    Load .env file for local integration tests (not in CI)
     """
-    # Load .env from backend directory for integration tests
+    # Skip loading .env in CI environment (CI sets its own env vars)
+    if os.environ.get("TESTING") == "true":
+        return
+
+    # Load .env from backend directory for local integration tests
     from dotenv import load_dotenv
     backend_dir = Path(__file__).parent.parent
     env_path = backend_dir / ".env"
@@ -25,23 +29,32 @@ def pytest_configure(config):
 def test_env():
     """
     Set up test environment variables
+
+    Respects CI environment variables if already set (e.g., DATABASE_URL from GitHub Actions)
     """
-    test_env_vars = {
+    # Default test values - only used if not already set in environment
+    defaults = {
         "APP_ENV": "local",
         "APP_DEBUG": "true",
         "JWT_SECRET": "test-secret-key-do-not-use-in-production",
-        "DATABASE_URL": "postgresql://test:test@localhost:5432/test_db",
+        "DATABASE_URL": "postgresql://test_user:test_pass@localhost:5432/test_db",
         "S3_EVIDENCE_BUCKET": "test-bucket",
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
         "QDRANT_HOST": "",  # Empty = in-memory mode for tests
         "OPENAI_API_KEY": "test-openai-key",
     }
 
-    # Store original env vars
+    # Store original env vars and set defaults only if not already set
     original_env = {}
-    for key, value in test_env_vars.items():
+    test_env_vars = {}
+    for key, default_value in defaults.items():
         original_env[key] = os.environ.get(key)
-        os.environ[key] = value
+        # Use existing env var if set, otherwise use default
+        if os.environ.get(key):
+            test_env_vars[key] = os.environ[key]
+        else:
+            os.environ[key] = default_value
+            test_env_vars[key] = default_value
 
     yield test_env_vars
 
