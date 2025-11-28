@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 import boto3
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 
 # Import AI Pipeline modules
 from src.parsers import (

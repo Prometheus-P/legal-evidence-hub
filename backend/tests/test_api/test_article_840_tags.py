@@ -91,8 +91,8 @@ class TestArticle840Tags:
         """
         evidence_id = sample_evidence_with_tags["id"]
 
-        # Mock DynamoDB get_evidence_by_id
-        with patch("app.utils.dynamo.get_evidence_by_id") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_id (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_id") as mock_get_evidence:
             mock_get_evidence.return_value = sample_evidence_with_tags
 
             # Call API
@@ -146,8 +146,8 @@ class TestArticle840Tags:
         """
         evidence_id = sample_evidence_without_tags["id"]
 
-        # Mock DynamoDB get_evidence_by_id
-        with patch("app.utils.dynamo.get_evidence_by_id") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_id (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_id") as mock_get_evidence:
             mock_get_evidence.return_value = sample_evidence_without_tags
 
             # Call API
@@ -182,8 +182,8 @@ class TestArticle840Tags:
         """
         case_id = "case_abc"
 
-        # Mock DynamoDB get_evidence_by_case
-        with patch("app.utils.dynamo.get_evidence_by_case") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_case (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_case") as mock_get_evidence:
             mock_get_evidence.return_value = [
                 sample_evidence_with_tags,
                 sample_evidence_without_tags
@@ -270,8 +270,8 @@ class TestArticle840Tags:
             }
         ]
 
-        # Mock DynamoDB get_evidence_by_case
-        with patch("app.utils.dynamo.get_evidence_by_case") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_case (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_case") as mock_get_evidence:
             mock_get_evidence.return_value = evidence_list
 
             # Call API with categories filter
@@ -351,8 +351,8 @@ class TestArticle840Tags:
             }
         ]
 
-        # Mock DynamoDB get_evidence_by_case
-        with patch("app.utils.dynamo.get_evidence_by_case") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_case (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_case") as mock_get_evidence:
             mock_get_evidence.return_value = evidence_list
 
             # Call API with multiple categories filter
@@ -414,8 +414,8 @@ class TestArticle840Tags:
             }
         ]
 
-        # Mock DynamoDB get_evidence_by_case
-        with patch("app.utils.dynamo.get_evidence_by_case") as mock_get_evidence:
+        # Mock DynamoDB get_evidence_by_case (patch where it's used, not where it's defined)
+        with patch("app.services.evidence_service.get_evidence_by_case") as mock_get_evidence:
             mock_get_evidence.return_value = evidence_list
 
             # Call API with categories filter
