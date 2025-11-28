@@ -29,7 +29,6 @@ from src.parsers.text import TextParser
 from src.storage.metadata_store import MetadataStore
 from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile
-from src.analysis.summarizer import EvidenceSummarizer
 from src.analysis.article_840_tagger import Article840Tagger
 from src.utils.logging_filter import SensitiveDataFilter
 from src.utils.embeddings import get_embedding  # Embedding utility
