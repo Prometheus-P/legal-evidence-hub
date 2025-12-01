@@ -10,6 +10,14 @@ from src.analysis.legal_analyzer import (
     analyze_chunks,
     score_to_confidence_level,
 )
+from src.analysis.context_matcher import (
+    ContextAwareKeywordMatcher,
+    NegationType,
+    MatchResult,
+    AnalysisResult as ContextAnalysisResult,
+    check_negation,
+    get_effective_keywords,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -35,4 +43,12 @@ __all__ = [
     "analyze_chunk",
     "analyze_chunks",
     "score_to_confidence_level",
+
+    # Context Matcher (문맥 인식)
+    "ContextAwareKeywordMatcher",
+    "NegationType",
+    "MatchResult",
+    "ContextAnalysisResult",
+    "check_negation",
+    "get_effective_keywords",
 ]

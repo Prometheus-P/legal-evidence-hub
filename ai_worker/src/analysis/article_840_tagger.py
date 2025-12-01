@@ -8,10 +8,11 @@ When: 내용 분석
 Then: 해당하는 민법 840조 카테고리 자동 분류
 """
 
-from typing import List
+from typing import List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
 from src.parsers.base import Message
+from src.analysis.context_matcher import ContextAwareKeywordMatcher
 
 
 class Article840Category(str, Enum):
@@ -62,8 +63,20 @@ class Article840Tagger:
     - 일괄 처리 (batch) 지원
     """
 
-    def __init__(self):
-        """초기화 - 카테고리별 키워드 사전 구성 (확장판)"""
+    def __init__(self, use_context_matching: bool = False, use_kiwi: bool = False):
+        """
+        초기화 - 카테고리별 키워드 사전 구성 (확장판)
+
+        Args:
+            use_context_matching: 문맥 인식 키워드 매칭 활성화 (부정문 감지)
+            use_kiwi: Kiwi 형태소 분석기 사용 여부
+        """
+        self.use_context_matching = use_context_matching
+        self._context_matcher: Optional[ContextAwareKeywordMatcher] = None
+
+        if use_context_matching:
+            self._context_matcher = ContextAwareKeywordMatcher(use_kiwi=use_kiwi)
+
         self.keywords = {
             # ========================================
             # 제1호: 부정행위 (외도/불륜)
@@ -260,13 +273,27 @@ class Article840Tagger:
         category_matches = {}
         all_matched_keywords = []
 
+        # 부정문 체크용 변수
+        negated_keywords = []
+
         for category, data in self.keywords.items():
             matched_keywords = []
             for keyword in data["keywords"]:
                 if keyword in content_lower:
-                    if keyword not in all_matched_keywords:
-                        all_matched_keywords.append(keyword)
-                        matched_keywords.append(keyword)
+                    # 부정문 체크 (context_matching 활성화 시)
+                    is_negated = False
+                    if self.use_context_matching and self._context_matcher:
+                        result = self._context_matcher.analyze(message.content, [keyword])
+                        if result.has_negation:
+                            is_negated = True
+                            if keyword not in negated_keywords:
+                                negated_keywords.append(keyword)
+
+                    # 부정되지 않은 키워드만 매칭
+                    if not is_negated:
+                        if keyword not in all_matched_keywords:
+                            all_matched_keywords.append(keyword)
+                            matched_keywords.append(keyword)
 
             if matched_keywords:
                 category_matches[category] = {
@@ -278,11 +305,14 @@ class Article840Tagger:
         # 카테고리 결정
         if not category_matches:
             # 키워드 매칭이 없으면 GENERAL
+            reasoning = "No specific keywords matched - classified as general"
+            if negated_keywords:
+                reasoning += f" [부정된 키워드: {', '.join(negated_keywords)}]"
             return TaggingResult(
                 categories=[Article840Category.GENERAL],
                 confidence=0.1,
                 matched_keywords=[],
-                reasoning="No specific keywords matched - classified as general"
+                reasoning=reasoning
             )
 
         # GENERAL만 매칭되면 GENERAL로 분류
@@ -323,6 +353,10 @@ class Article840Tagger:
             matched_keywords=all_matched_keywords,
             category_matches=category_matches
         )
+
+        # 부정된 키워드 정보 추가
+        if negated_keywords:
+            reasoning += f" [부정된 키워드: {', '.join(negated_keywords)}]"
 
         return TaggingResult(
             categories=selected_categories,
