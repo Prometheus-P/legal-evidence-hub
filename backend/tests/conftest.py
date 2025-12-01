@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch, MagicMock
 import os
 import uuid
-from pathlib import Path
 
 
 def pytest_configure(config):
