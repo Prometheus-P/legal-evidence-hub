@@ -449,6 +449,49 @@ Total: 59 passed, 0 failed
 
 **전체 커버리지: 35.93%** (기존 미테스트 코드 포함)
 
+### 데모 파이프라인 검증 (demo_pipeline.py)
+
+로컬에서 V2 파이프라인 전체를 검증하는 데모 스크립트 실행 결과:
+
+```
+실행: python demo_pipeline.py
+
+=== 카카오톡 파싱 + 법적 분석 ===
+총 10개 메시지 파싱됨
+파싱된 라인: 10/16
+
+[1] 7번째 줄 - 홍길동: "오늘 몇시에 와?"
+    -> Category: ['general'], Confidence: 1
+
+[4] 10번째 줄 - 김영희: "응 호텔에서 만났어"
+    -> Category: ['adultery'], Confidence: 1, 키워드: [호텔]
+    [!] 검토 필요
+
+[5] 11번째 줄 - 홍길동: "뭐? 불륜이야?"
+    -> Category: ['adultery'], Confidence: 4, 키워드: [불륜]
+
+[7] 13번째 줄 - 홍길동: "시어머니가 또 뭐라고 했어?"
+    -> Category: ['mistreatment_by_inlaws'], 키워드: [시어머니]
+
+[10] 16번째 줄 - 김영희: "도박으로 또 500만원 날렸대"
+    -> Category: ['financial_misconduct'], 키워드: [도박]
+
+=== 분석 통계 ===
+총 청크: 10
+카테고리별: {general: 5, adultery: 2, mistreatment_by_inlaws: 2, financial_misconduct: 1}
+고가치 증거 (Level 4-5): 1개
+검토 필요: 1개
+```
+
+**검증 완료 항목:**
+- ✅ 카카오톡 파싱 정상 동작
+- ✅ 라인 번호 추적 정확
+- ✅ 발신자/시간 추출 정상
+- ✅ LegalAnalyzer 카테고리 분류 정확
+- ✅ 키워드 매칭 동작
+- ✅ 신뢰도 레벨 계산 정상
+- ✅ 검토 필요 플래그 정상
+
 ---
 
 ## 12. 파서 아키텍처 요약
