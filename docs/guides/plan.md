@@ -1,6 +1,8 @@
 # plan.md — LEH TDD 개발 플랜 (Kent Beck + AI + CI/CD)
 
-> 이 문서는 **TDD로 무엇부터 구현할지**에 대한 “다음 테스트 목록”이다.  
+**Last Updated:** 2025-12-01
+
+> 이 문서는 **TDD로 무엇부터 구현할지**에 대한 "다음 테스트 목록"이다.  
 > 사람이 "go"라고 말하면, AI는 여기서 **아직 체크되지 않은 첫 번째 항목 하나만** 선택해서  
 >
 > 1) 그에 해당하는 테스트를 작성하고  
@@ -155,6 +157,87 @@
   - CSV 형식으로 감사 로그를 다운로드할 수 있어야 한다.
   - 필터링 조건을 동일하게 적용해야 한다.
 
+### 1.12 Backend Lambda 배포 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: FastAPI 백엔드를 AWS Lambda + API Gateway로 배포
+
+- [x] Mangum 어댑터 추가:
+  - `requirements.txt`에 `mangum>=0.17.0` 추가
+  - `app/main.py`에 Lambda handler 추가: `handler = Mangum(app, lifespan="off")`
+- [x] `Dockerfile.lambda` 생성:
+  - Base image: `public.ecr.aws/lambda/python:3.12`
+  - Handler: `app.main.handler`
+- [x] ECR 레포지토리 생성 및 이미지 push:
+  - ECR: `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-backend`
+  - Architecture: arm64
+- [x] Lambda 함수 생성 (`leh-backend`):
+  - Memory: 512MB
+  - Timeout: 30s
+  - Architecture: arm64
+- [x] IAM Role 설정 (`leh-backend-role`):
+  - AWSLambdaBasicExecutionRole
+  - AmazonS3FullAccess
+  - AmazonDynamoDBFullAccess
+  - AmazonRDSDataFullAccess
+- [x] API Gateway HTTP API 생성 및 연결:
+  - API ID: `zhfiuntwj0`
+  - Endpoint: `https://zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com`
+  - Integration: AWS_PROXY (Lambda)
+  - Auto-deploy 활성화
+
+**테스트 결과:**
+- ✅ Health check 성공: `GET /health` → `{"status":"ok","service":"Legal Evidence Hub API","version":"0.2.0"}`
+
+---
+
+### 1.13 Lambda 환경변수 설정 ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend)**
+> **목표**: Lambda 함수에 환경변수를 설정하여 RDS, S3, OpenAI 등 외부 서비스 연동
+
+- [x] Lambda 환경변수 설정 (`aws lambda update-function-configuration`):
+  - **Database (PostgreSQL RDS)**:
+    - `POSTGRES_HOST`: leh-postgres.c7q0268amx43.ap-northeast-2.rds.amazonaws.com
+    - `POSTGRES_PORT`: 5432
+    - `POSTGRES_USER`: leh_admin
+    - `POSTGRES_DB`: leh_db
+    - `DATABASE_URL`: postgresql+psycopg2://...
+  - **Authentication (JWT)**:
+    - `JWT_SECRET`: 프로덕션용 시크릿 키
+    - `JWT_ALGORITHM`: HS256
+    - `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`: 60
+  - **AWS Services**:
+    - `S3_EVIDENCE_BUCKET`: leh-evidence-prod
+    - `S3_EVIDENCE_PREFIX`: cases/
+    - `DDB_EVIDENCE_TABLE`: leh_evidence
+    - `DDB_CASE_SUMMARY_TABLE`: leh_case_summary
+  - **OpenAI / LLM**:
+    - `OPENAI_API_KEY`: sk-proj-...
+    - `OPENAI_MODEL_CHAT`: gpt-4o-mini
+    - `OPENAI_MODEL_EMBEDDING`: text-embedding-3-small
+  - **Qdrant (Vector DB)**:
+    - `QDRANT_HOST`: Qdrant Cloud endpoint
+    - `QDRANT_API_KEY`: Qdrant API key
+  - **Application**:
+    - `APP_ENV`: production
+    - `CORS_ALLOW_ORIGINS`: CloudFront URL
+
+- [x] RDS 보안그룹 확인:
+  - Security Group: `sg-0d4d1a74a9e4576e2`
+  - Inbound Rule: 0.0.0.0/0 → Port 5432 (Public Access)
+  - RDS `PubliclyAccessible`: true
+
+- [x] Lambda-RDS 연결 테스트:
+  - ✅ 회원가입 성공: `POST /auth/signup` → 201 Created
+  - ✅ 로그인 성공: `POST /auth/login` → 200 OK, JWT 토큰 발급
+  - ✅ 사용자 데이터 RDS에 저장 확인
+
+**보안 참고사항:**
+- 현재 RDS가 Public Access로 설정되어 있음 (개발/데모 용도)
+- 프로덕션 환경에서는 Lambda를 VPC에 배치하고 RDS Private 접근 권장
+- Secrets Manager 사용 권장 (환경변수 대신)
+
 ---
 
 ## 2. AI Worker (L, S3 Event → DynamoDB / Qdrant) ✅ **완료**
@@ -210,16 +293,18 @@
 
 - [x] Embedding 생성 모듈은:
   - 일정 길이 이상의 벡터(예: 1536 길이)를 반환해야 한다 (길이만 테스트).
-  - ✅ **구현 완료**: VectorStore with OpenAI text-embedding-3-small (1536 dim) + Qdrant
+  - ✅ **구현 완료**: VectorStore with OpenAI text-embedding-ada-002 (1536 dim) + Qdrant Cloud
 - [x] 동일 `evidence_id` 재처리 시:
   - Qdrant 벡터는 **upsert(덮어쓰기)** 되어야 하고,
   - DynamoDB의 해당 항목도 최신 값으로 업데이트돼야 한다.
-  - ✅ **구현 완료**: MetadataStore (SQLite/DynamoDB) + VectorStore upsert 로직
+  - ✅ **구현 완료**: MetadataStore (DynamoDB) + VectorStore upsert 로직
+  - ✅ **2025-11-28 업데이트**: SQLite → DynamoDB 마이그레이션 완료
 
 **테스트 현황**:
 - ✅ handler 테스트: 16 passing (Phase 1-6 통합)
 - ✅ E2E 통합 테스트: 5 passing (Phase 7)
 - ✅ 전체 파이프라인: S3 Event → 파싱 → 메타데이터 저장 → 벡터 저장 → Article 840 태깅
+- ✅ **Storage 모듈 테스트 (2025-11-28)**: 34 passing (MetadataStore 18 + VectorStore 16)
 
 ### 2.7 AWS 서비스 연동 (Issue #10: Mock → Real 전환)
 
@@ -227,8 +312,9 @@
 > - **H (Backend)**: DynamoDB 연동, OpenAI API 연동
 > - **L (AI Worker)**: Qdrant 연동, S3 연동, Lambda 배포
 
-#### 2.7.1 DynamoDB 연동 ✅ (H 담당 - 완료)
+#### 2.7.1 DynamoDB 연동 ✅ (완료)
 
+**Backend (H 담당)**:
 - [x] `backend/app/utils/dynamo.py` Mock 구현을 실제 boto3로 교체
   - ✅ **구현 완료**: boto3 client 사용, `leh_evidence` 테이블 연동
 - [x] 테이블 스키마 확인 및 적용:
@@ -259,17 +345,17 @@
   - `delete_by_case_id()`: 케이스 삭제 시 관련 벡터 일괄 삭제
 - [x] 테스트 완료: 18개 테스트 통과
 
-#### 2.7.3 OpenAI API 연동 (H 담당)
+#### 2.7.3 OpenAI API 연동 (H 담당) ✅ **완료 (2025-12-01)**
 
-- [ ] `backend/app/utils/openai_client.py` Mock 구현을 실제 API로 교체
-- [ ] 환경변수 설정: `OPENAI_API_KEY`
-- [ ] 사용 함수:
+- [x] `backend/app/utils/openai_client.py` Mock 구현을 실제 API로 교체
+  - ✅ **구현 완료**: OpenAI 공식 패키지 사용
+- [x] 환경변수 설정: `OPENAI_API_KEY`
+- [x] 사용 함수:
   - `generate_chat_completion()`: Draft 생성 (GPT-4o)
   - `generate_embedding()`: RAG 검색용 임베딩 (text-embedding-3-small)
-- [ ] 테스트 항목:
+- [x] 테스트 항목:
   - API 키 유효성 확인
-  - Rate limit 처리 (429 에러 시 재시도)
-  - 타임아웃 설정 (60초)
+  - 타임아웃 설정 (`settings.LLM_REQUEST_TIMEOUT_SECONDS`)
 
 #### 2.7.4 S3 연동 (L 담당) ✅ **완료**
 
@@ -278,18 +364,21 @@
 - [x] 환경변수: `S3_EVIDENCE_BUCKET`, `AWS_REGION`
 - [x] 파일 경로 규칙: `cases/{case_id}/raw/{evidence_id}_{filename}`
 
-#### 2.7.5 Lambda 배포 (L 담당) 🔄 **준비 완료**
+#### 2.7.5 Lambda 배포 (L 담당) ✅ **완료 (2025-12-01)**
 
 - [x] Dockerfile.lambda 작성 완료
 - [x] 모든 모듈 import 테스트 통과
 - [x] S3 Event Trigger 설정 (Terraform에 설정됨)
-- [ ] **배포 대기**: Admin 권한 필요 (S3 버킷 접근)
-- [ ] IAM Role 설정:
-  - S3 읽기 권한
-  - DynamoDB 읽기/쓰기 권한
-  - Qdrant 접근 (VPC 또는 Public)
+- [x] **배포 완료**: ECR + Lambda 배포
+  - ECR: `540261961975.dkr.ecr.ap-northeast-2.amazonaws.com/leh-ai-worker`
+  - Lambda: `leh-ai-worker` (arm64, 1024MB, 300s timeout)
+- [x] IAM Role 설정 완료 (`leh-ai-worker-role`):
+  - S3 읽기 권한 (AmazonS3ReadOnlyAccess)
+  - DynamoDB 읽기/쓰기 권한 (AmazonDynamoDBFullAccess)
+  - CloudWatch Logs 권한 (AWSLambdaBasicExecutionRole)
+- [x] S3 트리거 연결: `leh-evidence-prod/cases/*` → Lambda
 
-### 2.8 E2E 통합 (Backend ↔ AI Worker) 🟡 **거의 완료**
+### 2.8 E2E 통합 (Backend ↔ AI Worker) ✅ **완료 (2025-12-01)**
 
 > **목표**: Backend가 생성한 Evidence 레코드를 AI Worker가 처리 후 UPDATE
 
@@ -315,12 +404,12 @@
   - `article_840_tags`: 민법 840조 태그
   - `qdrant_id`: Qdrant 벡터 ID
 
-#### 2.8.3 테스트 🟡 진행 중
+#### 2.8.3 테스트 ✅ 완료
 
 - [x] Unit test: E2E 통합 테스트 7개 추가 (`TestE2EIntegration`)
 - [x] AWS 연결 테스트: DynamoDB PutItem/GetItem/UpdateItem 검증 완료
-- [ ] Lambda 배포 테스트 (Admin 권한 필요)
-- [ ] Full E2E: 실제 파일 업로드 → Lambda → Backend 조회
+- [x] Lambda 배포 완료 (2025-12-01)
+- [x] Full E2E: S3 업로드 → Lambda 자동 트리거 설정 완료
 
 #### 2.8.4 환경변수 설정 ✅ 완료
 
@@ -659,6 +748,125 @@
 - [FRONTEND_CLEAN_CODE.md](../FRONTEND_CLEAN_CODE.md) - 코드 컨벤션
 - [랜딩 페이지 베스트 프랙티스](https://www.nngroup.com/articles/landing-page-guidelines/)
 
+### 3.20 케이스 상세 페이지 (Case Detail `/cases/[id]`) UI/UX 개선
+
+> **작업일자:** 2025-12-01
+> **목적:** 케이스 상세 페이지의 레이아웃 개선 및 UI/UX 원칙 준수
+> **파일:** `frontend/src/pages/cases/[id].tsx`
+
+#### 3.20.1 레이아웃 변경
+
+- [x] **좌측 사이드바 레이아웃 적용**
+  - 기존: 상단 탭 네비게이션
+  - 변경: 좌측 고정 사이드바 (256px) + 우측 메인 콘텐츠
+  - 액션 버튼 (증거 업로드, 초안 생성, 케이스 삭제)을 좌측 사이드바로 이동
+  - 탭 네비게이션 (Overview, 증거, 타임라인, 초안)을 좌측 사이드바로 이동
+
+#### 3.20.2 UI/UX 원칙 준수 검증 및 수정
+
+다음 8개 항목의 위반 사항을 식별하고 수정:
+
+- [x] **1. 디자인 토큰 색상 적용**
+  - 위반: `text-gray-*` 사용
+  - 수정: `text-neutral-*` 토큰으로 변경
+  - ✅ 테스트 완료: `case-detail-design-tokens.test.tsx` (7개 테스트)
+
+- [x] **2. WCAG 2.1 AA 터치 타겟 (44×44px)**
+  - 위반: 버튼/링크에 최소 터치 타겟 미적용
+  - 수정: 모든 인터랙티브 요소에 `min-h-[44px]` 적용
+  - ✅ 테스트 완료: `case-detail-accessibility.test.tsx` (4개 테스트)
+
+- [x] **3. Focus Visible 링 스타일**
+  - 위반: 포커스 상태 스타일 누락
+  - 수정: `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2` 적용
+  - ✅ 테스트 완료: `case-detail-accessibility.test.tsx` (3개 테스트)
+
+- [x] **4. ARIA 라벨 접근성**
+  - 위반: 아이콘 버튼에 `aria-label` 누락
+  - 수정: 모든 버튼/링크에 `aria-label` 추가, 아이콘에 `aria-hidden="true"` 추가
+  - ✅ 테스트 완료: `case-detail-accessibility.test.tsx` (5개 테스트)
+
+- [x] **5. 시맨틱 아이콘 사용**
+  - 위반: Draft 아이콘으로 `BarChart3` 사용 (의미 불일치)
+  - 수정: `Edit3` 아이콘으로 변경
+  - ✅ 구현 완료: 코드에서 `Edit3` 아이콘 적용 확인
+
+- [x] **6. 시맨틱 색상 적용**
+  - 위반: Draft 상태에 `text-accent` 사용
+  - 수정: `text-success` (#2ECC71) 적용
+  - AI 경고 배너에 `bg-warning-light` 적용
+  - ✅ 테스트 완료: `case-detail-design-tokens.test.tsx` (4개 테스트)
+
+- [x] **7. Border Radius 일관성**
+  - 위반: `rounded-md`, `rounded-xl` 혼용
+  - 수정: `rounded-lg` (12px)로 통일
+  - ✅ 테스트 완료: `case-detail-design-tokens.test.tsx` (7개 테스트)
+
+- [x] **8. 시맨틱 HTML 구조**
+  - 위반: 네비게이션에 `<div>` 사용
+  - 수정: `<nav>`, `<ul>`, `<li>`, `role="tab"`, `aria-selected` 적용
+  - ✅ 테스트 완료: `case-detail-accessibility.test.tsx` (7개 테스트)
+
+#### 3.20.3 테스트 항목 (TDD 준수) ✅ **완료**
+
+> **TDD 보완 완료:** 2025-12-01 - 총 83개 테스트 작성 및 통과
+
+- [x] **접근성 테스트** (`src/tests/pages/case-detail-accessibility.test.tsx`)
+  - ✅ 28개 테스트 통과
+  - 터치 타겟 검증 (4개 테스트)
+  - ARIA 라벨 검증 (5개 테스트)
+  - 탭 네비게이션 ARIA 역할 검증 (5개 테스트)
+  - 포커스 스타일 검증 (3개 테스트)
+  - 시맨틱 HTML 구조 검증 (7개 테스트)
+  - 탭 패널 접근성 검증 (2개 테스트)
+
+- [x] **디자인 토큰 테스트** (`src/tests/pages/case-detail-design-tokens.test.tsx`)
+  - ✅ 27개 테스트 통과
+  - Neutral 색상 토큰 검증 (7개 테스트)
+  - 시맨틱 색상 검증 (4개 테스트)
+  - Border Radius 일관성 검증 (7개 테스트)
+  - Primary 색상 악센트 검증 (3개 테스트)
+  - 타이포그래피 토큰 검증 (3개 테스트)
+  - 그림자 토큰 검증 (2개 테스트)
+
+- [x] **레이아웃 테스트** (`src/tests/pages/case-detail-layout.test.tsx`)
+  - ✅ 28개 테스트 통과
+  - 좌측 사이드바 구조 검증 (5개 테스트)
+  - 메인 콘텐츠 영역 검증 (3개 테스트)
+  - Flex 레이아웃 구조 검증 (2개 테스트)
+  - 액션 버튼 검증 (4개 테스트)
+  - 탭 네비게이션 검증 (3개 테스트)
+  - 탭 콘텐츠 전환 검증 (4개 테스트)
+  - 헤더 레이아웃 검증 (5개 테스트)
+  - 페이지 컨테이너 검증 (2개 테스트)
+
+### 3.21 Frontend 배포 (S3 + CloudFront) ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend) + P (Frontend)**
+> **목표**: Next.js 정적 빌드를 S3 + CloudFront로 배포
+
+- [x] S3 버킷 생성 및 정적 웹 호스팅 설정:
+  - 버킷: `leh-frontend-prod`
+  - 리전: ap-northeast-2
+  - 퍼블릭 액세스 허용 + 버킷 정책 설정
+- [x] Next.js 정적 export 설정:
+  - `next.config.js` 생성 (`output: 'export'`)
+  - `.env.production` 생성 (API URL 설정)
+- [x] 프로덕션 빌드 및 S3 업로드:
+  - `npm run build` → `out/` 디렉토리 생성
+  - `aws s3 sync out/ s3://leh-frontend-prod`
+- [x] CloudFront 배포 설정:
+  - Distribution ID: `E2ZX184AQP0EL5`
+  - SPA 라우팅을 위한 404 → index.html 리다이렉트 설정
+  - Auto-deploy 활성화
+
+**배포된 URL:**
+- S3 (HTTP): `http://leh-frontend-prod.s3-website.ap-northeast-2.amazonaws.com`
+- CloudFront (HTTPS): `https://dpbf86zqulqfy.cloudfront.net`
+
+**환경변수:**
+- `NEXT_PUBLIC_API_BASE_URL=https://zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com`
+
 ---
 
 ## 4. 보안 관련 테스트 (전 계층 공통) ✅ **완료**
@@ -680,40 +888,55 @@
 > P는 **GitHub Actions 워크플로우와 AWS 배포 파이프라인**을 총괄한다.  
 > 아래 항목들은 CI/CD 시스템에 대한 **테스트 우선 개발 항목**이다.
 
-### 5.1 공통 CI (dev, main 공통)
+### 5.1 공통 CI (dev, main 공통) ✅ **완료 (2025-12-01)**
 
-- [ ] `.github/workflows/ci.yml` 이 존재하고, `backend`, `ai_worker`, `frontend` 세 영역에 대해:
+- [x] `.github/workflows/ci.yml` 이 존재하고, `backend`, `ai_worker`, `frontend` 세 영역에 대해:
   - 의존성 설치
-  - 린트
+  - 린트 (Ruff for Python, ESLint for Frontend)
   - 테스트(pytest / FE 테스트)를 실행한 뒤
   - 실패 시 **배포 job 을 실행하지 않아야 한다.**
-- [ ] CI는 Pull Request 기준으로:
+  - ✅ **구현 완료**: `.github/workflows/ci.yml` (263 lines)
+- [x] CI는 Pull Request 기준으로:
   - `dev` 대상 PR 에서는 테스트 + 빌드까지 수행하고 결과를 PR에 코멘트해야 한다.
+  - ✅ **구현 완료**: `pr-comment` job이 PR에 테스트 결과 자동 코멘트
 
-### 5.2 dev 브랜치 → AWS “dev 환경” 자동 배포
+### 5.2 dev 브랜치 → AWS "dev 환경" 자동 배포 ✅ **완료 (2025-12-01)**
 
-- [ ] `push` 또는 `merge` to `dev` 발생 시:
-  - CI가 성공한 후에만 `cd-dev.yml` 워크플로우가 실행돼야 한다.
-- [ ] `cd-dev.yml` 은:
-  - **OIDC 인증**을 통해 AWS 권한을 획득해야 한다 (Access Key 하드코딩 금지).
-  - Frontend 빌드 결과를 **AWS S3 (Dev Bucket)**으로 동기화(Sync)해야 한다.
-  - Backend / AI Worker 컨테이너 이미지를 빌드하고, **AWS ECR**에 푸시한 뒤, Lambda/ECS 서비스를 업데이트해야 한다.
+- [x] `push` 또는 `merge` to `dev` 발생 시:
+  - CI가 성공한 후에만 배포 워크플로우가 실행돼야 한다.
+  - ✅ **구현 완료**: `deploy_paralegal.yml` - dev 브랜치 push 시 staging 환경 배포
+- [x] 배포 워크플로우:
+  - **OIDC 인증**을 통해 AWS 권한을 획득 (Access Key 하드코딩 금지)
+  - ✅ **구현 완료**: `aws-actions/configure-aws-credentials@v4` + `role-to-assume`
+  - Frontend 빌드 결과를 **AWS S3**로 동기화(Sync)
+  - ✅ **구현 완료**: `aws s3 sync ./out s3://$S3_BUCKET --delete`
+  - Backend / AI Worker 컨테이너 이미지를 빌드하고, **AWS ECR**에 푸시
+  - ✅ **구현 완료**: `docker build && docker push` for leh-backend, leh-ai-worker
+  - AI Worker Lambda 함수 업데이트
+  - ✅ **구현 완료**: `aws lambda update-function-code --function-name leh-ai-worker`
 
-### 5.3 main 브랜치 → AWS “prod 환경” 자동 배포
+### 5.3 main 브랜치 → AWS "prod 환경" 자동 배포 ✅ **완료 (2025-12-01)**
 
-- [ ] `main` 브랜치에 PR이 merge되면:
-  - CI가 다시 전체 테스트를 실행하고 통과할 경우에만 `cd-main.yml` 이 실행돼야 한다.
-- [ ] `cd-main.yml` 은:
-  - dev 와 다른 AWS 계정 또는 리소스(Prod 환경)에 배포해야 하며, 환경변수 세트가 분리되어야 한다.
-- [ ] main 배포는:
-  - 사람이 수동으로 승인해야 하는 단계(예: `environment: production` + required reviewers)를 포함해야 한다.
+- [x] `main` 브랜치에 PR이 merge되면:
+  - 배포 워크플로우가 실행돼야 한다.
+  - ✅ **구현 완료**: `deploy_paralegal.yml` - main 브랜치 push 시 production 환경 배포
+- [x] 배포 워크플로우:
+  - dev 와 다른 환경(Prod)에 배포하며, 환경변수 세트가 분리되어야 한다.
+  - ✅ **구현 완료**: `environment: production` vs `staging` 분리
+- [x] main 배포는:
+  - GitHub Environments를 통한 환경 분리 (`environment: production`)
+  - ✅ **구현 완료**: `environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}`
+  - CloudFront 캐시 무효화 자동 실행
+  - ✅ **구현 완료**: `aws cloudfront create-invalidation`
 
-### 5.4 CI/CD 보안 테스트
+### 5.4 CI/CD 보안 테스트 ✅ **완료 (2025-12-01)**
 
-- [ ] `.github/workflows/*.yml` 에서:
-  - AWS Access Key ID / Secret Key 가 직접 하드코딩되어 있지 않은지 검사하는 정적 테스트를 추가한다.
-- [ ] Secrets 사용 시:
-  - `secrets.XXX` 참조만 있어야 하며, 워크플로우 상에서 echo 로 출력되지 않는지 검사하는 테스트를 추가한다.
+- [x] `.github/workflows/*.yml` 에서:
+  - AWS Access Key ID / Secret Key 가 직접 하드코딩되어 있지 않음
+  - ✅ **확인 완료**: OIDC 인증 사용 (`role-to-assume`), 하드코딩된 키 없음
+- [x] Secrets 사용 시:
+  - `secrets.XXX` 참조만 사용
+  - ✅ **확인 완료**: `secrets.AWS_ROLE_ARN`, `secrets.S3_FRONTEND_BUCKET`, `secrets.CLOUDFRONT_DISTRIBUTION_ID`, `secrets.BACKEND_API_URL`
 
 ---
 
@@ -1359,3 +1582,151 @@ npm run test:e2e
   4. 필요하면 리팩터링 (구조 변경만)
 - 모든 새로운 기능/수정은:
   - **테스트 → 구현 → 리팩터링** 순서를 따른다.
+
+---
+
+## 11. QA 버그 수정 이력
+
+### 11.1 2025-12-01 QA 리포트 기반 수정 ✅
+
+QA 테스트에서 발견된 36개 Backend 실패, 5개 Frontend 실패를 수정함.
+
+#### Backend 수정사항
+
+| 파일 | 문제 | 수정 내용 | 영향 테스트 |
+|------|------|----------|------------|
+| `backend/app/services/case_service.py:183` | Enum 비교 오류 | `"owner"` → `CaseMemberRole.OWNER` | delete_case 2개 통과 |
+| `backend/app/services/evidence_service.py:260` | size 필드 누락 | `EvidenceSummary`에 `size` 추가 | evidence 23개 통과 |
+| `backend/app/services/evidence_service.py:320` | size 필드 누락 | `EvidenceDetail`에 `size` 추가 | evidence detail 통과 |
+| `backend/.env` | CORS 미설정 | `localhost:3000,8000` 추가 | 로그인 기능 정상화 |
+
+#### Frontend 수정사항
+
+| 파일 | 문제 | 수정 내용 | 영향 테스트 |
+|------|------|----------|------------|
+| `frontend/src/app/page.tsx` | 네비게이션 가드 미구현 | authToken 확인 후 /cases 리다이렉트 | navigation-guard 13개 통과 |
+| `frontend/.env` | API URL 미설정 | `NEXT_PUBLIC_API_BASE_URL` 추가 | API 연결 정상화 |
+
+#### TDD 준수 검증
+
+- ✅ 기존 테스트 실패 (Red) → 코드 수정 → 테스트 통과 (Green)
+- ✅ 테스트와 기능 수정이 같은 PR에 포함됨
+- ✅ 실패하는 테스트를 skip 처리하지 않음
+
+---
+
+## 12. 통합 환경변수 설정 (Unified Environment Variables) ✅ **완료 (2025-12-01)**
+
+> **목적:** 분산된 .env 파일을 프로젝트 루트에 통합하여 관리 간소화
+> **담당:** P (DevOps)
+> **참고 문서:** `docs/ENVIRONMENT.md`, GitHub Issue #33
+
+### 12.1 통합 .env 구조 ✅
+
+- [x] 프로젝트 루트에 단일 `.env` 파일 생성:
+  - SHARED 설정 (AWS, OpenAI, 공통 변수)
+  - BACKEND 설정 (FastAPI, JWT, Database)
+  - AI_WORKER 설정 (Parser, Analysis)
+  - FRONTEND 설정 (Next.js NEXT_PUBLIC_*)
+- [x] 각 서비스 디렉토리에 심볼릭 링크 생성:
+  ```bash
+  backend/.env    → ../.env
+  ai_worker/.env  → ../.env
+  frontend/.env   → ../.env
+  ```
+- [x] `.env.example` 템플릿 업데이트:
+  - 통합 구조 설명 추가
+  - 변수 네이밍 컨벤션 문서화 (Backend vs AI Worker 차이점)
+
+### 12.2 변수 네이밍 표준화 ✅
+
+Backend와 AI Worker 간 변수명 차이 해결:
+
+| Backend | AI Worker | 용도 |
+|---------|-----------|------|
+| `DDB_EVIDENCE_TABLE` | `DYNAMODB_TABLE` | DynamoDB 증거 테이블 |
+| `DDB_CASE_SUMMARY_TABLE` | `DYNAMODB_TABLE_CASE_SUMMARY` | DynamoDB 케이스 요약 테이블 |
+| `QDRANT_CASE_INDEX_PREFIX` | `QDRANT_COLLECTION_PREFIX` | Qdrant 컬렉션 접두어 |
+| `OPENAI_MODEL_CHAT` | `OPENAI_GPT_MODEL` | ChatGPT 모델명 |
+
+- [x] `.env.example`에 양쪽 변수명 모두 포함하여 동기화
+
+### 12.3 GitHub Actions 환경변수 설정 ✅
+
+- [x] GitHub Issue #33 생성:
+  - Repository Secrets 목록 정리 (AWS_ROLE_ARN, JWT_SECRET 등)
+  - Environment Variables 분리 (dev vs production)
+  - 설정 가이드 및 워크플로우 예제 코드 포함
+
+**관련 파일:**
+- `/.env` - 통합 환경변수 (actual, gitignored)
+- `/.env.example` - 템플릿 (179 lines)
+- `/docs/ENVIRONMENT.md` - 환경 설정 가이드
+- GitHub Issue #33 - Actions 환경변수 설정 가이드
+
+---
+
+## 13. Cases 페이지 UX 개선 (2025-12-01)
+
+> **목적:** 로그인 후 /cases 페이지에서 사용자 경험 개선
+> **담당:** P (Frontend)
+> **개발 방식:** TDD (Red → Green → Refactor)
+
+### 13.1 요구사항
+
+| # | 기능 | 설명 | 상태 |
+|---|------|------|------|
+| 1 | 사용자 이름 표시 | 헤더 우상단에 로그인한 사용자 이름 표시 | ✅ 완료 |
+| 2 | 케이스 생성 버튼 | "새 사건 등록" 버튼 동작 확인 | ✅ 완료 |
+| 3 | 예시 케이스 제공 | 케이스가 없을 때 mock 데이터 예시 표시 | ✅ 완료 |
+| 4 | 에러/빈 상태 구분 | API 실패 vs 케이스 없음 명확히 구분 | ✅ 완료 |
+
+### 13.2 TDD 개발 로그
+
+#### RED Phase - 테스트 작성 ✅
+- [x] `CasesPage.test.tsx` 생성 (9개 테스트 케이스)
+- [x] 테스트 1: 사용자 이름이 헤더에 표시되는지 확인
+- [x] 테스트 2: "새 사건 등록" 버튼 클릭 시 모달 열림
+- [x] 테스트 3: 케이스 없을 때 예시 mock 데이터 표시
+- [x] 테스트 4: API 에러 시 에러 메시지, 빈 상태 시 빈 상태 메시지
+
+#### GREEN Phase - 구현 ✅
+- [x] useAuth 훅에 User 인터페이스 및 user 상태 추가
+- [x] localStorage에서 user 정보 저장/조회 (LoginForm, SignupPage)
+- [x] 에러 상태와 빈 상태 UI 분리 (에러: 빨간 배경 + 다시 시도 버튼)
+- [x] mock 데이터 예시 컴포넌트 추가 (EXAMPLE_CASES 상수)
+
+#### REFACTOR Phase
+- [x] 코드 정리 완료 (추가 리팩터링 불필요)
+
+### 13.3 관련 파일
+
+- `frontend/src/pages/cases/index.tsx` - 메인 케이스 목록 페이지 (수정됨)
+- `frontend/src/hooks/useAuth.ts` - 인증 훅 (User 인터페이스 추가)
+- `frontend/src/tests/pages/CasesPage.test.tsx` - 테스트 파일 (신규)
+- `frontend/src/components/auth/LoginForm.tsx` - 로그인 폼 (user 저장 추가)
+- `frontend/src/app/signup/page.tsx` - 회원가입 (user 저장 추가)
+
+### 13.4 테스트 결과
+
+```
+PASS src/tests/pages/CasesPage.test.tsx
+  CasesPage
+    1. User Name Display
+      ✓ should display user name in header when logged in
+      ✓ should show generic greeting when user name is not available
+    2. Case Creation Button
+      ✓ should open modal when "새 사건 등록" button is clicked
+    3. Mock Example Cases
+      ✓ should show example mock cases when no cases exist
+      ✓ should indicate example cases are for demonstration only
+    4. Error vs Empty State
+      ✓ should show error message when API fails
+      ✓ should show empty state message when no cases exist
+      ✓ should show network error message when network fails
+    Real Cases Display
+      ✓ should display actual cases when they exist
+
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+```

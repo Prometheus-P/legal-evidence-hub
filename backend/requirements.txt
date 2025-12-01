@@ -35,6 +35,9 @@ qdrant-client>=1.7.0
 # HTTP Client
 httpx>=0.25.2
 
+# AWS Lambda Adapter
+mangum>=0.17.0
+
 # Testing (optional)
 pytest>=7.4.3
 pytest-asyncio>=0.21.0

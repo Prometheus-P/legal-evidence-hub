@@ -34,9 +34,9 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
         <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2">
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="Legal Evidence Hub"
-              className="w-8 h-8"
+              className="w-8 h-8 object-contain"
               onError={(e) => {
                 // Fallback to text logo if image fails
                 e.currentTarget.style.display = 'none';

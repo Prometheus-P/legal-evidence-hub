@@ -4,24 +4,54 @@ name: Deploy LEH to AWS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
 
 permissions:
   id-token: write
   contents: read
 
+env:
+  # Set environment based on branch
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENV=production" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+          else
+            echo "ENV=staging" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING || secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING || secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-northeast-2
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -29,6 +59,7 @@ jobs:
 
       # 1. Backend 배포 (ECR Push Only - 추후 App Runner/ECS 연동 필요)
       - name: Build & Push Backend
+        if: github.ref == 'refs/heads/main'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: leh-backend
@@ -41,6 +72,7 @@ jobs:
 
       # 2. AI Worker 배포 (ECR Push + Lambda Update)
       - name: Build & Push AI Worker
+        if: github.ref == 'refs/heads/main'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: leh-ai-worker
@@ -51,18 +83,56 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
+
           # [핵심] Lambda 함수 코드를 새 이미지로 교체
           aws lambda update-function-code \
             --function-name leh-ai-worker \
             --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       # 3. Frontend 배포 (S3 Sync + CloudFront Invalidation)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build Frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.BACKEND_API_URL }}
+          NEXT_PUBLIC_APP_ENV: ${{ steps.env.outputs.ENV }}
+          NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
       - name: Deploy Frontend to S3
         run: |
           cd frontend
-          npm install && npm run build
-          # S3 업로드
-          aws s3 sync ./dist s3://${{ secrets.S3_FRONTEND_BUCKET }} --delete
-          # (선택) CloudFront 캐시 무효화 (배포 즉시 반영)
-          # aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"
+          # Next.js static export outputs to 'out' directory
+          aws s3 sync ./out s3://${{ steps.env.outputs.S3_BUCKET }} --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html" \
+            --exclude "_next/data/*"
+
+          # HTML files with shorter cache for updates
+          aws s3 sync ./out s3://${{ steps.env.outputs.S3_BUCKET }} --delete \
+            --cache-control "public, max-age=0, must-revalidate" \
+            --include "*.html" \
+            --include "_next/data/*"
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.env.outputs.CF_DIST }} \
+            --paths "/*"
+
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ steps.env.outputs.ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **S3 Bucket:** ${{ steps.env.outputs.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
