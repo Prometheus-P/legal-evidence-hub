@@ -71,13 +71,36 @@ Backend: GET /evidence/{id} → status=processed 확인
 
 ---
 
+## AWS 연결 테스트 결과 (2025-12-01)
+
+### IAM 권한 (`leh-dev-l` 사용자)
+
+| 서비스 | 작업 | 상태 |
+|--------|------|------|
+| S3 | `leh-evidence-prod` 접근 | ✅ |
+| DynamoDB | `leh_evidence` PutItem | ✅ |
+| DynamoDB | `leh_evidence` GetItem | ✅ |
+| DynamoDB | `leh_evidence` UpdateItem | ✅ |
+| DynamoDB | `leh_case_summary` 접근 | ✅ |
+| Lambda | 배포/호출 | ❌ (Admin 필요) |
+
+### 환경변수 설정
+
+- `S3_EVIDENCE_BUCKET=leh-evidence-prod`
+- `DYNAMODB_TABLE=leh_evidence`
+- `DYNAMODB_TABLE_CASE_SUMMARY=leh_case_summary`
+
+---
+
 ## 다음 작업
 
-- [ ] S3 버킷 권한 확인 (Admin 필요)
-- [ ] Lambda 실제 배포 테스트
-- [ ] E2E 통합 테스트 (실제 환경)
+- [x] S3 버킷 권한 확인 ✅
+- [x] DynamoDB 연결 테스트 ✅
+- [ ] Lambda 배포 권한 요청 (Admin 필요)
+- [ ] Full E2E 테스트 (실제 파일 업로드 → Lambda → Backend)
 
 ---
 
 *작성일: 2025-12-01*
+*최종 업데이트: 2025-12-01*
 *작성자: AI Worker 담당 (L)*

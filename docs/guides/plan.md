@@ -289,35 +289,46 @@
   - DynamoDB 읽기/쓰기 권한
   - Qdrant 접근 (VPC 또는 Public)
 
-### 2.8 E2E 통합 (Backend ↔ AI Worker) 🔴 **진행 중**
+### 2.8 E2E 통합 (Backend ↔ AI Worker) 🟡 **거의 완료**
 
 > **목표**: Backend가 생성한 Evidence 레코드를 AI Worker가 처리 후 UPDATE
 
-#### 2.8.1 스키마 매핑 구현
+#### 2.8.1 스키마 매핑 구현 ✅ 완료
 
-- [ ] `handler.py`: S3 key에서 evidence_id 추출 함수 추가
+- [x] `handler.py`: S3 key에서 evidence_id 추출 함수 추가
   - 형식: `cases/{case_id}/raw/{evidence_id}_{filename}`
   - 예: `ev_abc123_photo.jpg` → `ev_abc123`
-- [ ] `metadata_store.py`: `update_evidence_status()` 메서드 추가
+  - 구현: `_extract_evidence_id_from_s3_key()` 함수
+- [x] `metadata_store.py`: `update_evidence_status()` 메서드 추가
   - Backend 레코드 상태 업데이트 (pending → processed)
   - AI 분석 결과 필드 추가 (ai_summary, article_840_tags, qdrant_id)
 
-#### 2.8.2 처리 완료 후 상태 업데이트
+#### 2.8.2 처리 완료 후 상태 업데이트 ✅ 완료
 
-- [ ] `handler.py`: `route_and_process()` 수정
+- [x] `handler.py`: `route_and_process()` 수정
   - evidence_id 추출 성공 시: Backend 레코드 UPDATE
   - 실패 시: fallback으로 새 레코드 생성 (기존 방식)
-- [ ] 업데이트 필드:
+- [x] 업데이트 필드:
   - `status`: "pending" → "processed"
   - `processed_at`: 처리 완료 시간
   - `ai_summary`: AI 생성 요약
   - `article_840_tags`: 민법 840조 태그
   - `qdrant_id`: Qdrant 벡터 ID
 
-#### 2.8.3 테스트
+#### 2.8.3 테스트 🟡 진행 중
 
-- [ ] Unit test: `test_update_evidence_status()`
-- [ ] Integration test: Backend → S3 → AI Worker → Backend 조회
+- [x] Unit test: E2E 통합 테스트 7개 추가 (`TestE2EIntegration`)
+- [x] AWS 연결 테스트: DynamoDB PutItem/GetItem/UpdateItem 검증 완료
+- [ ] Lambda 배포 테스트 (Admin 권한 필요)
+- [ ] Full E2E: 실제 파일 업로드 → Lambda → Backend 조회
+
+#### 2.8.4 환경변수 설정 ✅ 완료
+
+- [x] `backend/app/core/config.py`: S3 버킷명 수정 (`leh-evidence-prod`)
+- [x] `ai_worker/.env.example`: 실제 AWS 리소스명으로 업데이트
+  - `S3_EVIDENCE_BUCKET=leh-evidence-prod`
+  - `DYNAMODB_TABLE=leh_evidence`
+  - `DYNAMODB_TABLE_CASE_SUMMARY=leh_case_summary`
 
 ---
 
