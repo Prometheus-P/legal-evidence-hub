@@ -237,11 +237,13 @@ def test_e2e_backend_ai_worker_integration():
 ### Phase 3: 환경변수 통일 (예상 30분)
 
 **확인 필요 항목:**
-| 환경변수 | Backend | AI Worker | 통일 값 |
-|---------|---------|-----------|---------|
-| DDB_EVIDENCE_TABLE | leh_evidence | leh_evidence | ✅ 동일 |
-| S3_EVIDENCE_BUCKET | leh-evidence-dev | leh-evidence-dev | ✅ 동일 |
+| 환경변수 | Backend | AI Worker | 상태 |
+|---------|---------|-----------|------|
+| DDB_EVIDENCE_TABLE | leh_evidence | leh_evidence | ⚠️ Admin 확인 필요 |
+| S3_EVIDENCE_BUCKET | (환경변수 필수) | (환경변수 필수) | ⚠️ Admin에게 버킷 이름 확인 |
 | AWS_REGION | ap-northeast-2 | ap-northeast-2 | ✅ 동일 |
+
+> **NOTE**: `leh-evidence-dev`는 더 이상 사용하지 않음 (임시 로컬 테스트용이었음)
 
 ---
 
