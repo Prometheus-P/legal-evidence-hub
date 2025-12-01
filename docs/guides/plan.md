@@ -789,6 +789,33 @@
   - 헤더 레이아웃 검증 (5개 테스트)
   - 페이지 컨테이너 검증 (2개 테스트)
 
+### 3.20 Frontend 배포 (S3 + CloudFront) ✅ **완료 (2025-12-01)**
+
+> **담당: H (Backend) + P (Frontend)**
+> **목표**: Next.js 정적 빌드를 S3 + CloudFront로 배포
+
+- [x] S3 버킷 생성 및 정적 웹 호스팅 설정:
+  - 버킷: `leh-frontend-prod`
+  - 리전: ap-northeast-2
+  - 퍼블릭 액세스 허용 + 버킷 정책 설정
+- [x] Next.js 정적 export 설정:
+  - `next.config.js` 생성 (`output: 'export'`)
+  - `.env.production` 생성 (API URL 설정)
+- [x] 프로덕션 빌드 및 S3 업로드:
+  - `npm run build` → `out/` 디렉토리 생성
+  - `aws s3 sync out/ s3://leh-frontend-prod`
+- [x] CloudFront 배포 설정:
+  - Distribution ID: `E2ZX184AQP0EL5`
+  - SPA 라우팅을 위한 404 → index.html 리다이렉트 설정
+  - Auto-deploy 활성화
+
+**배포된 URL:**
+- S3 (HTTP): `http://leh-frontend-prod.s3-website.ap-northeast-2.amazonaws.com`
+- CloudFront (HTTPS): `https://dpbf86zqulqfy.cloudfront.net`
+
+**환경변수:**
+- `NEXT_PUBLIC_API_BASE_URL=https://zhfiuntwj0.execute-api.ap-northeast-2.amazonaws.com`
+
 ---
 
 ## 4. 보안 관련 테스트 (전 계층 공통) ✅ **완료**
