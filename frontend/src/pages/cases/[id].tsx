@@ -1,47 +1,57 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
-import { Evidence } from '@/types/evidence';
+import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
 import { downloadDraftAsDocx, DraftDownloadFormat } from '@/services/documentService';
+import {
+  getPresignedUploadUrl,
+  uploadToS3,
+  notifyUploadComplete,
+  getEvidence,
+  UploadProgress,
+  Evidence as ApiEvidence
+} from '@/lib/api/evidence';
+import { getCase, Case } from '@/lib/api/cases';
 
-// Mock Data
-const MOCK_EVIDENCE: Evidence[] = [
-    {
-        id: '1',
-        caseId: '1',
-        filename: '녹취록_20240501.mp3',
-        type: 'audio',
-        status: 'completed',
-        uploadDate: '2024-05-01T10:00:00Z',
-        summary: '피고의 폭언이 담긴 통화 녹음',
-        size: 15 * 1024 * 1024,
-    },
-    {
-        id: '2',
-        caseId: '1',
-        filename: '카카오톡_대화내역.txt',
-        type: 'text',
-        status: 'processing',
-        uploadDate: '2024-05-02T09:30:00Z',
-        size: 50 * 1024,
-    },
-    {
-        id: '3',
-        caseId: '1',
-        filename: '폭행_상해_진단서.pdf',
-        type: 'pdf',
-        status: 'queued',
-        uploadDate: '2024-05-03T14:20:00Z',
-        size: 2 * 1024 * 1024,
-    },
-];
+/**
+ * Convert API evidence response to component Evidence type
+ */
+function mapApiEvidenceToEvidence(apiEvidence: ApiEvidence, caseId: string): Evidence {
+  // Map API status to component status
+  const statusMap: Record<string, EvidenceStatus> = {
+    'pending': 'queued',
+    'processing': 'processing',
+    'processed': 'completed',
+    'failed': 'failed',
+  };
+
+  // Map API type to component type
+  const typeMap: Record<string, EvidenceType> = {
+    'image': 'image',
+    'audio': 'audio',
+    'video': 'video',
+    'text': 'text',
+    'pdf': 'pdf',
+  };
+
+  return {
+    id: apiEvidence.id,
+    caseId: caseId,
+    filename: apiEvidence.filename,
+    type: typeMap[apiEvidence.type] || 'text',
+    status: statusMap[apiEvidence.status] || 'queued',
+    uploadDate: apiEvidence.created_at,
+    summary: apiEvidence.ai_summary,
+    size: apiEvidence.size || 0,
+  };
+}
 
 const INITIAL_DRAFT_CONTENT = `Ⅰ. 핵심 주장 요약
 - 피고의 반복적인 언어적 폭력과 경제적 통제 사실이 다수의 증거에서 확인됩니다.
@@ -73,12 +83,23 @@ const INITIAL_CITATIONS: DraftCitation[] = [
 
 const GENERATION_DELAY_MS = 1200;
 type CaseDetailTab = 'evidence' | 'opponent' | 'timeline' | 'draft';
-type UploadFeedback = { message: string; tone: 'info' | 'success' };
+type UploadFeedback = { message: string; tone: 'info' | 'success' | 'error' };
+type UploadStatus = {
+  isUploading: boolean;
+  currentFile: string;
+  progress: number;
+  completed: number;
+  total: number;
+};
 
 export default function CaseDetailPage() {
     const router = useRouter();
     const { id } = router.query;
-    const [evidenceList] = useState<Evidence[]>(MOCK_EVIDENCE);
+    const [caseData, setCaseData] = useState<Case | null>(null);
+    const [isLoadingCase, setIsLoadingCase] = useState(true);
+    const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
+    const [isLoadingEvidence, setIsLoadingEvidence] = useState(false);
+    const [evidenceError, setEvidenceError] = useState<string | null>(null);
     const [draftContent, setDraftContent] = useState(INITIAL_DRAFT_CONTENT);
     const [draftCitations, setDraftCitations] = useState<DraftCitation[]>(INITIAL_CITATIONS);
     const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
@@ -86,16 +107,163 @@ export default function CaseDetailPage() {
     const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<CaseDetailTab>('draft');
     const [uploadFeedback, setUploadFeedback] = useState<UploadFeedback | null>(null);
+    const [uploadStatus, setUploadStatus] = useState<UploadStatus>({
+        isUploading: false,
+        currentFile: '',
+        progress: 0,
+        completed: 0,
+        total: 0,
+    });
 
-    const handleUpload = (files: File[]) => {
-        if (files.length === 0) return;
-        // TODO: Implement actual upload logic
-        setUploadFeedback({
-            tone: 'success',
-            message: `${new Date().toLocaleTimeString('ko-KR')} 기준 ${files.length}개의 파일이 업로드 대기열에 추가되었습니다.`,
+    const caseId = typeof id === 'string' ? id : '';
+
+    // Fetch case data
+    useEffect(() => {
+        if (!caseId) return;
+
+        const fetchCaseData = async () => {
+            setIsLoadingCase(true);
+            const response = await getCase(caseId);
+            if (response.data) {
+                setCaseData(response.data);
+            }
+            setIsLoadingCase(false);
+        };
+
+        fetchCaseData();
+    }, [caseId]);
+
+    // Fetch evidence list from API
+    const fetchEvidenceList = useCallback(async () => {
+        if (!caseId) return;
+
+        setIsLoadingEvidence(true);
+        setEvidenceError(null);
+
+        try {
+            const result = await getEvidence(caseId);
+            if (result.error) {
+                setEvidenceError(result.error);
+            } else if (result.data) {
+                const mapped = result.data.evidence.map(e => mapApiEvidenceToEvidence(e, caseId));
+                setEvidenceList(mapped);
+            }
+        } catch (err) {
+            setEvidenceError('증거 목록을 불러오는데 실패했습니다.');
+            console.error('Failed to fetch evidence:', err);
+        } finally {
+            setIsLoadingEvidence(false);
+        }
+    }, [caseId]);
+
+    // Load evidence when caseId changes
+    useEffect(() => {
+        fetchEvidenceList();
+    }, [fetchEvidenceList]);
+
+    const handleUpload = useCallback(async (files: File[]) => {
+        if (files.length === 0 || !caseId) return;
+
+        setUploadStatus({
+            isUploading: true,
+            currentFile: files[0].name,
+            progress: 0,
+            completed: 0,
+            total: files.length,
         });
-        setTimeout(() => setUploadFeedback(null), 4000);
-    };
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            setUploadStatus(prev => ({
+                ...prev,
+                currentFile: file.name,
+                progress: 0,
+            }));
+
+            try {
+                // Step 1: Get presigned URL from backend
+                const presignedResult = await getPresignedUploadUrl(
+                    caseId,
+                    file.name,
+                    file.type || 'application/octet-stream'
+                );
+
+                if (presignedResult.error || !presignedResult.data) {
+                    throw new Error(presignedResult.error || 'Failed to get presigned URL');
+                }
+
+                const { upload_url, evidence_temp_id, s3_key } = presignedResult.data;
+
+                // Step 2: Upload file directly to S3
+                const uploadSuccess = await uploadToS3(
+                    upload_url,
+                    file,
+                    (progress: UploadProgress) => {
+                        setUploadStatus(prev => ({
+                            ...prev,
+                            progress: progress.percent,
+                        }));
+                    }
+                );
+
+                if (!uploadSuccess) {
+                    throw new Error('S3 upload failed');
+                }
+
+                // Step 3: Notify backend of completed upload
+                const completeResult = await notifyUploadComplete({
+                    case_id: caseId,
+                    evidence_temp_id,
+                    s3_key,
+                });
+
+                if (completeResult.error) {
+                    throw new Error(completeResult.error || 'Failed to complete upload');
+                }
+
+                successCount++;
+            } catch (error) {
+                console.error(`Upload failed for ${file.name}:`, error);
+                failCount++;
+            }
+
+            setUploadStatus(prev => ({
+                ...prev,
+                completed: i + 1,
+            }));
+        }
+
+        // Upload complete - show feedback
+        setUploadStatus(prev => ({ ...prev, isUploading: false }));
+
+        if (failCount === 0) {
+            setUploadFeedback({
+                tone: 'success',
+                message: `${successCount}개 파일 업로드 완료. AI가 증거를 분석 중입니다.`,
+            });
+        } else if (successCount > 0) {
+            setUploadFeedback({
+                tone: 'info',
+                message: `${successCount}개 성공, ${failCount}개 실패. 실패한 파일을 다시 업로드해주세요.`,
+            });
+        } else {
+            setUploadFeedback({
+                tone: 'error',
+                message: `업로드 실패. 네트워크를 확인하고 다시 시도해주세요.`,
+            });
+        }
+
+        // Refresh evidence list after upload
+        if (successCount > 0) {
+            fetchEvidenceList();
+        }
+
+        setTimeout(() => setUploadFeedback(null), 5000);
+    }, [caseId, fetchEvidenceList]);
 
     const openDraftModal = () => {
         setIsDraftModalOpen(true);
@@ -158,7 +326,9 @@ export default function CaseDetailPage() {
                             <ArrowLeft className="w-6 h-6" />
                         </Link>
                         <div>
-                            <h1 className="text-xl font-bold text-secondary">김철수 이혼 소송</h1>
+                            <h1 className="text-xl font-bold text-secondary">
+                                {isLoadingCase ? '로딩 중...' : caseData?.title || '사건 정보 없음'}
+                            </h1>
                             <p className="text-xs text-gray-500">Case ID: {id}</p>
                         </div>
                     </div>
@@ -177,8 +347,14 @@ export default function CaseDetailPage() {
                 <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 grid gap-4 md:grid-cols-3">
                     <div>
                         <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">의뢰인</p>
-                        <p className="text-base font-semibold text-gray-900">김철수</p>
-                        <p className="text-xs text-gray-500">최근 업데이트: {new Date().toLocaleDateString('ko-KR')}</p>
+                        <p className="text-base font-semibold text-gray-900">
+                            {isLoadingCase ? '로딩 중...' : caseData?.client_name || '-'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            최근 업데이트: {caseData?.updated_at
+                                ? new Date(caseData.updated_at).toLocaleDateString('ko-KR')
+                                : new Date().toLocaleDateString('ko-KR')}
+                        </p>
                     </div>
                     <div>
                         <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">증거 현황</p>
@@ -226,18 +402,43 @@ export default function CaseDetailPage() {
                                     <Sparkles className="w-4 h-4 text-accent mr-1" /> Whisper · OCR 자동 적용
                                 </span>
                             </div>
-                            <EvidenceUpload onUpload={handleUpload} />
-                            {uploadFeedback && (
+                            <EvidenceUpload onUpload={handleUpload} disabled={uploadStatus.isUploading} />
+                            {uploadStatus.isUploading && (
+                                <div
+                                    role="status"
+                                    aria-live="polite"
+                                    className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm"
+                                >
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                                        <span className="text-blue-800 font-medium">
+                                            업로드 중 ({uploadStatus.completed + 1}/{uploadStatus.total})
+                                        </span>
+                                    </div>
+                                    <p className="text-blue-700 text-xs mb-2 truncate">{uploadStatus.currentFile}</p>
+                                    <div className="w-full bg-blue-200 rounded-full h-2">
+                                        <div
+                                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${uploadStatus.progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {uploadFeedback && !uploadStatus.isUploading && (
                                 <div
                                     role="status"
                                     aria-live="polite"
                                     className={`flex items-start space-x-2 rounded-lg px-4 py-3 text-sm ${
                                         uploadFeedback.tone === 'success'
                                             ? 'bg-accent/10 text-secondary'
+                                            : uploadFeedback.tone === 'error'
+                                            ? 'bg-red-50 text-red-700 border border-red-200'
                                             : 'bg-gray-100 text-neutral-700'
                                     }`}
                                 >
-                                    <CheckCircle2 className="w-4 h-4 mt-0.5 text-accent" />
+                                    <CheckCircle2 className={`w-4 h-4 mt-0.5 ${
+                                        uploadFeedback.tone === 'error' ? 'text-red-500' : 'text-accent'
+                                    }`} />
                                     <p>{uploadFeedback.message}</p>
                                 </div>
                             )}
@@ -256,7 +457,29 @@ export default function CaseDetailPage() {
                                     뷰 필터
                                 </button>
                             </div>
-                            <EvidenceTable items={evidenceList} />
+                            {isLoadingEvidence ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                                    <span className="ml-2 text-gray-500">증거 목록을 불러오는 중...</span>
+                                </div>
+                            ) : evidenceError ? (
+                                <div className="text-center py-8 text-red-500">
+                                    <p>{evidenceError}</p>
+                                    <button
+                                        onClick={fetchEvidenceList}
+                                        className="mt-2 text-sm text-blue-600 hover:underline"
+                                    >
+                                        다시 시도
+                                    </button>
+                                </div>
+                            ) : evidenceList.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <p>아직 업로드된 증거가 없습니다.</p>
+                                    <p className="text-sm">위의 업로드 영역에 파일을 드래그하여 증거를 추가하세요.</p>
+                                </div>
+                            ) : (
+                                <EvidenceTable items={evidenceList} />
+                            )}
                         </section>
                     </div>
                 )}
@@ -274,18 +497,29 @@ export default function CaseDetailPage() {
                 {activeTab === 'timeline' && (
                     <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4" role="tabpanel" aria-label="타임라인 탭">
                         <h2 className="text-lg font-bold text-gray-900">사건 타임라인</h2>
-                        <p className="text-sm text-gray-500">AI가 추출한 주요 사건들을 시간순으로 정리합니다. 증거 탭에서 “AI 요약”이 쌓일수록 타임라인의 정확도가 향상됩니다.</p>
-                        <ul className="space-y-3">
-                            {evidenceList.map((item) => (
-                                <li key={item.id} className="flex items-start space-x-3 border-l-2 border-accent pl-3">
-                                    <div className="text-xs text-gray-400">{new Date(item.uploadDate).toLocaleDateString()}</div>
-                                    <div>
-                                        <p className="text-sm font-semibold text-gray-800">{item.filename}</p>
-                                        <p className="text-xs text-gray-500">{item.summary ? item.summary : '요약이 곧 제공됩니다. 증거를 검토 중입니다.'}</p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                        <p className="text-sm text-gray-500">AI가 추출한 주요 사건들을 시간순으로 정리합니다. 증거 탭에서 "AI 요약"이 쌓일수록 타임라인의 정확도가 향상됩니다.</p>
+                        {isLoadingEvidence ? (
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                <span className="ml-2 text-gray-500">타임라인을 불러오는 중...</span>
+                            </div>
+                        ) : evidenceList.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                                <p>아직 등록된 증거가 없어 타임라인을 표시할 수 없습니다.</p>
+                            </div>
+                        ) : (
+                            <ul className="space-y-3">
+                                {evidenceList.map((item) => (
+                                    <li key={item.id} className="flex items-start space-x-3 border-l-2 border-accent pl-3">
+                                        <div className="text-xs text-gray-400">{new Date(item.uploadDate).toLocaleDateString()}</div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-gray-800">{item.filename}</p>
+                                            <p className="text-xs text-gray-500">{item.summary ? item.summary : '요약이 곧 제공됩니다. 증거를 검토 중입니다.'}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </section>
                 )}
 

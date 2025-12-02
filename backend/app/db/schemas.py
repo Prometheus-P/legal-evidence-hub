@@ -49,6 +49,30 @@ class TokenResponse(BaseModel):
 
 
 # ============================================
+# Password Reset Schemas
+# ============================================
+class ForgotPasswordRequest(BaseModel):
+    """Forgot password request schema"""
+    email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+    """Forgot password response schema"""
+    message: str
+
+
+class ResetPasswordRequest(BaseModel):
+    """Reset password request schema"""
+    token: str
+    new_password: str = Field(..., min_length=8)
+
+
+class ResetPasswordResponse(BaseModel):
+    """Reset password response schema"""
+    message: str
+
+
+# ============================================
 # User Management Schemas
 # ============================================
 class UserInviteRequest(BaseModel):
@@ -110,12 +134,14 @@ class UpdateRolePermissionsRequest(BaseModel):
 class CaseCreate(BaseModel):
     """Case creation request schema"""
     title: str = Field(..., min_length=1, max_length=200)
+    client_name: Optional[str] = Field(None, max_length=100)  # 의뢰인 이름
     description: Optional[str] = None
 
 
 class CaseUpdate(BaseModel):
     """Case update request schema"""
     title: Optional[str] = Field(None, min_length=1, max_length=200)
+    client_name: Optional[str] = Field(None, max_length=100)  # 의뢰인 이름
     description: Optional[str] = None
 
 
@@ -123,6 +149,7 @@ class CaseOut(BaseModel):
     """Case output schema"""
     id: str
     title: str
+    client_name: Optional[str] = None  # 의뢰인 이름
     description: Optional[str]
     status: CaseStatus
     created_by: str
@@ -218,6 +245,7 @@ class PresignedUrlResponse(BaseModel):
     upload_url: str
     fields: dict
     evidence_temp_id: str
+    s3_key: str
 
 
 class UploadCompleteRequest(BaseModel):

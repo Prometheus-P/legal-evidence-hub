@@ -76,6 +76,7 @@ class Case(Base):
 
     id = Column(String, primary_key=True, default=lambda: f"case_{uuid.uuid4().hex[:12]}")
     title = Column(String, nullable=False)
+    client_name = Column(String, nullable=True)  # 의뢰인 이름
     description = Column(String, nullable=True)
     status = Column(SQLEnum(CaseStatus), nullable=False, default=CaseStatus.ACTIVE)
     created_by = Column(String, ForeignKey("users.id"), nullable=False)
@@ -125,6 +126,23 @@ class InviteToken(Base):
 
     def __repr__(self):
         return f"<InviteToken(id={self.id}, email={self.email}, token={self.token[:8]}...)>"
+
+
+class PasswordResetToken(Base):
+    """
+    Password reset token model - for password recovery
+    """
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(String, primary_key=True, default=lambda: f"pwreset_{uuid.uuid4().hex[:12]}")
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    token = Column(String, unique=True, nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    def __repr__(self):
+        return f"<PasswordResetToken(id={self.id}, user_id={self.user_id})>"
 
 
 class AuditLog(Base):

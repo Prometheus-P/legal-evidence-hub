@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { login } from '@/lib/api/auth';
 import { Button, Input } from '@/components/primitives';
 
@@ -26,9 +27,11 @@ export default function LoginForm() {
         return;
       }
 
-      // Store auth token in localStorage
-      // TODO: Consider HTTP-only cookie for better security
-      localStorage.setItem('authToken', response.data.access_token);
+      // Cache user info for display purposes only (not for auth)
+      // Authentication is handled via HTTP-only cookies set by backend
+      if (response.data.user) {
+        localStorage.setItem('userCache', JSON.stringify(response.data.user));
+      }
 
       // Redirect to cases page
       router.push('/cases');
@@ -52,15 +55,25 @@ export default function LoginForm() {
         error={error && email === '' ? '이메일을 입력해주세요' : undefined}
       />
 
-      <Input
-        id="password"
-        type="password"
-        label="비밀번호"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        error={error && password === '' ? '비밀번호를 입력해주세요' : undefined}
-      />
+      <div>
+        <Input
+          id="password"
+          type="password"
+          label="비밀번호"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={error && password === '' ? '비밀번호를 입력해주세요' : undefined}
+        />
+        <div className="mt-1 text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-deep-trust-blue hover:underline"
+          >
+            비밀번호를 잊으셨나요?
+          </Link>
+        </div>
+      </div>
 
       {error && (
         <div className="text-sm text-error text-center" role="alert">

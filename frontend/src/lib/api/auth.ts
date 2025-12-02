@@ -79,3 +79,53 @@ export async function signup(
     body: JSON.stringify(data),
   });
 }
+
+/**
+ * Request password reset email
+ */
+export async function forgotPassword(
+  email: string
+): Promise<ApiResponse<{ message: string }>> {
+  return apiRequest<{ message: string }>('/auth/forgot-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+}
+
+/**
+ * Reset password with token
+ */
+export async function resetPassword(
+  token: string,
+  newPassword: string
+): Promise<ApiResponse<{ message: string }>> {
+  return apiRequest<{ message: string }>('/auth/reset-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+}
+
+export interface UserInfo {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  status: string;
+  created_at: string;
+}
+
+/**
+ * Get current authenticated user info
+ * Uses HTTP-only cookie for authentication
+ */
+export async function getCurrentUser(): Promise<ApiResponse<UserInfo>> {
+  return apiRequest<UserInfo>('/auth/me', {
+    method: 'GET',
+  });
+}

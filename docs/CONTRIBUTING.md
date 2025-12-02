@@ -33,6 +33,11 @@
 
 # 🌱 2. 브랜치 전략 (Branching Strategy)
 
+> ⛔ **절대규칙 (ABSOLUTE RULES)**
+> - `main` 브랜치 직접 push 금지 → PR only (Production 배포)
+> - `dev` 브랜치 직접 push 금지 → PR only (Staging 배포)
+> - 모든 코드 변경은 작업 브랜치(p-work, feat/*)에서 PR을 통해 진행
+
 단일 패턴만 기억하면 된다:
 
 ```text
@@ -49,9 +54,9 @@ main  ←  dev  ←  feat/*
 
 ## 2.2 dev
 
-- 모든 개발의 기준 브랜치
-- H / L / P 누구나 **자유롭게 push 가능**
-- Vibe Coding, 대규모 리팩토링, 구조 변경 등은 전부 dev에서 진행
+- 모든 개발의 기준 브랜치 (Staging 환경 배포)
+- **⚠️ 직접 push 금지** — 오직 **PR(p-work/feat/* → dev)** 로만 변경
+- Vibe Coding, 대규모 리팩토링, 구조 변경 등은 작업 브랜치에서 진행 후 PR
 
 ## 2.3 feat/*
 
@@ -275,20 +280,55 @@ git push origin dev
 
 ```text
 root/
-├── backend/          # FastAPI 백엔드
-├── frontend/         # React/Next 대시보드
-├── ai_worker/        # AI Lambda/ECS 코드
-├── infra/            # CDK/Terraform 등 IaC
-├── docs/             # 설계 문서
-│   ├── PRD.md
-│   ├── ARCHITECTURE.md
-│   ├── BACKEND_DESIGN.md
-│   ├── AI_PIPELINE_DESIGN.md
-│   ├── FRONTEND_SPEC.md
-│   ├── API_SPEC.md
-│   └── SECURITY_COMPLIANCE.md
-├── CONTRIBUTING.md   # 이 파일
-└── README.md
+├── .env                  # 통합 환경 변수 (Git 제외)
+├── .env.example          # 환경 변수 템플릿
+├── backend/              # FastAPI 백엔드 (H)
+│   ├── app/
+│   │   ├── api/          # 라우터 (auth, cases, evidence, admin)
+│   │   ├── core/         # 설정, 보안, 의존성
+│   │   ├── db/           # 모델, 스키마, 세션
+│   │   ├── middleware/   # 보안, 에러, 감사 로그
+│   │   ├── repositories/ # 데이터 접근 레이어
+│   │   ├── services/     # 비즈니스 로직
+│   │   ├── utils/        # S3, DynamoDB, Qdrant, OpenAI 어댑터
+│   │   └── main.py       # FastAPI 엔트리포인트
+│   ├── tests/
+│   └── .env              # → symlink to ../.env
+│
+├── ai_worker/            # AI Lambda 워커 (L)
+│   ├── handler.py        # Lambda 엔트리포인트
+│   ├── src/
+│   │   ├── parsers/      # 파일 타입별 파서
+│   │   ├── analysis/     # 분석 엔진
+│   │   ├── service_rag/  # 법률 지식 RAG
+│   │   ├── user_rag/     # 사건별 RAG
+│   │   └── storage/      # DynamoDB, Qdrant 저장소
+│   ├── tests/
+│   └── .env              # → symlink to ../.env
+│
+├── frontend/             # Next.js 대시보드 (P)
+│   ├── src/
+│   │   ├── app/          # Next.js App Router
+│   │   ├── components/   # React 컴포넌트
+│   │   ├── hooks/        # 커스텀 훅
+│   │   ├── lib/          # 유틸리티, API 클라이언트
+│   │   ├── types/        # TypeScript 타입
+│   │   └── tests/        # 테스트
+│   └── .env              # → symlink to ../.env
+│
+├── docs/                 # 설계 문서
+│   ├── specs/            # PRD, Architecture, API Spec 등
+│   ├── guides/           # 개발 가이드
+│   ├── business/         # 비즈니스 문서
+│   └── archive/          # 아카이브
+│
+├── .github/              # GitHub 설정
+│   ├── workflows/        # CI/CD
+│   └── PULL_REQUEST_TEMPLATE.md
+│
+├── CLAUDE.md             # AI 에이전트 규칙
+├── CONTRIBUTING.md       # 협업 규칙 (이 파일)
+└── README.md             # 프로젝트 소개
 ```
 
 ---

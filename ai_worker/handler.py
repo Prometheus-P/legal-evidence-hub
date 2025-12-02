@@ -42,6 +42,8 @@ def route_parser(file_extension: str) -> Optional[Any]:
     """
     파일 확장자에 따라 적절한 파서를 반환
 
+    NOTE: Keep in sync with backend/app/services/evidence_service.py type_mapping
+
     Args:
         file_extension: 파일 확장자 (예: '.pdf', '.jpg', '.mp4')
 
@@ -50,24 +52,24 @@ def route_parser(file_extension: str) -> Optional[Any]:
     """
     ext = file_extension.lower()
 
-    # 이미지 파일
+    # 이미지 파일 (image)
     if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']:
         # Vision API 우선 사용 (감정/맥락 분석)
         return ImageVisionParser()
 
-    # PDF 파일
+    # PDF 파일 (pdf)
     elif ext == '.pdf':
         return PDFParser()
 
-    # 오디오 파일
+    # 오디오 파일 (audio)
     elif ext in ['.mp3', '.wav', '.m4a', '.aac']:
         return AudioParser()
 
-    # 비디오 파일
+    # 비디오 파일 (video)
     elif ext in ['.mp4', '.avi', '.mov', '.mkv']:
         return VideoParser()
 
-    # 텍스트 파일 (카톡 포함)
+    # 텍스트 파일 (text) - 카톡 포함
     elif ext in ['.txt', '.csv', '.json']:
         return TextParser()
 
