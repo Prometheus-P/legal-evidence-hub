@@ -97,6 +97,12 @@ class Settings(BaseSettings):
     S3_PRESIGNED_URL_EXPIRE_SECONDS: int = Field(default=300, env="S3_PRESIGNED_URL_EXPIRE_SECONDS")  # 5 minutes max
 
     # ============================================
+    # Lambda Settings (AI Worker)
+    # ============================================
+    LAMBDA_AI_WORKER_FUNCTION: str = Field(default="leh-ai-worker", env="LAMBDA_AI_WORKER_FUNCTION")
+    LAMBDA_AI_WORKER_ENABLED: bool = Field(default=True, env="LAMBDA_AI_WORKER_ENABLED")
+
+    # ============================================
     # DynamoDB Settings
     # ============================================
     DDB_EVIDENCE_TABLE: str = Field(default="leh_evidence", env="DDB_EVIDENCE_TABLE")

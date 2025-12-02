@@ -21,9 +21,13 @@ from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.s3 import generate_presigned_upload_url
 from app.utils.dynamo import get_evidence_by_case, get_evidence_by_id, put_evidence_metadata as save_evidence_metadata
+from app.utils.lambda_client import invoke_ai_worker
 from app.core.config import settings
 from app.middleware import NotFoundError, PermissionError
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EvidenceService:
@@ -193,9 +197,14 @@ class EvidenceService:
         # Save to DynamoDB
         save_evidence_metadata(evidence_metadata)
 
-        # TODO: Trigger AI Worker via SNS or direct Lambda invocation
-        # This will be implemented when AWS Lambda is fully set up
-        # For now, evidence will stay in "pending" status until AI Worker picks it up
+        # Trigger AI Worker Lambda for processing
+        invoke_result = invoke_ai_worker(
+            bucket=settings.S3_EVIDENCE_BUCKET,
+            s3_key=request.s3_key,
+            evidence_id=evidence_id,
+            case_id=request.case_id
+        )
+        logger.info(f"AI Worker invocation result: {invoke_result}")
 
         return UploadCompleteResponse(
             evidence_id=evidence_id,

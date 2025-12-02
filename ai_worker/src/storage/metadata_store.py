@@ -139,7 +139,7 @@ class MetadataStore:
             'filepath': file.filepath,
             'record_type': 'file',  # Distinguish from other record types
             'created_at': datetime.now(timezone.utc).isoformat(),
-            'status': 'done'  # AI Worker completed processing
+            'status': 'processed'  # AI Worker completed processing
         }
 
         try:
