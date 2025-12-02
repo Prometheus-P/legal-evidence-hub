@@ -27,13 +27,10 @@ export default function LoginForm() {
         return;
       }
 
-      // Store auth token in localStorage
-      // TODO: Consider HTTP-only cookie for better security
-      localStorage.setItem('authToken', response.data.access_token);
-
-      // Store user info for display purposes
+      // Cache user info for display purposes only (not for auth)
+      // Authentication is handled via HTTP-only cookies set by backend
       if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('userCache', JSON.stringify(response.data.user));
       }
 
       // Redirect to cases page
