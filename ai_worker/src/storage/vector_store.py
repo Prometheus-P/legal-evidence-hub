@@ -583,7 +583,18 @@ class VectorStore:
         timestamp: str,
         sender: str,
         score: float = None,
-        collection_name: str = None
+        collection_name: str = None,
+        # Extended metadata fields
+        file_name: str = None,
+        file_type: str = None,
+        legal_categories: List[str] = None,
+        confidence_level: int = None,
+        line_number: int = None,
+        line_number_end: int = None,
+        page_number: int = None,
+        segment_start_sec: float = None,
+        segment_end_sec: float = None,
+        is_fallback_embedding: bool = False
     ) -> str:
         """
         청크 메타데이터와 함께 벡터 저장
@@ -601,12 +612,23 @@ class VectorStore:
             sender: 발신자
             score: 증거 점수 (선택)
             collection_name: 컬렉션명 (선택)
+            file_name: 원본 파일명 (선택)
+            file_type: 파일 타입 (선택, e.g., 'kakaotalk', 'pdf')
+            legal_categories: 법적 카테고리 리스트 (선택)
+            confidence_level: 신뢰도 레벨 1-5 (선택)
+            line_number: 라인 번호 (텍스트용)
+            line_number_end: 끝 라인 번호 (텍스트용)
+            page_number: 페이지 번호 (PDF용)
+            segment_start_sec: 시작 시간 (오디오/비디오용)
+            segment_end_sec: 끝 시간 (오디오/비디오용)
+            is_fallback_embedding: 폴백 임베딩 여부
 
         Returns:
             str: 벡터 ID (chunk_id와 동일하게 사용)
         """
         collection = self._ensure_collection(collection_name)
 
+        # Build payload with all available metadata
         payload = {
             "chunk_id": chunk_id,
             "file_id": file_id,
@@ -615,8 +637,30 @@ class VectorStore:
             "timestamp": timestamp,
             "sender": sender,
         }
+
+        # Optional fields - only add if provided
         if score is not None:
             payload["score"] = score
+        if file_name:
+            payload["file_name"] = file_name
+        if file_type:
+            payload["file_type"] = file_type
+        if legal_categories:
+            payload["legal_categories"] = legal_categories
+        if confidence_level is not None:
+            payload["confidence_level"] = confidence_level
+        if line_number is not None:
+            payload["line_number"] = line_number
+        if line_number_end is not None:
+            payload["line_number_end"] = line_number_end
+        if page_number is not None:
+            payload["page_number"] = page_number
+        if segment_start_sec is not None:
+            payload["segment_start_sec"] = segment_start_sec
+        if segment_end_sec is not None:
+            payload["segment_end_sec"] = segment_end_sec
+        if is_fallback_embedding:
+            payload["is_fallback_embedding"] = True
 
         try:
             self.client.upsert(

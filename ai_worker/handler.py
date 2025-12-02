@@ -139,21 +139,44 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # 메타데이터 저장 (DynamoDB)
         metadata_store = MetadataStore()
 
-        # 벡터 임베딩 및 저장 (Qdrant)
+        # 분석 엔진 초기화
+        tagger = Article840Tagger()
         vector_store = VectorStore()
+
+        # 벡터 임베딩, 분석, 저장을 통합 처리
         chunk_ids = []
+        tags_list = []
+        all_categories = set()
 
         for idx, message in enumerate(parsed_result):
             chunk_id = f"chunk_{uuid.uuid4().hex[:12]}"
             content = message.content
             timestamp = message.timestamp.isoformat() if message.timestamp else datetime.now(timezone.utc).isoformat()
 
-            # Embedding 생성 (with fallback - never fails)
+            # 1. Article 840 태깅 (먼저 실행하여 메타데이터 확보)
+            tagging_result = tagger.tag(message)
+            categories = [cat.value for cat in tagging_result.categories]
+            confidence = tagging_result.confidence
+            tags_list.append({
+                "categories": categories,
+                "confidence": confidence,
+                "matched_keywords": tagging_result.matched_keywords
+            })
+            all_categories.update(categories)
+
+            # 2. Embedding 생성 (with fallback - never fails)
             embedding, is_real_embedding = get_embedding_with_fallback(content)
             if not is_real_embedding:
                 logger.info(f"Using fallback embedding for chunk {idx}")
 
-            # Qdrant에 벡터 + 메타데이터 저장
+            # 3. 메타데이터 추출 (파서에서 제공하는 정보 활용)
+            metadata = message.metadata if hasattr(message, 'metadata') else {}
+            line_number = metadata.get("line_number")
+            page_number = metadata.get("page_number")
+            segment_start = metadata.get("segment_start_sec")
+            segment_end = metadata.get("segment_end_sec")
+
+            # 4. Qdrant에 벡터 + 풍부한 메타데이터 저장
             vector_store.add_chunk_with_metadata(
                 chunk_id=chunk_id,
                 file_id=file_id,
@@ -162,25 +185,21 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 embedding=embedding,
                 timestamp=timestamp,
                 sender=message.sender,
-                score=None
+                score=None,
+                # Extended metadata
+                file_name=file_path.name,
+                file_type=source_type,
+                legal_categories=categories if categories else None,
+                confidence_level=confidence if confidence else None,
+                line_number=line_number,
+                page_number=page_number,
+                segment_start_sec=segment_start,
+                segment_end_sec=segment_end,
+                is_fallback_embedding=not is_real_embedding
             )
             chunk_ids.append(chunk_id)
 
-        logger.info(f"Indexed {len(chunk_ids)} chunks to Qdrant")
-
-        # 분석 엔진 실행 (Article 840 Tagger)
-        tagger = Article840Tagger()
-
-        tags_list = []
-        all_categories = set()
-        for message in parsed_result:
-            tagging_result = tagger.tag(message)
-            tags_list.append({
-                "categories": [cat.value for cat in tagging_result.categories],
-                "confidence": tagging_result.confidence,
-                "matched_keywords": tagging_result.matched_keywords
-            })
-            all_categories.update(cat.value for cat in tagging_result.categories)
+        logger.info(f"Indexed {len(chunk_ids)} chunks to Qdrant with full metadata")
 
         # AI 요약 생성 (간단한 통계 기반)
         ai_summary = f"총 {len(parsed_result)}개 메시지 분석 완료. 감지된 태그: {', '.join(all_categories) if all_categories else '없음'}"
