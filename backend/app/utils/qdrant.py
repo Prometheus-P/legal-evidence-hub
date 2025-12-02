@@ -26,13 +26,22 @@ def _get_qdrant_client() -> QdrantClient:
     if _qdrant_client is None:
         if settings.QDRANT_HOST:
             # Remote Qdrant server
-            _qdrant_client = QdrantClient(
-                host=settings.QDRANT_HOST,
-                port=settings.QDRANT_PORT,
-                api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
-                https=settings.QDRANT_USE_HTTPS
-            )
-            logger.info(f"Connected to Qdrant at {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
+            # Check if QDRANT_HOST contains protocol (URL format)
+            if settings.QDRANT_HOST.startswith(("http://", "https://")):
+                # Use url parameter for full URL
+                _qdrant_client = QdrantClient(
+                    url=settings.QDRANT_HOST,
+                    api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
+                )
+            else:
+                # Use host/port for hostname-only format
+                _qdrant_client = QdrantClient(
+                    host=settings.QDRANT_HOST,
+                    port=settings.QDRANT_PORT,
+                    api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
+                    https=settings.QDRANT_USE_HTTPS
+                )
+            logger.info(f"Connected to Qdrant at {settings.QDRANT_HOST}")
         else:
             # In-memory Qdrant for local development
             _qdrant_client = QdrantClient(":memory:")
