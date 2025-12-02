@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import { Modal, Button, Input } from '@/components/primitives';
+import { createCase } from '@/lib/api/cases';
 
 interface AddCaseModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose }) => {
+const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [title, setTitle] = useState('');
   const [clientName, setClientName] = useState('');
   const [description, setDescription] = useState('');
@@ -19,7 +21,22 @@ const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      // TODO: API 호출로 사건 등록
+      const response = await createCase({
+        title,
+        client_name: clientName,
+        description: description || undefined,
+      });
+
+      if (response.error) {
+        alert(`사건 등록 실패: ${response.error}`);
+        return;
+      }
+
+      // 성공 시 폼 초기화 및 콜백 호출
+      setTitle('');
+      setClientName('');
+      setDescription('');
+      onSuccess?.();
       onClose();
     } finally {
       setIsSubmitting(false);
