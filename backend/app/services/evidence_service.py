@@ -162,11 +162,16 @@ class EvidenceService:
         filename = extract_filename_from_s3_key(request.s3_key)
 
         # Determine file type from extension
+        # NOTE: Keep in sync with ai_worker/handler.py route_parser()
         extension = filename.split(".")[-1].lower() if "." in filename else ""
         type_mapping = {
-            "jpg": "image", "jpeg": "image", "png": "image", "gif": "image",
-            "mp3": "audio", "wav": "audio", "m4a": "audio",
-            "mp4": "video", "avi": "video", "mov": "video",
+            # Images
+            "jpg": "image", "jpeg": "image", "png": "image", "gif": "image", "bmp": "image",
+            # Audio
+            "mp3": "audio", "wav": "audio", "m4a": "audio", "aac": "audio",
+            # Video
+            "mp4": "video", "avi": "video", "mov": "video", "mkv": "video",
+            # Documents
             "pdf": "pdf",
             "txt": "text", "csv": "text", "json": "text"
         }
