@@ -93,14 +93,10 @@ export default function CaseCard({ caseData, onStatusChange, onDelete }: CaseCar
 
   return (
     <Link href={`/cases/${caseData.id}`}>
-      <div className="relative card p-6 h-full flex flex-col justify-between group cursor-pointer bg-neutral-50 border border-neutral-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg">
-        {/* Border Beam Glow Effect - Magic UI Style */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-          <div className="absolute inset-[-2px] bg-gradient-to-r from-transparent via-primary to-transparent rounded-lg blur-sm animate-border-beam" />
-        </div>
+      <div className="card p-6 h-full flex flex-col justify-between group cursor-pointer bg-neutral-50 border border-neutral-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary" style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* Content wrapper to ensure proper z-index layering */}
-        <div className="relative z-10 flex flex-col h-full justify-between">
+        {/* Content wrapper */}
+        <div className="relative flex flex-col h-full justify-between">
           <div>
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -221,7 +217,8 @@ export default function CaseCard({ caseData, onStatusChange, onDelete }: CaseCar
         {/* Delete Confirmation Overlay */}
         {showDeleteConfirm && (
           <div
-            className="absolute inset-0 z-20 bg-white/95 rounded-lg flex flex-col items-center justify-center p-6"
+            className="absolute inset-0 bg-white rounded-lg flex flex-col items-center justify-center p-6"
+            style={{ zIndex: 5 }}
             onClick={(e) => e.preventDefault()}
           >
             <p className="text-lg font-semibold text-neutral-800 mb-2">사건을 삭제하시겠습니까?</p>
