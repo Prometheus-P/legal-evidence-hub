@@ -21,9 +21,11 @@ from app.utils.qdrant import (
     search_evidence_by_semantic,
     search_legal_knowledge,
     get_template_schema_for_prompt,
-    get_template_example_for_prompt
+    get_template_example_for_prompt,
+    get_template_by_type
 )
 from app.utils.openai_client import generate_chat_completion
+from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
 
 # Optional: python-docx for DOCX generation
@@ -100,7 +102,11 @@ class DraftService:
         evidence_results = rag_results.get("evidence", [])
         legal_results = rag_results.get("legal", [])
 
-        # 4. Build GPT-4o prompt with RAG context
+        # 4. Check if template exists for JSON output mode
+        template = get_template_by_type("이혼소장")
+        use_json_output = template is not None
+
+        # 5. Build GPT-4o prompt with RAG context
         prompt_messages = self._build_draft_prompt(
             case=case,
             sections=request.sections,
@@ -110,14 +116,30 @@ class DraftService:
             style=request.style
         )
 
-        # 5. Generate draft text using GPT-4o
-        draft_text = generate_chat_completion(
+        # 6. Generate draft using GPT-4o
+        raw_response = generate_chat_completion(
             messages=prompt_messages,
             temperature=0.3,  # Low temperature for consistent legal writing
             max_tokens=4000
         )
 
-        # 6. Extract citations from RAG results
+        # 7. Process response based on output mode
+        if use_json_output:
+            # JSON 출력 모드: 파싱 후 텍스트로 렌더링
+            renderer = DocumentRenderer()
+            json_doc = renderer.parse_json_response(raw_response)
+
+            if json_doc:
+                # JSON 파싱 성공 -> 포맷팅된 텍스트로 변환
+                draft_text = renderer.render_to_text(json_doc)
+            else:
+                # JSON 파싱 실패 -> 원본 응답 사용 (fallback)
+                draft_text = raw_response
+        else:
+            # 기존 텍스트 출력 모드
+            draft_text = raw_response
+
+        # 8. Extract citations from RAG results
         citations = self._extract_citations(evidence_results)
 
         return DraftPreviewResponse(
