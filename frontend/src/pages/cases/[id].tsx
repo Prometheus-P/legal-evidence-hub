@@ -30,6 +30,8 @@ function mapApiEvidenceToEvidence(apiEvidence: ApiEvidence, caseId: string): Evi
     'pending': 'queued',
     'processing': 'processing',
     'processed': 'completed',
+    'analyzed': 'completed',  // AI Worker uses 'analyzed'
+    'done': 'completed',      // Legacy status
     'failed': 'failed',
   };
 
