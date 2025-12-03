@@ -225,6 +225,12 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             "chunks_indexed": len(chunk_ids)
         }
 
+        # 원문 텍스트 합치기 (STT/OCR 결과)
+        # 메시지가 많으면 앞부분만 저장 (DynamoDB 400KB 제한)
+        full_content = "\n".join([msg.content for msg in parsed_result])
+        if len(full_content) > 50000:  # ~50KB 제한
+            full_content = full_content[:50000] + "\n\n... (이하 생략, 전체 {} 메시지)".format(len(parsed_result))
+
         # 메타데이터 저장/업데이트 (DynamoDB)
         # 파일명에서 원본 파일명 추출 (ev_xxx_filename.ext → filename.ext)
         original_filename = file_path.name
@@ -246,7 +252,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 case_id=case_id,
                 filename=original_filename,
                 s3_key=object_key,
-                file_type=source_type
+                file_type=source_type,
+                content=full_content
             )
             logger.info(f"Updated Backend evidence: {backend_evidence_id} → processed (case_id={case_id})")
         else:

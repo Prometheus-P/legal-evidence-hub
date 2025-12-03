@@ -163,7 +163,8 @@ class MetadataStore:
         case_id: Optional[str] = None,
         filename: Optional[str] = None,
         s3_key: Optional[str] = None,
-        file_type: Optional[str] = None
+        file_type: Optional[str] = None,
+        content: Optional[str] = None
     ) -> None:
         """
         Backend가 생성한 evidence 레코드의 상태 업데이트 (또는 생성)
@@ -184,6 +185,7 @@ class MetadataStore:
             filename: 원본 파일명
             s3_key: S3 저장 경로
             file_type: 파일 타입 (document, image, audio 등)
+            content: 파싱된 원문 텍스트 (STT/OCR 결과)
         """
         update_expression = "SET #status = :status, processed_at = :processed_at"
         expression_names = {"#status": "status"}
@@ -222,6 +224,10 @@ class MetadataStore:
             update_expression += ", #type = :file_type"
             expression_names["#type"] = "type"
             expression_values[":file_type"] = {"S": file_type}
+
+        if content is not None:
+            update_expression += ", content = :content"
+            expression_values[":content"] = {"S": content}
 
         try:
             self.client.update_item(

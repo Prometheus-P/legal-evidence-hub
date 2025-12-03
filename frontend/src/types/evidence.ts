@@ -11,4 +11,5 @@ export interface Evidence {
     summary?: string;
     size: number;
     downloadUrl?: string;
+    content?: string; // STT/OCR 원문 텍스트
 }
