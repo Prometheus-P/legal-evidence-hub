@@ -70,6 +70,22 @@ from src.analysis.event_summarizer import (
     SummaryType,
     summarize_event,
 )
+from src.analysis.person_extractor import (
+    PersonExtractor,
+    ExtractedPerson,
+    PersonExtractionResult,
+    PersonRole,
+    PersonSide,
+    extract_persons,
+)
+from src.analysis.relationship_inferrer import (
+    RelationshipInferrer,
+    PersonRelationship,
+    RelationshipType,
+    RelationshipGraph,
+    infer_relationships,
+    build_relationship_graph,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -155,4 +171,20 @@ __all__ = [
     "EventSummary",
     "SummaryType",
     "summarize_event",
+
+    # Person Extractor (인물 추출)
+    "PersonExtractor",
+    "ExtractedPerson",
+    "PersonExtractionResult",
+    "PersonRole",
+    "PersonSide",
+    "extract_persons",
+
+    # Relationship Inferrer (관계 추론)
+    "RelationshipInferrer",
+    "PersonRelationship",
+    "RelationshipType",
+    "RelationshipGraph",
+    "infer_relationships",
+    "build_relationship_graph",
 ]
