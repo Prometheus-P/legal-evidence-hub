@@ -8,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from app.core.config import settings
 import boto3
 import logging
-import uuid
 
 logger = logging.getLogger(__name__)
 

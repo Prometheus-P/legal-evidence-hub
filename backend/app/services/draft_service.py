@@ -16,8 +16,7 @@ from app.db.schemas import (
     DraftCreate,
     DraftUpdate,
     DraftResponse,
-    DraftListItem,
-    DraftDocumentStatus
+    DraftListItem
 )
 from app.db.models import DraftDocument, DraftStatus, DocumentType
 from app.repositories.case_repository import CaseRepository

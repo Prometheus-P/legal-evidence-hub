@@ -17,7 +17,6 @@ from app.db.schemas import (
     DraftCreate,
     DraftUpdate,
     DraftResponse,
-    DraftListItem,
     DraftListResponse,
     DraftExportFormat,
     AuditAction

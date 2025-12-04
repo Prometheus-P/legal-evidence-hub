@@ -15,12 +15,9 @@ from datetime import datetime
 
 try:
     from docx import Document
-    from docx.shared import Pt, Mm, Inches, Twips
-    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
-    from docx.enum.style import WD_STYLE_TYPE
-    from docx.enum.section import WD_ORIENT
+    from docx.shared import Pt, Mm
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.oxml.ns import qn
-    from docx.oxml import OxmlElement
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False

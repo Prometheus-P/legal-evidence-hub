@@ -13,7 +13,6 @@ from io import BytesIO
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pathlib import Path
-import os
 
 try:
     from weasyprint import HTML, CSS
@@ -204,7 +203,7 @@ class PdfGenerator:
         try:
             template = self.jinja_env.get_template(template_name)
             return template.render(**context)
-        except Exception as e:
+        except Exception:
             # Fallback to simple template if main template fails
             return self._render_simple_template(context)
 
