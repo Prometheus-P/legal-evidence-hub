@@ -42,6 +42,23 @@ from src.analysis.streaming_analyzer import (
     stream_analysis,
     stream_analysis_async,
 )
+from src.analysis.impact_rules import (
+    FaultType,
+    EvidenceType,
+    ImpactDirection,
+    ImpactRule,
+    IMPACT_RULES,
+    get_impact_rule,
+    calculate_evidence_weight,
+    calculate_single_impact,
+)
+from src.analysis.impact_analyzer import (
+    ImpactAnalyzer,
+    EvidenceImpact,
+    SimilarCase,
+    DivisionPrediction,
+    analyze_case_impact,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -99,4 +116,21 @@ __all__ = [
     "StreamingConfig",
     "stream_analysis",
     "stream_analysis_async",
+
+    # Impact Rules (규칙 기반)
+    "FaultType",
+    "EvidenceType",
+    "ImpactDirection",
+    "ImpactRule",
+    "IMPACT_RULES",
+    "get_impact_rule",
+    "calculate_evidence_weight",
+    "calculate_single_impact",
+
+    # Impact Analyzer (재산분할 예측)
+    "ImpactAnalyzer",
+    "EvidenceImpact",
+    "SimilarCase",
+    "DivisionPrediction",
+    "analyze_case_impact",
 ]
