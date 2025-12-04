@@ -30,6 +30,7 @@ from src.storage.metadata_store import MetadataStore
 from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger
+from src.analysis.summarizer import EvidenceSummarizer
 from src.utils.logging_filter import SensitiveDataFilter
 from src.utils.embeddings import get_embedding_with_fallback  # Embedding utility with fallback
 
@@ -143,6 +144,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
 
         # 분석 엔진 초기화
         tagger = Article840Tagger()
+        summarizer = EvidenceSummarizer()
         vector_store = VectorStore()
 
         # 벡터 임베딩, 분석, 저장을 통합 처리
@@ -206,8 +208,15 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
 
         logger.info(f"Indexed {len(chunk_ids)} chunks to Qdrant with full metadata")
 
-        # AI 요약 생성 (간단한 통계 기반)
-        ai_summary = f"총 {len(parsed_result)}개 메시지 분석 완료. 감지된 태그: {', '.join(all_categories) if all_categories else '없음'}"
+        # AI 요약 생성 (GPT-4 기반)
+        try:
+            summary_result = summarizer.summarize_evidence(parsed_result, max_words=100)
+            ai_summary = summary_result.summary
+            logger.info(f"AI Summary generated: {ai_summary[:100]}...")
+        except Exception as e:
+            # 요약 실패 시 fallback
+            logger.warning(f"AI summarization failed, using fallback: {e}")
+            ai_summary = f"총 {len(parsed_result)}개 메시지 분석 완료. 감지된 태그: {', '.join(all_categories) if all_categories else '없음'}"
 
         # Article 840 태그 집계
         article_840_tags = {
@@ -215,6 +224,12 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             "total_messages": len(parsed_result),
             "chunks_indexed": len(chunk_ids)
         }
+
+        # 원문 텍스트 합치기 (STT/OCR 결과)
+        # 메시지가 많으면 앞부분만 저장 (DynamoDB 400KB 제한)
+        full_content = "\n".join([msg.content for msg in parsed_result])
+        if len(full_content) > 50000:  # ~50KB 제한
+            full_content = full_content[:50000] + "\n\n... (이하 생략, 전체 {} 메시지)".format(len(parsed_result))
 
         # 메타데이터 저장/업데이트 (DynamoDB)
         # 파일명에서 원본 파일명 추출 (ev_xxx_filename.ext → filename.ext)
@@ -237,7 +252,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 case_id=case_id,
                 filename=original_filename,
                 s3_key=object_key,
-                file_type=source_type
+                file_type=source_type,
+                content=full_content
             )
             logger.info(f"Updated Backend evidence: {backend_evidence_id} → processed (case_id={case_id})")
         else:

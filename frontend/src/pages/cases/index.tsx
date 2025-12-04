@@ -58,8 +58,9 @@ export default function CasesPage() {
     const [errorType, setErrorType] = useState<ErrorType>(null);
 
     // Redirect to login if not authenticated
+    // Only redirect when auth check is complete (isAuthenticated is explicitly false, not null)
     useEffect(() => {
-        if (!isAuthLoading && !isAuthenticated) {
+        if (!isAuthLoading && isAuthenticated === false) {
             router.replace('/login');
         }
     }, [isAuthLoading, isAuthenticated, router]);
@@ -101,7 +102,7 @@ export default function CasesPage() {
     }, [fetchCases]);
 
     // Show loading while checking auth or fetching cases
-    if (isAuthLoading || !isAuthenticated || isLoading) {
+    if (isAuthLoading || isAuthenticated === null || !isAuthenticated || isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-neutral-50">
                 <div className="text-gray-500">로딩 중...</div>
