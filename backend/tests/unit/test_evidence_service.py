@@ -377,6 +377,106 @@ class TestHandleUploadComplete:
         db.close()
 
 
+class TestHandleUploadCompletePermissions:
+    """Unit tests for handle_upload_complete permission checks"""
+
+    def test_upload_complete_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 160)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"ucnf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = EvidenceService(db)
+        request = UploadCompleteRequest(
+            case_id="nonexistent-case",
+            s3_key="cases/nonexistent/raw/test_photo.jpg",
+            evidence_temp_id="test123",
+            file_size=1024
+        )
+
+        with pytest.raises(NotFoundError):
+            service.handle_upload_complete(request, user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_upload_complete_no_access(self, test_env):
+        """PermissionError when user has no access (line 164)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        owner = User(
+            email=f"ucown_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        other = User(
+            email=f"ucoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="lawyer"
+        )
+        db.add(other)
+        db.commit()
+        db.refresh(other)
+
+        case = Case(
+            title="Private Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=owner.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+        request = UploadCompleteRequest(
+            case_id=case.id,
+            s3_key=f"cases/{case.id}/raw/test_photo.jpg",
+            evidence_temp_id="test123",
+            file_size=1024
+        )
+
+        with pytest.raises(PermissionError):
+            service.handle_upload_complete(request, other.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(owner)
+        db.delete(other)
+        db.commit()
+        db.close()
+
+
 class TestGetEvidenceList:
     """Unit tests for get_evidence_list method"""
 
@@ -743,6 +843,445 @@ class TestRetryProcessing:
         db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
         db.query(Case).filter(Case.id == case.id).delete()
         db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestGetCaseEvidence:
+    """Unit tests for get_evidence_list (get_case_evidence) method"""
+
+    def test_get_case_evidence_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 278)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"cenfnd_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = EvidenceService(db)
+
+        with pytest.raises(NotFoundError):
+            service.get_evidence_list("nonexistent-case", user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_get_case_evidence_no_access(self, test_env):
+        """PermissionError when user has no access (line 282)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        owner = User(
+            email=f"ceown_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        other = User(
+            email=f"ceoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="lawyer"
+        )
+        db.add(other)
+        db.commit()
+        db.refresh(other)
+
+        case = Case(
+            title="Private Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=owner.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with pytest.raises(PermissionError):
+            service.get_evidence_list(case.id, other.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(owner)
+        db.delete(other)
+        db.commit()
+        db.close()
+
+
+class TestGetEvidenceDetailPermission:
+    """Unit tests for get_evidence_detail permission checks"""
+
+    def test_get_evidence_detail_no_access(self, test_env):
+        """PermissionError when user has no access to case (line 338)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        owner = User(
+            email=f"edtown_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        other = User(
+            email=f"edtoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="lawyer"
+        )
+        db.add(other)
+        db.commit()
+        db.refresh(other)
+
+        case = Case(
+            title="Private Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=owner.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+            mock_get.return_value = {
+                "evidence_id": "ev1",
+                "case_id": case.id,
+                "type": "image",
+                "filename": "photo.jpg"
+            }
+
+            with pytest.raises(PermissionError):
+                service.get_evidence_detail("ev1", other.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(owner)
+        db.delete(other)
+        db.commit()
+        db.close()
+
+
+class TestRetryProcessingEdgeCases:
+    """Unit tests for retry_processing edge cases"""
+
+    def test_retry_processing_evidence_not_found(self, test_env):
+        """NotFoundError when evidence doesn't exist (line 392)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"rpnf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+            mock_get.return_value = None
+
+            with pytest.raises(NotFoundError):
+                service.retry_processing("nonexistent", user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_retry_processing_no_access(self, test_env):
+        """PermissionError when user has no access (line 397)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        owner = User(
+            email=f"rpown_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        other = User(
+            email=f"rpoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="lawyer"
+        )
+        db.add(other)
+        db.commit()
+        db.refresh(other)
+
+        case = Case(
+            title="Private Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=owner.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+            mock_get.return_value = {
+                "evidence_id": "ev1",
+                "case_id": case.id,
+                "status": "failed",
+                "s3_key": f"cases/{case.id}/raw/ev1.jpg"
+            }
+
+            with pytest.raises(PermissionError):
+                service.retry_processing("ev1", other.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(owner)
+        db.delete(other)
+        db.commit()
+        db.close()
+
+    def test_retry_processing_missing_s3_key(self, test_env):
+        """ValueError when evidence missing s3_key (line 407)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"rpms3_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=user.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+            mock_get.return_value = {
+                "evidence_id": "ev1",
+                "case_id": case.id,
+                "status": "failed",
+                "s3_key": None  # Missing s3_key
+            }
+
+            with pytest.raises(ValueError, match="missing s3_key"):
+                service.retry_processing("ev1", user.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_retry_processing_ai_worker_failure(self, test_env):
+        """AI Worker failure returns failed status (lines 428-433)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"rpfail_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=user.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get, \
+             patch('app.services.evidence_service.update_evidence_status'), \
+             patch('app.services.evidence_service.invoke_ai_worker') as mock_invoke:
+
+            mock_get.return_value = {
+                "evidence_id": "ev1",
+                "case_id": case.id,
+                "status": "failed",
+                "s3_key": f"cases/{case.id}/raw/ev1.jpg"
+            }
+            mock_invoke.side_effect = Exception("Lambda invocation failed")
+
+            result = service.retry_processing("ev1", user.id)
+
+            assert result["success"] is False
+            assert result["status"] == "failed"
+            assert "Lambda invocation failed" in result["message"]
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestGetEvidenceStatusPermission:
+    """Unit tests for get_evidence_status permission checks"""
+
+    def test_get_evidence_status_no_access(self, test_env):
+        """PermissionError when user has no access (line 461)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        owner = User(
+            email=f"esown_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        other = User(
+            email=f"esoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="lawyer"
+        )
+        db.add(other)
+        db.commit()
+        db.refresh(other)
+
+        case = Case(
+            title="Private Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=owner.id, role=CaseMemberRole.OWNER)
+        db.add(member)
+        db.commit()
+
+        service = EvidenceService(db)
+
+        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+            mock_get.return_value = {
+                "evidence_id": "ev1",
+                "case_id": case.id,
+                "status": "processing"
+            }
+
+            with pytest.raises(PermissionError):
+                service.get_evidence_status("ev1", other.id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(owner)
+        db.delete(other)
         db.commit()
         db.close()
 

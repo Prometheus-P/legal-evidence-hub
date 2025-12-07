@@ -284,3 +284,319 @@ class TestToMessageResponse:
 
             assert result.id == "msg-1"
             assert result.attachments is None  # Invalid JSON returns None
+
+
+class TestGetMessagesPagination:
+    """Integration tests for get_messages pagination (lines 129-131, 141)"""
+
+    def test_get_messages_with_before_id_pagination(self, test_env):
+        """Get messages with before_id filters by created_at (lines 129-131)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+        from app.db.models import User, Case, Message, CaseMember
+        import uuid
+        from datetime import timedelta
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create user
+        user = User(
+            email=f"msg_pag_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Msg Pag User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        # Create case
+        case = Case(
+            title=f"Test Case {unique_id}",
+            status="ACTIVE",
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Create case member
+        member = CaseMember(case_id=case.id, user_id=user.id, role="OWNER")
+        db.add(member)
+        db.commit()
+
+        # Create messages with different timestamps
+        messages = []
+        for i in range(5):
+            msg = Message(
+                case_id=case.id,
+                sender_id=user.id,
+                recipient_id=user.id,
+                content=f"Message {i}",
+                created_at=now - timedelta(hours=5-i)  # msg 0 is oldest, msg 4 is newest
+            )
+            db.add(msg)
+            db.commit()
+            db.refresh(msg)
+            messages.append(msg)
+
+        from app.services.message_service import MessageService
+        service = MessageService(db)
+
+        # Get messages before msg[2] (should exclude msg[2], msg[3], msg[4])
+        result = service.get_messages(user.id, case.id, before_id=messages[2].id, limit=10)
+
+        # Should only have messages before msg[2]'s created_at
+        assert len(result.messages) == 2  # msg[0], msg[1]
+        for msg in result.messages:
+            assert msg.created_at < messages[2].created_at
+
+        # Cleanup
+        for msg in messages:
+            db.query(Message).filter(Message.id == msg.id).delete()
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_get_messages_has_more_truncation(self, test_env):
+        """Has more truncates messages to limit (line 141)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+        from app.db.models import User, Case, Message, CaseMember
+        import uuid
+        from datetime import timedelta
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create user
+        user = User(
+            email=f"msg_hasmore_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="HasMore User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        # Create case
+        case = Case(
+            title=f"Test Case {unique_id}",
+            status="ACTIVE",
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Create case member
+        member = CaseMember(case_id=case.id, user_id=user.id, role="OWNER")
+        db.add(member)
+        db.commit()
+
+        # Create 5 messages
+        messages = []
+        for i in range(5):
+            msg = Message(
+                case_id=case.id,
+                sender_id=user.id,
+                recipient_id=user.id,
+                content=f"Message {i}",
+                created_at=now - timedelta(hours=5-i)
+            )
+            db.add(msg)
+            db.commit()
+            db.refresh(msg)
+            messages.append(msg)
+
+        from app.services.message_service import MessageService
+        service = MessageService(db)
+
+        # Get with limit=3 - should trigger has_more and truncation
+        result = service.get_messages(user.id, case.id, limit=3)
+
+        assert len(result.messages) == 3  # Truncated to limit
+        assert result.has_more is True  # More messages available
+
+        # Cleanup
+        for msg in messages:
+            db.query(Message).filter(Message.id == msg.id).delete()
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestGetConversationsEdgeCases:
+    """Integration tests for get_conversations edge cases"""
+
+    def test_get_conversations_skips_orphaned_messages(self, test_env):
+        """Skips messages where case or user not found (line 195)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+        from app.db.models import User, Case, Message, CaseMember
+        import uuid
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create users
+        user1 = User(
+            email=f"conv_user1_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Conv User1",
+            role="lawyer"
+        )
+        user2 = User(
+            email=f"conv_user2_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Conv User2",
+            role="client"
+        )
+        db.add(user1)
+        db.add(user2)
+        db.commit()
+        db.refresh(user1)
+        db.refresh(user2)
+        user2_id = user2.id
+
+        # Create case
+        case = Case(
+            title=f"Test Case {unique_id}",
+            status="ACTIVE",
+            created_by=user1.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Create case member
+        member = CaseMember(case_id=case.id, user_id=user1.id, role="OWNER")
+        db.add(member)
+        db.commit()
+
+        # Create message from user2 to user1
+        msg = Message(
+            case_id=case.id,
+            sender_id=user2.id,
+            recipient_id=user1.id,
+            content="Test message",
+            created_at=now
+        )
+        db.add(msg)
+        db.commit()
+        db.refresh(msg)
+        msg_id = msg.id
+
+        # Delete user2 (creates orphaned message)
+        db.delete(user2)
+        db.commit()
+
+        from app.services.message_service import MessageService
+        service = MessageService(db)
+
+        # Get conversations - should skip the orphaned message
+        result = service.get_conversations(user1.id)
+
+        # The message with deleted user should be skipped (line 195)
+        assert result.conversations == []  # No valid conversations
+
+        # Cleanup
+        db.query(Message).filter(Message.id == msg_id).delete()
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user1)
+        db.commit()
+        db.close()
+
+    def test_get_conversations_counts_unread(self, test_env):
+        """Counts unread messages correctly (lines 212-213)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+        from app.db.models import User, Case, Message, CaseMember
+        import uuid
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create users
+        user1 = User(
+            email=f"unread_user1_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Unread User1",
+            role="lawyer"
+        )
+        user2 = User(
+            email=f"unread_user2_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Unread User2",
+            role="client"
+        )
+        db.add(user1)
+        db.add(user2)
+        db.commit()
+        db.refresh(user1)
+        db.refresh(user2)
+
+        # Create case
+        case = Case(
+            title=f"Test Case {unique_id}",
+            status="ACTIVE",
+            created_by=user1.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Create case members
+        member1 = CaseMember(case_id=case.id, user_id=user1.id, role="OWNER")
+        member2 = CaseMember(case_id=case.id, user_id=user2.id, role="MEMBER")
+        db.add(member1)
+        db.add(member2)
+        db.commit()
+
+        # Create messages: 2 unread for user1 from user2
+        messages = []
+        for i in range(3):
+            msg = Message(
+                case_id=case.id,
+                sender_id=user2.id,
+                recipient_id=user1.id,
+                content=f"Unread message {i}",
+                created_at=now,
+                read_at=now if i == 0 else None  # Only first message is read
+            )
+            db.add(msg)
+            db.commit()
+            db.refresh(msg)
+            messages.append(msg)
+
+        from app.services.message_service import MessageService
+        service = MessageService(db)
+
+        # Get conversations for user1
+        result = service.get_conversations(user1.id)
+
+        # Should have 1 conversation with 2 unread messages
+        assert len(result.conversations) == 1
+        assert result.conversations[0].unread_count == 2  # 2 messages with read_at=None
+        assert result.total_unread == 2
+
+        # Cleanup
+        for msg in messages:
+            db.query(Message).filter(Message.id == msg.id).delete()
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user2)
+        db.delete(user1)
+        db.commit()
+        db.close()

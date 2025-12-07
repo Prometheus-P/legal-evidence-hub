@@ -706,5 +706,544 @@ class TestHelperMethods:
         db.close()
 
 
+class TestCaseDetailEdgeCases:
+    """Unit tests for get_case_detail edge cases"""
+
+    def test_case_detail_case_not_found_after_membership(self, test_env):
+        """ValueError when case not found after membership check (line 146)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"cdnf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+        case_id = case.id
+
+        # Add membership
+        member = CaseMember(case_id=case_id, user_id=user.id, role=CaseMemberRole.MEMBER)
+        db.add(member)
+        db.commit()
+
+        # Delete case but keep membership (edge case)
+        db.query(Case).filter(Case.id == case_id).delete()
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        with pytest.raises(ValueError, match="Case not found"):
+            service.get_case_detail(user.id, case_id)
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case_id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestRequestUploadEdgeCases:
+    """Unit tests for request_evidence_upload edge cases"""
+
+    def test_request_upload_case_not_found_after_membership(self, test_env):
+        """ValueError when case not found after membership check (line 218)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"runf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+        case_id = case.id
+
+        member = CaseMember(case_id=case_id, user_id=user.id, role=CaseMemberRole.MEMBER)
+        db.add(member)
+        db.commit()
+
+        # Delete case but keep membership
+        db.query(Case).filter(Case.id == case_id).delete()
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        with pytest.raises(ValueError, match="Case not found"):
+            service.request_evidence_upload(
+                user.id,
+                case_id,
+                "test.jpg",
+                "image/jpeg",
+                1024
+            )
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case_id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_request_upload_presigned_url_exception(self, test_env):
+        """Fallback URL when presigned URL generation fails (lines 246-248)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"rupf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(case_id=case.id, user_id=user.id, role=CaseMemberRole.MEMBER)
+        db.add(member)
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        with patch('app.services.client_portal_service.generate_presigned_upload_url') as mock_url:
+            mock_url.side_effect = Exception("S3 error")
+
+            result = service.request_evidence_upload(
+                user.id,
+                case.id,
+                "test.jpg",
+                "image/jpeg",
+                1024
+            )
+
+            # Should get fallback localhost URL
+            assert "localhost:9000" in result.upload_url
+            assert result.evidence_id is not None
+
+        # Cleanup
+        db.query(Evidence).filter(Evidence.case_id == case.id).delete()
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestConfirmUploadEdgeCases:
+    """Unit tests for confirm_evidence_upload edge cases"""
+
+    def test_confirm_upload_evidence_not_found(self, test_env):
+        """ValueError when evidence not found"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"cunf_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = ClientPortalService(db)
+
+        with pytest.raises(ValueError, match="Evidence not found"):
+            service.confirm_evidence_upload(
+                user.id,
+                "case-123",
+                "nonexistent-evidence",
+                uploaded=True
+            )
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_confirm_upload_evidence_wrong_case(self, test_env):
+        """ValueError when evidence belongs to different case (line 283)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"cuwc_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Case 1",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        evidence = Evidence(
+            id=str(uuid.uuid4()),
+            case_id=case.id,
+            file_name="test.jpg",
+            s3_key=f"cases/{case.id}/raw/test.jpg",
+            file_type="image/jpeg",
+            file_size=1024,
+            uploaded_by=user.id,
+            status="pending",
+            created_at=now,
+            updated_at=now
+        )
+        db.add(evidence)
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        with pytest.raises(ValueError, match="does not belong"):
+            service.confirm_evidence_upload(
+                user.id,
+                "different-case-id",
+                evidence.id,
+                uploaded=True
+            )
+
+        # Cleanup
+        db.query(Evidence).filter(Evidence.id == evidence.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_confirm_upload_not_authorized(self, test_env):
+        """PermissionError when different user tries to confirm (line 286)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        uploader = User(
+            email=f"cuupl_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Uploader",
+            role="client"
+        )
+        db.add(uploader)
+        db.commit()
+        db.refresh(uploader)
+
+        other_user = User(
+            email=f"cuoth_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Other",
+            role="client"
+        )
+        db.add(other_user)
+        db.commit()
+        db.refresh(other_user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=uploader.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        evidence = Evidence(
+            id=str(uuid.uuid4()),
+            case_id=case.id,
+            file_name="test.jpg",
+            s3_key=f"cases/{case.id}/raw/test.jpg",
+            file_type="image/jpeg",
+            file_size=1024,
+            uploaded_by=uploader.id,
+            status="pending",
+            created_at=now,
+            updated_at=now
+        )
+        db.add(evidence)
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        with pytest.raises(PermissionError, match="Not authorized"):
+            service.confirm_evidence_upload(
+                other_user.id,
+                case.id,
+                evidence.id,
+                uploaded=True
+            )
+
+        # Cleanup
+        db.query(Evidence).filter(Evidence.id == evidence.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(uploader)
+        db.delete(other_user)
+        db.commit()
+        db.close()
+
+
+class TestRecentActivities:
+    """Unit tests for _get_recent_activities method"""
+
+    def test_get_recent_activities_with_logs(self, test_env):
+        """Get recent activities when audit logs exist (lines 464-465)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"ral_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="User",
+            role="client"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Test Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Add audit log with case_id in object_id
+        audit_log = AuditLog(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            action="evidence_upload",
+            object_id=f'{{"case_id": "{case.id}"}}',
+            timestamp=now
+        )
+        db.add(audit_log)
+        db.commit()
+
+        service = ClientPortalService(db)
+        result = service._get_recent_activities(case.id)
+
+        assert len(result) >= 1
+        assert result[0].activity_type == "evidence"
+
+        # Cleanup
+        db.query(AuditLog).filter(AuditLog.id == audit_log.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
 # Note: log_evidence_upload test skipped due to AuditLog model mismatch
 # The method uses fields (resource_type, resource_id, details, created_at) not in model
+
+
+class TestGetCaseLawyerEdgeCases:
+    """Unit tests for _get_case_lawyer edge cases"""
+
+    def test_get_case_lawyer_from_case_members(self, test_env):
+        """Returns lawyer from case_members when owner is not lawyer (line 421)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create client as owner (NOT a lawyer)
+        client_owner = User(
+            email=f"co_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Client Owner",
+            role="client"
+        )
+        db.add(client_owner)
+        db.commit()
+        db.refresh(client_owner)
+
+        # Create a lawyer who will be added as case member
+        lawyer = User(
+            email=f"lm_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Assigned Lawyer",
+            role="lawyer"
+        )
+        db.add(lawyer)
+        db.commit()
+        db.refresh(lawyer)
+
+        # Case created by client (not lawyer)
+        case = Case(
+            title="Client Created Case",
+            status=CaseStatus.ACTIVE,
+            created_by=client_owner.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Add client as owner
+        owner_member = CaseMember(
+            case_id=case.id,
+            user_id=client_owner.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(owner_member)
+        # Add lawyer as case member (not owner)
+        lawyer_member = CaseMember(
+            case_id=case.id,
+            user_id=lawyer.id,
+            role=CaseMemberRole.MEMBER
+        )
+        db.add(lawyer_member)
+        db.commit()
+
+        service = ClientPortalService(db)
+
+        # This should hit line 421 because:
+        # 1. Owner (client_owner) is not a lawyer (line 404-405 fails)
+        # 2. lawyer_member exists (line 420 is True)
+        # 3. Line 421 returns the lawyer
+        result = service._get_case_lawyer(case)
+
+        assert result is not None
+        assert result.id == lawyer.id
+        assert result.role == "lawyer"
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(lawyer)
+        db.delete(client_owner)
+        db.commit()
+        db.close()
+
+    def test_get_case_lawyer_no_lawyer_found(self, test_env):
+        """Returns None when no lawyer in case (line 423)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        # Create client as owner
+        client = User(
+            email=f"cnl_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Client Only",
+            role="client"
+        )
+        db.add(client)
+        db.commit()
+        db.refresh(client)
+
+        # Case with only client - no lawyers at all
+        case = Case(
+            title="No Lawyer Case",
+            status=CaseStatus.ACTIVE,
+            created_by=client.id,
+            created_at=now,
+            updated_at=now
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        # Only client as member, no lawyers
+        member = CaseMember(
+            case_id=case.id,
+            user_id=client.id,
+            role=CaseMemberRole.MEMBER
+        )
+        db.add(member)
+        db.commit()
+
+        service = ClientPortalService(db)
+        result = service._get_case_lawyer(case)
+
+        assert result is None
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.query(Case).filter(Case.id == case.id).delete()
+        db.delete(client)
+        db.commit()
+        db.close()

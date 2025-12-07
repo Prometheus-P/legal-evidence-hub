@@ -408,3 +408,264 @@ class TestGetInvestigationCount:
             result = service._get_investigation_count("detective-123", "active")
 
             assert result == 3
+
+
+class TestGetCasesWithCases:
+    """Unit tests for get_cases with actual cases"""
+
+    def test_get_cases_with_items(self):
+        """Returns case list items with lawyer and record count"""
+        from app.db.models import CaseStatus
+
+        mock_db = MagicMock()
+
+        # Create mock cases
+        mock_case = MagicMock()
+        mock_case.id = "case-123"
+        mock_case.title = "Test Case"
+        mock_case.status = CaseStatus.OPEN
+        mock_case.created_at = datetime.now(timezone.utc)
+        mock_case.updated_at = datetime.now(timezone.utc)
+
+        # Mock query chain
+        mock_query = MagicMock()
+        mock_query.join.return_value = mock_query
+        mock_query.filter.return_value = mock_query
+        mock_query.count.return_value = 1
+        mock_query.offset.return_value = mock_query
+        mock_query.limit.return_value = mock_query
+        mock_query.all.return_value = [mock_case]
+        mock_db.query.return_value = mock_query
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+
+            # Mock helper methods
+            mock_lawyer = MagicMock()
+            mock_lawyer.name = "Test Lawyer"
+            service._get_case_lawyer = MagicMock(return_value=mock_lawyer)
+            service._get_case_record_count = MagicMock(return_value=5)
+
+            result = service.get_cases("detective-123")
+
+            assert result.total == 1
+            assert len(result.items) == 1
+            assert result.items[0].title == "Test Case"
+            assert result.items[0].lawyer_name == "Test Lawyer"
+            assert result.items[0].record_count == 5
+
+
+class TestCreateFieldRecordSuccess:
+    """Unit tests for create_field_record success path"""
+
+    def test_create_field_record_observation(self):
+        """Creates field record with observation type"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+        mock_record = MagicMock()
+        mock_record.id = "record-123"
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+
+            # Mock db.add to capture the record
+            def capture_record(rec):
+                mock_db._captured_record = rec
+
+            mock_db.add.side_effect = capture_record
+            mock_db.refresh = lambda rec: setattr(rec, 'id', 'record-123')
+
+            result = service.create_field_record(
+                detective_id="detective-123",
+                case_id="case-123",
+                record_type=RecordType.OBSERVATION,
+                content="Observed target at location",
+                gps_lat=37.5665,
+                gps_lng=126.9780
+            )
+
+            assert result.success is True
+            mock_db.add.assert_called_once()
+            mock_db.commit.assert_called_once()
+
+    def test_create_field_record_photo(self):
+        """Creates field record with photo type"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+
+            # Mock db.refresh to set record.id
+            def mock_refresh(rec):
+                rec.id = "record-photo-123"
+
+            mock_db.refresh = mock_refresh
+
+            result = service.create_field_record(
+                detective_id="detective-123",
+                case_id="case-123",
+                record_type=RecordType.PHOTO,
+                content="Photo evidence of meeting"
+            )
+
+            assert result.success is True
+            assert result.record_id == "record-photo-123"
+
+    def test_create_field_record_video(self):
+        """Creates field record with video type"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+
+            # Mock db.refresh to set record.id
+            def mock_refresh(rec):
+                rec.id = "record-video-123"
+
+            mock_db.refresh = mock_refresh
+
+            result = service.create_field_record(
+                detective_id="detective-123",
+                case_id="case-123",
+                record_type=RecordType.VIDEO,
+                content="Video evidence"
+            )
+
+            assert result.success is True
+            assert result.record_id == "record-video-123"
+
+    def test_create_field_record_audio(self):
+        """Creates field record with audio type"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+
+            # Mock db.refresh to set record.id
+            def mock_refresh(rec):
+                rec.id = "record-audio-123"
+
+            mock_db.refresh = mock_refresh
+
+            result = service.create_field_record(
+                detective_id="detective-123",
+                case_id="case-123",
+                record_type=RecordType.AUDIO,
+                content="Audio recording"
+            )
+
+            assert result.success is True
+            assert result.record_id == "record-audio-123"
+
+
+class TestSubmitReportSuccess:
+    """Unit tests for submit_report success path"""
+
+    def test_submit_report_success(self):
+        """Submits report successfully"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+        mock_case = MagicMock()
+        mock_case.id = "case-123"
+        mock_case.status = "open"
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+            mock_db.query.return_value.filter.return_value.first.return_value = mock_case
+
+            # Mock db.refresh to set record.id
+            def mock_refresh(rec):
+                rec.id = "report-123"
+
+            mock_db.refresh = mock_refresh
+
+            result = service.submit_report(
+                detective_id="detective-123",
+                case_id="case-123",
+                summary="Investigation summary",
+                findings="Key findings from investigation",
+                conclusion="Final conclusion"
+            )
+
+            assert result.success is True
+            assert result.report_id == "report-123"
+            mock_db.add.assert_called_once()
+            mock_db.commit.assert_called_once()
+            # Verify case status was updated
+            assert mock_case.status == "in_progress"
+
+    def test_submit_report_case_not_found(self):
+        """Raises KeyError when case not found after member check"""
+        mock_db = MagicMock()
+        mock_member = MagicMock()
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+            service._get_case_member = MagicMock(return_value=mock_member)
+            # Case not found
+            mock_db.query.return_value.filter.return_value.first.return_value = None
+
+            with pytest.raises(KeyError, match="Case not found"):
+                service.submit_report(
+                    detective_id="detective-123",
+                    case_id="case-123",
+                    summary="summary",
+                    findings="findings",
+                    conclusion="conclusion"
+                )
+
+
+class TestGetActiveInvestigations:
+    """Unit tests for _get_active_investigations method"""
+
+    def test_get_active_investigations_with_items(self):
+        """Returns active investigations with lawyer name and record count"""
+        from app.db.models import CaseStatus
+
+        mock_db = MagicMock()
+
+        # Create mock case
+        mock_case = MagicMock()
+        mock_case.id = "case-456"
+        mock_case.title = "Active Case"
+        mock_case.status = CaseStatus.OPEN
+
+        # Mock query chain
+        mock_query = MagicMock()
+        mock_query.join.return_value = mock_query
+        mock_query.filter.return_value = mock_query
+        mock_query.limit.return_value = mock_query
+        mock_query.all.return_value = [mock_case]
+        mock_db.query.return_value = mock_query
+
+        with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
+            service = DetectivePortalService(mock_db)
+            service.db = mock_db
+
+            # Mock helper methods
+            mock_lawyer = MagicMock()
+            mock_lawyer.name = "Active Lawyer"
+            service._get_case_lawyer = MagicMock(return_value=mock_lawyer)
+            service._get_case_record_count = MagicMock(return_value=3)
+
+            result = service._get_active_investigations("detective-123")
+
+            assert len(result) == 1
+            assert result[0].title == "Active Case"
+            assert result[0].lawyer_name == "Active Lawyer"
+            assert result[0].record_count == 3

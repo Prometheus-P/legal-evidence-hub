@@ -13,6 +13,25 @@ from app.db.models import Job, JobStatus, JobType, Case, CaseMember
 from app.middleware.error_handler import ValidationError, NotFoundError, PermissionError
 
 
+class TestJobServiceInit:
+    """Unit tests for JobService __init__ method (lines 24-27)"""
+
+    def test_init_creates_repositories(self, test_env):
+        """Instantiating JobService creates all required repositories"""
+        from app.db.session import get_db
+
+        db = next(get_db())
+
+        service = JobService(db)
+
+        assert service.db == db
+        assert service.job_repo is not None
+        assert service.case_repo is not None
+        assert service.case_member_repo is not None
+
+        db.close()
+
+
 class TestCreateJob:
     """Unit tests for create_job method"""
 
@@ -217,6 +236,24 @@ class TestGetCaseJobs:
 
             with pytest.raises(NotFoundError):
                 service.get_case_jobs("nonexistent", "user-123")
+
+    def test_get_case_jobs_no_access(self):
+        """Raises PermissionError when user has no access (line 129)"""
+        mock_db = MagicMock()
+        mock_case = MagicMock(spec=Case)
+
+        with patch.object(JobService, '__init__', lambda x, y: None):
+            service = JobService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.case_member_repo = MagicMock()
+            service.job_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.case_member_repo.has_access.return_value = False
+
+            with pytest.raises(PermissionError):
+                service.get_case_jobs("case-123", "user-123")
 
 
 class TestGetUserJobs:

@@ -254,6 +254,95 @@ class TestResetPassword:
         db.close()
 
 
+class TestEmailSendFailure:
+    """Unit tests for email send failure scenarios"""
+
+    def test_request_reset_email_send_failure(self, test_env):
+        """Returns False when email service fails to send (line 68)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"emailfail_{unique_id}@test.com",
+            hashed_password=hash_password("pass"),
+            name="Email Fail User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = PasswordResetService(db)
+
+        with patch('app.services.password_reset_service.email_service') as mock_email:
+            # Simulate email send failure
+            mock_email.send_password_reset_email.return_value = False
+
+            result = service.request_password_reset(user.email)
+
+            # Should return False when email fails
+            assert result is False
+            mock_email.send_password_reset_email.assert_called_once()
+
+        # Cleanup
+        db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user.id).delete()
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestUserNotFoundDuringReset:
+    """Unit tests for user not found edge cases"""
+
+    def test_reset_password_user_deleted_after_token(self, test_env):
+        """Raises ValidationError when user deleted after token creation (line 106)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+        now = datetime.now(timezone.utc)
+
+        user = User(
+            email=f"deleted_{unique_id}@test.com",
+            hashed_password=hash_password("password"),
+            name="Deleted User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        user_id = user.id
+
+        # Create valid token
+        token = PasswordResetToken(
+            user_id=user_id,
+            token=f"valid_delete_token_{unique_id}",
+            expires_at=now + timedelta(hours=1)
+        )
+        db.add(token)
+        db.commit()
+        db.refresh(token)
+        token_value = token.token
+
+        # Delete the user (simulating edge case)
+        db.delete(user)
+        db.commit()
+
+        service = PasswordResetService(db)
+
+        with pytest.raises(ValidationError, match="사용자를 찾을 수 없습니다"):
+            service.reset_password(token_value, "new_password")
+
+        # Cleanup
+        db.query(PasswordResetToken).filter(PasswordResetToken.token == token_value).delete()
+        db.commit()
+        db.close()
+
+
 class TestHelperMethods:
     """Unit tests for helper methods"""
 

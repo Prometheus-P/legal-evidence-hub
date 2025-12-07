@@ -681,3 +681,603 @@ class TestCaseServiceMembers:
         db.delete(new_member)
         db.commit()
         db.close()
+
+
+class TestDeleteCaseEdgeCases:
+    """Unit tests for delete_case edge cases"""
+
+    @patch('app.services.case_service.delete_case_collection')
+    @patch('app.services.case_service.clear_case_evidence')
+    def test_delete_case_qdrant_returns_false(self, mock_clear, mock_delete, test_env):
+        """Logs warning when Qdrant collection not found (line 196)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        # Qdrant returns False (not found)
+        mock_delete.return_value = False
+        mock_clear.return_value = 0
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"qdrant_false_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Qdrant False User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Qdrant False Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(
+            case_id=case.id,
+            user_id=user.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(member)
+        db.commit()
+
+        # When - should not raise, just log warning
+        service = CaseService(db)
+        service.delete_case(case.id, user.id)
+
+        # Then
+        db.refresh(case)
+        assert case.status == CaseStatus.CLOSED
+        mock_delete.assert_called_once()
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    @patch('app.services.case_service.delete_case_collection')
+    @patch('app.services.case_service.clear_case_evidence')
+    def test_delete_case_qdrant_exception(self, mock_clear, mock_delete, test_env):
+        """Continues deletion when Qdrant fails (lines 197-198)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        # Qdrant raises exception
+        mock_delete.side_effect = Exception("Qdrant error")
+        mock_clear.return_value = 0
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"qdrant_exc_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Qdrant Exception User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Qdrant Exception Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(
+            case_id=case.id,
+            user_id=user.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(member)
+        db.commit()
+
+        # When - should not raise, just log error
+        service = CaseService(db)
+        service.delete_case(case.id, user.id)
+
+        # Then
+        db.refresh(case)
+        assert case.status == CaseStatus.CLOSED
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    @patch('app.services.case_service.delete_case_collection')
+    @patch('app.services.case_service.clear_case_evidence')
+    def test_delete_case_dynamodb_exception(self, mock_clear, mock_delete, test_env):
+        """Continues deletion when DynamoDB fails (lines 205-206)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        # Qdrant succeeds, DynamoDB fails
+        mock_delete.return_value = True
+        mock_clear.side_effect = Exception("DynamoDB error")
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"dynamo_exc_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="DynamoDB Exception User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="DynamoDB Exception Case",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(
+            case_id=case.id,
+            user_id=user.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(member)
+        db.commit()
+
+        # When - should not raise, just log error
+        service = CaseService(db)
+        service.delete_case(case.id, user.id)
+
+        # Then
+        db.refresh(case)
+        assert case.status == CaseStatus.CLOSED
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestUpdateCaseDescription:
+    """Unit tests for update_case with description field"""
+
+    def test_update_case_with_description(self, test_env):
+        """Updates case with description (line 159)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"update_desc_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Update Desc User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        case = Case(
+            title="Case With Description",
+            description="Original description",
+            status=CaseStatus.ACTIVE,
+            created_by=user.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(
+            case_id=case.id,
+            user_id=user.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(member)
+        db.commit()
+
+        # When
+        service = CaseService(db)
+        update_data = CaseUpdate(description="Updated description")
+        result = service.update_case(case.id, update_data, user.id)
+
+        # Then
+        assert result.description == "Updated description"
+
+        # Cleanup
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestPermissionConversion:
+    """Unit tests for permission/role conversion (lines 45, 54)"""
+
+    def test_permission_to_role_viewer(self, test_env):
+        """READ permission converts to VIEWER role (line 45)"""
+        result = CaseService._permission_to_role(CaseMemberPermission.READ)
+        assert result == CaseMemberRole.VIEWER
+
+    def test_role_to_permission_viewer(self, test_env):
+        """VIEWER role converts to READ permission (line 54)"""
+        result = CaseService._role_to_permission(CaseMemberRole.VIEWER)
+        assert result == CaseMemberPermission.READ
+
+
+class TestUpdateCaseErrors:
+    """Unit tests for update_case error cases"""
+
+    def test_update_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 144)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"upd_notfound_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Update NotFound User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = CaseService(db)
+        update_data = CaseUpdate(title="New Title")
+
+        with pytest.raises(NotFoundError):
+            service.update_case("nonexistent-case-id", update_data, user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_update_case_no_access(self, test_env):
+        """PermissionError when user has no access (line 149)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        owner = User(
+            email=f"upd_owner_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Owner",
+            role="lawyer"
+        )
+        stranger = User(
+            email=f"upd_stranger_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Stranger",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.add(stranger)
+        db.commit()
+        db.refresh(owner)
+        db.refresh(stranger)
+
+        case = Case(
+            title="Owner's Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        member = CaseMember(
+            case_id=case.id,
+            user_id=owner.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(member)
+        db.commit()
+
+        service = CaseService(db)
+        update_data = CaseUpdate(title="Stranger's Update")
+
+        # Stranger has no membership
+        with pytest.raises(PermissionError):
+            service.update_case(case.id, update_data, stranger.id)
+
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(owner)
+        db.delete(stranger)
+        db.commit()
+        db.close()
+
+
+class TestDeleteCaseErrors:
+    """Unit tests for delete_case error cases"""
+
+    def test_delete_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 180)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"del_notfound_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Delete NotFound User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = CaseService(db)
+
+        with pytest.raises(NotFoundError):
+            service.delete_case("nonexistent-case-id", user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+
+class TestAddMembersErrors:
+    """Unit tests for add_case_members error cases"""
+
+    def test_add_members_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 236)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"add_notfound_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Add NotFound User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = CaseService(db)
+        members = [CaseMemberAdd(user_id=user.id, permission=CaseMemberPermission.READ_WRITE)]
+
+        with pytest.raises(NotFoundError):
+            service.add_case_members("nonexistent-case-id", members, user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_add_members_not_owner(self, test_env):
+        """PermissionError when user is not owner or admin (line 243)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        owner = User(
+            email=f"add_owner_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Owner",
+            role="lawyer"
+        )
+        member_user = User(
+            email=f"add_member_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Member",
+            role="lawyer"
+        )
+        new_user = User(
+            email=f"add_new_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="New User",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.add(member_user)
+        db.add(new_user)
+        db.commit()
+        db.refresh(owner)
+        db.refresh(member_user)
+        db.refresh(new_user)
+
+        case = Case(
+            title="Add Members Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        owner_member = CaseMember(
+            case_id=case.id,
+            user_id=owner.id,
+            role=CaseMemberRole.OWNER
+        )
+        member = CaseMember(
+            case_id=case.id,
+            user_id=member_user.id,
+            role=CaseMemberRole.MEMBER
+        )
+        db.add(owner_member)
+        db.add(member)
+        db.commit()
+
+        service = CaseService(db)
+        members = [CaseMemberAdd(user_id=new_user.id, permission=CaseMemberPermission.READ_WRITE)]
+
+        # Member (not owner) trying to add members
+        with pytest.raises(PermissionError):
+            service.add_case_members(case.id, members, member_user.id)
+
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(owner)
+        db.delete(member_user)
+        db.delete(new_user)
+        db.commit()
+        db.close()
+
+    def test_add_members_user_not_found(self, test_env):
+        """NotFoundError when member user doesn't exist (line 249)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        owner = User(
+            email=f"add_owner_nf_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Owner",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.commit()
+        db.refresh(owner)
+
+        case = Case(
+            title="Add User NF Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        owner_member = CaseMember(
+            case_id=case.id,
+            user_id=owner.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(owner_member)
+        db.commit()
+
+        service = CaseService(db)
+        members = [CaseMemberAdd(user_id="nonexistent-user-id", permission=CaseMemberPermission.READ_WRITE)]
+
+        with pytest.raises(NotFoundError):
+            service.add_case_members(case.id, members, owner.id)
+
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(owner)
+        db.commit()
+        db.close()
+
+
+class TestGetMembersErrors:
+    """Unit tests for get_case_members error cases"""
+
+    def test_get_members_case_not_found(self, test_env):
+        """NotFoundError when case doesn't exist (line 285)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        user = User(
+            email=f"get_mem_nf_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Get Members NotFound User",
+            role="lawyer"
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        service = CaseService(db)
+
+        with pytest.raises(NotFoundError):
+            service.get_case_members("nonexistent-case-id", user.id)
+
+        db.delete(user)
+        db.commit()
+        db.close()
+
+    def test_get_members_no_access(self, test_env):
+        """PermissionError when user has no access (line 289)"""
+        from app.db.session import get_db
+        from app.core.security import hash_password
+
+        db = next(get_db())
+        unique_id = uuid.uuid4().hex[:8]
+
+        owner = User(
+            email=f"get_mem_owner_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Owner",
+            role="lawyer"
+        )
+        stranger = User(
+            email=f"get_mem_stranger_{unique_id}@test.com",
+            hashed_password=hash_password("password123"),
+            name="Stranger",
+            role="lawyer"
+        )
+        db.add(owner)
+        db.add(stranger)
+        db.commit()
+        db.refresh(owner)
+        db.refresh(stranger)
+
+        case = Case(
+            title="Get Members Case",
+            status=CaseStatus.ACTIVE,
+            created_by=owner.id
+        )
+        db.add(case)
+        db.commit()
+        db.refresh(case)
+
+        owner_member = CaseMember(
+            case_id=case.id,
+            user_id=owner.id,
+            role=CaseMemberRole.OWNER
+        )
+        db.add(owner_member)
+        db.commit()
+
+        service = CaseService(db)
+
+        # Stranger has no access
+        with pytest.raises(PermissionError):
+            service.get_case_members(case.id, stranger.id)
+
+        db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
+        db.delete(case)
+        db.delete(owner)
+        db.delete(stranger)
+        db.commit()
+        db.close()

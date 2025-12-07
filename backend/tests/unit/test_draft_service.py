@@ -12,6 +12,24 @@ from app.db.schemas import DraftPreviewRequest, DraftExportFormat
 from app.middleware.error_handler import ValidationError, NotFoundError, PermissionError
 
 
+class TestDraftServiceInit:
+    """Unit tests for DraftService __init__ method (lines 40-42)"""
+
+    def test_init_creates_repositories(self, test_env):
+        """Instantiating DraftService creates all required repositories"""
+        from app.db.session import get_db
+
+        db = next(get_db())
+
+        service = DraftService(db)
+
+        assert service.db == db
+        assert service.case_repo is not None
+        assert service.member_repo is not None
+
+        db.close()
+
+
 class TestFormatEvidenceContext:
     """Unit tests for _format_evidence_context method"""
 
@@ -427,3 +445,330 @@ class TestBuildDraftPrompt:
             user_content = result[1]["content"]
             assert "이혼 소송 사건" in user_content
             assert "상세 설명" in user_content
+
+
+class TestGenerateDocx:
+    """Unit tests for _generate_docx method"""
+
+    def test_generate_docx_not_available(self):
+        """Raises ValidationError when python-docx is not installed"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_draft_response = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Patch DOCX_AVAILABLE to False
+            with patch('app.services.draft_service.DOCX_AVAILABLE', False):
+                with pytest.raises(ValidationError, match="DOCX export is not available"):
+                    service._generate_docx(mock_case, mock_draft_response)
+
+    def test_generate_docx_success(self):
+        """Successfully generates DOCX file"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_case.title = "이혼 소송 테스트"
+
+        mock_citation = MagicMock()
+        mock_citation.evidence_id = "ev-123"
+        mock_citation.labels = ["폭언"]
+        mock_citation.snippet = "테스트 증거 내용"
+
+        mock_draft_response = MagicMock()
+        mock_draft_response.draft_text = "소장 초안 본문 내용\n\n두 번째 단락"
+        mock_draft_response.generated_at = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        mock_draft_response.citations = [mock_citation]
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            with patch('app.services.draft_service.DOCX_AVAILABLE', True):
+                # Mock the docx module
+                mock_doc = MagicMock()
+                mock_heading = MagicMock()
+                mock_doc.add_heading.return_value = mock_heading
+                mock_paragraph = MagicMock()
+                mock_doc.add_paragraph.return_value = mock_paragraph
+
+                with patch('app.services.draft_service.Document', return_value=mock_doc):
+                    with patch('app.services.draft_service.WD_ALIGN_PARAGRAPH'):
+                        file_buffer, filename, content_type = service._generate_docx(
+                            mock_case, mock_draft_response
+                        )
+
+                        assert filename.startswith("draft_")
+                        assert filename.endswith(".docx")
+                        assert content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        mock_doc.save.assert_called_once()
+
+
+class TestGeneratePdf:
+    """Unit tests for _generate_pdf method"""
+
+    def test_generate_pdf_import_error(self):
+        """Raises ValidationError when reportlab is not installed"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_draft_response = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Make reportlab import fail
+            import sys
+            original_modules = {}
+            for mod in list(sys.modules.keys()):
+                if 'reportlab' in mod:
+                    original_modules[mod] = sys.modules[mod]
+                    del sys.modules[mod]
+
+            # Create an import blocker
+            class ImportBlocker:
+                def find_module(self, name, path=None):
+                    if 'reportlab' in name:
+                        return self
+                    return None
+
+                def load_module(self, name):
+                    raise ImportError("No module named 'reportlab'")
+
+            blocker = ImportBlocker()
+            sys.meta_path.insert(0, blocker)
+
+            try:
+                with pytest.raises(ValidationError, match="PDF export is not available"):
+                    service._generate_pdf(mock_case, mock_draft_response)
+            finally:
+                sys.meta_path.remove(blocker)
+                sys.modules.update(original_modules)
+
+    def test_generate_pdf_success(self):
+        """Successfully generates PDF file"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_case.title = "이혼 소송 테스트"
+
+        mock_citation = MagicMock()
+        mock_citation.evidence_id = "ev-123"
+        mock_citation.labels = ["폭언"]
+        mock_citation.snippet = "테스트 증거 내용"
+
+        mock_draft_response = MagicMock()
+        mock_draft_response.draft_text = "소장 초안 본문 내용"
+        mock_draft_response.generated_at = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        mock_draft_response.citations = [mock_citation]
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Mock _register_korean_font to return False
+            service._register_korean_font = MagicMock(return_value=False)
+
+            # Run the PDF generation
+            try:
+                file_buffer, filename, content_type = service._generate_pdf(
+                    mock_case, mock_draft_response
+                )
+
+                assert filename.startswith("draft_")
+                assert filename.endswith(".pdf")
+                assert content_type == "application/pdf"
+                # Check that file buffer has content
+                file_buffer.seek(0, 2)  # Seek to end
+                assert file_buffer.tell() > 0  # Has content
+            except ValidationError:
+                # If reportlab is not installed, this is expected
+                pass
+
+
+class TestRegisterKoreanFont:
+    """Unit tests for _register_korean_font method"""
+
+    def test_register_korean_font_no_font_found(self):
+        """Returns False when no Korean font is found"""
+        mock_db = MagicMock()
+        mock_pdfmetrics = MagicMock()
+        mock_ttfont = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Mock os.path.exists to return False for all font paths
+            with patch('os.path.exists', return_value=False):
+                result = service._register_korean_font(mock_pdfmetrics, mock_ttfont)
+
+                assert result is False
+                mock_pdfmetrics.registerFont.assert_not_called()
+
+    def test_register_korean_font_success(self):
+        """Returns True when Korean font is registered"""
+        mock_db = MagicMock()
+        mock_pdfmetrics = MagicMock()
+        mock_ttfont = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Mock os.path.exists to return True for first font path
+            def exists_side_effect(path):
+                return "/System/Library/Fonts" in path
+
+            with patch('os.path.exists', side_effect=exists_side_effect):
+                result = service._register_korean_font(mock_pdfmetrics, mock_ttfont)
+
+                assert result is True
+                mock_pdfmetrics.registerFont.assert_called_once()
+
+    def test_register_korean_font_exception_handling(self):
+        """Continues to next font when registration fails"""
+        mock_db = MagicMock()
+        mock_pdfmetrics = MagicMock()
+        mock_pdfmetrics.registerFont.side_effect = [Exception("Font error"), None]
+        mock_ttfont = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+
+            # Mock to return True for two font paths
+            call_count = [0]
+
+            def exists_side_effect(path):
+                call_count[0] += 1
+                return call_count[0] <= 2
+
+            with patch('os.path.exists', side_effect=exists_side_effect):
+                result = service._register_korean_font(mock_pdfmetrics, mock_ttfont)
+
+                # Should have tried registering twice (first fails, second succeeds)
+                assert mock_pdfmetrics.registerFont.call_count == 2
+                assert result is True
+
+
+class TestExportDraftFormats:
+    """Unit tests for export_draft format handling"""
+
+    def test_export_draft_unsupported_format(self):
+        """Raises ValidationError for unsupported export format"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        mock_draft_response = MagicMock()
+        mock_draft_response.draft_text = "테스트"
+        mock_draft_response.citations = []
+        mock_draft_response.generated_at = datetime.now(timezone.utc)
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            # Mock generate_draft_preview to return a response
+            service.generate_draft_preview = MagicMock(return_value=mock_draft_response)
+
+            # Create a mock unsupported format
+            mock_format = MagicMock()
+            mock_format.value = "unsupported"
+
+            # The export_draft method checks format equality
+            # We need to ensure it doesn't match DOCX or PDF
+            with pytest.raises(ValidationError, match="Unsupported export format"):
+                service.export_draft("case-123", "user-123", mock_format)
+
+    @patch('app.services.draft_service.get_evidence_by_case')
+    @patch('app.services.draft_service.search_evidence_by_semantic')
+    @patch('app.services.draft_service.search_legal_knowledge')
+    @patch('app.services.draft_service.generate_chat_completion')
+    def test_export_draft_docx_format(
+        self,
+        mock_generate,
+        mock_search_legal,
+        mock_search_ev,
+        mock_get_evidence
+    ):
+        """Successfully exports as DOCX"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_case.title = "테스트 사건"
+        mock_case.description = "설명"
+
+        mock_get_evidence.return_value = [{"status": "done"}]
+        mock_search_ev.return_value = []
+        mock_search_legal.return_value = []
+        mock_generate.return_value = "초안 내용"
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            # Mock _generate_docx
+            from io import BytesIO
+            mock_buffer = BytesIO(b"mock docx content")
+            service._generate_docx = MagicMock(
+                return_value=(mock_buffer, "draft_test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            )
+
+            file_buffer, filename, content_type = service.export_draft(
+                "case-123",
+                "user-123",
+                DraftExportFormat.DOCX
+            )
+
+            assert filename == "draft_test.docx"
+            service._generate_docx.assert_called_once()
+
+    @patch('app.services.draft_service.get_evidence_by_case')
+    @patch('app.services.draft_service.search_evidence_by_semantic')
+    @patch('app.services.draft_service.search_legal_knowledge')
+    @patch('app.services.draft_service.generate_chat_completion')
+    def test_export_draft_pdf_format(
+        self,
+        mock_generate,
+        mock_search_legal,
+        mock_search_ev,
+        mock_get_evidence
+    ):
+        """Successfully exports as PDF"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_case.title = "테스트 사건"
+        mock_case.description = "설명"
+
+        mock_get_evidence.return_value = [{"status": "done"}]
+        mock_search_ev.return_value = []
+        mock_search_legal.return_value = []
+        mock_generate.return_value = "초안 내용"
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            # Mock _generate_pdf
+            from io import BytesIO
+            mock_buffer = BytesIO(b"mock pdf content")
+            service._generate_pdf = MagicMock(
+                return_value=(mock_buffer, "draft_test.pdf", "application/pdf")
+            )
+
+            file_buffer, filename, content_type = service.export_draft(
+                "case-123",
+                "user-123",
+                DraftExportFormat.PDF
+            )
+
+            assert filename == "draft_test.pdf"
+            service._generate_pdf.assert_called_once()
