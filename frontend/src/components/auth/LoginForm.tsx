@@ -28,22 +28,11 @@ export default function LoginForm() {
         return;
       }
 
-<<<<<<< HEAD
       // Authentication token is now handled via HTTP-only cookie (set by backend)
       // We only store display info locally, NOT the auth token
-=======
-      // Store auth token in localStorage
-      // NOTE: See Issue #63 for HTTP-only cookie migration plan
-      localStorage.setItem('authToken', response.data.access_token);
->>>>>>> origin/dev
 
       // Store user info for display purposes only (not for auth)
       if (response.data.user) {
-<<<<<<< HEAD
-=======
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-
->>>>>>> origin/dev
         // Set user_data cookie for middleware and portal layouts
         const userData = {
           name: response.data.user.name,
@@ -51,12 +40,9 @@ export default function LoginForm() {
           role: response.data.user.role,
         };
         document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}`;
-<<<<<<< HEAD
 
         // Cache user info for display (useAuth will verify via API)
         localStorage.setItem('userCache', JSON.stringify(userData));
-=======
->>>>>>> origin/dev
       }
 
       // Redirect based on user role

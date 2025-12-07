@@ -521,6 +521,99 @@ json
 
 ---
 
+# 📊 8. Staff Progress Dashboard API
+
+## 8.1 진행 상황 요약 조회
+
+### `GET /staff/progress`
+
+- **권한**: `staff`, `lawyer`, `admin`
+- **설명**: Paralegal/Lawyer가 배정된 사건들의 증거 수집, AI 상태, 피드백 체크리스트를 한 번에 조회.
+- **쿼리 파라미터**:
+  - `blocked_only` (bool, optional) → true 시 `is_blocked=true` 인 케이스만 반환
+  - `assignee_id` (string, optional) → 관리자/변호사가 특정 스태프의 큐를 모니터링할 때 사용
+- **응답 (200)**
+
+```json
+[
+  {
+    "case_id": "case_001",
+    "title": "이혼 조정 사건",
+    "status": "open",
+    "assignee": { "id": "staff_17", "name": "Paralegal Kim" },
+    "updated_at": "2025-02-20T07:00:00Z",
+    "evidence_counts": {
+      "pending": 1,
+      "uploaded": 0,
+      "processing": 2,
+      "completed": 4,
+      "failed": 0
+    },
+    "ai_status": "processing",
+    "ai_last_updated": "2025-02-20T07:00:00Z",
+    "outstanding_feedback_count": 3,
+    "feedback_items": [
+      {
+        "item_id": "fbk-1",
+        "title": "판례 DB 연동",
+        "status": "done",
+        "owner": "Ops",
+        "notes": "12/4 동기화 완료",
+        "updated_by": "staff_17",
+        "updated_at": "2025-02-20T06:30:00Z"
+      }
+    ],
+    "is_blocked": false,
+    "blocked_reason": null
+  }
+]
+```
+
+> `feedback_items` 는 사양서(`specs/004-paralegal-progress/contracts/checklist.json`)에 정의된 16개 항목을 기본으로 전달하며, `status/notes/updated_at` 은 DB (case_checklist_statuses) 값이 있을 때 덮어쓴다.
+
+## 8.2 체크리스트 상태 갱신
+
+### `PATCH /staff/progress/{case_id}/checklist/{item_id}`
+
+- **권한**: `staff`, `lawyer`, `admin`
+- **설명**: 파라리걸이 mid-demo 피드백 항목을 완료/대기 상태로 토글하거나 메모를 남길 때 사용.
+- **요청 Body**
+
+```json
+{
+  "status": "done",
+  "notes": "판례 DB 최신화"
+}
+```
+
+- **검증**:
+  - `status` 는 `pending` 또는 `done` 만 허용
+  - `item_id` 는 16개 체크리스트 중 하나여야 함 → 존재하지 않으면 400
+
+- **응답 (200)**
+
+```json
+{
+  "item_id": "fbk-1",
+  "title": "판례 DB 연동",
+  "status": "done",
+  "owner": "Ops",
+  "notes": "판례 DB 최신화",
+  "updated_by": "staff_17",
+  "updated_at": "2025-02-21T02:10:00Z"
+}
+```
+
+오류 케이스:
+
+| Status | Code | 설명 |
+|--------|------|------|
+| 400 | `CHECKLIST_INVALID_STATUS` | 허용되지 않은 status 값 |
+| 400 | `CHECKLIST_ITEM_NOT_FOUND` | 잘못된 item_id |
+| 403 | `FORBIDDEN` | staff/lawyer/admin 이외의 역할 |
+
+---
+
 # ✅ 9. 확장 포인트 (v2 이후)
 
 - Draft 버전 관리 및 편집 이력 (`PUT /cases/{id}/draft`)

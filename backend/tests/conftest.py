@@ -102,27 +102,12 @@ def mock_aws_services():
     mock_table.put_item.return_value = {}
     mock_boto3_resource.return_value.Table.return_value = mock_table
 
-<<<<<<< HEAD
-=======
-    # Mock S3 client
-    mock_s3 = MagicMock()
-    mock_s3.generate_presigned_url.return_value = "https://test-bucket.s3.amazonaws.com/presigned-url"
-    mock_s3.generate_presigned_post.return_value = {
-        "url": "https://test-bucket.s3.amazonaws.com",
-        "fields": {"key": "test-key"}
-    }
-    mock_boto3_client.return_value = mock_s3
-
->>>>>>> origin/dev
     # Patch boto3 at both global and module level to ensure mocks work everywhere
     with patch('boto3.client', mock_boto3_client), \
          patch('boto3.resource', mock_boto3_resource), \
          patch('app.utils.s3.boto3.client', mock_boto3_client), \
-<<<<<<< HEAD
-         patch('app.utils.dynamo.boto3.client', mock_boto3_client):
-=======
+         patch('app.utils.dynamo.boto3.client', mock_boto3_client), \
          patch('app.utils.dynamo.boto3.resource', mock_boto3_resource):
->>>>>>> origin/dev
         yield {
             "s3": mock_s3_client,
             "dynamodb": mock_dynamodb_client,

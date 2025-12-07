@@ -1,7 +1,6 @@
 export type EvidenceType = 'text' | 'image' | 'audio' | 'video' | 'pdf';
 export type EvidenceStatus = 'uploading' | 'queued' | 'processing' | 'review_needed' | 'completed' | 'failed';
 export type SpeakerType = '원고' | '피고' | '제3자' | 'unknown';
-<<<<<<< HEAD
 
 /**
  * 민법 840조 이혼 사유 카테고리
@@ -37,8 +36,6 @@ export interface AIInsight {
     confidence: number;
     createdAt: string;
 }
-=======
->>>>>>> origin/dev
 
 export interface Evidence {
     id: string;
@@ -58,11 +55,8 @@ export interface Evidence {
     timestamp?: string; // ISO Date string - when the evidence was created/recorded
     s3Key?: string; // S3 storage path
     qdrantId?: string; // Vector store ID for RAG
-<<<<<<< HEAD
 
     // Article 840 analysis (optional - populated after AI processing)
     article840Tags?: Article840Tags;
     insights?: AIInsight[];
-=======
->>>>>>> origin/dev
 }

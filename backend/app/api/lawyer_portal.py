@@ -4,38 +4,24 @@ Lawyer Portal API endpoints
 
 GET /lawyer/dashboard - Dashboard statistics
 GET /lawyer/cases - Case list with filters
-<<<<<<< HEAD
 GET /lawyer/cases/{case_id} - Case detail
-=======
->>>>>>> origin/dev
 POST /lawyer/cases/bulk-action - Bulk actions on cases
 GET /lawyer/analytics - Extended analytics
 """
 
-<<<<<<< HEAD
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.db.session import get_db
-from app.db.models import User, CaseStatus
-from app.core.dependencies import require_internal_user
-from app.services.lawyer_dashboard_service import LawyerDashboardService
-from app.services.case_list_service import CaseListService
-=======
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from app.db.session import get_db
 from app.db.models import User
 from app.core.dependencies import require_internal_user
 from app.services.lawyer_dashboard_service import LawyerDashboardService
->>>>>>> origin/dev
+from app.services.case_list_service import CaseListService
 from app.schemas.lawyer_dashboard import (
     LawyerDashboardResponse,
     LawyerAnalyticsResponse,
 )
-<<<<<<< HEAD
 from app.schemas.case_list import (
     CaseFilter,
     CaseListResponse,
@@ -45,8 +31,6 @@ from app.schemas.case_list import (
     BulkActionResponse,
     CaseDetailResponse,
 )
-=======
->>>>>>> origin/dev
 
 router = APIRouter()
 
@@ -98,7 +82,6 @@ def get_analytics(
     """
     service = LawyerDashboardService(db)
     return service.get_analytics(current_user.id)
-<<<<<<< HEAD
 
 
 @router.get("/cases", response_model=CaseListResponse)

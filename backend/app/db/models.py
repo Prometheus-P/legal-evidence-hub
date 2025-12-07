@@ -3,7 +3,7 @@ SQLAlchemy ORM Models for LEH Backend
 Database tables: users, cases, case_members, audit_logs
 """
 
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Integer, Boolean, Text, JSON
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Integer, Boolean, Text, JSON, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -47,8 +47,6 @@ class CaseMemberRole(str, enum.Enum):
     VIEWER = "viewer"
 
 
-<<<<<<< HEAD
-=======
 class DocumentType(str, enum.Enum):
     """Legal document type enum (민법 840조 관련)"""
     COMPLAINT = "complaint"      # 소장
@@ -77,8 +75,6 @@ class ExportJobStatus(str, enum.Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
-
->>>>>>> origin/dev
 class CalendarEventType(str, enum.Enum):
     """Calendar event type enum"""
     COURT = "court"          # 재판/출석
@@ -106,7 +102,6 @@ class InvoiceStatus(str, enum.Enum):
     CANCELLED = "cancelled"  # 취소
 
 
-<<<<<<< HEAD
 class JobType(str, enum.Enum):
     """Job type enum for async processing"""
     OCR = "ocr"                      # Image/PDF text extraction
@@ -136,9 +131,6 @@ class EvidenceStatus(str, enum.Enum):
     COMPLETED = "completed"    # AI processing complete
     FAILED = "failed"          # Processing failed
 
-
-=======
->>>>>>> origin/dev
 # ============================================
 # Models
 # ============================================
@@ -212,6 +204,27 @@ class CaseMember(Base):
         return f"<CaseMember(case_id={self.case_id}, user_id={self.user_id}, role={self.role})>"
 
 
+class CaseChecklistStatus(Base):
+    """Tracks per-case completion state for mid-demo feedback checklist."""
+
+    __tablename__ = "case_checklist_statuses"
+    __table_args__ = (UniqueConstraint("case_id", "item_id", name="uq_case_checklist_item"),)
+
+    id = Column(String, primary_key=True, default=lambda: f"cfbk_{uuid.uuid4().hex[:12]}")
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True)
+    item_id = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="pending")
+    notes = Column(Text, nullable=True)
+    updated_by = Column(String, ForeignKey("users.id"), nullable=True, index=True)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    case = relationship("Case", backref="checklist_statuses")
+    updater = relationship("User")
+
+    def __repr__(self):
+        return f"<CaseChecklistStatus(case_id={self.case_id}, item_id={self.item_id}, status={self.status})>"
+
+
 class InviteToken(Base):
     """
     Invite token model - user invitation tokens
@@ -264,8 +277,6 @@ class AuditLog(Base):
         return f"<AuditLog(id={self.id}, user_id={self.user_id}, action={self.action})>"
 
 
-<<<<<<< HEAD
-=======
 class DraftDocument(Base):
     """
     Draft document model - AI-generated legal document drafts
@@ -345,7 +356,6 @@ class DocumentTemplate(Base):
         return f"<DocumentTemplate(id={self.id}, name={self.name}, document_type={self.document_type})>"
 
 
->>>>>>> origin/dev
 class Message(Base):
     """
     Message model - real-time communication between users
@@ -446,9 +456,6 @@ class Invoice(Base):
 
     def __repr__(self):
         return f"<Invoice(id={self.id}, amount={self.amount}, status={self.status})>"
-<<<<<<< HEAD
-
-
 class Evidence(Base):
     """
     Evidence model - uploaded evidence files for cases
@@ -542,5 +549,3 @@ class Job(Base):
 
     def __repr__(self):
         return f"<Job(id={self.id}, type={self.job_type}, status={self.status})>"
-=======
->>>>>>> origin/dev

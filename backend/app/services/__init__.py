@@ -1,8 +1,3 @@
-"""
-Service layer for business logic
-Per BACKEND_SERVICE_REPOSITORY_GUIDE.md pattern
-"""
+"""Service layer package."""
 
-from app.services.auth_service import AuthService
-
-__all__ = ["AuthService"]
+__all__: list[str] = []

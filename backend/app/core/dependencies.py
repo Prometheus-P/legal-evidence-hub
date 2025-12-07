@@ -226,7 +226,6 @@ def require_internal_user(current_user: User = Depends(get_current_user)) -> Use
     return current_user
 
 
-<<<<<<< HEAD
 def require_role(allowed_roles: list[str]):
     """
     Require specific role(s) for access.
@@ -268,8 +267,6 @@ def require_role(allowed_roles: list[str]):
     return role_checker
 
 
-=======
->>>>>>> origin/dev
 def get_role_redirect_path(role: UserRole) -> str:
     """
     Get the default redirect path for a user role after login
@@ -288,9 +285,6 @@ def get_role_redirect_path(role: UserRole) -> str:
         UserRole.DETECTIVE: "/detective/dashboard",
     }
     return role_paths.get(role, "/dashboard")
-<<<<<<< HEAD
-
-
 def verify_internal_api_key(
     x_internal_api_key: Optional[str] = Header(None, alias="X-Internal-API-Key")
 ) -> bool:
@@ -325,5 +319,3 @@ def verify_internal_api_key(
         raise AuthenticationError("Invalid internal API key")
 
     return True
-=======
->>>>>>> origin/dev

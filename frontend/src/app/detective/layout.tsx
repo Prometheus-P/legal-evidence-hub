@@ -5,20 +5,13 @@
  * 003-role-based-ui Feature
  *
  * Layout for the detective portal with field investigation tools.
-<<<<<<< HEAD
  * Responsive design with mobile drawer.
-=======
->>>>>>> origin/dev
  * Uses design system tokens.
  */
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-<<<<<<< HEAD
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
-=======
-import PortalSidebar, { NavIcons, NavItem } from '@/components/shared/PortalSidebar';
->>>>>>> origin/dev
 import { logout } from '@/lib/api/auth';
 
 // Detective navigation items
@@ -36,8 +29,6 @@ const detectiveNavItems: NavItem[] = [
     icon: <NavIcons.Cases />,
   },
   {
-<<<<<<< HEAD
-=======
     id: 'field',
     label: '현장 조사',
     href: '/detective/field',
@@ -49,7 +40,6 @@ const detectiveNavItems: NavItem[] = [
     ),
   },
   {
->>>>>>> origin/dev
     id: 'calendar',
     label: '일정 관리',
     href: '/detective/calendar',
@@ -88,10 +78,7 @@ export default function DetectiveLayout({
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
   const [sidebarOpen, setSidebarOpen] = useState(false);
-=======
->>>>>>> origin/dev
 
   useEffect(() => {
     const getUserData = () => {
@@ -151,7 +138,6 @@ export default function DetectiveLayout({
         userEmail={user.email}
         navItems={detectiveNavItems}
         onLogout={handleLogout}
-<<<<<<< HEAD
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -171,39 +157,16 @@ export default function DetectiveLayout({
 
           <div className="flex-1" />
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Quick cases button */}
-            <button
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors min-h-[44px]"
-              onClick={() => router.push('/detective/cases')}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <span className="text-sm font-medium">의뢰 목록</span>
-=======
-      />
-
-      {/* Main Content */}
-      <main
-        className="flex-1 ml-64"
-        style={{
-          minHeight: '100vh',
-        }}
-      >
-        {/* Top Header */}
-        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-6">
-          <div className="flex-1" />
-          <div className="flex items-center gap-4">
             {/* Quick field record button */}
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors min-h-[44px]"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors min-h-[44px]"
               onClick={() => router.push('/detective/field')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-sm font-medium">현장 기록</span>
->>>>>>> origin/dev
             </button>
 
             {/* Notification bell */}
@@ -226,11 +189,7 @@ export default function DetectiveLayout({
         </header>
 
         {/* Page Content */}
-<<<<<<< HEAD
         <div className="p-4 lg:p-6">
-=======
-        <div className="p-6">
->>>>>>> origin/dev
           {children}
         </div>
       </main>
