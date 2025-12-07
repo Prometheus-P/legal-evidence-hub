@@ -671,3 +671,21 @@ class TestUpcomingEvents:
         db.delete(user)
         db.commit()
         db.close()
+
+
+class TestUpcomingEventsExceptionHandling:
+    """Unit tests for _get_upcoming_events exception handling"""
+
+    def test_should_return_empty_list_on_exception(self):
+        """
+        Given: CalendarEvent query raises exception
+        When: _get_upcoming_events is called
+        Then: Returns empty list
+        """
+        mock_session = MagicMock()
+        mock_session.query.side_effect = Exception("Table not found")
+
+        service = LawyerDashboardService(mock_session)
+        result = service._get_upcoming_events("user-123")
+
+        assert result == []

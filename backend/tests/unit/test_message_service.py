@@ -137,3 +137,150 @@ class TestHasCaseAccess:
             result = service._has_case_access("user-123", "nonexistent")
 
             assert result is False
+
+
+class TestMarkAsRead:
+    """Unit tests for mark_as_read method"""
+
+    def test_mark_as_read_updates_messages(self):
+        """Marks messages as read and returns count"""
+        mock_db = MagicMock()
+        mock_db.query.return_value.filter.return_value.update.return_value = 3
+
+        with patch.object(MessageService, '__init__', lambda x, y: None):
+            service = MessageService(mock_db)
+            service.db = mock_db
+
+            result = service.mark_as_read("user-123", ["msg-1", "msg-2", "msg-3"])
+
+            assert result == 3
+            mock_db.commit.assert_called_once()
+
+
+class TestGetUnreadCount:
+    """Unit tests for get_unread_count method"""
+
+    def test_get_unread_count_returns_total_and_by_case(self):
+        """Returns unread count total and breakdown"""
+        mock_db = MagicMock()
+        mock_msg1 = MagicMock()
+        mock_msg1.case_id = "case-1"
+        mock_msg2 = MagicMock()
+        mock_msg2.case_id = "case-1"
+        mock_msg3 = MagicMock()
+        mock_msg3.case_id = "case-2"
+
+        mock_db.query.return_value.filter.return_value.all.return_value = [mock_msg1, mock_msg2, mock_msg3]
+
+        with patch.object(MessageService, '__init__', lambda x, y: None):
+            service = MessageService(mock_db)
+            service.db = mock_db
+
+            result = service.get_unread_count("user-123")
+
+            assert result.total == 3
+            assert result.by_case["case-1"] == 2
+            assert result.by_case["case-2"] == 1
+
+
+class TestGetOfflineMessages:
+    """Unit tests for get_offline_messages method"""
+
+    def test_get_offline_messages_returns_list(self):
+        """Returns list of unread messages for offline queue"""
+        mock_db = MagicMock()
+        mock_msg = MagicMock()
+        mock_msg.id = "msg-1"
+        mock_msg.case_id = "case-1"
+        mock_msg.sender_id = "sender-1"
+        mock_msg.recipient_id = "user-1"
+        mock_msg.content = "Test message"
+        mock_msg.attachments = None
+        mock_msg.read_at = None
+        mock_msg.created_at = datetime.now(timezone.utc)
+
+        mock_sender = MagicMock()
+        mock_sender.id = "sender-1"
+        mock_sender.name = "Sender Name"
+        mock_sender.role = MagicMock()
+        mock_sender.role.value = "lawyer"
+
+        # Set up query chain for messages
+        mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = [mock_msg]
+        # Set up query for sender info
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_sender
+
+        with patch.object(MessageService, '__init__', lambda x, y: None):
+            service = MessageService(mock_db)
+            service.db = mock_db
+
+            result = service.get_offline_messages("user-1")
+
+            assert len(result) == 1
+            assert result[0].id == "msg-1"
+
+
+class TestToMessageResponse:
+    """Unit tests for _to_message_response helper"""
+
+    def test_to_message_response_with_attachments(self):
+        """Converts message with JSON attachments"""
+        import json
+        mock_db = MagicMock()
+        mock_msg = MagicMock()
+        mock_msg.id = "msg-1"
+        mock_msg.case_id = "case-1"
+        mock_msg.sender_id = "sender-1"
+        mock_msg.recipient_id = "user-1"
+        mock_msg.content = "Test"
+        mock_msg.attachments = json.dumps(["file1.pdf", "file2.jpg"])
+        mock_msg.read_at = None
+        mock_msg.created_at = datetime.now(timezone.utc)
+
+        mock_sender = MagicMock()
+        mock_sender.id = "sender-1"
+        mock_sender.name = "Sender"
+        mock_sender.role = MagicMock()
+        mock_sender.role.value = "lawyer"
+
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_sender
+
+        with patch.object(MessageService, '__init__', lambda x, y: None):
+            service = MessageService(mock_db)
+            service.db = mock_db
+
+            result = service._to_message_response(mock_msg, "user-1")
+
+            assert result.id == "msg-1"
+            assert result.attachments == ["file1.pdf", "file2.jpg"]
+            assert result.is_mine is False
+
+    def test_to_message_response_invalid_json_attachments(self):
+        """Handles invalid JSON in attachments gracefully"""
+        mock_db = MagicMock()
+        mock_msg = MagicMock()
+        mock_msg.id = "msg-1"
+        mock_msg.case_id = "case-1"
+        mock_msg.sender_id = "sender-1"
+        mock_msg.recipient_id = "user-1"
+        mock_msg.content = "Test"
+        mock_msg.attachments = "invalid json {{"
+        mock_msg.read_at = None
+        mock_msg.created_at = datetime.now(timezone.utc)
+
+        mock_sender = MagicMock()
+        mock_sender.id = "sender-1"
+        mock_sender.name = "Sender"
+        mock_sender.role = MagicMock()
+        mock_sender.role.value = "lawyer"
+
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_sender
+
+        with patch.object(MessageService, '__init__', lambda x, y: None):
+            service = MessageService(mock_db)
+            service.db = mock_db
+
+            result = service._to_message_response(mock_msg, "user-1")
+
+            assert result.id == "msg-1"
+            assert result.attachments is None  # Invalid JSON returns None
