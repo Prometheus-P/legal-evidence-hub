@@ -1,0 +1,426 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "이혼소장 (Divorce Complaint)",
+  "description": "대한민국 가정법원 이혼소송 소장 문서 스키마 - 문서 형식 정보 포함",
+  "version": "1.0.0",
+
+  "type": "object",
+  "required": ["document_type", "header", "parties", "claims", "grounds", "evidence", "attachments", "footer"],
+
+  "properties": {
+
+    "document_type": {
+      "type": "string",
+      "enum": ["이혼소장", "이혼준비서면", "이혼답변서"],
+      "description": "문서 유형"
+    },
+
+    "header": {
+      "type": "object",
+      "description": "문서 헤더 (소장 제목)",
+      "properties": {
+        "title": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "default": "소    장" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "enum": ["left", "center", "right"], "default": "center" },
+                "font_size": { "type": "integer", "default": 18 },
+                "bold": { "type": "boolean", "default": true },
+                "spacing_after": { "type": "integer", "description": "제목 뒤 줄바꿈 수", "default": 2 }
+              }
+            }
+          }
+        },
+        "case_number": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "example": "사건 2024드단12345 이혼 등" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "left" },
+                "indent_level": { "type": "integer", "default": 0 },
+                "spacing_after": { "type": "integer", "default": 2 }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "parties": {
+      "type": "object",
+      "description": "당사자 표시",
+      "properties": {
+        "format": {
+          "type": "object",
+          "properties": {
+            "label_width": { "type": "integer", "description": "라벨 고정 너비 (칸)", "default": 10 },
+            "indent_level": { "type": "integer", "default": 0 },
+            "line_spacing": { "type": "number", "default": 1.5 }
+          }
+        },
+        "plaintiff": {
+          "type": "object",
+          "description": "원고 정보",
+          "properties": {
+            "label": { "type": "string", "default": "원    고" },
+            "name": { "type": "string" },
+            "resident_number": { "type": "string", "description": "주민등록번호 (앞 6자리-*******)" },
+            "address": { "type": "string" },
+            "registered_address": { "type": "string", "description": "등록기준지" },
+            "contact": { "type": "string", "description": "연락처" }
+          }
+        },
+        "defendant": {
+          "type": "object",
+          "description": "피고 정보",
+          "properties": {
+            "label": { "type": "string", "default": "피    고" },
+            "name": { "type": "string" },
+            "resident_number": { "type": "string" },
+            "address": { "type": "string" },
+            "registered_address": { "type": "string" }
+          }
+        },
+        "children": {
+          "type": "array",
+          "description": "사건본인 (자녀) 목록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string", "default": "사건본인" },
+              "name": { "type": "string" },
+              "birth_date": { "type": "string", "format": "date" },
+              "age": { "type": "integer" },
+              "address": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "claims": {
+      "type": "object",
+      "description": "청구취지",
+      "properties": {
+        "section_title": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "default": "청 구 취 지" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "bold": { "type": "boolean", "default": true },
+                "spacing_before": { "type": "integer", "default": 2 },
+                "spacing_after": { "type": "integer", "default": 1 }
+              }
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "청구 항목 목록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "string", "description": "번호 (1., 2., 가., 나. 등)" },
+              "text": { "type": "string" },
+              "format": {
+                "type": "object",
+                "properties": {
+                  "indent_level": { "type": "integer", "description": "들여쓰기 레벨 (0=없음, 1=1단계...)", "default": 1 },
+                  "indent_chars": { "type": "integer", "description": "들여쓰기 문자 수", "default": 4 },
+                  "hanging_indent": { "type": "boolean", "description": "내어쓰기 여부", "default": true },
+                  "line_break_after": { "type": "boolean", "default": true }
+                }
+              },
+              "sub_items": {
+                "type": "array",
+                "description": "하위 항목 (가., 나. 등)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "number": { "type": "string" },
+                    "text": { "type": "string" },
+                    "format": {
+                      "type": "object",
+                      "properties": {
+                        "indent_level": { "type": "integer", "default": 2 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "closing": {
+          "type": "object",
+          "description": "청구취지 마무리 문구",
+          "properties": {
+            "text": { "type": "string", "default": "라는 판결을 구합니다." },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "left" },
+                "indent_level": { "type": "integer", "default": 0 },
+                "spacing_after": { "type": "integer", "default": 2 }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "grounds": {
+      "type": "object",
+      "description": "청구원인",
+      "properties": {
+        "section_title": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "default": "청 구 원 인" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "bold": { "type": "boolean", "default": true },
+                "spacing_before": { "type": "integer", "default": 2 },
+                "spacing_after": { "type": "integer", "default": 1 }
+              }
+            }
+          }
+        },
+        "sections": {
+          "type": "array",
+          "description": "청구원인 각 섹션",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "string", "description": "섹션 번호 (1., 2. 등)" },
+              "title": { "type": "string", "description": "섹션 제목 (예: 당사자들의 관계)" },
+              "format": {
+                "type": "object",
+                "properties": {
+                  "title_bold": { "type": "boolean", "default": true },
+                  "indent_level": { "type": "integer", "default": 0 },
+                  "spacing_before": { "type": "integer", "default": 1 },
+                  "spacing_after": { "type": "integer", "default": 0 }
+                }
+              },
+              "paragraphs": {
+                "type": "array",
+                "description": "섹션 내 문단들",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": { "type": "string" },
+                    "evidence_refs": {
+                      "type": "array",
+                      "description": "인용 증거 번호",
+                      "items": { "type": "string", "example": "갑 제1호증" }
+                    },
+                    "format": {
+                      "type": "object",
+                      "properties": {
+                        "indent_level": { "type": "integer", "default": 1 },
+                        "indent_first_line": { "type": "integer", "description": "첫 줄 들여쓰기 (문자 수)", "default": 2 },
+                        "line_spacing": { "type": "number", "default": 1.6 },
+                        "spacing_after": { "type": "integer", "default": 1 }
+                      }
+                    }
+                  }
+                }
+              },
+              "legal_basis": {
+                "type": "object",
+                "description": "법적 근거 (민법 조항 등)",
+                "properties": {
+                  "statute": { "type": "string", "example": "민법" },
+                  "article": { "type": "string", "example": "제840조" },
+                  "clause": { "type": "string", "example": "제1호", "description": "호 (선택)" },
+                  "content": { "type": "string", "description": "조문 내용" },
+                  "format": {
+                    "type": "object",
+                    "properties": {
+                      "style": { "type": "string", "enum": ["inline", "block", "quote"], "default": "inline" },
+                      "indent_level": { "type": "integer", "default": 2 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "evidence": {
+      "type": "object",
+      "description": "입증방법",
+      "properties": {
+        "section_title": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "default": "입 증 방 법" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "bold": { "type": "boolean", "default": true },
+                "spacing_before": { "type": "integer", "default": 2 },
+                "spacing_after": { "type": "integer", "default": 1 }
+              }
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "description": "증거 목록",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "string", "example": "갑 제1호증" },
+              "description": { "type": "string", "example": "혼인관계증명서" },
+              "source": { "type": "string", "description": "증거 출처 (선택)" },
+              "format": {
+                "type": "object",
+                "properties": {
+                  "indent_level": { "type": "integer", "default": 1 },
+                  "number_width": { "type": "integer", "description": "번호 고정 너비", "default": 12 },
+                  "separator": { "type": "string", "default": "  " }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "attachments": {
+      "type": "object",
+      "description": "첨부서류",
+      "properties": {
+        "section_title": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "default": "첨 부 서 류" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "bold": { "type": "boolean", "default": true },
+                "spacing_before": { "type": "integer", "default": 2 },
+                "spacing_after": { "type": "integer", "default": 1 }
+              }
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "string", "example": "1." },
+              "description": { "type": "string", "example": "위 입증방법" },
+              "quantity": { "type": "string", "example": "각 1통" },
+              "format": {
+                "type": "object",
+                "properties": {
+                  "indent_level": { "type": "integer", "default": 1 },
+                  "quantity_alignment": { "type": "string", "default": "right" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "footer": {
+      "type": "object",
+      "description": "문서 푸터 (날짜, 서명, 법원)",
+      "properties": {
+        "date": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string", "example": "2024. 12. 3." },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "spacing_before": { "type": "integer", "default": 3 },
+                "spacing_after": { "type": "integer", "default": 2 }
+              }
+            }
+          }
+        },
+        "signature": {
+          "type": "object",
+          "properties": {
+            "role": { "type": "string", "default": "원고" },
+            "name": { "type": "string" },
+            "seal": { "type": "string", "enum": ["서명", "날인", "(인)"], "default": "(인)" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "right" },
+                "spacing_after": { "type": "integer", "default": 3 }
+              }
+            }
+          }
+        },
+        "court": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "example": "서울가정법원" },
+            "suffix": { "type": "string", "default": "귀중" },
+            "format": {
+              "type": "object",
+              "properties": {
+                "alignment": { "type": "string", "default": "center" },
+                "bold": { "type": "boolean", "default": true }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "metadata": {
+      "type": "object",
+      "description": "문서 메타데이터",
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "created_by": { "type": "string", "description": "생성자 (AI/사용자)" },
+        "case_id": { "type": "string", "description": "LEH 시스템 사건 ID" },
+        "version": { "type": "string" },
+        "language": { "type": "string", "default": "ko" },
+        "page_settings": {
+          "type": "object",
+          "properties": {
+            "paper_size": { "type": "string", "default": "A4" },
+            "margin_top": { "type": "integer", "default": 25 },
+            "margin_bottom": { "type": "integer", "default": 25 },
+            "margin_left": { "type": "integer", "default": 30 },
+            "margin_right": { "type": "integer", "default": 25 },
+            "unit": { "type": "string", "default": "mm" }
+          }
+        },
+        "default_font": {
+          "type": "object",
+          "properties": {
+            "family": { "type": "string", "default": "바탕" },
+            "size": { "type": "integer", "default": 12 },
+            "line_height": { "type": "number", "default": 1.6 }
+          }
+        }
+      }
+    }
+  }
+}

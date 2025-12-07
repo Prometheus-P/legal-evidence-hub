@@ -9,7 +9,7 @@ import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
-import { downloadDraftAsDocx, DraftDownloadFormat } from '@/services/documentService';
+import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import {
   getPresignedUploadUrl,
   uploadToS3,
@@ -117,6 +117,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         fetchCaseData();
     }, [caseId]);
 
+<<<<<<< HEAD
     // Fetch evidence list from API
     const fetchEvidenceList = useCallback(async () => {
         if (!caseId) return;
@@ -143,6 +144,8 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         fetchEvidenceList();
     }, [fetchEvidenceList]);
 
+=======
+>>>>>>> origin/dev
     // Auto-polling: silently check for status updates without full re-render
     useEffect(() => {
         // Check if there are any evidence items still processing
@@ -182,7 +185,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                         return hasChanges ? [...updatedList, ...newItems] : prevList;
                     });
                 }
-            } catch (err) {
+            } catch {
                 // Silently ignore polling errors
             }
         }, 5000);
@@ -328,9 +331,17 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         }
     }, [caseId, isGeneratingDraft, evidenceList]);
 
+<<<<<<< HEAD
     const handleDownload = async (content: string, format: DraftDownloadFormat = 'docx') => {
         if (!id) return;
         await downloadDraftAsDocx(content, id, format);
+=======
+    const handleDownload = async (content: string, format: DraftDownloadFormat = 'docx'): Promise<DownloadResult> => {
+        if (!id) {
+            return { success: false, error: '케이스 ID가 없습니다.' };
+        }
+        return downloadDraftAsDocx(content, id, format);
+>>>>>>> origin/dev
     };
 
     const tabItems: { id: CaseDetailTab; label: string; description: string }[] = useMemo(

@@ -5,13 +5,20 @@
  * 003-role-based-ui Feature
  *
  * Layout for the client portal with simplified navigation.
+<<<<<<< HEAD
  * Responsive design with mobile drawer.
+=======
+>>>>>>> origin/dev
  * Uses design system tokens.
  */
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+<<<<<<< HEAD
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
+=======
+import PortalSidebar, { NavIcons, NavItem } from '@/components/shared/PortalSidebar';
+>>>>>>> origin/dev
 import { logout } from '@/lib/api/auth';
 
 // Client navigation items - simplified view
@@ -57,7 +64,10 @@ export default function ClientLayout({
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [sidebarOpen, setSidebarOpen] = useState(false);
+=======
+>>>>>>> origin/dev
 
   useEffect(() => {
     const getUserData = () => {
@@ -117,6 +127,7 @@ export default function ClientLayout({
         userEmail={user.email}
         navItems={clientNavItems}
         onLogout={handleLogout}
+<<<<<<< HEAD
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -136,6 +147,21 @@ export default function ClientLayout({
 
           <div className="flex-1" />
           <div className="flex items-center gap-2 sm:gap-4">
+=======
+      />
+
+      {/* Main Content */}
+      <main
+        className="flex-1 ml-64"
+        style={{
+          minHeight: '100vh',
+        }}
+      >
+        {/* Top Header */}
+        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-6">
+          <div className="flex-1" />
+          <div className="flex items-center gap-4">
+>>>>>>> origin/dev
             {/* Notification bell */}
             <button
               className="relative p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -156,7 +182,11 @@ export default function ClientLayout({
         </header>
 
         {/* Page Content */}
+<<<<<<< HEAD
         <div className="p-4 lg:p-6">
+=======
+        <div className="p-6">
+>>>>>>> origin/dev
           {children}
         </div>
       </main>

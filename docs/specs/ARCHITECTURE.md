@@ -1,10 +1,21 @@
+# ARCHITECTURE.md
 
 ### *AI 파라리걸 & 이혼 사건 증거 허브 – 시스템 아키텍처*
 
-**버전:** v2.0
+**버전:** v2.1
 **작성일:** 2025-11-18
+**최종 수정:** 2025-12-03
 **작성자:** Team H·P·L
 **관련 문서:** `PRD.md`, `README.md`, `BACKEND_DESIGN.md`, `AI_PIPELINE_DESIGN.md`, `SECURITY_COMPLIANCE.md`
+
+---
+
+## 변경 이력 (Change Log)
+
+| 버전 | 날짜 | 작성자 | 변경 내용 |
+|------|------|--------|----------|
+| v2.0 | 2025-11-18 | Team H·P·L | 최초 작성 |
+| v2.1 | 2025-12-03 | L-work | Qdrant legal_templates 컬렉션 추가, Draft 생성 흐름 업데이트 |
 
 ---
 
@@ -332,20 +343,24 @@ json
 
 ---
 
-### 3.7 Qdrant — Case RAG Index
+### 3.7 Qdrant — Vector Database
 
 **역할**
 
 * 사건 단위 RAG 인덱스 저장소
+* 법률 지식 및 문서 템플릿 저장소
 
-**Index Naming**
+**컬렉션 구조 (v2.1 업데이트)**
 
-text
-case_rag_{case_id}
+| 컬렉션명 | 용도 | 담당 |
+|----------|------|------|
+| `case_rag_{case_id}` | 사건별 증거 임베딩 | AI Worker |
+| `leh_legal_knowledge` | 법률 조문/판례 | AI Worker |
+| `legal_templates` | 법률 문서 템플릿 JSON (신규) | AI Worker |
 
-**문서 예시**
+**문서 예시 - 증거 (case_rag)**
 
-json
+```json
 {
   "id": "case_123_ev_1",
   "case_id": "case_123",
@@ -356,12 +371,29 @@ json
   "speaker": "피고",
   "vector": [/*임베딩 벡터*/]
 }
+```
+
+**문서 예시 - 템플릿 (legal_templates, v2.1 신규)**
+
+```json
+{
+  "id": "uuid (template_type + version 기반)",
+  "template_type": "이혼소장",
+  "version": "1.0.0",
+  "description": "가정법원 이혼소송 소장 템플릿",
+  "schema": { /* JSON 스키마 (문서 형식 포함) */ },
+  "example": { /* 예시 데이터 */ },
+  "applicable_cases": ["divorce", "custody", "alimony"],
+  "vector": [/*설명 임베딩*/]
+}
+```
 
 **쿼리 사례**
 
 * "폭언 관련 증거만"
 * "2021년 6월 전후 카카오톡 대화"
 * "상대방이 불륜을 인정한 메시지"
+* "이혼소장 템플릿 조회" (신규)
 
 ---
 
