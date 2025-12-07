@@ -147,9 +147,11 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         tracker.set_file_info(file_type=file_extension.lstrip('.'))
 
         tracker.log(f"Processing file: {object_key}", extension=file_extension)
+        print(f"DEBUG: Processing file {object_key}, ext={file_extension}")
 
         # 적절한 파서 선택
         parser = route_parser(file_extension)
+        print(f"DEBUG: Parser selected: {parser}")
         if not parser:
             tracker.record_error(
                 ErrorType.VALIDATION_ERROR,
@@ -181,7 +183,9 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
 
         try:
             # Validate file size
+            print("DEBUG: Validating file size...")
             is_valid, file_details = cost_guard.validate_file(local_path, file_type_str)
+            print(f"DEBUG: File valid: {is_valid}, details: {file_details}")
             tracker.log(
                 f"File validated: {file_details['file_size_mb']:.2f}MB ({file_type_str})",
                 file_size_mb=file_details['file_size_mb'],
@@ -208,39 +212,42 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # Idempotency Check - Calculate hash and check duplicates
         # ============================================
         with tracker.stage(ProcessingStage.HASH) as stage:
+            print("DEBUG: Calculating hash...")
             file_hash = calculate_file_hash(local_path)
-            tracker.set_file_info(file_type=file_extension.lstrip('.'), file_hash=file_hash)
-            stage.log(f"Calculated file hash: {file_hash[:16]}...")
-            stage.add_metadata(hash_prefix=file_hash[:16])
-
+            print(f"DEBUG: Hash: {file_hash}")
         # Initialize metadata store for idempotency checks
         metadata_store = MetadataStore()
 
         # Check 1: Has this evidence_id already been processed?
         backend_evidence_id = _extract_evidence_id_from_s3_key(object_key)
         if backend_evidence_id:
-            tracker.set_evidence_id(backend_evidence_id)
-        if backend_evidence_id and metadata_store.check_evidence_processed(backend_evidence_id):
-            tracker.record_error(ErrorType.DUPLICATE, f"Evidence {backend_evidence_id} already processed")
-            tracker.log_summary()
-            return {
-                "status": "skipped",
-                "reason": "already_processed",
-                "evidence_id": backend_evidence_id,
-                "file": object_key,
-                "job_id": tracker.context.job_id
-            }
+            existing_record = metadata_store.get_evidence(backend_evidence_id)
+            if existing_record and existing_record.get('status') == 'processed':
+                tracker.record_error(ErrorType.DUPLICATE, f"Evidence already processed: {backend_evidence_id}")
+                tracker.log_summary()
+                return {
+                    "status": "skipped",
+                    "reason": "already_processed_evidence_id",
+                    "evidence_id": backend_evidence_id,
+                    "file": object_key,
+                    "job_id": tracker.context.job_id
+                }
 
-        # Check 2: Has a file with this hash already been processed?
+        # Check 2: Has this file hash already been processed?
+        # Calculate hash first
+        with tracker.stage(ProcessingStage.HASH) as stage:
+            file_hash = calculate_file_hash(local_path)
+            stage.log(f"Hash calculated: {file_hash}")
+            stage.add_metadata(hash_prefix=file_hash[:16])
+
         existing_by_hash = metadata_store.check_hash_exists(file_hash)
-        if existing_by_hash:
-            tracker.record_error(ErrorType.DUPLICATE, f"Duplicate hash: {existing_by_hash.get('evidence_id')}")
+        if existing_by_hash and existing_by_hash.get('status') == 'processed':
+            tracker.record_error(ErrorType.DUPLICATE, f"Hash already processed: {file_hash}")
             tracker.log_summary()
             return {
                 "status": "skipped",
-                "reason": "duplicate_hash",
+                "reason": "already_processed_hash",
                 "existing_evidence_id": existing_by_hash.get('evidence_id'),
-                "file_hash": file_hash[:16],
                 "file": object_key,
                 "job_id": tracker.context.job_id
             }
@@ -284,6 +291,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         source_type = parsed_result[0].metadata.get("source_type", "unknown") if parsed_result else "unknown"
 
         # 메타데이터 저장 (DynamoDB) - metadata_store already initialized above
+
+
 
         # 분석 엔진 초기화
         tagger = Article840Tagger()

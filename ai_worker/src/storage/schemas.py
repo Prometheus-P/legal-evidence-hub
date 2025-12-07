@@ -29,6 +29,11 @@ class EvidenceFile(BaseModel):
     total_messages: int
     case_id: str
     filepath: Optional[str] = None
+    file_hash: Optional[str] = None
+    file_size: Optional[int] = None
+    bucket_name: Optional[str] = None
+    source_type: Optional[str] = None
+    processed_at: Optional[datetime] = None
 
     class Config:
         json_encoders = {

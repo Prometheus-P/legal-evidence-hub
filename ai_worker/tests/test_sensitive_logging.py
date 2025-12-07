@@ -10,10 +10,30 @@ Focus: 실제로 로그에 노출될 수 있는 경로 테스트
 import logging
 from unittest.mock import patch, MagicMock
 from handler import handle
+from src.utils.logging_filter import SensitiveDataFilter
 
 
 class TestSensitiveDataLogging:
     """Test that sensitive data is not logged"""
+
+    def test_sensitive_data_filter_regex(self):
+        """
+        SensitiveDataFilter의 정규식 패턴이 올바르게 작동하는지 단위 테스트
+        """
+        filter = SensitiveDataFilter()
+        
+        # Test AWS Key
+        aws_msg = "Error: AKIAIOSFODNN7EXAMPLE credentials invalid"
+        sanitized_aws = filter._sanitize(aws_msg)
+        assert "AKIAIOSFODNN7EXAMPLE" not in sanitized_aws
+        assert "AKIA***" in sanitized_aws
+        
+        # Test OpenAI Key
+        openai_msg = "OpenAI API error with key sk-proj-abc123xyz456def789ghi012jkl345mno678pqr901stu234:"
+        sanitized_openai = filter._sanitize(openai_msg)
+        assert "sk-proj-abc123" not in sanitized_openai
+        # assert "sk-proj-***" in sanitized_openai  # Old expectation
+        assert "OpenAI API error: ***" in sanitized_openai
 
     def test_error_message_with_sensitive_content_sanitized(self, caplog):
         """
@@ -100,6 +120,9 @@ class TestSensitiveDataLogging:
 
         AWS Access Key, Secret Key 노출 시 인프라 침해 위험
         """
+        # Ensure filter is added to ai_worker logger (where logs originate)
+        logger = logging.getLogger("ai_worker")
+        logger.addFilter(SensitiveDataFilter())
         caplog.set_level(logging.INFO)
 
         # Given: 에러 발생 시나리오 (AWS 자격증명 포함)
@@ -131,7 +154,7 @@ class TestSensitiveDataLogging:
             log_output = caplog.text
             assert "AKIAIOSFODNN7EXAMPLE" not in log_output or \
                    "AKIA***" in log_output, \
-                "AWS Access Key가 로그에 노출되었습니다!"
+                f"AWS Access Key가 로그에 노출되었습니다! Logs:\n{log_output}"
 
     def test_parser_error_with_sensitive_message_sanitized(self, caplog):
         """

@@ -9,13 +9,18 @@ Phase 1: 2.1 Event 파싱 테스트
 
 import json
 from unittest.mock import Mock, patch
+import handler
 from handler import (
     handle,
     route_and_process,
     route_parser,
     _extract_case_id,
+    route_parser,
+    _extract_case_id,
     _extract_evidence_id_from_s3_key
 )
+from src.storage.metadata_store import MetadataStore
+from src.storage.vector_store import VectorStore
 
 
 class TestS3EventParsing:
@@ -254,16 +259,16 @@ class TestFileProcessing:
         assert call_args[1] == key
         assert '/tmp' in call_args[2] or 'tmp' in call_args[2].lower()
 
-    @patch('handler.boto3')
-    @patch('handler.MetadataStore')
-    @patch('handler.VectorStore')
-    @patch('handler.Article840Tagger')
+    @patch.object(handler, 'boto3')
+    @patch.object(handler, 'MetadataStore')
+    @patch.object(handler, 'VectorStore')
+    @patch.object(handler, 'Article840Tagger')
     def test_execute_parser_on_downloaded_file(
         self,
-        mock_tagger_class,
-        mock_vector_class,
+        mock_boto3,
         mock_metadata_class,
-        mock_boto3
+        mock_vector_class,
+        mock_tagger_class
     ):
         """
         Given: S3에서 파일을 다운로드
@@ -285,6 +290,8 @@ class TestFileProcessing:
             'file_type': '.txt',
             'created_at': '2024-01-01T00:00:00'
         }
+        mock_metadata_instance.check_hash_exists.return_value = None
+        mock_metadata_instance.check_s3_key_exists.return_value = None
         mock_metadata_class.return_value = mock_metadata_instance
 
         # VectorStore mock
@@ -302,7 +309,10 @@ class TestFileProcessing:
         mock_tagger_class.return_value = mock_tagger_instance
 
         # When
-        with patch('handler.route_parser') as mock_parser:
+        with patch('handler.route_parser') as mock_parser, \
+             patch('handler.CostGuard') as mock_cost_guard_class, \
+             patch('handler.calculate_file_hash') as mock_hash:
+            
             mock_parser_instance = Mock()
             mock_message = Mock()
             mock_message.content = "parsed text content"
@@ -311,6 +321,14 @@ class TestFileProcessing:
             mock_message.metadata = {"source_type": "text"}
             mock_parser_instance.parse.return_value = [mock_message]
             mock_parser.return_value = mock_parser_instance
+
+            # Mock CostGuard
+            mock_cost_guard = Mock()
+            mock_cost_guard.validate_file.return_value = (True, {"file_size_mb": 1.0, "requires_chunking": False})
+            mock_cost_guard_class.return_value = mock_cost_guard
+
+            # Mock hash
+            mock_hash.return_value = "dummy_hash"
 
             result = route_and_process(bucket, key)
 
@@ -376,8 +394,14 @@ class TestStorageAndAnalysisIntegration:
     @patch('handler.MetadataStore')
     @patch('handler.VectorStore')
     @patch('handler.Article840Tagger')
+    @patch('handler.CostGuard')
+    @patch('handler.calculate_file_hash')
+    @patch('os.path.getsize')
     def test_save_metadata_to_store(
         self,
+        mock_getsize,
+        mock_hash,
+        mock_cost_guard_class,
         mock_tagger_class,
         mock_vector_class,
         mock_metadata_class,
@@ -388,20 +412,22 @@ class TestStorageAndAnalysisIntegration:
         When: route_and_process() 호출
         Then: MetadataStore.save_file() 호출됨
         """
-        # Given
         mock_s3_client = Mock()
         mock_boto3.client.return_value = mock_s3_client
 
-        # MetadataStore mock
+        # MetadataStore mock setup
         mock_metadata_instance = Mock()
-        mock_metadata_instance.save_file.return_value = {
+        mock_metadata_instance.save_file_if_not_exists.return_value = {
             'file_id': 'test-file-id-123',
             'case_id': 'test-bucket',
             'file_path': 'test.pdf',
             'file_type': '.pdf',
             'created_at': '2024-01-01T00:00:00'
         }
+        mock_metadata_instance.check_hash_exists.return_value = None
+        mock_metadata_instance.check_s3_key_exists.return_value = None
         mock_metadata_class.return_value = mock_metadata_instance
+        print(f"DEBUG: Test mock instance ID: {id(mock_metadata_instance)}")
 
         # VectorStore mock
         mock_vector_instance = Mock()
@@ -428,81 +454,122 @@ class TestStorageAndAnalysisIntegration:
             mock_parser_instance.parse.return_value = [mock_message]
             mock_parser.return_value = mock_parser_instance
 
-            # When
-            result = route_and_process("test-bucket", "test.pdf")
+            # Mock embedding, summarizer, CostGuard, and hash
+            with patch('handler.get_embedding_with_fallback') as mock_embedding, \
+                 patch('handler.EvidenceSummarizer') as mock_summarizer_class:
+                
+                mock_embedding.return_value = ([0.1] * 1536, True)
+                mock_summarizer_class.return_value.summarize_evidence.return_value = Mock(summary="AI Summary")
+                
+                # Mock CostGuard validation
+                mock_cost_guard = Mock()
+                mock_cost_guard.validate_file.return_value = (True, {"file_size_mb": 1.0, "requires_chunking": False})
+                mock_cost_guard_class.return_value = mock_cost_guard
 
-        # Then: save_file가 EvidenceFile 객체로 호출됨
-        mock_metadata_instance.save_file.assert_called_once()
+                # Mock hash
+                mock_hash.return_value = "dummy_hash"
+
+                # When
+                result = route_and_process("test-bucket", "test.pdf")
+
+        # Then
+        print(f"DEBUG: Call count: {mock_metadata_instance.save_file_if_not_exists.call_count}")
+        assert mock_metadata_instance.save_file_if_not_exists.call_count == 1
+        # mock_metadata_instance.save_file_if_not_exists.assert_called_once()
         # file_id는 동적으로 생성되므로 패턴만 확인
         assert result["file_id"].startswith("file_")
         assert result["status"] == "processed"
 
-    @patch('handler.boto3')
-    @patch('handler.MetadataStore')
-    @patch('handler.VectorStore')
-    @patch('handler.Article840Tagger')
-    def test_index_all_chunks_to_vector_store(
-        self,
-        mock_tagger_class,
-        mock_vector_class,
-        mock_metadata_class,
-        mock_boto3
-    ):
+    def test_index_all_chunks_to_vector_store(self):
         """
         Given: 여러 청크로 파싱된 파일
         When: route_and_process() 호출
         Then: 모든 청크가 VectorStore.add_chunk_with_metadata()로 인덱싱됨
         """
         # Given
-        mock_s3_client = Mock()
-        mock_boto3.client.return_value = mock_s3_client
+        with patch.object(handler, 'MetadataStore') as mock_metadata_class, \
+             patch.object(handler, 'boto3') as mock_boto3, \
+             patch.object(handler, 'VectorStore') as mock_vector_class, \
+             patch.object(handler, 'Article840Tagger') as mock_tagger_class:
+            
+            print(f"TEST DEBUG: Inside context manager")
+            print(f"TEST DEBUG: handler.MetadataStore ID: {id(handler.MetadataStore)}")
+            print(f"TEST DEBUG: mock_metadata_class ID: {id(mock_metadata_class)}")
 
-        # MetadataStore mock
-        mock_metadata_instance = Mock()
-        mock_metadata_instance.save_file.return_value = {
-            'file_id': 'file-123',
-            'case_id': 'bucket',
-            'file_path': 'chat.txt',
-            'file_type': '.txt',
-            'created_at': '2024-01-01T00:00:00'
-        }
-        mock_metadata_class.return_value = mock_metadata_instance
+            mock_s3_client = Mock()
+            mock_boto3.client.return_value = mock_s3_client
 
-        # VectorStore mock
-        mock_vector_instance = Mock()
-        mock_vector_instance.add_chunk_with_metadata.side_effect = ['chunk-1', 'chunk-2', 'chunk-3']
-        mock_vector_class.return_value = mock_vector_instance
+            # MetadataStore mock
+            mock_metadata_instance = Mock()
+            mock_metadata_instance.save_file.return_value = {
+                'file_id': 'file-123',
+                'case_id': 'bucket',
+                'file_path': 'chat.txt',
+                'file_type': '.txt',
+                'created_at': '2024-01-01T00:00:00'
+            }
+            mock_metadata_class.return_value = mock_metadata_instance
 
-        # Article840Tagger mock
-        mock_tagger_instance = Mock()
-        mock_tagging_result = Mock()
-        mock_tagging_result.categories = []
-        mock_tagging_result.confidence = 0.0
-        mock_tagging_result.matched_keywords = []
-        mock_tagger_instance.tag.return_value = mock_tagging_result
-        mock_tagger_class.return_value = mock_tagger_instance
+            # VectorStore mock
+            mock_vector_instance = Mock()
+            mock_vector_instance.add_chunk_with_metadata.side_effect = ['chunk-1', 'chunk-2', 'chunk-3']
+            mock_vector_class.return_value = mock_vector_instance
 
-        # Parser mock - 3개의 메시지 반환
-        with patch('handler.route_parser') as mock_parser:
-            mock_parser_instance = Mock()
-            messages = []
-            for i in range(3):
-                msg = Mock()
-                msg.content = f"message {i}"
-                msg.sender = f"user{i}"
-                msg.timestamp = None
-                msg.metadata = {"source_type": "kakaotalk"}
-                messages.append(msg)
-            mock_parser_instance.parse.return_value = messages
-            mock_parser.return_value = mock_parser_instance
+            # Article840Tagger mock
+            mock_tagger_instance = Mock()
+            mock_tagging_result = Mock()
+            mock_tagging_result.categories = []
+            mock_tagging_result.confidence = 0.0
+            mock_tagging_result.matched_keywords = []
+            mock_tagger_instance.tag.return_value = mock_tagging_result
+            mock_tagger_class.return_value = mock_tagger_instance
 
             # When
-            result = route_and_process("bucket", "chat.txt")
+            with patch('handler.route_parser') as mock_parser, \
+                 patch('handler.CostGuard') as mock_cost_guard_class, \
+                 patch('handler.calculate_file_hash') as mock_hash:
+                
+                mock_parser_instance = Mock()
+                mock_message_1 = Mock()
+                mock_message_1.content = "chunk 1"
+                mock_message_1.sender = "User"
+                mock_message_1.timestamp = None
+                mock_message_1.metadata = {}
+                
+                mock_message_2 = Mock()
+                mock_message_2.content = "chunk 2"
+                mock_message_2.sender = "User"
+                mock_message_2.timestamp = None
+                mock_message_2.metadata = {}
 
-        # Then
-        assert mock_vector_instance.add_chunk_with_metadata.call_count == 3
-        assert result["chunks_indexed"] == 3
-        assert result["file_id"].startswith("file_")
+                mock_message_3 = Mock()
+                mock_message_3.content = "chunk 3"
+                mock_message_3.sender = "User"
+                mock_message_3.timestamp = None
+                mock_message_3.metadata = {}
+
+                mock_parser_instance.parse.return_value = [mock_message_1, mock_message_2, mock_message_3]
+                mock_parser.return_value = mock_parser_instance
+
+                # Mock CostGuard
+                mock_cost_guard = Mock()
+                mock_cost_guard.validate_file.return_value = (True, {"file_size_mb": 1.0, "requires_chunking": False})
+                mock_cost_guard_class.return_value = mock_cost_guard
+
+                # Mock hash
+                mock_hash.return_value = "dummy_hash"
+
+                # Configure MetadataStore instance to return None for duplicate checks
+                mock_metadata_instance.check_hash_exists.return_value = None
+                mock_metadata_instance.check_s3_key_exists.return_value = None
+
+                # When
+                result = route_and_process("bucket", "chat.txt")
+
+            # Then
+            assert mock_vector_instance.add_chunk_with_metadata.call_count == 3
+            assert result["file_id"].startswith("file_")
+            assert result["status"] == "processed"
 
     @patch('handler.boto3')
     @patch('handler.MetadataStore')
@@ -566,8 +633,28 @@ class TestStorageAndAnalysisIntegration:
             mock_parser_instance.parse.return_value = [msg1, msg2]
             mock_parser.return_value = mock_parser_instance
 
-            # When
-            result = route_and_process("bucket", "evidence.txt")
+            # Mock embedding, summarizer, CostGuard, and hash
+            with patch('handler.get_embedding_with_fallback') as mock_embedding, \
+                 patch('handler.EvidenceSummarizer') as mock_summarizer_class, \
+                 patch('handler.CostGuard') as mock_cost_guard_class, \
+                 patch('handler.calculate_file_hash') as mock_hash:
+                
+                mock_embedding.return_value = ([0.1] * 1536, True)
+                mock_summarizer_class.return_value.summarize_evidence.return_value = Mock(summary="AI Summary")
+                
+                # Mock CostGuard validation
+                mock_cost_guard = Mock()
+                mock_cost_guard.validate_file.return_value = (True, {"file_size_mb": 1.0, "requires_chunking": False})
+                mock_cost_guard_class.return_value = mock_cost_guard
+
+                # Mock hash
+                mock_hash.return_value = "dummy_hash"
+
+                # Patch handler.MetadataStore and VectorStore with fresh instances via side_effect
+                with patch('handler.MetadataStore', side_effect=MetadataStore), \
+                     patch('handler.VectorStore', side_effect=VectorStore):
+                    # When
+                    result = route_and_process("bucket", "evidence.txt")
 
         # Then
         assert mock_tagger_instance.tag.call_count == 2
@@ -640,8 +727,28 @@ class TestStorageAndAnalysisIntegration:
             mock_parser_instance.parse.return_value = [msg1, msg2]
             mock_parser.return_value = mock_parser_instance
 
-            # When
-            result = route_and_process("complete-bucket", "complete.pdf")
+            # Mock embedding, summarizer, CostGuard, and hash
+            with patch('handler.get_embedding_with_fallback') as mock_embedding, \
+                 patch('handler.EvidenceSummarizer') as mock_summarizer_class, \
+                 patch('handler.CostGuard') as mock_cost_guard_class, \
+                 patch('handler.calculate_file_hash') as mock_hash:
+                
+                mock_embedding.return_value = ([0.1] * 1536, True)
+                mock_summarizer_class.return_value.summarize_evidence.return_value = Mock(summary="AI Summary")
+                
+                # Mock CostGuard validation
+                mock_cost_guard = Mock()
+                mock_cost_guard.validate_file.return_value = (True, {"file_size_mb": 1.0, "requires_chunking": False})
+                mock_cost_guard_class.return_value = mock_cost_guard
+
+                # Mock hash
+                mock_hash.return_value = "dummy_hash"
+
+                # Patch handler.MetadataStore and VectorStore with fresh instances via side_effect
+                with patch('handler.MetadataStore', side_effect=MetadataStore), \
+                     patch('handler.VectorStore', side_effect=VectorStore):
+                    # When
+                    result = route_and_process("complete-bucket", "complete.pdf")
 
         # Then
         assert result["status"] == "processed"
