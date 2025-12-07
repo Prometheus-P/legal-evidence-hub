@@ -1,0 +1,26 @@
+# CODEOWNERS - Legal Evidence Hub
+# Each line is a file pattern followed by one or more owners
+
+# Default owners for everything
+* @Prometheus-P
+
+# Backend (FastAPI)
+/backend/ @Prometheus-P
+
+# Frontend (Next.js)
+/frontend/ @Prometheus-P
+
+# AI Worker (Lambda)
+/ai_worker/ @Prometheus-P
+
+# Documentation
+/docs/ @Prometheus-P
+*.md @Prometheus-P
+
+# Infrastructure & CI
+/.github/ @Prometheus-P
+/docker-compose*.yml @Prometheus-P
+/Makefile @Prometheus-P
+
+# Specifications
+/specs/ @Prometheus-P
