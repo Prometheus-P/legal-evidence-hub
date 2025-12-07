@@ -197,6 +197,7 @@ docker-data/
 # Personal CLAUDE.md (prevent accidental commits)
 /CLAUDE.md
 /claude.md
+AGENTS.md
 docs/guides/CLAUDE.md
 docs/guides/claude.md
 
