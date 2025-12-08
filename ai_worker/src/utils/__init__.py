@@ -1,7 +1,6 @@
 """Utility modules for AI Worker."""
 
 from .logging_filter import SensitiveDataFilter
-<<<<<<< HEAD
 from .hash import (
     calculate_file_hash,
     calculate_s3_object_hash,
@@ -30,6 +29,13 @@ from .cost_guard import (
     CostLimits,
     CostGuard,
     get_file_type_from_extension
+)
+from .date_extractor import (
+    DateExtractor,
+    ExtractedDate,
+    extract_dates_from_text,
+    parse_date,
+    parse_date_safe,
 )
 
 __all__ = [
@@ -60,22 +66,11 @@ __all__ = [
     'UsageRecord',
     'CostLimits',
     'CostGuard',
-    'get_file_type_from_extension'
-=======
-from .date_extractor import (
-    DateExtractor,
-    ExtractedDate,
-    extract_dates_from_text,
-    parse_date,
-    parse_date_safe,
-)
-
-__all__ = [
-    'SensitiveDataFilter',
+    'get_file_type_from_extension',
+    # Date extraction
     'DateExtractor',
     'ExtractedDate',
     'extract_dates_from_text',
     'parse_date',
     'parse_date_safe',
->>>>>>> origin/dev
 ]

@@ -5,19 +5,13 @@
  * 003-role-based-ui Feature
  *
  * Shared sidebar navigation for all role-based portals.
-<<<<<<< HEAD
  * Supports responsive design with mobile drawer.
-=======
->>>>>>> origin/dev
  * Uses design system tokens.
  */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-<<<<<<< HEAD
 import { useEffect } from 'react';
-=======
->>>>>>> origin/dev
 import { UserRole, ROLE_DISPLAY_NAMES } from '@/types/user';
 
 export interface NavItem {
@@ -34,7 +28,6 @@ interface PortalSidebarProps {
   userEmail: string;
   navItems: NavItem[];
   onLogout: () => void;
-<<<<<<< HEAD
   isOpen?: boolean;
   onClose?: () => void;
 }
@@ -46,10 +39,6 @@ const CloseIcon = () => (
   </svg>
 );
 
-=======
-}
-
->>>>>>> origin/dev
 // Icons as simple SVG components
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,11 +100,8 @@ export function PortalSidebar({
   userEmail,
   navItems,
   onLogout,
-<<<<<<< HEAD
   isOpen = true,
   onClose,
-=======
->>>>>>> origin/dev
 }: PortalSidebarProps) {
   const pathname = usePathname();
 
@@ -127,7 +113,6 @@ export function PortalSidebar({
     return pathname.startsWith(href);
   };
 
-<<<<<<< HEAD
   // Close sidebar on route change (mobile)
   useEffect(() => {
     if (onClose) {
@@ -187,27 +172,6 @@ export function PortalSidebar({
             </button>
           )}
         </div>
-=======
-  return (
-    <aside
-      className="flex flex-col w-64 h-screen bg-[var(--color-secondary)] text-white"
-      style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        bottom: 0,
-      }}
-    >
-      {/* Logo */}
-      <div className="flex items-center h-16 px-6 border-b border-white/10">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center font-bold">
-            LEH
-          </div>
-          <span className="font-semibold text-lg">Legal Evidence</span>
-        </Link>
-      </div>
->>>>>>> origin/dev
 
       {/* User Info */}
       <div className="px-6 py-4 border-b border-white/10">
@@ -268,7 +232,6 @@ export function PortalSidebar({
           <span>로그아웃</span>
         </button>
       </div>
-<<<<<<< HEAD
       </aside>
     </>
   );
@@ -281,10 +244,4 @@ export const HamburgerIcon = () => (
   </svg>
 );
 
-=======
-    </aside>
-  );
-}
-
->>>>>>> origin/dev
 export default PortalSidebar;

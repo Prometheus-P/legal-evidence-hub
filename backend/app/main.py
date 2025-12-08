@@ -24,11 +24,21 @@ from mangum import Mangum  # noqa: E402 - AWS Lambda handler
 from app.core.config import settings  # noqa: E402
 
 # Import API routers
-<<<<<<< HEAD
-from app.api import auth, admin, cases, evidence, lawyer_portal, client_portal, detective_portal, jobs, messages, billing, calendar  # noqa: E402
-=======
-from app.api import auth, admin, cases, evidence, drafts, lawyer_portal  # noqa: E402
->>>>>>> origin/dev
+from app.api import (  # noqa: E402
+    admin,
+    auth,
+    billing,
+    calendar,
+    cases,
+    client_portal,
+    detective_portal,
+    drafts,
+    evidence,
+    jobs,
+    lawyer_portal,
+    messages,
+    staff_progress,
+)
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
     SecurityHeadersMiddleware,
@@ -193,42 +203,32 @@ app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 # 증거 라우터
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
-<<<<<<< HEAD
-# 변호사 포털 라우터 (003-role-based-ui Feature)
+# 초안 라우터 (케이스별 초안 CRUD)
+app.include_router(drafts.router, prefix="/cases/{case_id}/drafts", tags=["Drafts"])
+
+# 변호사/스태프 포털 라우터
 app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
+app.include_router(staff_progress.router, tags=["Staff Progress"])
 
-# 의뢰인 포털 라우터 (003-role-based-ui Feature - US4)
+# 의뢰인/탐정 포털 라우터
 app.include_router(client_portal.router, tags=["Client Portal"])
-
-# 탐정 포털 라우터 (003-role-based-ui Feature - US5)
 app.include_router(detective_portal.router, tags=["Detective Portal"])
 
 # Job Queue 라우터 (비동기 작업 추적)
 app.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
 
-# 메시지 라우터 (003-role-based-ui Feature - US6)
+# 메시지 라우터
 app.include_router(messages.router, prefix="/messages", tags=["Messages"])
 
-# 청구/결제 라우터 (003-role-based-ui Feature - US8)
+# 청구/결제 라우터
 app.include_router(billing.router, tags=["Billing"])
 app.include_router(billing.client_router, tags=["Client Billing"])
 
-# 캘린더 라우터 (003-role-based-ui Feature - US7)
+# 캘린더 라우터
 app.include_router(calendar.router, tags=["Calendar"])
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
-
-# Note: Draft endpoints are integrated into cases router (POST /cases/{case_id}/draft-preview)
-=======
-# 초안 라우터 (케이스별 초안 CRUD)
-# Note: Nested under /cases/{case_id}/drafts for case-scoped operations
-app.include_router(drafts.router, prefix="/cases/{case_id}/drafts", tags=["Drafts"])
-
-# 변호사 포털 라우터 (003-role-based-ui Feature)
-app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
-
-# Note: Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router
->>>>>>> origin/dev
+# Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router
 # Note: RAG search is integrated into draft generation service (draft_service.py)
 
 

@@ -4,16 +4,12 @@
 **Prerequisites**: plan.md ✓, spec.md ✓
 **Screen Reference**: `docs/screens/SCREEN_DEFINITION.md`
 
-<<<<<<< HEAD
 **Tests**: TDD approach requested. Test tasks included for each user story.
 
 **TDD Cycle**: RED → GREEN → REFACTOR
 - Write tests FIRST (they must FAIL initially)
 - Implement minimum code to pass tests
 - Refactor while tests stay GREEN
-=======
-**Tests**: NOT explicitly requested in feature specification. Test tasks are omitted.
->>>>>>> origin/dev
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -27,7 +23,6 @@
 
 | Metric | Value |
 |:-------|:------|
-<<<<<<< HEAD
 | Total Tasks | 154 |
 | Active Tasks | 149 |
 | Removed Tasks | 5 (T083, T084, T099, T100, T104 - GPS/field out of scope) |
@@ -44,20 +39,6 @@
 | User Story 7 Tasks | 16 (4 tests + 12 impl) |
 | User Story 8 Tasks | 13 (2 tests + 11 impl) |
 | Parallel Opportunities | 48 |
-=======
-| Total Tasks | 78 |
-| User Story 1 Tasks | 8 |
-| User Story 2 Tasks | 10 |
-| User Story 3 Tasks | 12 |
-| User Story 4 Tasks | 15 |
-| User Story 5 Tasks | 17 |
-| User Story 6 Tasks | 7 |
-| User Story 7 Tasks | 5 |
-| User Story 8 Tasks | 3 |
-| Setup Tasks | 4 |
-| Foundational Tasks | 6 |
-| Parallel Opportunities | 28 |
->>>>>>> origin/dev
 | Audit Compliance Tasks | 5 |
 
 ---
@@ -98,7 +79,6 @@
 
 **Independent Test**: Create test users with CLIENT/DETECTIVE roles and verify role-based routing works correctly
 
-<<<<<<< HEAD
 ### Tests for User Story 1 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -125,23 +105,6 @@
 - [X] T024 [US1] Create RoleGuard component for protected routes in frontend/src/components/auth/RoleGuard.tsx
 
 **Checkpoint**: User Story 1 complete - role-based authentication works (all tests GREEN)
-=======
-### Backend Implementation for User Story 1
-
-- [X] T011 [US1] Update signup endpoint to accept CLIENT and DETECTIVE roles in backend/app/api/auth.py
-- [X] T012 [US1] Create role validation helper function in backend/app/core/dependencies.py
-- [X] T013 [US1] Add role-based permission checks to existing endpoints in backend/app/api/cases.py
-
-### Frontend Implementation for User Story 1
-
-- [X] T014 [P] [US1] Create role redirect logic after login in frontend/src/app/(auth)/login/page.tsx
-- [X] T015 [P] [US1] Create middleware for role-based routing in frontend/src/middleware.ts
-- [X] T016 [US1] Create useRole hook for role checking in frontend/src/hooks/useRole.ts
-- [X] T017 [US1] Update AuthContext to include role information in frontend/src/contexts/AuthContext.tsx
-- [X] T018 [US1] Create RoleGuard component for protected routes in frontend/src/components/auth/RoleGuard.tsx
-
-**Checkpoint**: User Story 1 complete - role-based authentication works
->>>>>>> origin/dev
 
 ---
 
@@ -151,7 +114,6 @@
 
 **Independent Test**: Login as lawyer and verify dashboard displays correct statistics, recent cases, and calendar events
 
-<<<<<<< HEAD
 ### Tests for User Story 2 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -178,25 +140,6 @@
 - [X] T038 [US2] Register lawyer_portal router in backend/app/main.py
 
 **Checkpoint**: User Story 2 complete - lawyer dashboard displays statistics and recent activity (all tests GREEN)
-=======
-### Backend Implementation for User Story 2
-
-- [X] T019 [US2] Create dashboard stats endpoint GET /lawyer/dashboard in backend/app/api/lawyer_portal.py
-- [X] T020 [US2] Create LawyerDashboardService with stats calculation in backend/app/services/lawyer_dashboard_service.py
-- [X] T021 [US2] Create dashboard schemas (StatsCard, RecentCase, etc.) in backend/app/schemas/lawyer_dashboard.py
-
-### Frontend Implementation for User Story 2
-
-- [X] T022 [P] [US2] Create lawyer portal layout in frontend/src/app/lawyer/layout.tsx
-- [ ] T023 [P] [US2] Create LawyerNav component with menu items in frontend/src/components/lawyer/LawyerNav.tsx
-- [ ] T024 [P] [US2] Create StatsCard component in frontend/src/components/lawyer/StatsCard.tsx
-- [ ] T025 [P] [US2] Create CaseStatsChart component using Recharts in frontend/src/components/charts/CaseStatsChart.tsx
-- [X] T026 [US2] Create lawyer dashboard page in frontend/src/app/lawyer/dashboard/page.tsx
-- [ ] T027 [US2] Create useLawyerDashboard hook in frontend/src/hooks/useLawyerDashboard.ts
-- [X] T028 [US2] Register lawyer_portal router in backend/app/main.py
-
-**Checkpoint**: User Story 2 complete - lawyer dashboard displays statistics and recent activity
->>>>>>> origin/dev
 
 ---
 
@@ -206,7 +149,6 @@
 
 **Independent Test**: List cases with various filters, perform bulk AI analysis request, view case detail with evidence
 
-<<<<<<< HEAD
 ### Tests for User Story 3 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -235,27 +177,6 @@
 - [X] T054 [US3] Integrate evidence list and AI summary display in case detail page
 
 **Checkpoint**: User Story 3 complete - lawyers can manage cases with full filtering and bulk actions (all tests GREEN)
-=======
-### Backend Implementation for User Story 3
-
-- [ ] T029 [US3] Create case list endpoint with filters GET /lawyer/cases in backend/app/api/lawyer_portal.py
-- [ ] T030 [US3] Add bulk action endpoint POST /lawyer/cases/bulk-action in backend/app/api/lawyer_portal.py
-- [ ] T031 [US3] Create CaseListService with filtering logic in backend/app/services/case_list_service.py
-- [ ] T032 [US3] Create case list schemas (CaseFilter, CaseListItem, BulkAction) in backend/app/schemas/case_list.py
-
-### Frontend Implementation for User Story 3
-
-- [ ] T033 [P] [US3] Create CaseCard component in frontend/src/components/lawyer/CaseCard.tsx
-- [ ] T034 [P] [US3] Create CaseTable component with sorting in frontend/src/components/lawyer/CaseTable.tsx
-- [ ] T035 [P] [US3] Create CaseFilter component in frontend/src/components/lawyer/CaseFilter.tsx
-- [ ] T036 [P] [US3] Create BulkActionBar component in frontend/src/components/lawyer/BulkActionBar.tsx
-- [ ] T037 [US3] Create case list page in frontend/src/app/lawyer/cases/page.tsx
-- [ ] T038 [US3] Create case detail page in frontend/src/app/lawyer/cases/[id]/page.tsx
-- [ ] T039 [US3] Create useCaseList hook with filtering in frontend/src/hooks/useCaseList.ts
-- [ ] T040 [US3] Integrate evidence list and AI summary display in case detail page
-
-**Checkpoint**: User Story 3 complete - lawyers can manage cases with full filtering and bulk actions
->>>>>>> origin/dev
 
 ---
 
@@ -265,7 +186,6 @@
 
 **Independent Test**: Login as client, view case progress, upload evidence, send message to lawyer
 
-<<<<<<< HEAD
 ### Tests for User Story 4 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -300,30 +220,6 @@
 - [X] T076 [US4] Create evidence submission page in frontend/src/app/client/evidence/page.tsx
 
 **Checkpoint**: User Story 4 complete - clients can view cases and submit evidence (all tests GREEN)
-=======
-### Backend Implementation for User Story 4
-
-- [ ] T041 [US4] Create client portal router in backend/app/api/client_portal.py
-- [ ] T042 [US4] Create client dashboard endpoint GET /client/dashboard in backend/app/api/client_portal.py
-- [ ] T043 [US4] Create client case view endpoint GET /client/cases/{id} in backend/app/api/client_portal.py
-- [ ] T044 [US4] Create client evidence upload endpoint POST /client/cases/{id}/evidence in backend/app/api/client_portal.py
-- [ ] T044a [US4] [AUDIT] Add audit logging for evidence upload (Constitution Principle I) in backend/app/api/client_portal.py
-- [ ] T045 [US4] Create ClientPortalService in backend/app/services/client_portal_service.py
-- [ ] T046 [US4] Create client portal schemas in backend/app/schemas/client_portal.py
-- [ ] T047 [US4] Register client_portal router in backend/app/main.py
-
-### Frontend Implementation for User Story 4
-
-- [X] T048 [P] [US4] Create client portal layout in frontend/src/app/client/layout.tsx
-- [ ] T049 [P] [US4] Create ClientNav component in frontend/src/components/client/ClientNav.tsx
-- [ ] T050 [P] [US4] Create ProgressTracker component in frontend/src/components/client/ProgressTracker.tsx
-- [ ] T051 [P] [US4] Create EvidenceUploader component in frontend/src/components/client/EvidenceUploader.tsx
-- [X] T052 [US4] Create client dashboard page in frontend/src/app/client/dashboard/page.tsx
-- [ ] T053 [US4] Create client case detail page in frontend/src/app/client/cases/[id]/page.tsx
-- [ ] T054 [US4] Create evidence submission page in frontend/src/app/client/cases/[id]/evidence/page.tsx
-
-**Checkpoint**: User Story 4 complete - clients can view cases and submit evidence
->>>>>>> origin/dev
 
 ---
 
@@ -333,7 +229,6 @@
 
 **Independent Test**: Login as detective, view assigned investigations, record field data with GPS, submit report
 
-<<<<<<< HEAD
 ### Tests for User Story 5 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -375,32 +270,6 @@
 - [X] T105 [US5] Create earnings page in frontend/src/app/detective/earnings/page.tsx
 
 **Checkpoint**: User Story 5 complete - detectives can manage investigations, upload evidence, and submit reports (all tests GREEN)
-=======
-### Backend Implementation for User Story 5
-
-- [ ] T055 [US5] Create detective portal router in backend/app/api/detective_portal.py
-- [ ] T056 [US5] Create detective dashboard endpoint GET /detective/dashboard in backend/app/api/detective_portal.py
-- [ ] T057 [US5] Create investigation list endpoint GET /detective/cases in backend/app/api/detective_portal.py
-- [ ] T058 [US5] Create field record endpoint POST /detective/cases/{id}/records in backend/app/api/detective_portal.py
-- [ ] T058a [US5] [AUDIT] Add audit logging for field records and reports (Constitution Principle I) in backend/app/api/detective_portal.py
-- [ ] T059 [US5] Create report submission endpoint POST /detective/cases/{id}/report in backend/app/api/detective_portal.py
-- [ ] T060 [US5] Create DetectivePortalService in backend/app/services/detective_portal_service.py
-- [ ] T061 [US5] Create detective portal schemas in backend/app/schemas/detective_portal.py
-- [ ] T062 [US5] Register detective_portal router in backend/app/main.py
-
-### Frontend Implementation for User Story 5
-
-- [X] T063 [P] [US5] Create detective portal layout in frontend/src/app/detective/layout.tsx
-- [ ] T064 [P] [US5] Create DetectiveNav component in frontend/src/components/detective/DetectiveNav.tsx
-- [ ] T065 [P] [US5] Create GPSTracker component with Kakao Maps in frontend/src/components/detective/GPSTracker.tsx
-- [ ] T066 [P] [US5] Create FieldRecorder component in frontend/src/components/detective/FieldRecorder.tsx
-- [ ] T067 [P] [US5] Create ReportEditor component in frontend/src/components/detective/ReportEditor.tsx
-- [X] T068 [US5] Create detective dashboard page in frontend/src/app/detective/dashboard/page.tsx
-- [ ] T069 [US5] Create investigation detail page in frontend/src/app/detective/cases/[id]/page.tsx
-- [ ] T070 [US5] Create field investigation page in frontend/src/app/detective/cases/[id]/field/page.tsx
-
-**Checkpoint**: User Story 5 complete - detectives can manage investigations and record field data
->>>>>>> origin/dev
 
 ---
 
@@ -410,7 +279,6 @@
 
 **Independent Test**: Send message from client to lawyer, verify real-time delivery and read receipt
 
-<<<<<<< HEAD
 ### Tests for User Story 6 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -442,22 +310,6 @@
 - [X] T124 [US6] Create messages page for each portal in frontend/src/app/[role]/messages/page.tsx
 
 **Checkpoint**: User Story 6 complete - real-time messaging works across roles (all tests GREEN)
-=======
-### Backend Implementation for User Story 6
-
-- [ ] T071 [US6] Create messaging router with WebSocket support in backend/app/api/messaging.py
-- [ ] T072 [US6] Create MessagingService in backend/app/services/messaging_service.py
-- [ ] T073 [US6] Create messaging schemas in backend/app/schemas/messaging.py
-- [ ] T074 [US6] Register messaging router and WebSocket endpoint in backend/app/main.py
-- [ ] T074a [US6] [AUDIT] Add audit logging for message send/read operations (Constitution Principle I) in backend/app/api/messaging.py
-
-### Frontend Implementation for User Story 6
-
-- [ ] T075 [P] [US6] Create MessageThread component in frontend/src/components/shared/MessageThread.tsx
-- [ ] T076 [US6] Create useMessages hook with WebSocket in frontend/src/hooks/useMessages.ts
-
-**Checkpoint**: User Story 6 complete - real-time messaging works across roles
->>>>>>> origin/dev
 
 ---
 
@@ -467,7 +319,6 @@
 
 **Independent Test**: Create, view, and delete calendar events, verify case linkage
 
-<<<<<<< HEAD
 ### Tests for User Story 7 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -496,21 +347,6 @@
 - [X] T140 [US7] Create useCalendar hook with SWR in frontend/src/hooks/useCalendar.ts
 
 **Checkpoint**: User Story 7 complete - calendar management works (all tests GREEN)
-=======
-### Backend Implementation for User Story 7
-
-- [ ] T077 [US7] Create calendar router in backend/app/api/calendar.py
-- [ ] T078 [US7] Create CalendarService in backend/app/services/calendar_service.py
-- [ ] T078a [US7] Register calendar router in backend/app/main.py
-- [ ] T078b [US7] [AUDIT] Add audit logging for calendar CRUD operations (Constitution Principle I) in backend/app/api/calendar.py
-
-### Frontend Implementation for User Story 7
-
-- [ ] T079 [P] [US7] Create Calendar component using react-big-calendar in frontend/src/components/shared/Calendar.tsx
-- [ ] T080 [US7] Create calendar page in frontend/src/app/lawyer/calendar/page.tsx
-
-**Checkpoint**: User Story 7 complete - calendar management works
->>>>>>> origin/dev
 
 ---
 
@@ -520,7 +356,6 @@
 
 **Independent Test**: Create invoice, view client payment status
 
-<<<<<<< HEAD
 ### Tests for User Story 8 (Write FIRST, ensure they FAIL) ⚠️
 
 > **TDD RED Phase**: These tests MUST fail before implementation
@@ -546,13 +381,6 @@
 - [X] T153 [US8] Create useBilling hook in frontend/src/hooks/useBilling.ts
 
 **Checkpoint**: User Story 8 complete - basic billing works (all tests GREEN)
-=======
-- [ ] T081 [US8] Create billing router and service in backend/app/api/billing.py
-- [ ] T081a [US8] [AUDIT] Add audit logging for invoice creation and payment (Constitution Principle I) in backend/app/api/billing.py
-- [ ] T082 [US8] Create billing page in frontend/src/app/lawyer/billing/page.tsx
-
-**Checkpoint**: User Story 8 complete - basic billing works
->>>>>>> origin/dev
 
 ---
 
@@ -560,7 +388,6 @@
 
 **Purpose**: Performance optimization and edge case handling
 
-<<<<<<< HEAD
 - [X] T154 [P] Add loading skeletons for all dashboard pages (frontend/src/components/shared/LoadingSkeletons.tsx)
 - [X] T155 [P] Add error boundaries for each portal (frontend/src/components/shared/ErrorBoundary.tsx + error.tsx files)
 - [X] T156 [P] Implement responsive design for mobile views (tailwind responsive classes in use)
@@ -569,14 +396,6 @@
 - [X] T159 Run quickstart.md validation (all setup steps work)
 - [X] T160 Run manual testing across all three portals and document issues
 - [X] T161 Validate contract compliance (OpenAPI specs match implementation)
-=======
-- [ ] T083 [P] Add loading skeletons for all dashboard pages
-- [ ] T084 [P] Add error boundaries for each portal
-- [ ] T085 [P] Implement responsive design for mobile views
-- [ ] T086 Add notification bell component with real-time updates in frontend/src/components/shared/NotificationBell.tsx
-- [ ] T087 Create empty state components for lists
-- [ ] T088 Run manual testing across all three portals and document issues
->>>>>>> origin/dev
 
 ---
 
@@ -596,7 +415,6 @@
 - **User Story 8 (Phase 10)**: Depends on US4 (client billing view)
 - **Polish (Phase 11)**: Depends on all user stories being complete
 
-<<<<<<< HEAD
 ### TDD Execution Order (Per User Story)
 
 ```
@@ -608,8 +426,6 @@
 6. Move to next user story
 ```
 
-=======
->>>>>>> origin/dev
 ### User Story Dependencies
 
 ```
@@ -621,7 +437,6 @@ US1 (Roles) ──┬── US2 (Lawyer Dashboard) ── US3 (Case Mgmt) ──
 
 ### Parallel Opportunities
 
-<<<<<<< HEAD
 **Phase 3 (US1) Tests**:
 - T011 || T012 || T013 || T014 || T015 || T016 - All test files
 
@@ -645,31 +460,11 @@ US1 (Roles) ──┬── US2 (Lawyer Dashboard) ── US3 (Case Mgmt) ──
 
 **Phase 10 (US8) Tests**:
 - T141 || T142 - All test files
-=======
-**Phase 2 (Foundational)**:
-- T006 || T007 || T008 || T009 - Different models
-
-**Phase 3 (US1)**:
-- T014 || T015 - Different files
-
-**Phase 4 (US2)**:
-- T022 || T023 || T024 || T025 - Different components
-
-**Phase 5 (US3)**:
-- T033 || T034 || T035 || T036 - Different components
-
-**Phase 6 (US4)**:
-- T048 || T049 || T050 || T051 - Different components
-
-**Phase 7 (US5)**:
-- T063 || T064 || T065 || T066 || T067 - Different components
->>>>>>> origin/dev
 
 ---
 
 ## Implementation Strategy
 
-<<<<<<< HEAD
 ### TDD MVP First (US1 + US2 + US3)
 
 1. **Phase 1**: Setup (T001-T004)
@@ -695,43 +490,11 @@ US1 (Roles) ──┬── US2 (Lawyer Dashboard) ── US3 (Case Mgmt) ──
 5. US5 TDD → Detective Portal (Demo 4)
 6. US6 + US7 TDD → Cross-cutting features (Demo 5)
 7. US8 TDD → Billing (Demo 6)
-=======
-### MVP First (US1 + US2 + US3)
-
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational (roles, models)
-3. Complete Phase 3: User Story 1 (role authentication)
-4. Complete Phase 4: User Story 2 (lawyer dashboard)
-5. Complete Phase 5: User Story 3 (case management)
-6. **STOP and VALIDATE**: Test lawyer portal functionality
-7. Deploy/demo if ready
-
-### Incremental Delivery
-
-1. Setup + Foundational + US1 → Role system ready
-2. Add US2 + US3 → Lawyer Portal MVP (Demo 1)
-3. Add US4 → Client Portal (Demo 2)
-4. Add US5 → Detective Portal (Demo 3)
-5. Add US6 + US7 → Cross-cutting features (Demo 4)
-6. Add US8 → Billing (Demo 5)
-
-### Suggested MVP Scope
-
-**Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5** = Minimum Viable Role-Based UI
-
-This delivers:
-- Role-based authentication (CLIENT, DETECTIVE)
-- Lawyer dashboard with statistics
-- Case list with filtering
-- Case detail with evidence view
-- Role-specific routing
->>>>>>> origin/dev
 
 ---
 
 ## File Summary
 
-<<<<<<< HEAD
 ### Test Files to Create (40 files)
 
 | Category | Count |
@@ -742,9 +505,6 @@ This delivers:
 | Frontend Integration Tests | 20 |
 
 ### Implementation Files (50+ files)
-=======
-### New Files to Create (50+ files)
->>>>>>> origin/dev
 
 | Category | Count |
 |:---------|:-----:|
@@ -753,7 +513,6 @@ This delivers:
 | Backend Schemas | 6 |
 | Frontend Pages | 15+ |
 | Frontend Components | 20+ |
-<<<<<<< HEAD
 | Frontend Hooks | 8 |
 
 ### Key Test Files (Backend)
@@ -780,34 +539,11 @@ This delivers:
 | `frontend/src/__tests__/components/detective/*.test.tsx` | US5 detective components |
 | `frontend/src/__tests__/components/shared/MessageThread.test.tsx` | US6 messaging |
 | `frontend/src/__tests__/components/shared/Calendar.test.tsx` | US7 calendar |
-=======
-| Frontend Hooks | 5 |
-
-### Key Backend Files
-
-| File | Purpose |
-|:-----|:--------|
-| `backend/app/api/lawyer_portal.py` | Lawyer portal endpoints |
-| `backend/app/api/client_portal.py` | Client portal endpoints |
-| `backend/app/api/detective_portal.py` | Detective portal endpoints |
-| `backend/app/api/messaging.py` | Real-time messaging |
-| `backend/app/api/calendar.py` | Calendar management |
-
-### Key Frontend Files
-
-| File | Purpose |
-|:-----|:--------|
-| `frontend/src/app/lawyer/layout.tsx` | Lawyer portal layout |
-| `frontend/src/app/client/layout.tsx` | Client portal layout |
-| `frontend/src/app/detective/layout.tsx` | Detective portal layout |
-| `frontend/src/middleware.ts` | Role-based routing |
->>>>>>> origin/dev
 
 ---
 
 ## Notes
 
-<<<<<<< HEAD
 - **TDD Cycle**: RED → GREEN → REFACTOR for each user story
 - [P] tasks = different files, no dependencies
 - [Story] label maps task to specific user story for traceability
@@ -816,11 +552,3 @@ This delivers:
 - MVP = US1 + US2 + US3 (Lawyer Portal)
 - Korean UTF-8 support required for all UI text
 - Commit after each TDD phase (tests, implementation, refactor)
-=======
-- [P] tasks = different files, no dependencies
-- [Story] label maps task to specific user story for traceability
-- Each user story is independently testable after completion
-- MVP = US1 + US2 + US3 (Lawyer Portal)
-- Korean UTF-8 support required for all UI text
-- Commit after each task or logical group
->>>>>>> origin/dev

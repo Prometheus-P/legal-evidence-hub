@@ -56,14 +56,8 @@ export default function SignupPage() {
         return;
       }
 
-<<<<<<< HEAD
       // Authentication token is now handled via HTTP-only cookie (set by backend)
       // We only cache user display info locally, NOT the auth token
-=======
-      // Store auth token
-      // NOTE: See Issue #63 for HTTP-only cookie migration plan
-      localStorage.setItem('authToken', response.data.access_token);
->>>>>>> origin/dev
 
       // Cache user info for display purposes only (not for auth)
       if (response.data.user) {

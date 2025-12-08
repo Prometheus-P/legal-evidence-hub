@@ -64,3 +64,66 @@
   - [ ] **RDS 백업:** 최근 자동 스냅샷이 정상적으로 생성되었는지 확인합니다.
   - [ ] **SSL 인증서:** 도메인 SSL 인증서의 만료일을 확인하고 자동 갱신 여부를 체크합니다.
   - [ ] **Audit Log 샘플링:** 감사 로그에 민감 정보(주민번호, 비밀번호 등)가 평문으로 남지 않았는지 무작위로 샘플링하여 검사합니다.
+
+---
+
+## 🌐 4. CloudFront + S3 정적 호스팅 404 대응 (SPA Fallback)
+
+Next.js를 `next export`로 배포하는 현재 구성에서는 `/staff/progress` 같이 사전에 생성되지 않은 경로로 진입 시 404가 발생합니다. 이를 근본적으로 줄이기 위해 S3/CloudFront를 SPA fallback 모드로 설정합니다.
+
+1. **S3 Website Hosting 설정**
+   - AWS Console → S3 → 정적 사이트를 호스팅하는 버킷 선택.
+   - `Properties → Static website hosting` 활성화.
+   - **Index document** = `index.html`, **Error document** = `index.html` 로 동일하게 설정.
+   - (CLI)  
+     ```bash
+     aws s3 website s3://<bucket-name>/ --index-document index.html --error-document index.html
+     ```
+
+2. **CloudFront 에러 응답 커스터마이징**
+   - CloudFront 배포 → `Error pages`.
+   - `Create custom error response` 에서 **404**와 **403** 두 가지를 추가:
+     - HTTP Error Code: 403/404
+     - TTL: 0 (즉시 반영)
+     - Customize Error Response = Yes
+     - Response Page Path = `/index.html`
+     - HTTP Response Code = 200
+   - 배포를 저장 후 `Invalidations → Create invalidation` 으로 `/*` 무효화.
+
+3. **검증**
+   - `curl -I https://<cf-domain>/staff/progress` → 200 확인.
+   - 브라우저에서 직접 `/staff/progress`, `/staff/<임의경로>` 새로고침 시 SPA가 정상으로 렌더되는지 체크.
+   - CloudFront 로그에서 404 비율이 감소했는지 Athena/CloudWatch Logs Insight로 모니터링.
+
+> 위 설정으로 모든 경로가 `index.html`을 반환하므로, 추가적인 auth 가드는 클라이언트/서버 모두에서 유지해야 합니다.
+
+---
+
+## 🚀 5. SSR(서버 사이드 렌더링) 호스팅 전환 로드맵
+
+실시간 데이터를 많이 사용하는 `/staff/progress` 페이지는 장기적으로 SSR 또는 하이브리드 모드가 안정적입니다. 아래 단계에 따라 점진적으로 전환합니다.
+
+1. **인프라 선택**
+   - **권장**: AWS Amplify Hosting 또는 Vercel (Next.js 호환).
+   - 대안: CloudFront + Lambda@Edge + S3 (Next.js `serverless` 타깃) 또는 ECS/Fargate에서 `next start`.
+
+2. **환경 변수 / 시크릿 정리**
+   - `NEXT_PUBLIC_API_BASE_URL`, `AUTH_SECRET` 등을 AWS Parameter Store 또는 Secrets Manager로 옮기고, Amplify/Vercel 환경 변수로 주입.
+
+3. **CI/CD 변경**
+   - GitHub Actions에서 `npm install && npm run build` 후 SSR 플랫폼에 배포하도록 워크플로우 추가.
+   - 기존 정적 아티팩트 업로드 스텝 제거.
+
+4. **라우팅/보안 점검**
+   - `middleware.ts` 또는 Route Handlers로 서버 측 권한 체크 추가.
+   - `getServerSideProps` / `app router`의 `fetch` 요청이 백엔드 VPC 엔드포인트를 바라보도록 환경 구성.
+
+5. **롤아웃 계획**
+   - Stage 배포 → QA → CloudFront DNS 스위치(또는 Route53 가중치 전환).
+   - 롤백: 기존 정적 배포 버킷/배포를 유지하고, 문제가 생기면 DNS를 원래대로 복구.
+
+6. **모니터링**
+   - Amplify/Vercel 빌드 로그, Lambda@Edge 로그, CloudWatch Alarms 등을 구성.
+   - SSR 전환 후 TTFB가 SLA 내인지 Synthetic Monitoring (Pingdom, CloudWatch Synthetics)으로 측정.
+
+위 로드맵을 실행하면, 실시간 데이터가 필요한 페이지도 404 없이 안전하게 제공되고, 서버 측 렌더링으로 초기 로딩과 SEO, 권한 제어가 강화됩니다.

@@ -8,13 +8,15 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 from app.db.models import (
-    UserRole, UserStatus, CaseStatus, CaseMemberRole,
-<<<<<<< HEAD
-    CalendarEventType, InvestigationRecordType, InvoiceStatus,
-    JobType, JobStatus
-=======
-    CalendarEventType, InvestigationRecordType, InvoiceStatus
->>>>>>> origin/dev
+    UserRole,
+    UserStatus,
+    CaseStatus,
+    CaseMemberRole,
+    CalendarEventType,
+    InvestigationRecordType,
+    InvoiceStatus,
+    JobStatus,
+    JobType,
 )
 
 
@@ -782,9 +784,6 @@ ROLE_PORTAL_CONFIG = {
         restricted_features=["admin", "billing", "draft", "clients"]
     )
 }
-<<<<<<< HEAD
-
-
 # ============================================
 # Job Queue Schemas
 # ============================================
@@ -857,5 +856,3 @@ class JobStatusUpdate(BaseModel):
 class JobProgressUpdate(BaseModel):
     """Job progress update request"""
     progress: int = Field(..., ge=0, le=100)
-=======
->>>>>>> origin/dev

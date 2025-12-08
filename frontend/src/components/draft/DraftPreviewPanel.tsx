@@ -19,11 +19,8 @@ import {
     MessageSquare,
     GitBranch,
     Users,
-<<<<<<< HEAD
-=======
     CheckCircle,
     AlertCircle,
->>>>>>> origin/dev
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { DraftCitation } from '@/types/draft';
@@ -45,12 +42,6 @@ interface DraftPreviewPanelProps {
     isGenerating: boolean;
     hasExistingDraft: boolean;
     onGenerate: () => void;
-<<<<<<< HEAD
-    onDownload?: (data: { format: DraftDownloadFormat; content: string }) => void;
-    onManualSave?: (content: string) => Promise<void> | void;
-}
-
-=======
     onDownload?: (data: { format: DraftDownloadFormat; content: string }) => Promise<DownloadResult> | void;
     onManualSave?: (content: string) => Promise<void> | void;
 }
@@ -61,8 +52,6 @@ interface ExportToast {
     filename?: string;
 }
 
-
->>>>>>> origin/dev
 const AUTOSAVE_INTERVAL_MS = 5 * 60 * 1000;
 const HISTORY_LIMIT = 10;
 const CHANGELOG_LIMIT = 20;
@@ -186,12 +175,9 @@ export default function DraftPreviewPanel({
     const [changeLog, setChangeLog] = useState<DraftChangeLogEntry[]>([]);
     const [isTrackChangesEnabled, setIsTrackChangesEnabled] = useState(false);
     const [collabStatus, setCollabStatus] = useState<string | null>(null);
-<<<<<<< HEAD
-=======
     const [isExporting, setIsExporting] = useState(false);
     const [exportingFormat, setExportingFormat] = useState<DraftDownloadFormat | null>(null);
     const [exportToast, setExportToast] = useState<ExportToast | null>(null);
->>>>>>> origin/dev
     const editorRef = useRef<HTMLDivElement>(null);
     const autosaveTimerRef = useRef<IntervalHandle | null>(null);
     const collabSyncTimerRef = useRef<TimeoutHandle | null>(null);
@@ -412,9 +398,6 @@ export default function DraftPreviewPanel({
 
     const handleDownload = async (format: DraftDownloadFormat) => {
         if (!onDownload) return;
-<<<<<<< HEAD
-        onDownload({ format, content: editorHtml });
-=======
 
         setIsExporting(true);
         setExportingFormat(format);
@@ -449,7 +432,6 @@ export default function DraftPreviewPanel({
             // Auto-dismiss toast after 5 seconds
             setTimeout(() => setExportToast(null), 5000);
         }
->>>>>>> origin/dev
     };
 
     const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -794,11 +776,6 @@ export default function DraftPreviewPanel({
                         <button
                             type="button"
                             onClick={() => handleDownload('docx')}
-<<<<<<< HEAD
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-=======
                             disabled={isExporting}
                             className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -807,17 +784,10 @@ export default function DraftPreviewPanel({
                             ) : (
                                 <Download className="w-4 h-4" />
                             )}
->>>>>>> origin/dev
                             DOCX
                         </button>
                         <button
                             type="button"
-<<<<<<< HEAD
-                            onClick={() => handleDownload('hwp')}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors"
-                        >
-                            <Download className="w-4 h-4" />
-=======
                             onClick={() => handleDownload('pdf')}
                             disabled={isExporting}
                             className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -840,7 +810,6 @@ export default function DraftPreviewPanel({
                             ) : (
                                 <Download className="w-4 h-4" />
                             )}
->>>>>>> origin/dev
                             HWP
                         </button>
                     </div>
@@ -1067,8 +1036,6 @@ export default function DraftPreviewPanel({
                     </div>
                 </div>
             )}
-<<<<<<< HEAD
-=======
 
             {/* Export Toast Notification */}
             {exportToast && (
@@ -1102,7 +1069,6 @@ export default function DraftPreviewPanel({
                     </button>
                 </div>
             )}
->>>>>>> origin/dev
         </section>
     );
 }

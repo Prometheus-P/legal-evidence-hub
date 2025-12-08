@@ -1,0 +1,98 @@
+[
+  {
+    "id": "fbk-1",
+    "title": "판례 DB 연동",
+    "description": "판례 DB 문서 연결 및 최신 데이터 동기화 상태를 확인합니다.",
+    "owner": "Ops"
+  },
+  {
+    "id": "fbk-2",
+    "title": "AI 역할 강화",
+    "description": "AI 요약·라벨링 품질을 점검하고 부족한 부분을 기록합니다.",
+    "owner": "AI"
+  },
+  {
+    "id": "fbk-3",
+    "title": "증거 정합성 검토",
+    "description": "증거 ID와 업로드 기록, DynamoDB 메타데이터가 일치하는지 확인합니다.",
+    "owner": "Ops"
+  },
+  {
+    "id": "fbk-4",
+    "title": "의뢰인 피드백 반영",
+    "description": "클라이언트 수정 요청이나 질의 응답이 문서에 반영되었는지 검토합니다.",
+    "owner": "CS"
+  },
+  {
+    "id": "fbk-5",
+    "title": "증거 부족 어드바이스",
+    "description": "12월 4일 증거 미제출 구간 등 부족 시점을 명시적으로 안내합니다.",
+    "owner": "AI"
+  },
+  {
+    "id": "fbk-6",
+    "title": "초안 생성 오류 추적",
+    "description": "초안 생성 실패 로그와 재현 경로를 팀에 공유합니다.",
+    "owner": "Eng"
+  },
+  {
+    "id": "fbk-7",
+    "title": "로그인 후 AI 도움 단계",
+    "description": "사용자 로그인 이후 AI 어시스턴트 안내 플로우가 노출되는지 점검합니다.",
+    "owner": "Product"
+  },
+  {
+    "id": "fbk-8",
+    "title": "업로드 속도 계측",
+    "description": "증거 업로드 및 AI 분석 소요 시간을 측정하고 병목을 기록합니다.",
+    "owner": "Eng"
+  },
+  {
+    "id": "fbk-9",
+    "title": "AI 톤앤매너 가이드",
+    "description": "AI 답변이 해결책 지시 대신 객관적 수치를 제공하는지 확인합니다.",
+    "owner": "AI"
+  },
+  {
+    "id": "fbk-10",
+    "title": "판례 통계 인용",
+    "description": "위자료·재산분할 등 유사 판례 통계를 자동으로 인용하는지 검토합니다.",
+    "owner": "Research"
+  },
+  {
+    "id": "fbk-11",
+    "title": "피고/의뢰인 업데이트",
+    "description": "주간 커뮤니케이션 결과가 CRM과 케이스 노트에 반영되었는지 확인합니다.",
+    "owner": "CS"
+  },
+  {
+    "id": "fbk-12",
+    "title": "증거 QA 샘플링",
+    "description": "업로드 건 중 10%를 임의 추출해 메타데이터와 파일 상태를 재검증합니다.",
+    "owner": "Ops"
+  },
+  {
+    "id": "fbk-13",
+    "title": "AI 역할 분담 명세",
+    "description": "AI와 파라리걸 간 책임 구간을 문서화하고 공유합니다.",
+    "owner": "Product"
+  },
+  {
+    "id": "fbk-14",
+    "title": "판례 데이터 확보",
+    "description": "재산분할·위자료 관련 판례 최소 100건을 확보해 벡터 스토어에 적재합니다.",
+    "owner": "Research"
+  },
+  {
+    "id": "fbk-15",
+    "title": "블로킹 이슈 알림",
+    "description": "증거 실패나 AI 오류 발생 시 Slack/이메일로 알림이 전달되는지 테스트합니다.",
+    "owner": "Ops"
+  },
+  {
+    "id": "fbk-16",
+    "title": "데모 리포트 스냅샷",
+    "description": "주간 진행 요약을 캡처해 법률 사무원 공유 채널에 게시합니다.",
+    "owner": "Product"
+  }
+]

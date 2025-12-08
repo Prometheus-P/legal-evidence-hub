@@ -41,11 +41,7 @@ try:
     from src.parsers import VideoParser
 except ImportError:
     VideoParser = None  # type: ignore
-<<<<<<< HEAD
 from src.storage.metadata_store import MetadataStore, DuplicateError
-=======
-from src.storage.metadata_store import MetadataStore
->>>>>>> origin/dev
 from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger

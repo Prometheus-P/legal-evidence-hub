@@ -34,13 +34,7 @@ from app.services.evidence_service import EvidenceService
 from app.services.draft_service import DraftService
 from app.core.dependencies import (
     get_current_user_id,
-<<<<<<< HEAD
-    get_current_user,
     require_internal_user,
-    require_lawyer_or_admin
-=======
-    require_internal_user
->>>>>>> origin/dev
 )
 from app.db.models import User
 

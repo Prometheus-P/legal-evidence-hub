@@ -10,10 +10,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-<<<<<<< HEAD
 import { getCurrentUser, logout as apiLogout } from '@/lib/api/auth';
-=======
->>>>>>> origin/dev
 
 // App version - update this when deploying new versions
 const APP_VERSION = '0.2.0';

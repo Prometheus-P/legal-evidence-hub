@@ -5,21 +5,12 @@ Lawyer Dashboard Service
 Business logic for lawyer dashboard statistics and data.
 """
 
-<<<<<<< HEAD
 from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
 from app.db.models import Case, CaseMember, CaseStatus, CalendarEvent, User, UserRole
-=======
-from typing import List
-from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-
-from app.db.models import Case, CaseMember, CaseStatus, CalendarEvent
->>>>>>> origin/dev
 from app.schemas.lawyer_dashboard import (
     LawyerDashboardStats,
     LawyerDashboardResponse,

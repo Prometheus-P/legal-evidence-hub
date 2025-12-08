@@ -61,13 +61,10 @@ export function RoleGuard({
     const checkAccess = () => {
       // Not authenticated
       if (!isAuthenticated) {
-<<<<<<< HEAD
         if (fallback) {
           setIsChecking(false);
           return;
         }
-=======
->>>>>>> origin/dev
         router.push(redirectTo);
         return;
       }
