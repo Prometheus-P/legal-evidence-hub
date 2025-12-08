@@ -206,5 +206,3 @@ def execute_bulk_action(
         action=request.action,
         params=request.params,
     )
-=======
->>>>>>> origin/dev

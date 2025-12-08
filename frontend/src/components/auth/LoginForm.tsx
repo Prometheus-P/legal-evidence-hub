@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { login } from '@/lib/api/auth';
 import { Button, Input } from '@/components/primitives';
-import { getDashboardPath, UserRole } from '@/types/user';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,35 +18,12 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      // Real API call to backend
-      const response = await login(email, password);
+      const result = await login(email, password);
 
-      if (response.error || !response.data) {
-        setError(response.error || '아이디 또는 비밀번호를 확인해 주세요.');
+      if (!result.success) {
+        setError(result.error || '아이디 또는 비밀번호를 확인해 주세요.');
         return;
       }
-
-      // Authentication token is now handled via HTTP-only cookie (set by backend)
-      // We only store display info locally, NOT the auth token
-
-      // Store user info for display purposes only (not for auth)
-      if (response.data.user) {
-        // Set user_data cookie for middleware and portal layouts
-        const userData = {
-          name: response.data.user.name,
-          email: response.data.user.email,
-          role: response.data.user.role,
-        };
-        document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}`;
-
-        // Cache user info for display (useAuth will verify via API)
-        localStorage.setItem('userCache', JSON.stringify(userData));
-      }
-
-      // Redirect based on user role
-      const userRole = response.data.user?.role as UserRole || 'lawyer';
-      const dashboardPath = getDashboardPath(userRole);
-      router.push(dashboardPath);
     } catch {
       setError('로그인 중 오류가 발생했습니다.');
     } finally {

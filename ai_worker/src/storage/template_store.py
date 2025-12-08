@@ -56,7 +56,8 @@ class TemplateStore:
         """
         self.url = url or os.environ.get('QDRANT_URL')
         self.api_key = api_key or os.environ.get('QDRANT_API_KEY')
-        self.vector_size = vector_size or int(os.environ.get('VECTOR_SIZE', '1536'))
+        vector_env = os.environ.get('QDRANT_VECTOR_SIZE') or os.environ.get('VECTOR_SIZE', '1536')
+        self.vector_size = vector_size or int(vector_env)
         self.collection_name = TEMPLATE_COLLECTION
 
         if not self.url:

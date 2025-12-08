@@ -8,6 +8,44 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { apiClient } from '@/lib/api/client';
+
+interface CaseListApiResponse {
+  items: Array<{
+    id: string;
+    title: string;
+    client_name?: string;
+    status: string;
+    description?: string;
+    created_at: string;
+    updated_at: string;
+    evidence_count?: number;
+    member_count?: number;
+    progress?: number;
+    days_since_update?: number;
+    owner_name?: string;
+    last_activity?: string;
+  }>;
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  status_counts?: Record<string, number>;
+}
+
+interface BulkActionApiResult {
+  case_id: string;
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+interface BulkActionApiResponse {
+  results: BulkActionApiResult[];
+  failed: number;
+  successful: number;
+  total_requested: number;
+}
 
 interface CaseItem {
   id: string;
@@ -82,8 +120,6 @@ interface UseCaseListReturn {
   isBulkActionLoading: boolean;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-
 const defaultFilters: FilterState = {
   search: '',
   status: [],
@@ -118,11 +154,6 @@ export function useCaseList(): UseCaseListReturn {
     setError(null);
 
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('인증이 필요합니다.');
-      }
-
       // Build query params
       const params = new URLSearchParams();
       params.append('page', pagination.page.toString());
@@ -140,21 +171,17 @@ export function useCaseList(): UseCaseListReturn {
         params.append('status', s);
       });
 
-      const response = await fetch(`${API_BASE_URL}/lawyer/cases?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const endpoint = `/lawyer/cases?${params.toString()}`;
+      const response = await apiClient.get<CaseListApiResponse>(endpoint);
 
-      if (!response.ok) {
-        throw new Error('케이스 목록을 불러오는데 실패했습니다.');
+      if (response.error || !response.data) {
+        throw new Error(response.error || '케이스 목록을 불러오는데 실패했습니다.');
       }
 
-      const data = await response.json();
+      const data = response.data;
 
       // Map API response to frontend format
-      const mappedCases: CaseItem[] = data.items.map((item: Record<string, unknown>) => ({
+      const mappedCases: CaseItem[] = data.items.map((item) => ({
         id: item.id,
         title: item.title,
         clientName: item.client_name,
@@ -235,35 +262,23 @@ export function useCaseList(): UseCaseListReturn {
       setError(null);
 
       try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          throw new Error('인증이 필요합니다.');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/lawyer/cases/bulk-action`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            case_ids: selectedIds,
-            action,
-            params,
-          }),
+        const response = await apiClient.post<BulkActionApiResponse>('/lawyer/cases/bulk-action', {
+          case_ids: selectedIds,
+          action,
+          params,
         });
 
-        if (!response.ok) {
-          throw new Error('작업 실행에 실패했습니다.');
+        if (response.error || !response.data) {
+          throw new Error(response.error || '작업 실행에 실패했습니다.');
         }
 
-        const data = await response.json();
+        const data = response.data;
 
         // Refresh list after action
         await fetchCases();
         setSelectedIds([]);
 
-        return data.results.map((r: Record<string, unknown>) => ({
+        return data.results.map((r: BulkActionApiResult): BulkActionResult => ({
           caseId: r.case_id,
           success: r.success,
           message: r.message,

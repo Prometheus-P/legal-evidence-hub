@@ -40,6 +40,8 @@ def setup_test_environment():
         "OPENAI_API_KEY": "test-openai-key",
         "QDRANT_URL": "http://localhost:6333",
         "QDRANT_API_KEY": "test-qdrant-key",
+        "QDRANT_COLLECTION": "leh_evidence",
+        "QDRANT_VECTOR_SIZE": "1536",
         "S3_EVIDENCE_BUCKET": "test-bucket",
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
     }

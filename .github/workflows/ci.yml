@@ -10,11 +10,33 @@ on:
     branches: [main, dev]
 
 jobs:
+  guard:
+    name: Repository Guards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check merge conflict markers
+        run: |
+          if git grep -n '<<<<<<< HEAD'; then
+            echo "::error::Merge conflict markers (<<<<<<< HEAD) detected. Resolve before merging."
+            exit 1
+          fi
+          if git grep -n '>>>>>>>'; then
+            echo "::error::Merge conflict markers (>>>>>>>) detected. Resolve before merging."
+            exit 1
+          fi
+          if git grep -n '======='; then
+            echo "::warning::Potential conflict separator (=======) detected. Verify before merging."
+          fi
+
   # ============================================
   # Frontend CI (Next.js)
   # ============================================
   frontend:
     name: Frontend (Lint, Test, Build)
+    needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -58,6 +80,7 @@ jobs:
   backend:
     name: Backend (Lint, Test)
     runs-on: ubuntu-latest
+    needs: guard
     timeout-minutes: 10
     defaults:
       run:
@@ -98,6 +121,9 @@ jobs:
       - name: Run Ruff linter
         run: ruff check .
 
+      - name: Verify module import graph
+        run: python -m compileall app
+
       - name: Initialize database tables
         env:
           DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db
@@ -132,6 +158,7 @@ jobs:
   ai-worker:
     name: AI Worker (Lint, Test)
     runs-on: ubuntu-latest
+    needs: guard
     timeout-minutes: 10
     defaults:
       run:
@@ -173,6 +200,8 @@ jobs:
           OPENAI_API_KEY: test-openai-key
           QDRANT_URL: http://localhost:6333
           QDRANT_API_KEY: test-qdrant-key
+          QDRANT_COLLECTION: leh_evidence
+          QDRANT_VECTOR_SIZE: '1536'
         run: pytest --cov=src --cov-report=xml -v -m "not integration"
 
       - name: Upload coverage report

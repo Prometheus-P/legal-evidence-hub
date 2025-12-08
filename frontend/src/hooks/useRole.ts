@@ -8,6 +8,7 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import {
   UserRole,
   User,
@@ -44,16 +45,16 @@ interface UseRoleReturn {
   // Utilities
   hasAccess: (feature: string) => boolean;
   canAccessPortal: (portal: 'lawyer' | 'client' | 'detective' | 'admin') => boolean;
+  isLoading: boolean;
 }
 
-/**
- * Get user data from localStorage (client-side only)
- */
-function getUserFromStorage(): User | null {
+const USER_CACHE_KEY = 'userCache';
+
+function getCachedUser(): User | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem(USER_CACHE_KEY);
     if (userStr) {
       return JSON.parse(userStr) as User;
     }
@@ -76,10 +77,12 @@ function getUserFromStorage(): User | null {
  * ```
  */
 export function useRole(): UseRoleReturn {
-  const user = useMemo(() => getUserFromStorage(), []);
-  const role = user?.role || null;
+  const { user: authUser, role: authRole, isAuthenticated: authAuthenticated, isLoading } = useAuth();
+  const cachedUser = useMemo(() => (authUser ? null : getCachedUser()), [authUser]);
+  const user = authUser || cachedUser;
+  const role = (authRole || cachedUser?.role) ?? null;
 
-  const isAuthenticated = user !== null;
+  const isAuthenticated = authAuthenticated || cachedUser !== null;
   const isAdmin = role === 'admin';
   const isLawyer = role === 'lawyer';
   const isStaff = role === 'staff';
@@ -136,6 +139,7 @@ export function useRole(): UseRoleReturn {
     portalPath,
     hasAccess,
     canAccessPortal,
+    isLoading,
   };
 }
 

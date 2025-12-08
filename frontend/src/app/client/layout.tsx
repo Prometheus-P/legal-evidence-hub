@@ -9,10 +9,12 @@
  * Uses design system tokens.
  */
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
-import { logout } from '@/lib/api/auth';
+import RoleGuard from '@/components/auth/RoleGuard';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
+import { UserRole } from '@/types/user';
 
 // Client navigation items - simplified view
 const clientNavItems: NavItem[] = [
@@ -43,73 +45,36 @@ const clientNavItems: NavItem[] = [
   },
 ];
 
-interface UserData {
-  name: string;
-  email: string;
-  role: 'client';
-}
+const ALLOWED_ROLES: UserRole[] = ['client'];
 
 export default function ClientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, logout } = useAuth();
+  const { role } = useRole();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const getUserData = () => {
-      try {
-        const userCookie = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('user_data='));
-
-        if (userCookie) {
-          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-          if (userData && userData.role === 'client') {
-            setUser(userData);
-          } else {
-            router.push('/login');
-          }
-        } else {
-          router.push('/login');
-        }
-      } catch {
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserData();
-  }, [router]);
 
   const handleLogout = async () => {
     try {
       await logout();
-    } finally {
-      document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      document.cookie = 'user_data=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
-  if (loading) {
+  const renderContent = () => {
+    if (!user || !role) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  return (
-    <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
+      <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
       {/* Sidebar */}
       <PortalSidebar
         role={user.role}
@@ -161,5 +126,12 @@ export default function ClientLayout({
         </div>
       </main>
     </div>
+    );
+  };
+
+  return (
+    <RoleGuard allowedRoles={ALLOWED_ROLES}>
+      {renderContent()}
+    </RoleGuard>
   );
 }

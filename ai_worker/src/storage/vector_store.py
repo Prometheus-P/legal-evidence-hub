@@ -59,7 +59,7 @@ class VectorStore:
             url: Qdrant Cloud URL (기본값: 환경변수 QDRANT_URL)
             api_key: Qdrant API Key (기본값: 환경변수 QDRANT_API_KEY)
             collection_name: 기본 컬렉션명
-            vector_size: 벡터 차원 (기본값: 환경변수 VECTOR_SIZE 또는 1536)
+            vector_size: 벡터 차원 (기본값: QDRANT_VECTOR_SIZE 또는 legacy VECTOR_SIZE)
             persist_directory: Deprecated - ignored (was used for ChromaDB)
         """
         # Note: persist_directory is ignored - Qdrant Cloud handles persistence
@@ -72,8 +72,10 @@ class VectorStore:
 
         self.url = url or os.environ.get('QDRANT_URL')
         self.api_key = api_key or os.environ.get('QDRANT_API_KEY')
-        self.collection_name = collection_name
-        self.vector_size = vector_size or int(os.environ.get('VECTOR_SIZE', '1536'))
+        default_collection = os.environ.get('QDRANT_COLLECTION') or "leh_evidence"
+        self.collection_name = collection_name or default_collection
+        vector_env = os.environ.get('QDRANT_VECTOR_SIZE') or os.environ.get('VECTOR_SIZE', '1536')
+        self.vector_size = vector_size or int(vector_env)
 
         if not self.url:
             raise ValueError("QDRANT_URL is required")

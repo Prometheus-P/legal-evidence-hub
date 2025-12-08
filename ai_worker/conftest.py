@@ -38,22 +38,8 @@ def pytest_collection_modifyitems(config, items):
             reason="Skipping integration tests in CI (set RUN_INTEGRATION_TESTS=1 to run)"
         )
         for item in items:
-            # Skip tests that require external services
-            test_file = str(item.fspath)
-
-            # Skip test files that are integration tests
-            integration_patterns = [
-                "test_integration_e2e",
-                "test_case_isolation",
-                "test_storage_manager",
-                "test_search_engine",
-                "test_handler",  # Handler tests mock storage and require specific setup
-            ]
-
-            for pattern in integration_patterns:
-                if pattern in test_file:
-                    item.add_marker(skip_integration)
-                    break
+            if item.get_closest_marker("integration"):
+                item.add_marker(skip_integration)
 
 
 # ========== Test Environment Setup ==========
@@ -68,6 +54,8 @@ def setup_test_environment():
     test_env_vars = {
         "QDRANT_URL": os.environ.get("QDRANT_URL", "http://localhost:6333"),
         "QDRANT_API_KEY": os.environ.get("QDRANT_API_KEY", "test-api-key"),
+        "QDRANT_COLLECTION": os.environ.get("QDRANT_COLLECTION", "leh_evidence"),
+        "QDRANT_VECTOR_SIZE": os.environ.get("QDRANT_VECTOR_SIZE", "1536"),
         "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY", "test-openai-key"),
         "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", "test-access-key"),
         "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", "test-secret-key"),

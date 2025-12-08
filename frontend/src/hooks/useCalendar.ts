@@ -20,25 +20,11 @@ import {
   CalendarEventType,
   EVENT_TYPE_COLORS,
 } from '@/types/calendar';
+import { apiClient, apiFetcher } from '@/lib/api/client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-
-// SWR fetcher function
-const fetcher = async (url: string) => {
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(error.detail || 'Failed to fetch');
-  }
-
-  return response.json();
-};
+const calendarFetcher = (endpoint: string) => apiFetcher<CalendarEventsResponse>(endpoint);
+const upcomingFetcher = (endpoint: string) => apiFetcher<UpcomingEventsResponse>(endpoint);
+const remindersFetcher = (endpoint: string) => apiFetcher<RemindersResponse>(endpoint);
 
 // Add color property to events based on event_type
 function addColorToEvents(events: CalendarEvent[]): CalendarEvent[] {
@@ -92,7 +78,7 @@ export function useCalendar(options: UseCalendarOptions = {}): UseCalendarReturn
 
   const { data, error, isLoading, mutate } = useSWR<CalendarEventsResponse>(
     url,
-    fetcher,
+    calendarFetcher,
     {
       revalidateOnFocus: false,
       dedupingInterval: 5000,
@@ -125,59 +111,33 @@ export function useCalendar(options: UseCalendarOptions = {}): UseCalendarReturn
 
   // Create event
   const createEvent = useCallback(async (eventData: CalendarEventCreate): Promise<CalendarEvent> => {
-    const response = await fetch(`${API_BASE_URL}/calendar/events`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(eventData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to create event' }));
-      throw new Error(error.detail || 'Failed to create event');
+    const response = await apiClient.post<CalendarEvent>('/calendar/events', eventData);
+    if (response.error || !response.data) {
+      throw new Error(response.error || 'Failed to create event');
     }
 
-    const newEvent = await response.json();
+    const newEvent = response.data;
     mutate(); // Revalidate the events list
     return newEvent;
   }, [mutate]);
 
   // Update event
   const updateEvent = useCallback(async (id: string, eventData: CalendarEventUpdate): Promise<CalendarEvent> => {
-    const response = await fetch(`${API_BASE_URL}/calendar/events/${id}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(eventData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to update event' }));
-      throw new Error(error.detail || 'Failed to update event');
+    const response = await apiClient.put<CalendarEvent>(`/calendar/events/${id}`, eventData);
+    if (response.error || !response.data) {
+      throw new Error(response.error || 'Failed to update event');
     }
 
-    const updatedEvent = await response.json();
+    const updatedEvent = response.data;
     mutate(); // Revalidate the events list
     return updatedEvent;
   }, [mutate]);
 
   // Delete event
   const deleteEvent = useCallback(async (id: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/calendar/events/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Failed to delete event' }));
-      throw new Error(error.detail || 'Failed to delete event');
+    const response = await apiClient.delete(`/calendar/events/${id}`);
+    if (response.error) {
+      throw new Error(response.error || 'Failed to delete event');
     }
 
     mutate(); // Revalidate the events list
@@ -214,7 +174,7 @@ export function useUpcomingEvents(days: number = 7): UseUpcomingEventsReturn {
 
   const { data, error, isLoading } = useSWR<UpcomingEventsResponse>(
     url,
-    fetcher,
+    upcomingFetcher,
     {
       revalidateOnFocus: false,
       dedupingInterval: 30000,
@@ -252,7 +212,7 @@ export function useReminders(options: UseRemindersOptions = {}): UseRemindersRet
 
   const { data, error, isLoading } = useSWR<RemindersResponse>(
     url,
-    fetcher,
+    remindersFetcher,
     {
       revalidateOnFocus: false,
       refreshInterval: pollInterval,

@@ -24,7 +24,13 @@ def _get_qdrant_client() -> QdrantClient:
     """Get or create Qdrant client (singleton pattern)"""
     global _qdrant_client
     if _qdrant_client is None:
-        if settings.QDRANT_HOST:
+        if settings.QDRANT_URL:
+            _qdrant_client = QdrantClient(
+                url=settings.QDRANT_URL,
+                api_key=settings.QDRANT_API_KEY or None,
+            )
+            logger.info(f"Connected to Qdrant at {settings.QDRANT_URL}")
+        elif settings.QDRANT_HOST:
             # Remote Qdrant server
             # Check if QDRANT_HOST contains protocol (URL format)
             if settings.QDRANT_HOST.startswith(("http://", "https://")):
@@ -213,7 +219,7 @@ def create_case_collection(case_id: str) -> bool:
         client.create_collection(
             collection_name=collection_name,
             vectors_config=VectorParams(
-                size=1536,  # OpenAI text-embedding-3-small dimension
+                size=settings.QDRANT_VECTOR_SIZE,
                 distance=Distance.COSINE
             )
         )

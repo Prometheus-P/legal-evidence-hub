@@ -23,7 +23,8 @@ def vector_store(mock_qdrant_client):
     with patch.dict('os.environ', {
         'QDRANT_URL': 'http://localhost:6333',
         'QDRANT_API_KEY': 'test_key',
-        'VECTOR_SIZE': '1536'
+        'QDRANT_COLLECTION': 'leh_evidence',
+        'QDRANT_VECTOR_SIZE': '1536'
     }):
         with patch('qdrant_client.QdrantClient') as MockQdrantClient:
             MockQdrantClient.return_value = mock_qdrant_client
@@ -44,7 +45,9 @@ class TestVectorStoreInitialization:
         """VectorStore 생성 테스트"""
         with patch.dict('os.environ', {
             'QDRANT_URL': 'http://localhost:6333',
-            'QDRANT_API_KEY': 'test_key'
+            'QDRANT_API_KEY': 'test_key',
+            'QDRANT_COLLECTION': 'leh_evidence',
+            'QDRANT_VECTOR_SIZE': '1536'
         }):
             with patch('qdrant_client.QdrantClient'):
                 store = VectorStore()

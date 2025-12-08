@@ -18,12 +18,12 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import json
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.db.session import get_db
 from app.db.models import User
 from app.core.dependencies import get_current_user
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, create_access_token
 from app.services.message_service import MessageService
 from app.schemas.message import (
     MessageCreate,
@@ -207,6 +207,28 @@ def mark_messages_read(
     service = MessageService(db)
     count = service.mark_as_read(current_user.id, data.message_ids)
     return {"marked_count": count}
+
+
+@router.get("/ws-token")
+def get_ws_token(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Issue a short-lived token for WebSocket authentication.
+
+    Returns:
+        token: JWT string scoped for WebSocket connections
+        expires_in: Expiration time in seconds
+    """
+    token = create_access_token(
+        {
+            "sub": current_user.id,
+            "role": current_user.role.value,
+            "token_type": "ws",
+        },
+        expires_delta=timedelta(minutes=5)
+    )
+    return {"token": token, "expires_in": 5 * 60}
 
 
 # ============== WebSocket Endpoint ==============

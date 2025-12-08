@@ -53,52 +53,44 @@ export function RoleGuard({
   fallback,
 }: RoleGuardProps) {
   const router = useRouter();
-  const { user, role, isAuthenticated, hasAccess } = useRole();
+  const { user, role, isAuthenticated, hasAccess, isLoading } = useRole();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Client-side auth check
-    const checkAccess = () => {
-      // Not authenticated
-      if (!isAuthenticated) {
-        if (fallback) {
-          setIsChecking(false);
-          return;
-        }
+    if (isLoading) {
+      setIsChecking(true);
+      return;
+    }
+
+    const lacksAuth = !isAuthenticated;
+    const lacksRole = allowedRoles && role ? !allowedRoles.includes(role) : false;
+    const lacksFeature = requiredFeature ? !hasAccess(requiredFeature) : false;
+    const shouldRedirect = lacksAuth || lacksRole || lacksFeature;
+
+    if (shouldRedirect) {
+      if (fallback) {
+        setIsChecking(false);
+      } else {
         router.push(redirectTo);
-        return;
       }
+      return;
+    }
 
-      // Check role requirement
-      if (allowedRoles && role && !allowedRoles.includes(role)) {
-        if (fallback) {
-          setIsChecking(false);
-          return;
-        }
-        router.push(redirectTo);
-        return;
-      }
-
-      // Check feature requirement
-      if (requiredFeature && !hasAccess(requiredFeature)) {
-        if (fallback) {
-          setIsChecking(false);
-          return;
-        }
-        router.push(redirectTo);
-        return;
-      }
-
-      setIsChecking(false);
-    };
-
-    // Small delay to allow localStorage to be read
-    const timer = setTimeout(checkAccess, 50);
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, role, allowedRoles, requiredFeature, hasAccess, redirectTo, router, fallback]);
+    setIsChecking(false);
+  }, [
+    isAuthenticated,
+    role,
+    allowedRoles,
+    requiredFeature,
+    hasAccess,
+    redirectTo,
+    router,
+    fallback,
+    isLoading,
+  ]);
 
   // Show loading state
-  if (isChecking && showLoading) {
+  if ((isChecking || isLoading) && showLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />

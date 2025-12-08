@@ -75,15 +75,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(userData);
         // Cache user info for display purposes only
         localStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
+        if (typeof document !== 'undefined') {
+          document.cookie = `user_data=${encodeURIComponent(
+            JSON.stringify({
+              name: userData.name,
+              email: userData.email,
+              role: userData.role,
+            })
+          )}; path=/; max-age=${7 * 24 * 60 * 60}`;
+        }
       } else {
         // Not authenticated
         setUser(null);
         localStorage.removeItem(USER_CACHE_KEY);
+        if (typeof document !== 'undefined') {
+          document.cookie = 'user_data=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
       }
     } catch {
       // Error checking auth - treat as not authenticated
       setUser(null);
       localStorage.removeItem(USER_CACHE_KEY);
+      if (typeof document !== 'undefined') {
+        document.cookie = 'user_data=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
     } finally {
       setIsLoading(false);
     }

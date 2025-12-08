@@ -9,6 +9,9 @@
 .env
 .env.*
 !.env.example
+!.env.production
+!frontend/.env.production
+!.env.production
 *.pem
 *.key
 *.cert
@@ -69,6 +72,8 @@ ai_worker/workflows/local_debug/
 .env
 .env.*
 !.env.example
+!.env.production
+!frontend/.env.production
 # Distribution / Packaging
 build/
 dist/

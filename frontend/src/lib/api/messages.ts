@@ -15,6 +15,11 @@ import type {
 
 const BASE_PATH = '/messages';
 
+interface WebSocketTokenResponse {
+  token: string;
+  expires_in: number;
+}
+
 /**
  * Get list of conversations for the current user
  */
@@ -70,6 +75,13 @@ export async function markMessagesRead(
   return apiClient.post<{ marked_count: number }>(`${BASE_PATH}/read`, body);
 }
 
+/**
+ * Issue a short-lived token for WebSocket authentication
+ */
+export async function getWebSocketToken(): Promise<ApiResponse<WebSocketTokenResponse>> {
+  return apiClient.get<WebSocketTokenResponse>(`${BASE_PATH}/ws-token`);
+}
+
 // ============== WebSocket Client ==============
 
 export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -86,6 +98,17 @@ export interface MessageWebSocketCallbacks {
 /**
  * Create a WebSocket connection for real-time messaging
  */
+const buildSocketUrl = (token: string): string => {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  const wsProtocol = apiBaseUrl.startsWith('https') ? 'wss' : 'ws';
+  const wsHost = apiBaseUrl.replace(/^https?:\/\//, '');
+  return `${wsProtocol}://${wsHost}${BASE_PATH}/ws?token=${encodeURIComponent(token)}`;
+};
+
+export function buildWebSocketUrl(token: string): string {
+  return buildSocketUrl(token);
+}
+
 export function createMessageWebSocket(
   token: string,
   callbacks: MessageWebSocketCallbacks
@@ -96,11 +119,7 @@ export function createMessageWebSocket(
   markRead: (messageIds: string[]) => void;
   close: () => void;
 } {
-  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-  const wsBaseUrl = apiBaseUrl.replace(/^http/, 'ws');
-  const wsUrl = `${wsBaseUrl}/messages/ws?token=${encodeURIComponent(token)}`;
-
+  const wsUrl = buildSocketUrl(token);
   let ws: WebSocket | null = null;
   let reconnectAttempts = 0;
   const maxReconnectAttempts = 5;

@@ -77,22 +77,17 @@ afterAll(() => {
 // Mock the messaging API
 const mockGetMessages = jest.fn();
 const mockSendMessageApi = jest.fn();
-const mockMarkAsReadApi = jest.fn();
+const mockMarkMessagesReadApi = jest.fn();
+const mockGetWebSocketToken = jest.fn();
 const mockBuildWebSocketUrl = jest.fn().mockReturnValue('ws://localhost:8000/messages/ws?token=mock-jwt-token');
 
-jest.mock('@/lib/api/messaging', () => ({
+jest.mock('@/lib/api/messages', () => ({
   getMessages: (...args: unknown[]) => mockGetMessages(...args),
   sendMessage: (...args: unknown[]) => mockSendMessageApi(...args),
-  markAsRead: (...args: unknown[]) => mockMarkAsReadApi(...args),
+  markMessagesRead: (...args: unknown[]) => mockMarkMessagesReadApi(...args),
+  getWebSocketToken: (...args: unknown[]) => mockGetWebSocketToken(...args),
   buildWebSocketUrl: (token: string) => mockBuildWebSocketUrl(token),
 }));
-
-// Mock fetch for WebSocket token
-const mockFetch = jest.fn().mockResolvedValue({
-  ok: true,
-  json: () => Promise.resolve({ token: 'mock-jwt-token' }),
-});
-global.fetch = mockFetch;
 
 // Mock auth context to get token
 jest.mock('@/contexts/AuthContext', () => ({
@@ -131,10 +126,9 @@ describe('useMessages Hook', () => {
     jest.clearAllMocks();
     MockWebSocket.clearInstances();
 
-    // Reset fetch mock for WebSocket token
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ token: 'mock-jwt-token' }),
+    mockGetWebSocketToken.mockResolvedValue({
+      data: { token: 'mock-jwt-token', expires_in: 300 },
+      error: null,
     });
 
     mockGetMessages.mockResolvedValue({
@@ -157,7 +151,7 @@ describe('useMessages Hook', () => {
       error: null,
     });
 
-    mockMarkAsReadApi.mockResolvedValue({
+    mockMarkMessagesReadApi.mockResolvedValue({
       data: { marked_count: 1 },
       error: null,
     });
@@ -181,9 +175,12 @@ describe('useMessages Hook', () => {
       );
 
       await waitFor(() => {
-        expect(mockGetMessages).toHaveBeenCalledWith(mockCaseId, {
-          other_user_id: mockRecipientId,
-        });
+        expect(mockGetMessages).toHaveBeenCalledWith(
+          mockCaseId,
+          expect.objectContaining({
+            otherUserId: mockRecipientId,
+          })
+        );
       });
     });
 
@@ -573,7 +570,7 @@ describe('useMessages Hook', () => {
         await result.current.markAsRead(['msg-1']);
       });
 
-      expect(mockMarkAsReadApi).toHaveBeenCalledWith(['msg-1']);
+      expect(mockMarkMessagesReadApi).toHaveBeenCalledWith(['msg-1']);
     });
 
     test('should update message read_at when read receipt received', async () => {
@@ -644,11 +641,11 @@ describe('useMessages Hook', () => {
         await result.current.loadMore();
       });
 
-      // Should call with before_id of oldest message
+      // Should call with beforeId of oldest message
       expect(mockGetMessages).toHaveBeenLastCalledWith(
         mockCaseId,
         expect.objectContaining({
-          before_id: 'msg-1',
+          beforeId: 'msg-1',
         })
       );
     });

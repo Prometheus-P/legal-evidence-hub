@@ -3,25 +3,10 @@ Legal Evidence Hub (LEH) - Configuration
 Environment variables and application settings using Pydantic Settings
 """
 
-import os
 import warnings
-from pathlib import Path
 from typing import List
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, model_validator
-
-# Load .env file early so environment variables are available to boto3 and other libraries
-# This must be done before Settings class is instantiated
-# Skip in testing environment to ensure tests use default values
-if os.environ.get("TESTING") != "true":
-    try:
-        from dotenv import load_dotenv
-        # Look for .env in backend directory or project root
-        env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-        if env_path.exists():
-            load_dotenv(env_path)
-    except ImportError:
-        pass  # python-dotenv not installed, rely on system env vars
 
 
 class Settings(BaseSettings):
@@ -46,6 +31,7 @@ class Settings(BaseSettings):
     # ============================================
     # CORS Settings
     # ============================================
+    BACKEND_CORS_ORIGINS: str = Field(default="", env="BACKEND_CORS_ORIGINS")
     CORS_ALLOW_ORIGINS: str = Field(
         default="http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004,http://localhost:3005,http://localhost:5173",
         env="CORS_ALLOW_ORIGINS"
@@ -55,7 +41,8 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         """CORS origins as a list"""
-        return [origin.strip() for origin in self.CORS_ALLOW_ORIGINS.split(",")]
+        raw = self.BACKEND_CORS_ORIGINS or self.CORS_ALLOW_ORIGINS or ""
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
     # ============================================
     # JWT Settings
@@ -102,6 +89,11 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = Field(default=False, env="COOKIE_SECURE")  # True in production (HTTPS)
     COOKIE_SAMESITE: str = Field(default="lax", env="COOKIE_SAMESITE")  # lax | strict | none
     COOKIE_DOMAIN: str = Field(default="", env="COOKIE_DOMAIN")  # Empty = current domain
+
+    # ============================================
+    # Public API Base URL (used by frontend/backoffice)
+    # ============================================
+    API_BASE_URL: str = Field(default="", env="API_BASE_URL")
 
     # ============================================
     # Database Settings (PostgreSQL)
@@ -157,12 +149,15 @@ class Settings(BaseSettings):
     # ============================================
     # Qdrant Settings (Vector Database for RAG)
     # ============================================
+    QDRANT_URL: str = Field(default="", env="QDRANT_URL")
     QDRANT_HOST: str = Field(default="", env="QDRANT_HOST")  # Empty = in-memory mode
     QDRANT_PORT: int = Field(default=6333, env="QDRANT_PORT")
     QDRANT_API_KEY: str = Field(default="", env="QDRANT_API_KEY")
     QDRANT_USE_HTTPS: bool = Field(default=False, env="QDRANT_USE_HTTPS")
     QDRANT_COLLECTION_PREFIX: str = Field(default="case_rag_", env="QDRANT_COLLECTION_PREFIX")
+    QDRANT_COLLECTION: str = Field(default="leh_evidence", env="QDRANT_COLLECTION")
     QDRANT_DEFAULT_TOP_K: int = Field(default=5, env="QDRANT_DEFAULT_TOP_K")
+    QDRANT_VECTOR_SIZE: int = Field(default=1536, env="QDRANT_VECTOR_SIZE")
 
     # ============================================
     # OpenAI / LLM Settings
@@ -193,19 +188,14 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
     SENTRY_DSN: str = Field(default="", env="SENTRY_DSN")
 
-    model_config = {
-        "env_file": ".env",
-        "env_file_encoding": "utf-8",
-        "case_sensitive": True,
-        "extra": "ignore"  # Ignore extra fields in .env
-    }
+    model_config = SettingsConfigDict(
+        env_file=None,
+        case_sensitive=True,
+        extra="ignore"
+    )
 
 
 # ============================================
 # Global settings instance
 # ============================================
-# In CI/testing environment, don't load .env file (use env vars directly)
-if os.environ.get("TESTING") == "true":
-    settings = Settings(_env_file=None)
-else:
-    settings = Settings()
+settings = Settings()

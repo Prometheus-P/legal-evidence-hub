@@ -17,9 +17,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getMessages,
   sendMessage as sendMessageApi,
-  markAsRead as markAsReadApi,
+  markMessagesRead as markMessagesReadApi,
+  getWebSocketToken,
   buildWebSocketUrl,
-} from '@/lib/api/messaging';
+} from '@/lib/api/messages';
 import type {
   Message,
   SendMessageRequest,
@@ -68,8 +69,8 @@ export function useMessages({ caseId, recipientId }: UseMessagesOptions): UseMes
     setError(null);
 
     const response = await getMessages(caseId, {
-      other_user_id: recipientId,
-      before_id: beforeId,
+      otherUserId: recipientId,
+      beforeId,
     });
 
     if (response.error) {
@@ -98,12 +99,12 @@ export function useMessages({ caseId, recipientId }: UseMessagesOptions): UseMes
     // Note: In production, this should call a dedicated endpoint for WS tokens
     // For now, we'll fetch from cookies or use a workaround
     try {
-      const response = await fetch('/api/auth/ws-token', { credentials: 'include' });
-      if (!response.ok) {
-        console.warn('Could not get WebSocket token');
+      const tokenResponse = await getWebSocketToken();
+      if (tokenResponse.error || !tokenResponse.data) {
+        console.warn('Could not get WebSocket token', tokenResponse.error);
         return;
       }
-      const { token } = await response.json();
+      const { token } = tokenResponse.data;
 
       const wsUrl = buildWebSocketUrl(token);
       const ws = new WebSocket(wsUrl);
@@ -266,7 +267,7 @@ export function useMessages({ caseId, recipientId }: UseMessagesOptions): UseMes
 
   // Mark messages as read
   const markAsRead = useCallback(async (messageIds: string[]) => {
-    await markAsReadApi(messageIds);
+    await markMessagesReadApi(messageIds);
 
     // Also send via WebSocket for real-time update
     if (wsRef.current?.readyState === WebSocket.OPEN) {

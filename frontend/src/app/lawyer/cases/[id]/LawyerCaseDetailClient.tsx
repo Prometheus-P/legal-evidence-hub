@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiClient } from '@/lib/api/client';
 
 interface CaseDetail {
   id: string;
@@ -44,7 +45,24 @@ const statusLabels: Record<string, string> = {
   closed: '종료',
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+interface CaseDetailResponse {
+  id: string;
+  title: string;
+  client_name?: string;
+  description?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  owner_id: string;
+  owner_name?: string;
+  owner_email?: string;
+  evidence_count?: number;
+  evidence_summary?: { type: string; count: number }[];
+  ai_summary?: string;
+  ai_labels?: string[];
+  recent_activities?: { action: string; timestamp: string; user: string }[];
+  members?: { userId: string; userName?: string; role: string }[];
+}
 
 interface LawyerCaseDetailClientProps {
   id: string;
@@ -65,27 +83,13 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
       setError(null);
 
       try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          router.push('/login');
-          return;
+        const response = await apiClient.get<CaseDetailResponse>(`/lawyer/cases/${caseId}`);
+
+        if (response.error || !response.data) {
+          throw new Error(response.error || '케이스 정보를 불러오는데 실패했습니다.');
         }
 
-        const response = await fetch(`${API_BASE_URL}/lawyer/cases/${caseId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('케이스를 찾을 수 없습니다.');
-          }
-          throw new Error('케이스 정보를 불러오는데 실패했습니다.');
-        }
-
-        const data = await response.json();
+        const data = response.data;
         setCaseDetail({
           id: data.id,
           title: data.title,

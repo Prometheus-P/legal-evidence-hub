@@ -25,12 +25,12 @@ beforeAll(() => {
 // Mock the messaging API
 const mockGetMessages = jest.fn();
 const mockSendMessage = jest.fn();
-const mockMarkAsRead = jest.fn();
+const mockMarkMessagesRead = jest.fn();
 
-jest.mock('@/lib/api/messaging', () => ({
+jest.mock('@/lib/api/messages', () => ({
   getMessages: (...args: unknown[]) => mockGetMessages(...args),
   sendMessage: (...args: unknown[]) => mockSendMessage(...args),
-  markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
+  markMessagesRead: (...args: unknown[]) => mockMarkMessagesRead(...args),
 }));
 
 // Mock the useMessages hook

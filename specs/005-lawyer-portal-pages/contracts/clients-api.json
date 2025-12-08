@@ -1,0 +1,68 @@
+{
+  "endpoint": "GET /lawyer/clients",
+  "description": "List all clients associated with the lawyer's cases",
+  "authentication": "Bearer JWT (lawyer, staff, admin)",
+  "request": {
+    "query_params": {
+      "page": {
+        "type": "integer",
+        "default": 1,
+        "description": "Page number"
+      },
+      "page_size": {
+        "type": "integer",
+        "default": 20,
+        "max": 100,
+        "description": "Items per page"
+      },
+      "search": {
+        "type": "string",
+        "optional": true,
+        "description": "Search by name or email"
+      },
+      "status": {
+        "type": "string",
+        "enum": ["active", "inactive", "all"],
+        "default": "all",
+        "description": "Filter by client status (has open cases)"
+      },
+      "sort_by": {
+        "type": "string",
+        "enum": ["name", "case_count", "last_activity", "created_at"],
+        "default": "name"
+      },
+      "sort_order": {
+        "type": "string",
+        "enum": ["asc", "desc"],
+        "default": "asc"
+      }
+    }
+  },
+  "response": {
+    "200": {
+      "items": [
+        {
+          "id": "uuid-client-1",
+          "name": "김민수",
+          "email": "client1@example.com",
+          "phone": "010-1234-5678",
+          "case_count": 2,
+          "active_cases": 1,
+          "last_activity": "2025-12-07T10:30:00Z",
+          "status": "active",
+          "created_at": "2025-01-15T09:00:00Z"
+        }
+      ],
+      "total": 45,
+      "page": 1,
+      "page_size": 20,
+      "total_pages": 3
+    },
+    "401": {
+      "detail": "인증이 필요합니다."
+    },
+    "403": {
+      "detail": "접근 권한이 없습니다."
+    }
+  }
+}

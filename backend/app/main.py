@@ -6,11 +6,6 @@ Version: 0.2.0
 Updated: 2025-11-19
 """
 
-# .env 파일 로드 (다른 import 전에 실행)
-from pathlib import Path
-from dotenv import load_dotenv
-load_dotenv(Path(__file__).parent.parent / ".env")
-
 import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
@@ -23,21 +18,12 @@ from mangum import Mangum  # noqa: E402 - AWS Lambda handler
 # Import configuration and middleware
 from app.core.config import settings  # noqa: E402
 
-# Import API routers
+# Import API routers (v0 scope)
 from app.api import (  # noqa: E402
-    admin,
     auth,
-    billing,
-    calendar,
     cases,
-    client_portal,
-    detective_portal,
-    drafts,
     evidence,
-    jobs,
     lawyer_portal,
-    messages,
-    staff_progress,
 )
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
@@ -194,38 +180,14 @@ async def health_check():
 # 인증 라우터
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
-# 관리자 라우터
-app.include_router(admin.router, tags=["Admin"])
-
 # 사건 라우터
 app.include_router(cases.router, prefix="/cases", tags=["Cases"])
 
 # 증거 라우터
 app.include_router(evidence.router, prefix="/evidence", tags=["Evidence"])
 
-# 초안 라우터 (케이스별 초안 CRUD)
-app.include_router(drafts.router, prefix="/cases/{case_id}/drafts", tags=["Drafts"])
-
 # 변호사/스태프 포털 라우터
 app.include_router(lawyer_portal.router, prefix="/lawyer", tags=["Lawyer Portal"])
-app.include_router(staff_progress.router, tags=["Staff Progress"])
-
-# 의뢰인/탐정 포털 라우터
-app.include_router(client_portal.router, tags=["Client Portal"])
-app.include_router(detective_portal.router, tags=["Detective Portal"])
-
-# Job Queue 라우터 (비동기 작업 추적)
-app.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
-
-# 메시지 라우터
-app.include_router(messages.router, prefix="/messages", tags=["Messages"])
-
-# 청구/결제 라우터
-app.include_router(billing.router, tags=["Billing"])
-app.include_router(billing.client_router, tags=["Client Billing"])
-
-# 캘린더 라우터
-app.include_router(calendar.router, tags=["Calendar"])
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router

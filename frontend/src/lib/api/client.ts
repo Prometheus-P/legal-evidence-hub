@@ -7,7 +7,8 @@
  * - Cookies are automatically included via credentials: 'include'
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 export interface ApiResponse<T> {
   data?: T;
@@ -87,6 +88,27 @@ export async function apiRequest<T>(
       status: 0,
     };
   }
+}
+
+/**
+ * Helper fetcher that throws when the API responds with an error.
+ * Useful for libraries like SWR that expect a resolved payload or thrown error.
+ */
+export async function apiFetcher<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const response = await apiRequest<T>(endpoint, options);
+
+  if (response.error) {
+    throw new Error(response.error);
+  }
+
+  if (typeof response.data === 'undefined') {
+    throw new Error('No data returned from API');
+  }
+
+  return response.data;
 }
 
 /**

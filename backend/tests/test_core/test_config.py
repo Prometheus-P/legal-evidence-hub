@@ -76,6 +76,19 @@ class TestSettings:
 
         assert "http://localhost:3000" in origins  # No trailing/leading spaces
         assert " http://localhost:5173 " not in origins
+        assert origins[-1] == "https://example.com"
+
+    def test_backend_cors_override(self, test_env):
+        """Test BACKEND_CORS_ORIGINS overrides legacy setting"""
+        from app.core.config import Settings
+        override = "https://cloudfront.example.com,https://app.example.com"
+        settings = Settings(
+            BACKEND_CORS_ORIGINS=override,
+            CORS_ALLOW_ORIGINS="http://localhost:3000"
+        )
+
+        origins = settings.cors_origins_list
+        assert origins == ["https://cloudfront.example.com", "https://app.example.com"]
 
     def test_database_url_computed_property_uses_explicit_url(self, test_env):
         """Test that database_url_computed uses explicit DATABASE_URL if provided"""
