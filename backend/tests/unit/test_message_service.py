@@ -315,7 +315,7 @@ class TestGetMessagesPagination:
         # Create case
         case = Case(
             title=f"Test Case {unique_id}",
-            status="ACTIVE",
+            status="active",
             created_by=user.id
         )
         db.add(case)
@@ -323,7 +323,7 @@ class TestGetMessagesPagination:
         db.refresh(case)
 
         # Create case member
-        member = CaseMember(case_id=case.id, user_id=user.id, role="OWNER")
+        member = CaseMember(case_id=case.id, user_id=user.id, role="owner")
         db.add(member)
         db.commit()
 
@@ -388,7 +388,7 @@ class TestGetMessagesPagination:
         # Create case
         case = Case(
             title=f"Test Case {unique_id}",
-            status="ACTIVE",
+            status="active",
             created_by=user.id
         )
         db.add(case)
@@ -396,7 +396,7 @@ class TestGetMessagesPagination:
         db.refresh(case)
 
         # Create case member
-        member = CaseMember(case_id=case.id, user_id=user.id, role="OWNER")
+        member = CaseMember(case_id=case.id, user_id=user.id, role="owner")
         db.add(member)
         db.commit()
 
@@ -471,7 +471,7 @@ class TestGetConversationsEdgeCases:
         # Create case
         case = Case(
             title=f"Test Case {unique_id}",
-            status="ACTIVE",
+            status="active",
             created_by=user1.id
         )
         db.add(case)
@@ -479,7 +479,7 @@ class TestGetConversationsEdgeCases:
         db.refresh(case)
 
         # Create case member
-        member = CaseMember(case_id=case.id, user_id=user1.id, role="OWNER")
+        member = CaseMember(case_id=case.id, user_id=user1.id, role="owner")
         db.add(member)
         db.commit()
 
@@ -550,7 +550,7 @@ class TestGetConversationsEdgeCases:
         # Create case
         case = Case(
             title=f"Test Case {unique_id}",
-            status="ACTIVE",
+            status="active",
             created_by=user1.id
         )
         db.add(case)
@@ -558,7 +558,7 @@ class TestGetConversationsEdgeCases:
         db.refresh(case)
 
         # Create case members
-        member1 = CaseMember(case_id=case.id, user_id=user1.id, role="OWNER")
+        member1 = CaseMember(case_id=case.id, user_id=user1.id, role="owner")
         member2 = CaseMember(case_id=case.id, user_id=user2.id, role="MEMBER")
         db.add(member1)
         db.add(member2)

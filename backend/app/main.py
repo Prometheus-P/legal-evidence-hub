@@ -44,6 +44,7 @@ from app.api import (  # noqa: E402
     search,
     settings as settings_router,
     staff_progress,
+    summary,
 )
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
@@ -259,6 +260,9 @@ app.include_router(billing.client_router, tags=["Client Billing"])
 
 # Calendar 라우터
 app.include_router(calendar.router, tags=["Calendar"])
+
+# Summary 라우터 (US8 - Progress Summary Cards)
+app.include_router(summary.router, tags=["Summary"])
 
 # Admin 라우터 (User Management & Audit Log)
 app.include_router(admin.router, tags=["Admin"])
