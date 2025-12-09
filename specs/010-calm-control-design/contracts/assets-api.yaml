@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: LEH Assets API
+  description: 재산 분할 관리 API for Calm-Control Design System
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+    description: API base path
+
+paths:
+  /cases/{caseId}/assets:
+    get:
+      summary: List all assets for a case
+      operationId: listAssets
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of assets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create a new asset
+      operationId: createAsset
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssetRequest'
+      responses:
+        '201':
+          description: Asset created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cases/{caseId}/assets/{assetId}:
+    get:
+      summary: Get a single asset
+      operationId: getAsset
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Asset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update an asset
+      operationId: updateAsset
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAssetRequest'
+      responses:
+        '200':
+          description: Asset updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete an asset
+      operationId: deleteAsset
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Asset deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{caseId}/assets/summary:
+    get:
+      summary: Get division summary for a case
+      operationId: getDivisionSummary
+      tags:
+        - Assets
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Division summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DivisionSummary'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Asset:
+      type: object
+      required:
+        - id
+        - case_id
+        - asset_type
+        - name
+        - current_value
+        - ownership
+        - division_ratio_plaintiff
+        - division_ratio_defendant
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        asset_type:
+          $ref: '#/components/schemas/AssetType'
+        name:
+          type: string
+          maxLength: 255
+        current_value:
+          type: number
+          format: decimal
+          minimum: 0
+        ownership:
+          $ref: '#/components/schemas/Ownership'
+        division_ratio_plaintiff:
+          type: integer
+          minimum: 0
+          maximum: 100
+        division_ratio_defendant:
+          type: integer
+          minimum: 0
+          maximum: 100
+        acquisition_date:
+          type: string
+          format: date
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateAssetRequest:
+      type: object
+      required:
+        - asset_type
+        - name
+        - current_value
+        - ownership
+      properties:
+        asset_type:
+          $ref: '#/components/schemas/AssetType'
+        name:
+          type: string
+          maxLength: 255
+        current_value:
+          type: number
+          format: decimal
+          minimum: 0
+        ownership:
+          $ref: '#/components/schemas/Ownership'
+        division_ratio_plaintiff:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 50
+        division_ratio_defendant:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 50
+        acquisition_date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    UpdateAssetRequest:
+      type: object
+      properties:
+        asset_type:
+          $ref: '#/components/schemas/AssetType'
+        name:
+          type: string
+          maxLength: 255
+        current_value:
+          type: number
+          format: decimal
+          minimum: 0
+        ownership:
+          $ref: '#/components/schemas/Ownership'
+        division_ratio_plaintiff:
+          type: integer
+          minimum: 0
+          maximum: 100
+        division_ratio_defendant:
+          type: integer
+          minimum: 0
+          maximum: 100
+        acquisition_date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    DivisionSummary:
+      type: object
+      required:
+        - total_assets
+        - total_debts
+        - net_value
+        - plaintiff_share
+        - defendant_share
+        - settlement_needed
+      properties:
+        total_assets:
+          type: number
+          format: decimal
+          description: 총 자산 가액
+        total_debts:
+          type: number
+          format: decimal
+          description: 총 부채 가액
+        net_value:
+          type: number
+          format: decimal
+          description: 순자산 (total_assets - total_debts)
+        plaintiff_share:
+          type: number
+          format: decimal
+          description: 원고 예상 몫
+        defendant_share:
+          type: number
+          format: decimal
+          description: 피고 예상 몫
+        settlement_needed:
+          type: number
+          format: decimal
+          description: 예상 정산금 (양수면 피고→원고, 음수면 원고→피고)
+
+    AssetType:
+      type: string
+      enum:
+        - real_estate
+        - vehicle
+        - financial
+        - business
+        - personal
+        - debt
+        - other
+
+    Ownership:
+      type: string
+      enum:
+        - joint
+        - plaintiff
+        - defendant
+
+    Error:
+      type: object
+      required:
+        - detail
+        - status_code
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "division_ratio_plaintiff + division_ratio_defendant must equal 100"
+            status_code: 400
+
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "You don't have permission to access this case"
+            status_code: 403
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Asset not found"
+            status_code: 404

@@ -1,337 +1,231 @@
 /**
- * useAssets Hook
- * US2 - 재산분할표 (Asset Division Sheet)
- *
- * Manages asset state and operations for a case
+ * Hook for Asset Division
+ * 009-calm-control-design-system
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import {
-  getAssets,
-  getAsset,
-  createAsset,
-  updateAsset,
-  deleteAsset,
-  calculateDivision,
-  getAssetSummary,
-  exportAssets,
-} from '@/lib/api/assets';
-import type {
-  Asset,
-  AssetCategory,
-  AssetCreateRequest,
-  AssetUpdateRequest,
-  DivisionCalculateRequest,
-  DivisionSummary,
-  AssetSheetSummary,
-} from '@/types/asset';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { Asset, CreateAssetRequest, DivisionSummary, AssetType } from '@/types/assets';
+import * as assetsApi from '@/lib/api/assets';
 
-interface UseAssetsState {
-  assets: Asset[];
-  summary: AssetSheetSummary | null;
-  selectedAsset: Asset | null;
-  loading: boolean;
-  calculating: boolean;
-  error: string | null;
+interface UseAssetsOptions {
+  caseId: string;
 }
 
-interface UseAssetsReturn extends UseAssetsState {
-  // Asset CRUD
-  fetchAssets: (category?: AssetCategory) => Promise<void>;
-  fetchAsset: (assetId: string) => Promise<Asset | null>;
-  addAsset: (data: AssetCreateRequest) => Promise<Asset | null>;
-  editAsset: (assetId: string, data: AssetUpdateRequest) => Promise<Asset | null>;
-  removeAsset: (assetId: string) => Promise<boolean>;
+export function useAssets({ caseId }: UseAssetsOptions) {
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
-  // Division calculation
-  calculate: (data?: DivisionCalculateRequest) => Promise<DivisionSummary | null>;
-  fetchSummary: () => Promise<void>;
+  // Calculate division summary locally
+  const divisionSummary = useMemo((): DivisionSummary => {
+    const totalAssets = assets
+      .filter((a) => a.asset_type !== 'debt')
+      .reduce((sum, a) => sum + a.current_value, 0);
 
-  // Export
-  downloadCsv: () => Promise<void>;
+    const totalDebts = assets
+      .filter((a) => a.asset_type === 'debt')
+      .reduce((sum, a) => sum + a.current_value, 0);
 
-  // Selection
-  selectAsset: (asset: Asset | null) => void;
-  clearError: () => void;
-}
+    const netValue = totalAssets - totalDebts;
 
-export function useAssets(caseId: string): UseAssetsReturn {
-  const [state, setState] = useState<UseAssetsState>({
-    assets: [],
-    summary: null,
-    selectedAsset: null,
-    loading: false,
-    calculating: false,
-    error: null,
-  });
+    // Calculate each party's share based on division ratios
+    let plaintiffShare = 0;
+    let defendantShare = 0;
 
-  // Fetch all assets
-  const fetchAssets = useCallback(async (category?: AssetCategory) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    assets.forEach((asset) => {
+      const value = asset.current_value;
+      const isDebt = asset.asset_type === 'debt';
+      const plaintiffRatio = asset.division_ratio_plaintiff / 100;
+      const defendantRatio = asset.division_ratio_defendant / 100;
+
+      if (isDebt) {
+        plaintiffShare -= value * plaintiffRatio;
+        defendantShare -= value * defendantRatio;
+      } else {
+        plaintiffShare += value * plaintiffRatio;
+        defendantShare += value * defendantRatio;
+      }
+    });
+
+    const settlementNeeded = plaintiffShare - defendantShare;
+
+    return {
+      total_assets: totalAssets,
+      total_debts: totalDebts,
+      net_value: netValue,
+      plaintiff_share: plaintiffShare,
+      defendant_share: defendantShare,
+      settlement_needed: settlementNeeded / 2,
+    };
+  }, [assets]);
+
+  // Fetch assets
+  const fetchAssets = useCallback(async () => {
+    if (!caseId) return;
+
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await getAssets(caseId, category);
-
-      if (response.error) {
-        setState(prev => ({ ...prev, loading: false, error: response.error || 'Failed to fetch assets' }));
-        return;
-      }
-
-      setState(prev => ({
-        ...prev,
-        assets: response.data?.assets || [],
-        loading: false,
-      }));
+      const data = await assetsApi.getAssets(caseId);
+      setAssets(data);
     } catch (err) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to fetch assets',
-      }));
-    }
-  }, [caseId]);
-
-  // Fetch single asset
-  const fetchAsset = useCallback(async (assetId: string): Promise<Asset | null> => {
-    try {
-      const response = await getAsset(caseId, assetId);
-
-      if (response.error || !response.data) {
-        setState(prev => ({ ...prev, error: response.error || 'Asset not found' }));
-        return null;
-      }
-
-      return response.data;
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Failed to fetch asset',
-      }));
-      return null;
-    }
-  }, [caseId]);
-
-  // Create asset
-  const addAsset = useCallback(async (data: AssetCreateRequest): Promise<Asset | null> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const response = await createAsset(caseId, data);
-
-      if (response.error || !response.data) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: response.error || 'Failed to create asset',
-        }));
-        return null;
-      }
-
-      // Add to local state
-      setState(prev => ({
-        ...prev,
-        assets: [...prev.assets, response.data!],
-        loading: false,
-      }));
-
-      return response.data;
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to create asset',
-      }));
-      return null;
-    }
-  }, [caseId]);
-
-  // Update asset
-  const editAsset = useCallback(async (
-    assetId: string,
-    data: AssetUpdateRequest
-  ): Promise<Asset | null> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const response = await updateAsset(caseId, assetId, data);
-
-      if (response.error || !response.data) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: response.error || 'Failed to update asset',
-        }));
-        return null;
-      }
-
-      // Update in local state
-      setState(prev => ({
-        ...prev,
-        assets: prev.assets.map(a => a.id === assetId ? response.data! : a),
-        selectedAsset: prev.selectedAsset?.id === assetId ? response.data! : prev.selectedAsset,
-        loading: false,
-      }));
-
-      return response.data;
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to update asset',
-      }));
-      return null;
-    }
-  }, [caseId]);
-
-  // Delete asset
-  const removeAsset = useCallback(async (assetId: string): Promise<boolean> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const response = await deleteAsset(caseId, assetId);
-
-      if (response.error) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: response.error || 'Failed to delete asset',
-        }));
-        return false;
-      }
-
-      // Remove from local state
-      setState(prev => ({
-        ...prev,
-        assets: prev.assets.filter(a => a.id !== assetId),
-        selectedAsset: prev.selectedAsset?.id === assetId ? null : prev.selectedAsset,
-        loading: false,
-      }));
-
-      return true;
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to delete asset',
-      }));
-      return false;
-    }
-  }, [caseId]);
-
-  // Calculate division
-  const calculate = useCallback(async (
-    data?: DivisionCalculateRequest
-  ): Promise<DivisionSummary | null> => {
-    setState(prev => ({ ...prev, calculating: true, error: null }));
-
-    try {
-      const response = await calculateDivision(caseId, data);
-
-      if (response.error || !response.data) {
-        setState(prev => ({
-          ...prev,
-          calculating: false,
-          error: response.error || 'Failed to calculate division',
-        }));
-        return null;
-      }
-
-      // Update summary in state
-      setState(prev => ({
-        ...prev,
-        summary: prev.summary ? {
-          ...prev.summary,
-          division_summary: response.data!,
-        } : {
-          division_summary: response.data!,
-          category_summaries: [],
-          total_assets: prev.assets.length,
+      console.error('Failed to fetch assets:', err);
+      setError('재산 데이터를 불러오는데 실패했습니다.');
+      // Set mock data for development
+      setAssets([
+        {
+          id: 'a1',
+          case_id: caseId,
+          asset_type: 'real_estate',
+          name: '서울 강남구 아파트',
+          current_value: 1200000000,
+          ownership: 'joint',
+          division_ratio_plaintiff: 50,
+          division_ratio_defendant: 50,
+          acquisition_date: '2018-05-15',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
-        calculating: false,
-      }));
-
-      return response.data;
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        calculating: false,
-        error: err instanceof Error ? err.message : 'Failed to calculate division',
-      }));
-      return null;
+        {
+          id: 'a2',
+          case_id: caseId,
+          asset_type: 'vehicle',
+          name: '벤츠 E클래스',
+          current_value: 65000000,
+          ownership: 'defendant',
+          division_ratio_plaintiff: 0,
+          division_ratio_defendant: 100,
+          acquisition_date: '2022-03-10',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: 'a3',
+          case_id: caseId,
+          asset_type: 'financial',
+          name: '정기예금 (국민은행)',
+          current_value: 150000000,
+          ownership: 'plaintiff',
+          division_ratio_plaintiff: 100,
+          division_ratio_defendant: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: 'a4',
+          case_id: caseId,
+          asset_type: 'debt',
+          name: '주택담보대출',
+          current_value: 500000000,
+          ownership: 'joint',
+          division_ratio_plaintiff: 50,
+          division_ratio_defendant: 50,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
   }, [caseId]);
 
-  // Fetch summary
-  const fetchSummary = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const response = await getAssetSummary(caseId);
-
-      if (response.error) {
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: response.error || 'Failed to fetch summary',
-        }));
-        return;
-      }
-
-      setState(prev => ({
-        ...prev,
-        summary: response.data || null,
-        loading: false,
-      }));
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : 'Failed to fetch summary',
-      }));
-    }
-  }, [caseId]);
-
-  // Export CSV
-  const downloadCsv = useCallback(async () => {
-    try {
-      await exportAssets(caseId);
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        error: err instanceof Error ? err.message : 'Failed to export assets',
-      }));
-    }
-  }, [caseId]);
-
-  // Select asset
-  const selectAsset = useCallback((asset: Asset | null) => {
-    setState(prev => ({ ...prev, selectedAsset: asset }));
-  }, []);
-
-  // Clear error
-  const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
-  }, []);
-
-  // Initial fetch
   useEffect(() => {
-    if (caseId) {
-      fetchAssets();
-      fetchSummary();
-    }
-  }, [caseId, fetchAssets, fetchSummary]);
+    fetchAssets();
+  }, [fetchAssets]);
+
+  // CRUD operations
+  const addAsset = useCallback(
+    async (data: CreateAssetRequest) => {
+      try {
+        const newAsset = await assetsApi.createAsset(caseId, data);
+        setAssets((prev) => [...prev, newAsset]);
+        return newAsset;
+      } catch (err) {
+        console.error('Failed to create asset:', err);
+        throw err;
+      }
+    },
+    [caseId]
+  );
+
+  const updateAsset = useCallback(
+    async (assetId: string, data: Partial<CreateAssetRequest>) => {
+      try {
+        const updated = await assetsApi.updateAsset(caseId, assetId, data);
+        setAssets((prev) => prev.map((a) => (a.id === assetId ? updated : a)));
+        return updated;
+      } catch (err) {
+        console.error('Failed to update asset:', err);
+        throw err;
+      }
+    },
+    [caseId]
+  );
+
+  const removeAsset = useCallback(
+    async (assetId: string) => {
+      try {
+        await assetsApi.deleteAsset(caseId, assetId);
+        setAssets((prev) => prev.filter((a) => a.id !== assetId));
+      } catch (err) {
+        console.error('Failed to delete asset:', err);
+        throw err;
+      }
+    },
+    [caseId]
+  );
+
+  // Update division ratio locally (for preview)
+  const updateDivisionRatio = useCallback(
+    (assetId: string, plaintiffRatio: number, defendantRatio: number) => {
+      setAssets((prev) =>
+        prev.map((a) =>
+          a.id === assetId
+            ? {
+                ...a,
+                division_ratio_plaintiff: plaintiffRatio,
+                division_ratio_defendant: defendantRatio,
+              }
+            : a
+        )
+      );
+    },
+    []
+  );
+
+  // Group assets by type
+  const assetsByType = useMemo(() => {
+    const grouped: Record<AssetType, Asset[]> = {
+      real_estate: [],
+      vehicle: [],
+      financial: [],
+      business: [],
+      personal: [],
+      debt: [],
+      other: [],
+    };
+
+    assets.forEach((asset) => {
+      grouped[asset.asset_type].push(asset);
+    });
+
+    return grouped;
+  }, [assets]);
 
   return {
-    ...state,
+    assets,
+    assetsByType,
+    divisionSummary,
+    isLoading,
+    error,
+    selectedAsset,
+    setSelectedAsset,
     fetchAssets,
-    fetchAsset,
     addAsset,
-    editAsset,
+    updateAsset,
     removeAsset,
-    calculate,
-    fetchSummary,
-    downloadCsv,
-    selectAsset,
-    clearError,
+    updateDivisionRatio,
   };
 }

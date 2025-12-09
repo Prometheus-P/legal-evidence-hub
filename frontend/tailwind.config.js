@@ -44,6 +44,12 @@ module.exports = {
           light: 'var(--color-error-light)',
           contrast: 'var(--color-error-contrast)',
         },
+        info: {
+          DEFAULT: 'var(--color-info)',
+          hover: 'var(--color-info-hover)',
+          light: 'var(--color-info-light)',
+          contrast: 'var(--color-info-contrast)',
+        },
         neutral: {
           50: 'var(--color-neutral-50)',
           100: 'var(--color-neutral-100)',
