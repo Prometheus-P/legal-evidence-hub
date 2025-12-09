@@ -290,11 +290,11 @@ async def migrate_roles_to_lowercase():
 
     db = next(get_db())
     try:
-        # Update all uppercase role values to lowercase
+        # PostgreSQL enum needs to be cast to text for LOWER() to work
         result = db.execute(text("""
             UPDATE users
-            SET role = LOWER(role)
-            WHERE role != LOWER(role)
+            SET role = LOWER(role::text)::userrole
+            WHERE role::text != LOWER(role::text)
         """))
         db.commit()
         return {
