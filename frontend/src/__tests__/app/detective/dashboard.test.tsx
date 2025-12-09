@@ -204,11 +204,11 @@ describe('Detective Dashboard Page', () => {
   });
 
   describe('Quick Actions', () => {
-    test('should render cases list quick action', async () => {
+    test('should render field record quick action', async () => {
       render(<DetectiveDashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('의뢰 목록')).toBeInTheDocument();
+        expect(screen.getByText('현장 기록')).toBeInTheDocument();
       });
     });
 

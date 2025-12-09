@@ -33,6 +33,22 @@ jest.mock('../../lib/api/auth', () => ({
     getCurrentUser: jest.fn(),
 }));
 
+// Mock useAuth hook for components that use AuthProvider
+const mockLogin = jest.fn();
+const mockLogout = jest.fn();
+let mockIsAuthenticated = false;
+let mockIsLoading = false;
+
+jest.mock('@/hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: mockLogin,
+        logout: mockLogout,
+        user: mockIsAuthenticated ? { id: '1', email: 'test@example.com', role: 'lawyer' } : null,
+        isLoading: mockIsLoading,
+        isAuthenticated: mockIsAuthenticated,
+    }),
+}));
+
 const mockGetCurrentUser = authApi.getCurrentUser as jest.MockedFunction<typeof authApi.getCurrentUser>;
 
 // Mock IntersectionObserver
@@ -58,6 +74,10 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
             push: mockPush,
             replace: mockReplace,
         });
+
+        // Default: not authenticated
+        mockIsAuthenticated = false;
+        mockIsLoading = false;
 
         // Default: not authenticated (API returns error)
         mockGetCurrentUser.mockResolvedValue({

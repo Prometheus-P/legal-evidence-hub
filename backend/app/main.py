@@ -371,6 +371,7 @@ async def migrate_roles_redirect():
     """Redirects to migrate-enums endpoint."""
     return await migrate_enums_to_lowercase()
 
+
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router
 # Note: RAG search is integrated into draft generation service (draft_service.py)

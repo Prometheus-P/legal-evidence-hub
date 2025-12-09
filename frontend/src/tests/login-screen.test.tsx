@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginForm from '@/components/auth/LoginForm';
-import { login } from '@/lib/api/auth';
 
 // Mock useRouter - App Router version
 jest.mock('next/navigation', () => ({
@@ -12,9 +11,16 @@ jest.mock('next/navigation', () => ({
     usePathname: jest.fn(() => '/'),
 }));
 
-// Mock auth API
-jest.mock('@/lib/api/auth', () => ({
-    login: jest.fn(),
+// Mock useAuth hook
+const mockLogin = jest.fn();
+jest.mock('@/hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: mockLogin,
+        logout: jest.fn(),
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+    }),
 }));
 
 describe('Login Screen Requirements', () => {
@@ -42,9 +48,9 @@ describe('Login Screen Requirements', () => {
 
     test('잘못된 자격증명일 경우 일반적인 에러 메시지만 보여야 한다', async () => {
         // Mock login failure
-        (login as jest.Mock).mockResolvedValue({
+        mockLogin.mockResolvedValue({
+            success: false,
             error: '아이디 또는 비밀번호를 확인해 주세요.',
-            data: null
         });
 
         render(<LoginForm />);

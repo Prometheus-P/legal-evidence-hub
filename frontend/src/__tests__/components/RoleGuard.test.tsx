@@ -39,6 +39,7 @@ function setupMockRole(options: {
   hasAccess?: (feature: string) => boolean;
   dashboardPath?: string;
   roleDisplayName?: string;
+  isLoading?: boolean;
 }) {
   const defaults = {
     user: options.user ?? null,
@@ -51,6 +52,7 @@ function setupMockRole(options: {
     isLawyer: options.role === 'lawyer',
     isClient: options.role === 'client',
     isDetective: options.role === 'detective',
+    isLoading: options.isLoading ?? false,
   };
 
   mockUseRole.mockReturnValue(defaults);
@@ -327,6 +329,7 @@ describe('RoleGuard Component', () => {
         user: { id: 'user-1', role: 'lawyer' },
         role: 'lawyer',
         isAuthenticated: true,
+        isLoading: true,
       });
 
       render(
@@ -335,7 +338,7 @@ describe('RoleGuard Component', () => {
         </RoleGuard>
       );
 
-      // Initially should show loading (before timer advances)
+      // Should show loading spinner while isLoading is true
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
 
@@ -344,6 +347,7 @@ describe('RoleGuard Component', () => {
         user: { id: 'user-1', role: 'lawyer' },
         role: 'lawyer',
         isAuthenticated: true,
+        isLoading: true,
       });
 
       render(
@@ -352,7 +356,8 @@ describe('RoleGuard Component', () => {
         </RoleGuard>
       );
 
-      // Should not render anything initially (no loading state)
+      // Should not render loading spinner when showLoading is false
+      // Content should be rendered (even during loading) when showLoading=false
     });
   });
 });

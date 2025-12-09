@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginForm from '@/components/auth/LoginForm';
-import { login } from '@/lib/api/auth';
 import '@testing-library/jest-dom';
 
 // Mock useRouter - App Router version
@@ -17,9 +16,16 @@ jest.mock('next/navigation', () => ({
     },
 }));
 
-// Mock auth API
-jest.mock('@/lib/api/auth', () => ({
-    login: jest.fn(),
+// Mock useAuth hook
+const mockLogin = jest.fn();
+jest.mock('@/hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: mockLogin,
+        logout: jest.fn(),
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+    }),
 }));
 
 describe('LoginForm', () => {
@@ -36,9 +42,9 @@ describe('LoginForm', () => {
 
     it('shows error on invalid credentials', async () => {
         // Mock login failure
-        (login as jest.Mock).mockResolvedValue({
+        mockLogin.mockResolvedValue({
+            success: false,
             error: '아이디 또는 비밀번호를 확인해 주세요.',
-            data: null
         });
 
         render(<LoginForm />);
@@ -54,13 +60,8 @@ describe('LoginForm', () => {
 
     it('redirects on successful login', async () => {
         // Mock login success
-        (login as jest.Mock).mockResolvedValue({
-            error: null,
-            data: {
-                access_token: 'fake-token',
-                token_type: 'bearer',
-                user: { id: '1', email: 'test@example.com', name: 'Test User', role: 'user' }
-            }
+        mockLogin.mockResolvedValue({
+            success: true,
         });
 
         render(<LoginForm />);
@@ -71,7 +72,7 @@ describe('LoginForm', () => {
 
         await waitFor(() => {
             // Check if login was called
-            expect(login).toHaveBeenCalledWith('test@example.com', 'password');
+            expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password');
         });
     });
 });

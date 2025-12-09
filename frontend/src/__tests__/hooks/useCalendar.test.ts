@@ -12,9 +12,19 @@
 
 import { renderHook, waitFor, act } from '@testing-library/react';
 
-// Mock fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
+// Mock apiClient
+const mockPost = jest.fn();
+const mockPut = jest.fn();
+const mockDelete = jest.fn();
+
+jest.mock('@/lib/api/client', () => ({
+  apiClient: {
+    post: (...args: unknown[]) => mockPost(...args),
+    put: (...args: unknown[]) => mockPut(...args),
+    delete: (...args: unknown[]) => mockDelete(...args),
+  },
+  apiFetcher: jest.fn(),
+}));
 
 // Mock SWR
 jest.mock('swr', () => ({
@@ -88,6 +98,9 @@ import { useCalendar, useUpcomingEvents, useReminders } from '@/hooks/useCalenda
 describe('useCalendar hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPost.mockReset();
+    mockPut.mockReset();
+    mockDelete.mockReset();
     (useSWR as jest.Mock).mockImplementation((key, fetcher, options) => ({
       data: { events: mockEventsFromApi, total: 2 },
       error: undefined,
@@ -160,9 +173,9 @@ describe('useCalendar hook', () => {
 
   describe('Create Event', () => {
     test('should create event successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ id: 'new-event', title: 'New Event' }),
+      mockPost.mockResolvedValueOnce({
+        data: { id: 'new-event', title: 'New Event' },
+        error: null,
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -177,20 +190,18 @@ describe('useCalendar hook', () => {
         expect(response.id).toBe('new-event');
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/calendar/events'),
+      expect(mockPost).toHaveBeenCalledWith(
+        '/calendar/events',
         expect.objectContaining({
-          method: 'POST',
-          body: expect.any(String),
+          title: 'New Event',
         })
       );
     });
 
     test('should throw error on create failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve({ detail: 'Invalid data' }),
+      mockPost.mockResolvedValueOnce({
+        data: null,
+        error: 'Invalid data',
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -215,9 +226,9 @@ describe('useCalendar hook', () => {
         mutate: mutateMock,
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ id: 'new-event' }),
+      mockPost.mockResolvedValueOnce({
+        data: { id: 'new-event' },
+        error: null,
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -236,9 +247,9 @@ describe('useCalendar hook', () => {
 
   describe('Update Event', () => {
     test('should update event successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ id: 'event-1', title: 'Updated Title' }),
+      mockPut.mockResolvedValueOnce({
+        data: { id: 'event-1', title: 'Updated Title' },
+        error: null,
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -251,19 +262,18 @@ describe('useCalendar hook', () => {
         expect(response.title).toBe('Updated Title');
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/calendar/events/event-1'),
+      expect(mockPut).toHaveBeenCalledWith(
+        '/calendar/events/event-1',
         expect.objectContaining({
-          method: 'PUT',
+          title: 'Updated Title',
         })
       );
     });
 
     test('should throw error on update failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve({ detail: 'Event not found' }),
+      mockPut.mockResolvedValueOnce({
+        data: null,
+        error: 'Event not found',
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -278,9 +288,9 @@ describe('useCalendar hook', () => {
 
   describe('Delete Event', () => {
     test('should delete event successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({}),
+      mockDelete.mockResolvedValueOnce({
+        data: {},
+        error: null,
       });
 
       const { result } = renderHook(() => useCalendar());
@@ -289,19 +299,13 @@ describe('useCalendar hook', () => {
         await result.current.deleteEvent('event-1');
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/calendar/events/event-1'),
-        expect.objectContaining({
-          method: 'DELETE',
-        })
-      );
+      expect(mockDelete).toHaveBeenCalledWith('/calendar/events/event-1');
     });
 
     test('should throw error on delete failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve({ detail: 'Not authorized' }),
+      mockDelete.mockResolvedValueOnce({
+        data: null,
+        error: 'Not authorized',
       });
 
       const { result } = renderHook(() => useCalendar());

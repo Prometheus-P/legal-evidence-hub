@@ -58,7 +58,6 @@ from src.utils.observability import (
 from src.utils.cost_guard import (
     CostGuard,
     FileSizeExceeded,
-    CostLimitExceeded,
     get_file_type_from_extension
 )
 

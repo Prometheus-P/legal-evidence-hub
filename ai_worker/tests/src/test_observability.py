@@ -12,8 +12,6 @@ Tests:
 
 import pytest
 import time
-import logging
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 from src.utils.observability import (
@@ -21,7 +19,6 @@ from src.utils.observability import (
     ErrorType,
     StageMetrics,
     JobContext,
-    StageTracker,
     JobTracker,
     log_job_event,
     classify_exception

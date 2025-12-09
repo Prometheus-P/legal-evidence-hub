@@ -15,8 +15,6 @@ from handler import (
     route_and_process,
     route_parser,
     _extract_case_id,
-    route_parser,
-    _extract_case_id,
     _extract_evidence_id_from_s3_key
 )
 from src.storage.metadata_store import MetadataStore
@@ -492,7 +490,7 @@ class TestStorageAndAnalysisIntegration:
              patch.object(handler, 'VectorStore') as mock_vector_class, \
              patch.object(handler, 'Article840Tagger') as mock_tagger_class:
             
-            print(f"TEST DEBUG: Inside context manager")
+            print("TEST DEBUG: Inside context manager")
             print(f"TEST DEBUG: handler.MetadataStore ID: {id(handler.MetadataStore)}")
             print(f"TEST DEBUG: mock_metadata_class ID: {id(mock_metadata_class)}")
 

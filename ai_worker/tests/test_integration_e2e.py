@@ -10,7 +10,10 @@ import json
 from unittest.mock import Mock, patch
 from datetime import datetime
 
+import pytest
 
+
+@pytest.mark.integration
 class TestPDFProcessingE2E:
     """PDF 파일 처리 E2E 테스트"""
 
@@ -116,6 +119,7 @@ class TestPDFProcessingE2E:
         assert mock_tagger.tag.call_count == 3
 
 
+@pytest.mark.integration
 class TestKakaoTalkProcessingE2E:
     """카카오톡 파일 처리 E2E 테스트"""
 
@@ -249,6 +253,7 @@ class TestKakaoTalkProcessingE2E:
         assert mock_tagger.tag.call_count == 5
 
 
+@pytest.mark.integration
 class TestImageProcessingE2E:
     """이미지 파일 처리 E2E 테스트"""
 
@@ -362,6 +367,7 @@ class TestImageProcessingE2E:
         mock_tagger.tag.assert_called_once()
 
 
+@pytest.mark.integration
 class TestMultiFileProcessingE2E:
     """여러 파일 동시 처리 E2E 테스트"""
 
@@ -465,6 +471,7 @@ class TestMultiFileProcessingE2E:
         assert mock_metadata.save_file.call_count == 3
 
 
+@pytest.mark.integration
 class TestErrorRecoveryE2E:
     """에러 복구 E2E 테스트"""
 
