@@ -363,18 +363,18 @@
 
 ### Backend Implementation for US8
 
-- [ ] T147 [US8] Create `SummaryCardService` in `backend/app/services/summary_card_service.py`
-- [ ] T148 [US8] Implement `GET /cases/{case_id}/summary` endpoint in `backend/app/api/summary.py`
-- [ ] T149 [US8] Implement `GET /cases/{case_id}/summary/pdf` PDF generation endpoint in `backend/app/api/summary.py`
-- [ ] T150 [US8] Register summary router in `backend/app/main.py`
-- [ ] T151 [P] [US8] Contract test for summary API in `backend/tests/contract/test_summary_contract.py`
+- [x] T147 [US8] Create `SummaryCardService` in `backend/app/services/summary_card_service.py`
+- [x] T148 [US8] Implement `GET /cases/{case_id}/summary` endpoint in `backend/app/api/summary.py`
+- [x] T149 [US8] Implement `GET /cases/{case_id}/summary/pdf` PDF generation endpoint in `backend/app/api/summary.py`
+- [x] T150 [US8] Register summary router in `backend/app/main.py`
+- [x] T151 [P] [US8] Contract test for summary API in `backend/tests/contract/test_summary.py`
 
 ### Frontend Implementation for US8
 
 - [x] T152 [US8] Create summary API client in `frontend/src/lib/api/summary.ts`
 - [x] T153 [US8] Create ExplainerCard component in `frontend/src/components/cases/ExplainerCard.tsx`
 - [x] T154 [US8] Create ShareSummaryModal component in `frontend/src/components/cases/ShareSummaryModal.tsx`
-- [x] T155 [US8] Add "요약 카드 생성" button to case detail page
+- [x] T155 [US8] Add "요약 카드 생성" button to case detail page in `frontend/src/app/lawyer/cases/[id]/LawyerCaseDetailClient.tsx`
 - [x] T156 [P] [US8] Component test for ExplainerCard in `frontend/src/__tests__/components/cases/ExplainerCard.test.tsx`
 
 **Checkpoint**: Summary cards work - generate, view, download PDF, share
