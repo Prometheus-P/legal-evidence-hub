@@ -6,7 +6,7 @@
 'use client';
 
 import { memo } from 'react';
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import type { Party, PartyType } from '@/types/relations';
 
 // Party type labels in Korean
@@ -33,13 +33,18 @@ const PartyIcon = ({ type }: { type: PartyType }) => {
   );
 };
 
-interface PartyNodeData {
+export interface PartyNodeData {
   label: string;
   party: Party;
   colors: { bg: string; border: string };
 }
 
-function PartyNodeComponent({ data, selected }: NodeProps<PartyNodeData>) {
+interface PartyNodeProps {
+  data: PartyNodeData;
+  selected?: boolean;
+}
+
+function PartyNodeComponent({ data, selected }: PartyNodeProps) {
   const { party, colors } = data;
 
   return (
@@ -54,7 +59,7 @@ function PartyNodeComponent({ data, selected }: NodeProps<PartyNodeData>) {
         borderWidth: '2px',
         borderStyle: 'solid',
         borderColor: colors.border,
-        ringColor: selected ? colors.border : undefined,
+        ...(selected && { '--tw-ring-color': colors.border } as React.CSSProperties),
       }}
     >
       {/* Connection handles */}

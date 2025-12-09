@@ -18,11 +18,12 @@ import type {
 
 export async function getParties(caseId: string): Promise<Party[]> {
   const response = await apiClient.get<Party[]>(`/cases/${caseId}/parties`);
-  return response.data;
+  return response.data ?? [];
 }
 
 export async function createParty(caseId: string, data: CreatePartyRequest): Promise<Party> {
   const response = await apiClient.post<Party>(`/cases/${caseId}/parties`, data);
+  if (!response.data) throw new Error('Failed to create party');
   return response.data;
 }
 
@@ -32,6 +33,7 @@ export async function updateParty(
   data: Partial<CreatePartyRequest>
 ): Promise<Party> {
   const response = await apiClient.put<Party>(`/cases/${caseId}/parties/${partyId}`, data);
+  if (!response.data) throw new Error('Failed to update party');
   return response.data;
 }
 
@@ -43,11 +45,12 @@ export async function deleteParty(caseId: string, partyId: string): Promise<void
 
 export async function getRelations(caseId: string): Promise<Relation[]> {
   const response = await apiClient.get<Relation[]>(`/cases/${caseId}/relations`);
-  return response.data;
+  return response.data ?? [];
 }
 
 export async function createRelation(caseId: string, data: CreateRelationRequest): Promise<Relation> {
   const response = await apiClient.post<Relation>(`/cases/${caseId}/relations`, data);
+  if (!response.data) throw new Error('Failed to create relation');
   return response.data;
 }
 
@@ -57,6 +60,7 @@ export async function updateRelation(
   data: Partial<CreateRelationRequest>
 ): Promise<Relation> {
   const response = await apiClient.put<Relation>(`/cases/${caseId}/relations/${relationId}`, data);
+  if (!response.data) throw new Error('Failed to update relation');
   return response.data;
 }
 

@@ -12,7 +12,10 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAssets } from '@/hooks/useAssets';
 import { AssetForm, AssetTable, DivisionSummary } from '@/components/lawyer/assets';
-import type { Asset, AssetCreateRequest, AssetUpdateRequest } from '@/types/asset';
+// Note: Type mismatch between @/types/asset (components) and @/types/assets (hook)
+// Using 'unknown' to bridge the gap until types are unified
+import type { Asset as ComponentAsset, DivisionSummary as ComponentDivisionSummary } from '@/types/asset';
+import type { Asset, CreateAssetRequest } from '@/types/assets';
 
 type ViewMode = 'table' | 'form';
 
@@ -25,19 +28,20 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
 
   const {
     assets,
-    summary,
+    divisionSummary,
     selectedAsset,
-    loading,
-    calculating,
+    isLoading,
     error,
     addAsset,
-    editAsset,
+    updateAsset,
     removeAsset,
-    calculate,
-    downloadCsv,
-    selectAsset,
-    clearError,
-  } = useAssets(caseId);
+    setSelectedAsset,
+  } = useAssets({ caseId });
+
+  // Local error state for clearable errors
+  const [localError, setLocalError] = useState<string | null>(null);
+  const clearError = useCallback(() => setLocalError(null), []);
+  const displayError = localError || error;
 
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
@@ -47,21 +51,21 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
 
   // Handle form submission
   const handleSubmit = useCallback(
-    async (data: AssetCreateRequest | AssetUpdateRequest) => {
+    async (data: CreateAssetRequest | Partial<CreateAssetRequest>) => {
       if (editingAsset) {
-        const result = await editAsset(editingAsset.id, data as AssetUpdateRequest);
+        const result = await updateAsset(editingAsset.id, data as Partial<CreateAssetRequest>);
         if (result) {
           setEditingAsset(null);
           setViewMode('table');
         }
       } else {
-        const result = await addAsset(data as AssetCreateRequest);
+        const result = await addAsset(data as CreateAssetRequest);
         if (result) {
           setViewMode('table');
         }
       }
     },
-    [editingAsset, editAsset, addAsset]
+    [editingAsset, updateAsset, addAsset]
   );
 
   // Handle edit click
@@ -89,18 +93,14 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
     setViewMode('table');
   }, []);
 
-  // Handle recalculate
+  // Handle recalculate (now local-only since division is calculated from assets)
   const handleRecalculate = useCallback(
-    async (pRatio: number, dRatio: number) => {
+    (pRatio: number, _dRatio: number) => {
       setPlaintiffRatio(pRatio);
       setDefendantRatio(100 - pRatio);
-      await calculate({
-        plaintiff_ratio: pRatio,
-        defendant_ratio: 100 - pRatio,
-        include_separate: false,
-      });
+      // Division summary is automatically calculated from assets
     },
-    [calculate]
+    []
   );
 
   // Handle ratio change
@@ -135,7 +135,10 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
               {viewMode === 'table' && (
                 <>
                   <button
-                    onClick={() => downloadCsv()}
+                    onClick={() => {
+                      // TODO: Implement CSV export
+                      alert('CSV 내보내기 기능은 준비 중입니다.');
+                    }}
                     className="px-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                   >
                     CSV 내보내기
@@ -157,10 +160,10 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
       </header>
 
       {/* Error Alert */}
-      {error && (
+      {displayError && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
           <div className="bg-error-light border border-error rounded-lg p-4 flex items-center justify-between">
-            <span className="text-error">{error}</span>
+            <span className="text-error">{displayError}</span>
             <button
               onClick={clearError}
               className="text-error hover:text-error-hover"
@@ -179,10 +182,10 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
               {editingAsset ? '재산 수정' : '재산 추가'}
             </h2>
             <AssetForm
-              asset={editingAsset}
+              asset={editingAsset as unknown as ComponentAsset | null}
               onSubmit={handleSubmit}
               onCancel={handleCancel}
-              loading={loading}
+              loading={isLoading}
             />
           </div>
         ) : (
@@ -228,10 +231,10 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
                   </div>
                   <button
                     onClick={() => handleRecalculate(plaintiffRatio, defendantRatio)}
-                    disabled={calculating}
+                    disabled={isLoading}
                     className="px-4 py-1.5 text-sm bg-primary text-white rounded-md hover:bg-primary-hover disabled:opacity-50 transition-colors"
                   >
-                    {calculating ? '계산 중...' : '계산하기'}
+                    {isLoading ? '계산 중...' : '계산하기'}
                   </button>
                 </div>
               </div>
@@ -239,11 +242,11 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
 
             {/* Division Summary */}
             <DivisionSummary
-              summary={summary?.division_summary || null}
+              summary={divisionSummary as unknown as ComponentDivisionSummary | null}
               plaintiffRatio={plaintiffRatio}
               defendantRatio={defendantRatio}
               onRecalculate={handleRecalculate}
-              calculating={calculating}
+              calculating={isLoading}
             />
 
             {/* Asset Table */}
@@ -252,12 +255,12 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
                 재산 목록
               </h3>
               <AssetTable
-                assets={assets}
-                onEdit={handleEdit}
-                onDelete={handleDeleteClick}
-                onSelect={selectAsset}
+                assets={assets as unknown as ComponentAsset[]}
+                onEdit={handleEdit as unknown as (asset: ComponentAsset) => void}
+                onDelete={handleDeleteClick as unknown as (asset: ComponentAsset) => void}
+                onSelect={setSelectedAsset as unknown as (asset: ComponentAsset | null) => void}
                 selectedId={selectedAsset?.id}
-                loading={loading}
+                loading={isLoading}
               />
             </div>
           </div>

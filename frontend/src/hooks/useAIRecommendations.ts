@@ -29,7 +29,7 @@ export function useAIRecommendations(): UseAIRecommendationsResult {
 
     try {
       // Try to fetch from API
-      const response = await apiClient.get('/ai/recommendations');
+      const response = await apiClient.get<{ recommendations: AIRecommendation[] }>('/ai/recommendations');
       if (response.data) {
         setRecommendations(response.data.recommendations || []);
       }

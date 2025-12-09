@@ -21,6 +21,7 @@ import {
   NodeTypes,
   BackgroundVariant,
   Panel,
+  Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -30,7 +31,8 @@ import type { Party, PartyType, RelationType } from '@/types/relations';
 
 // Register custom node types
 const nodeTypes: NodeTypes = {
-  partyNode: PartyNode,
+  // Type assertion needed due to ReactFlow v12 stricter typing
+  partyNode: PartyNode as NodeTypes[string],
 };
 
 // Relation type options for creating new relations
@@ -94,7 +96,7 @@ export function CaseRelationsGraph({ caseId, readOnly = false }: CaseRelationsGr
   const onNodeDragStop = useCallback(
     (_event: React.MouseEvent, _node: unknown, draggedNodes: unknown[]) => {
       if (!readOnly) {
-        savePositions(draggedNodes as Array<{id: string; position: {x: number; y: number}}>);
+        savePositions(draggedNodes as Node[]);
       }
     },
     [readOnly, savePositions]

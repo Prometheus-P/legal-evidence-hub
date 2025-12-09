@@ -14,18 +14,20 @@ import type {
 // Get all assets for a case
 export async function getAssets(caseId: string): Promise<Asset[]> {
   const response = await apiClient.get<Asset[]>(`/cases/${caseId}/assets`);
-  return response.data;
+  return response.data ?? [];
 }
 
 // Get single asset
 export async function getAsset(caseId: string, assetId: string): Promise<Asset> {
   const response = await apiClient.get<Asset>(`/cases/${caseId}/assets/${assetId}`);
+  if (!response.data) throw new Error('Asset not found');
   return response.data;
 }
 
 // Create new asset
 export async function createAsset(caseId: string, data: CreateAssetRequest): Promise<Asset> {
   const response = await apiClient.post<Asset>(`/cases/${caseId}/assets`, data);
+  if (!response.data) throw new Error('Failed to create asset');
   return response.data;
 }
 
@@ -36,6 +38,7 @@ export async function updateAsset(
   data: Partial<CreateAssetRequest>
 ): Promise<Asset> {
   const response = await apiClient.put<Asset>(`/cases/${caseId}/assets/${assetId}`, data);
+  if (!response.data) throw new Error('Failed to update asset');
   return response.data;
 }
 
@@ -47,6 +50,7 @@ export async function deleteAsset(caseId: string, assetId: string): Promise<void
 // Get division summary
 export async function getDivisionSummary(caseId: string): Promise<DivisionSummary> {
   const response = await apiClient.get<DivisionSummary>(`/cases/${caseId}/assets/summary`);
+  if (!response.data) throw new Error('Division summary not found');
   return response.data;
 }
 
@@ -59,5 +63,6 @@ export async function simulateDivision(
     `/cases/${caseId}/assets/simulate-division`,
     data
   );
+  if (!response.data) throw new Error('Failed to simulate division');
   return response.data;
 }

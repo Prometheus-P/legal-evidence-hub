@@ -3,21 +3,25 @@
 /**
  * Lawyer Case List Page
  * 003-role-based-ui Feature - US3
+ * 010-dashboard-first-flow - Added case creation functionality
  *
  * Main case management page for lawyers with filtering, sorting, and bulk actions.
  */
 
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useCaseList } from '@/hooks/useCaseList';
 import { CaseCard } from '@/components/lawyer/CaseCard';
 import { CaseTable } from '@/components/lawyer/CaseTable';
 import { CaseFilter } from '@/components/lawyer/CaseFilter';
 import { BulkActionBar } from '@/components/lawyer/BulkActionBar';
+import AddCaseModal from '@/components/cases/AddCaseModal';
 
 type ViewMode = 'grid' | 'table';
 
 export default function LawyerCasesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     cases,
     isLoading,
@@ -35,6 +39,7 @@ export default function LawyerCasesPage() {
     clearSelection,
     executeBulkAction,
     isBulkActionLoading,
+    refresh,
   } = useCaseList();
 
   const handleBulkAction = async (action: string, params?: Record<string, string>) => {
@@ -63,7 +68,7 @@ export default function LawyerCasesPage() {
             총 {pagination.total}건의 케이스
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
@@ -87,6 +92,15 @@ export default function LawyerCasesPage() {
               </svg>
             </button>
           </div>
+          {/* Add Case Button */}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-lg shadow hover:bg-[var(--color-primary-dark)] transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            새 사건 등록
+          </button>
         </div>
       </div>
 
@@ -201,6 +215,13 @@ export default function LawyerCasesPage() {
         onAction={handleBulkAction}
         onClearSelection={clearSelection}
         isLoading={isBulkActionLoading}
+      />
+
+      {/* Add Case Modal */}
+      <AddCaseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={refresh}
       />
     </div>
   );

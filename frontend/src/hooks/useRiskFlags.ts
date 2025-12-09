@@ -29,7 +29,7 @@ export function useRiskFlags(): UseRiskFlagsResult {
 
     try {
       // Try to fetch from API
-      const response = await apiClient.get('/cases/risk-flags');
+      const response = await apiClient.get<{ cases: RiskCase[] }>('/cases/risk-flags');
       if (response.data) {
         setCases(response.data.cases || []);
       }
