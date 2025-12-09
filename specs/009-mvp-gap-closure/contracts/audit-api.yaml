@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: LEH Audit Log API
+  description: Audit trail for compliance and security monitoring
+  version: 1.0.0
+
+servers:
+  - url: https://api.legalevidence.hub
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+
+paths:
+  /audit-logs:
+    get:
+      operationId: listAuditLogs
+      summary: List audit logs
+      description: Query audit logs with filtering (admin/lawyer only)
+      tags:
+        - Audit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by user
+        - name: action
+          in: query
+          schema:
+            type: string
+            enum: 
+              - VIEW_CASE
+              - CREATE_CASE
+              - UPDATE_CASE
+              - DELETE_CASE
+              - VIEW_EVIDENCE
+              - UPLOAD_EVIDENCE
+              - GENERATE_DRAFT
+              - EXPORT_DRAFT
+              - ACCESS_DENIED
+              - LOGIN
+              - LOGOUT
+          description: Filter by action type
+        - name: resource_type
+          in: query
+          schema:
+            type: string
+            enum: [case, evidence, draft, auth]
+          description: Filter by resource type
+        - name: resource_id
+          in: query
+          schema:
+            type: string
+          description: Filter by specific resource
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Start of date range (inclusive)
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: End of date range (inclusive)
+        - name: success
+          in: query
+          schema:
+            type: boolean
+          description: Filter by success/failure
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Audit log list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogListResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin/lawyer role required
+
+  /audit-logs/{log_id}:
+    get:
+      operationId: getAuditLog
+      summary: Get audit log detail
+      description: Get single audit log entry with full details
+      tags:
+        - Audit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: log_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit log detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogDetail'
+        '401':
+          description: Authentication required
+        '403':
+          description: Admin/lawyer role required
+        '404':
+          description: Log not found
+
+  /cases/{case_id}/audit-logs:
+    get:
+      operationId: listCaseAuditLogs
+      summary: List case-specific audit logs
+      description: Get all audit logs for a specific case
+      tags:
+        - Audit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: Case audit log list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogListResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Not a case member
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuditLogListResponse:
+      type: object
+      required:
+        - logs
+        - total
+        - page
+        - page_size
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogSummary'
+        total:
+          type: integer
+          description: Total matching logs
+        page:
+          type: integer
+        page_size:
+          type: integer
+        has_more:
+          type: boolean
+
+    AuditLogSummary:
+      type: object
+      required:
+        - id
+        - user_id
+        - action
+        - resource_type
+        - success
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_name:
+          type: string
+          description: User display name
+        action:
+          type: string
+        resource_type:
+          type: string
+        resource_id:
+          type: string
+        success:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AuditLogDetail:
+      allOf:
+        - $ref: '#/components/schemas/AuditLogSummary'
+        - type: object
+          properties:
+            ip_address:
+              type: string
+              description: Client IP address
+            user_agent:
+              type: string
+              description: Browser/client info
+            details:
+              type: object
+              additionalProperties: true
+              description: Action-specific context
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                email:
+                  type: string
+                role:
+                  type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer

@@ -1,0 +1,197 @@
+openapi: 3.0.3
+info:
+  title: LEH Search API
+  description: RAG-based semantic search for evidence and cases
+  version: 1.0.0
+
+servers:
+  - url: https://api.legalevidence.hub
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+
+paths:
+  /search:
+    get:
+      operationId: search
+      summary: Multi-category search
+      description: Search across cases, clients, evidence, and events using Qdrant RAG
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 500
+          description: Search query text
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [cases, clients, evidence, events, all]
+            default: all
+          description: Category to search in
+        - name: case_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Limit search to specific case (required for evidence/events)
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Maximum results to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Pagination offset
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+        '403':
+          description: Access denied to case
+        '500':
+          description: Search engine error
+
+  /search/suggestions:
+    get:
+      operationId: getSuggestions
+      summary: Get search suggestions
+      description: Auto-complete suggestions based on partial query
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+            maximum: 10
+      responses:
+        '200':
+          description: Suggestions list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - results
+        - total
+        - query
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        total:
+          type: integer
+          description: Total matching results
+        query:
+          type: string
+          description: Original query
+        took_ms:
+          type: integer
+          description: Search time in milliseconds
+
+    SearchResult:
+      type: object
+      required:
+        - id
+        - type
+        - title
+        - score
+      properties:
+        id:
+          type: string
+          description: Resource ID
+        type:
+          type: string
+          enum: [case, client, evidence, event]
+        title:
+          type: string
+          description: Display title
+        snippet:
+          type: string
+          description: Highlighted text snippet
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Relevance score
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Type-specific metadata
+
+    SuggestionsResponse:
+      type: object
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              category:
+                type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error message
+        status_code:
+          type: integer

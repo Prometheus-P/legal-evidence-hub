@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: LEH Draft API
+  description: AI-powered legal document draft generation with RAG
+  version: 1.0.0
+
+servers:
+  - url: https://api.legalevidence.hub
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+
+paths:
+  /cases/{case_id}/draft-preview:
+    post:
+      operationId: generateDraftPreview
+      summary: Generate draft preview
+      description: |
+        Generate AI-powered draft document using RAG search over case evidence.
+        Returns "Preview Only" - requires manual lawyer review before use.
+      tags:
+        - Draft
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DraftPreviewRequest'
+      responses:
+        '200':
+          description: Draft preview generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftPreviewResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Authentication required
+        '403':
+          description: Access denied to case
+        '404':
+          description: Case not found
+        '422':
+          description: Insufficient evidence for draft
+        '500':
+          description: AI generation error
+
+  /cases/{case_id}/draft-export:
+    get:
+      operationId: exportDraft
+      summary: Export draft to file
+      description: Export saved draft to DOCX or PDF format
+      tags:
+        - Draft
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [docx, pdf]
+            default: docx
+        - name: draft_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Specific draft version (default: latest)
+      responses:
+        '200':
+          description: Draft file
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication required
+        '403':
+          description: Access denied
+        '404':
+          description: Draft not found
+
+  /cases/{case_id}/drafts:
+    get:
+      operationId: listDrafts
+      summary: List draft versions
+      description: Get all draft versions for a case
+      tags:
+        - Draft
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Draft list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftListResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DraftPreviewRequest:
+      type: object
+      properties:
+        document_type:
+          type: string
+          enum: [complaint, response, motion, settlement]
+          default: complaint
+          description: Type of legal document to generate
+        focus_topics:
+          type: array
+          items:
+            type: string
+          description: Topics to emphasize in draft
+          example: ["폭행", "재산분할"]
+        max_length:
+          type: integer
+          minimum: 500
+          maximum: 10000
+          default: 3000
+          description: Maximum content length in characters
+        include_citations:
+          type: boolean
+          default: true
+          description: Include evidence citations in draft
+
+    DraftPreviewResponse:
+      type: object
+      required:
+        - draft_id
+        - content
+        - status
+        - citations
+      properties:
+        draft_id:
+          type: string
+          format: uuid
+          description: Unique draft version ID
+        content:
+          type: string
+          description: Generated draft content (markdown)
+        status:
+          type: string
+          enum: [preview]
+          description: Always "preview" - requires manual review
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+          description: Evidence citations referenced in draft
+        metadata:
+          type: object
+          properties:
+            model:
+              type: string
+              example: gpt-4o
+            tokens_used:
+              type: integer
+            generation_time_ms:
+              type: integer
+            evidence_count:
+              type: integer
+        warning:
+          type: string
+          default: "이 초안은 AI가 생성한 것으로, 법적 검토가 필요합니다."
+          description: Mandatory preview warning
+
+    Citation:
+      type: object
+      required:
+        - evidence_id
+        - text
+      properties:
+        evidence_id:
+          type: string
+          description: Source evidence ID
+        text:
+          type: string
+          description: Cited text excerpt
+        file_name:
+          type: string
+          description: Source file name
+        timestamp:
+          type: string
+          format: date-time
+          description: Evidence timestamp
+        relevance_score:
+          type: number
+          format: float
+          description: AI-assigned relevance (0-1)
+
+    DraftListResponse:
+      type: object
+      properties:
+        drafts:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              created_at:
+                type: string
+                format: date-time
+              document_type:
+                type: string
+              status:
+                type: string
+              created_by:
+                type: string
+        total:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer

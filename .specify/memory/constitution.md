@@ -1,20 +1,20 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.1.1 → 1.2.0
+Version change: 1.2.0 → 1.3.0
 
-Modified principles:
-- Principle V: Clean Architecture (expanded with explicit repository pattern requirements)
+Modified principles: None
 
 Added sections:
-- Principle VIII: Semantic Versioning (Release Management)
+- Team Responsibilities: GitHub account mappings added
+- Collaboration: GitHub Issue Assignment Policy (role-based)
 
 Removed sections: None
 
 Templates validated:
-- .specify/templates/plan-template.md ✅ (Constitution Check section exists)
+- .specify/templates/plan-template.md ✅ (No updates needed)
 - .specify/templates/spec-template.md ✅ (No updates needed)
-- .specify/templates/tasks-template.md ✅ (Repository pattern aligns with existing structure)
+- .specify/templates/tasks-template.md ✅ (No updates needed)
 
 Follow-up TODOs: None
 -->
@@ -141,11 +141,28 @@ main ← dev ← feat/*
 
 ### Team Responsibilities
 
-| Role | Responsibility |
-|:-----|:---------------|
-| H (Backend/Infra) | FastAPI, RDS, S3, authentication, deployment |
-| L (AI/Data) | AI Worker, STT/OCR, parsers, embeddings, RAG |
-| P (Frontend/PM) | Next.js, UX, GitHub operations, PR approval |
+| Role | GitHub | Responsibility |
+|:-----|:-------|:---------------|
+| H (Backend/Infra) | `leaf446` | FastAPI, RDS, S3, authentication, deployment |
+| L (AI/Data) | `vsun410` | AI Worker, STT/OCR, parsers, embeddings, RAG |
+| P (Frontend/PM) | `Prometheus-P` | Next.js, UX, GitHub operations, PR approval |
+
+### GitHub Issue Assignment Policy
+
+All GitHub issues MUST be assigned based on the responsible domain area:
+
+| Domain | Assignee | Scope |
+|:-------|:---------|:------|
+| **AI Worker** | `vsun410` | `ai_worker/`, AWS Lambda, S3 events, DynamoDB, Qdrant storage |
+| **Backend** | `leaf446` | `backend/`, FastAPI, API endpoints, Services, Repositories |
+| **Frontend** | `Prometheus-P` | `frontend/`, Next.js, React components, UI/UX |
+
+**Assignment Rules**:
+- Issues spanning multiple domains MUST assign all relevant owners
+- Setup/documentation issues MAY assign all team members
+- gh CLI format: `--assignee <username>` (e.g., `--assignee vsun410`)
+
+**Rationale**: Clear ownership ensures accountability, reduces confusion, and enables parallel work streams without conflicts.
 
 ## Governance
 
@@ -170,5 +187,6 @@ main ← dev ← feat/*
 - Test-related PRs MUST demonstrate TDD cycle compliance when applicable
 - New backend features MUST follow Repository Pattern per Principle V
 - Release PRs MUST include version bump following Semantic Versioning principle
+- GitHub issues MUST be assigned per the Issue Assignment Policy
 
-**Version**: 1.2.0 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-09
+**Version**: 1.3.0 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-09
