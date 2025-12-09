@@ -515,33 +515,18 @@ class TestGeneratePdf:
         with patch.object(DraftService, '__init__', lambda x, y: None):
             service = DraftService(mock_db)
 
-            # Make reportlab import fail
-            import sys
-            original_modules = {}
-            for mod in list(sys.modules.keys()):
-                if 'reportlab' in mod:
-                    original_modules[mod] = sys.modules[mod]
-                    del sys.modules[mod]
+            # Mock the import inside _generate_pdf to raise ImportError
+            import builtins
+            original_import = builtins.__import__
 
-            # Create an import blocker
-            class ImportBlocker:
-                def find_module(self, name, path=None):
-                    if 'reportlab' in name:
-                        return self
-                    return None
-
-                def load_module(self, name):
+            def mock_import(name, *args, **kwargs):
+                if 'reportlab' in name:
                     raise ImportError("No module named 'reportlab'")
+                return original_import(name, *args, **kwargs)
 
-            blocker = ImportBlocker()
-            sys.meta_path.insert(0, blocker)
-
-            try:
+            with patch.object(builtins, '__import__', side_effect=mock_import):
                 with pytest.raises(ValidationError, match="PDF export is not available"):
                     service._generate_pdf(mock_case, mock_draft_response)
-            finally:
-                sys.meta_path.remove(blocker)
-                sys.modules.update(original_modules)
 
     def test_generate_pdf_success(self):
         """Successfully generates PDF file"""
@@ -772,3 +757,430 @@ class TestExportDraftFormats:
 
             assert filename == "draft_test.pdf"
             service._generate_pdf.assert_called_once()
+
+
+class TestListDrafts:
+    """Unit tests for list_drafts method (lines 879-901)"""
+
+    def test_list_drafts_case_not_found(self):
+        """Raises NotFoundError when case doesn't exist"""
+        mock_db = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = None
+
+            with pytest.raises(NotFoundError, match="Case"):
+                service.list_drafts("case-123", "user-123")
+
+    def test_list_drafts_no_access(self):
+        """Raises PermissionError when user has no access"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = False
+
+            with pytest.raises(PermissionError, match="access"):
+                service.list_drafts("case-123", "user-123")
+
+    def test_list_drafts_success(self):
+        """Returns list of draft summaries"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        # Create mock draft
+        from app.db.models import DocumentType, DraftStatus
+        mock_draft = MagicMock()
+        mock_draft.id = "draft-123"
+        mock_draft.case_id = "case-123"
+        mock_draft.title = "테스트 초안"
+        mock_draft.document_type = DocumentType.BRIEF
+        mock_draft.version = 1
+        mock_draft.status = DraftStatus.DRAFT
+        mock_draft.updated_at = datetime.now(timezone.utc)
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            # Mock query chain
+            mock_query = MagicMock()
+            mock_query.filter.return_value = mock_query
+            mock_query.order_by.return_value = mock_query
+            mock_query.all.return_value = [mock_draft]
+            mock_db.query.return_value = mock_query
+
+            result = service.list_drafts("case-123", "user-123")
+
+            assert len(result) == 1
+            assert result[0].id == "draft-123"
+            assert result[0].title == "테스트 초안"
+
+
+class TestGetDraft:
+    """Unit tests for get_draft method (lines 920-947)"""
+
+    def test_get_draft_case_not_found(self):
+        """Raises NotFoundError when case doesn't exist"""
+        mock_db = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = None
+
+            with pytest.raises(NotFoundError, match="Case"):
+                service.get_draft("case-123", "draft-123", "user-123")
+
+    def test_get_draft_no_access(self):
+        """Raises PermissionError when user has no access"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = False
+
+            with pytest.raises(PermissionError, match="access"):
+                service.get_draft("case-123", "draft-123", "user-123")
+
+    def test_get_draft_not_found(self):
+        """Raises NotFoundError when draft doesn't exist"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            # Mock query to return None
+            mock_query = MagicMock()
+            mock_query.filter.return_value = mock_query
+            mock_query.first.return_value = None
+            mock_db.query.return_value = mock_query
+
+            with pytest.raises(NotFoundError, match="Draft"):
+                service.get_draft("case-123", "draft-123", "user-123")
+
+    def test_get_draft_success(self):
+        """Returns draft response"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        from app.db.models import DocumentType, DraftStatus
+        mock_draft = MagicMock()
+        mock_draft.id = "draft-123"
+        mock_draft.case_id = "case-123"
+        mock_draft.title = "테스트 초안"
+        mock_draft.document_type = DocumentType.BRIEF
+        mock_draft.content = {"sections": []}
+        mock_draft.version = 1
+        mock_draft.status = DraftStatus.DRAFT
+        mock_draft.created_by = "user-123"
+        mock_draft.created_at = datetime.now(timezone.utc)
+        mock_draft.updated_at = datetime.now(timezone.utc)
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_access.return_value = True
+
+            mock_query = MagicMock()
+            mock_query.filter.return_value = mock_query
+            mock_query.first.return_value = mock_draft
+            mock_db.query.return_value = mock_query
+
+            result = service.get_draft("case-123", "draft-123", "user-123")
+
+            assert result.id == "draft-123"
+            assert result.title == "테스트 초안"
+
+
+class TestCreateDraft:
+    """Unit tests for create_draft method (lines 971-1012)"""
+
+    def test_create_draft_case_not_found(self):
+        """Raises NotFoundError when case doesn't exist"""
+        mock_db = MagicMock()
+        mock_draft_data = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = None
+
+            with pytest.raises(NotFoundError, match="Case"):
+                service.create_draft("case-123", mock_draft_data, "user-123")
+
+    def test_create_draft_no_write_access(self):
+        """Raises PermissionError when user has no write access"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_draft_data = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = False
+
+            with pytest.raises(PermissionError, match="write access"):
+                service.create_draft("case-123", mock_draft_data, "user-123")
+
+    def test_create_draft_success(self):
+        """Creates and returns draft response"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        from app.db.schemas import DraftCreate, DraftDocumentType
+        from app.db.models import DocumentType, DraftStatus
+
+        mock_draft_data = MagicMock(spec=DraftCreate)
+        mock_draft_data.title = "새 초안"
+        mock_draft_data.document_type = DraftDocumentType.BRIEF
+        mock_draft_data.content = None
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = True
+
+            # Mock the draft that gets created and refreshed
+            def refresh_side_effect(draft):
+                draft.id = "new-draft-123"
+                draft.created_at = datetime.now(timezone.utc)
+                draft.updated_at = datetime.now(timezone.utc)
+
+            mock_db.refresh.side_effect = refresh_side_effect
+
+            result = service.create_draft("case-123", mock_draft_data, "user-123")
+
+            mock_db.add.assert_called_once()
+            mock_db.commit.assert_called_once()
+            assert result.title == "새 초안"
+
+
+class TestUpdateDraft:
+    """Unit tests for update_draft method (lines 1038-1104)"""
+
+    def test_update_draft_case_not_found(self):
+        """Raises NotFoundError when case doesn't exist"""
+        mock_db = MagicMock()
+        mock_update_data = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = None
+
+            with pytest.raises(NotFoundError, match="Case"):
+                service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
+
+    def test_update_draft_no_write_access(self):
+        """Raises PermissionError when user has no write access"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_update_data = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = False
+
+            with pytest.raises(PermissionError, match="write access"):
+                service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
+
+    def test_update_draft_not_found(self):
+        """Raises NotFoundError when draft doesn't exist"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_update_data = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = True
+
+            mock_query = MagicMock()
+            mock_query.filter.return_value = mock_query
+            mock_query.first.return_value = None
+            mock_db.query.return_value = mock_query
+
+            with pytest.raises(NotFoundError, match="Draft"):
+                service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
+
+    def test_update_draft_success(self):
+        """Updates and returns draft response"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+
+        from app.db.schemas import DraftUpdate
+        from app.db.models import DocumentType, DraftStatus
+
+        mock_draft = MagicMock()
+        mock_draft.id = "draft-123"
+        mock_draft.case_id = "case-123"
+        mock_draft.title = "원래 제목"
+        mock_draft.document_type = DocumentType.BRIEF
+        mock_draft.content = {}
+        mock_draft.version = 1
+        mock_draft.status = DraftStatus.DRAFT
+        mock_draft.created_by = "user-123"
+        mock_draft.created_at = datetime.now(timezone.utc)
+        mock_draft.updated_at = datetime.now(timezone.utc)
+
+        mock_update_data = MagicMock(spec=DraftUpdate)
+        mock_update_data.title = "수정된 제목"
+        mock_update_data.document_type = None
+        mock_update_data.content = None
+        mock_update_data.status = None
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = True
+
+            mock_query = MagicMock()
+            mock_query.filter.return_value = mock_query
+            mock_query.first.return_value = mock_draft
+            mock_db.query.return_value = mock_query
+
+            result = service.update_draft("case-123", "draft-123", mock_update_data, "user-123")
+
+            mock_db.commit.assert_called_once()
+            assert mock_draft.title == "수정된 제목"
+
+
+class TestSaveGeneratedDraft:
+    """Unit tests for save_generated_draft method (lines 1131-1191)"""
+
+    def test_save_generated_draft_case_not_found(self):
+        """Raises NotFoundError when case doesn't exist"""
+        mock_db = MagicMock()
+        mock_draft_response = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = None
+
+            with pytest.raises(NotFoundError, match="Case"):
+                service.save_generated_draft("case-123", mock_draft_response, "user-123")
+
+    def test_save_generated_draft_no_write_access(self):
+        """Raises PermissionError when user has no write access"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_draft_response = MagicMock()
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = False
+
+            with pytest.raises(PermissionError, match="write access"):
+                service.save_generated_draft("case-123", mock_draft_response, "user-123")
+
+    def test_save_generated_draft_success(self):
+        """Saves and returns draft response"""
+        mock_db = MagicMock()
+        mock_case = MagicMock()
+        mock_case.title = "테스트 케이스"
+
+        # Create mock draft preview response
+        mock_citation = MagicMock()
+        mock_citation.evidence_id = "ev-123"
+        mock_citation.snippet = "증거 내용"
+        mock_citation.labels = ["폭언"]
+
+        mock_draft_response = MagicMock()
+        mock_draft_response.draft_text = "초안 본문"
+        mock_draft_response.citations = [mock_citation]
+        mock_draft_response.generated_at = datetime.now(timezone.utc)
+
+        with patch.object(DraftService, '__init__', lambda x, y: None):
+            service = DraftService(mock_db)
+            service.db = mock_db
+            service.case_repo = MagicMock()
+            service.member_repo = MagicMock()
+
+            service.case_repo.get_by_id.return_value = mock_case
+            service.member_repo.has_write_access.return_value = True
+
+            def refresh_side_effect(draft):
+                draft.id = "saved-draft-123"
+                draft.created_at = datetime.now(timezone.utc)
+                draft.updated_at = datetime.now(timezone.utc)
+
+            mock_db.refresh.side_effect = refresh_side_effect
+
+            result = service.save_generated_draft("case-123", mock_draft_response, "user-123")
+
+            mock_db.add.assert_called_once()
+            mock_db.commit.assert_called_once()
+            assert result.title == "테스트 케이스 - 초안"
