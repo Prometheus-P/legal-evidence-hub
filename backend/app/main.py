@@ -312,32 +312,51 @@ async def check_roles():
 @app.post("/admin/migrate-roles", tags=["Admin"])
 async def migrate_roles_to_lowercase():
     """
-    Temporary endpoint to migrate role values from uppercase to lowercase.
-    Remove this endpoint after migration is complete.
+    Migrate role enum from uppercase to lowercase.
+    Steps:
+    1. Add lowercase values to enum if not exist
+    2. Update users to use lowercase values
+    3. Remove uppercase values from enum
     """
     from app.db.session import get_db
     from sqlalchemy import text
 
     db = next(get_db())
     try:
-        # Just check what roles exist first
-        check_result = db.execute(text("SELECT DISTINCT role::text FROM users"))
-        existing_roles = [r[0] for r in check_result.fetchall()]
+        steps = []
 
-        # If all roles are already lowercase, nothing to migrate
-        uppercase_roles = [r for r in existing_roles if r != r.lower()]
-        if not uppercase_roles:
-            return {
-                "status": "success",
-                "message": "All roles are already lowercase",
-                "existing_roles": existing_roles
-            }
+        # Step 1: Add lowercase values to enum (if not exists)
+        lowercase_roles = ['lawyer', 'staff', 'admin', 'client', 'detective']
+        for role in lowercase_roles:
+            try:
+                db.execute(text(f"ALTER TYPE userrole ADD VALUE IF NOT EXISTS '{role}'"))
+                steps.append(f"Added enum value: {role}")
+            except Exception as e:
+                steps.append(f"Skipped {role}: {str(e)}")
+
+        db.commit()
+
+        # Step 2: Update users from UPPERCASE to lowercase
+        for role in lowercase_roles:
+            upper_role = role.upper()
+            try:
+                result = db.execute(
+                    text(f"UPDATE users SET role = '{role}' WHERE role::text = '{upper_role}'")
+                )
+                db.commit()
+                steps.append(f"Updated {result.rowcount} users from {upper_role} to {role}")
+            except Exception as e:
+                db.rollback()
+                steps.append(f"Error updating {upper_role}: {str(e)}")
+
+        # Verify
+        check_result = db.execute(text("SELECT DISTINCT role::text FROM users"))
+        final_roles = [r[0] for r in check_result.fetchall()]
 
         return {
-            "status": "info",
-            "message": "Found uppercase roles that need migration",
-            "existing_roles": existing_roles,
-            "uppercase_roles": uppercase_roles
+            "status": "success",
+            "steps": steps,
+            "final_roles": final_roles
         }
     except Exception as e:
         db.rollback()
