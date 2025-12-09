@@ -1,16 +1,40 @@
 """
 Integration tests for Qdrant vector database
 Requires: docker run -d -p 6333:6333 qdrant/qdrant
+
+Note: These tests are skipped by default in CI unless Qdrant is running.
 """
 
+import os
 import pytest
-from app.utils.qdrant import (
-    create_case_collection,
-    delete_case_collection,
-    index_evidence_document,
-    search_evidence_by_semantic,
-    get_all_documents_in_case
-)
+
+
+def is_qdrant_available():
+    """Check if Qdrant server is available"""
+    qdrant_host = os.environ.get("QDRANT_HOST", "")
+    # Skip if empty (in-memory mode configured) or explicitly disabled
+    if not qdrant_host or qdrant_host == "localhost":
+        try:
+            import requests
+            response = requests.get("http://localhost:6333/health", timeout=1)
+            return response.status_code == 200
+        except Exception:
+            return False
+    return True
+
+
+# Import after check to avoid import errors when Qdrant not available
+try:
+    from app.utils.qdrant import (
+        create_case_collection,
+        delete_case_collection,
+        index_evidence_document,
+        search_evidence_by_semantic,
+        get_all_documents_in_case
+    )
+except Exception:
+    # Mark all tests as skipped if import fails
+    pass
 
 
 @pytest.fixture
@@ -22,6 +46,9 @@ def test_case_id():
 @pytest.fixture(autouse=True)
 def cleanup_collection(test_case_id):
     """Cleanup collection before and after each test"""
+    if not is_qdrant_available():
+        yield
+        return
     # Cleanup before
     delete_case_collection(test_case_id)
     yield
@@ -29,6 +56,10 @@ def cleanup_collection(test_case_id):
     delete_case_collection(test_case_id)
 
 
+@pytest.mark.skipif(
+    not is_qdrant_available(),
+    reason="Qdrant server not available"
+)
 class TestQdrantIntegration:
     """Integration tests for Qdrant operations"""
 

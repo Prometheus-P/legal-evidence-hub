@@ -289,14 +289,18 @@ def get_role_redirect_path(role: UserRole) -> str:
     return role_paths.get(role, "/dashboard")
 
 
-def verify_case_read_access(case_id: str, db: Session, user_id: str) -> str:
+def verify_case_read_access(
+    case_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+) -> str:
     """
     Verify user has read access to a case (any member role).
 
     Args:
         case_id: Case ID to check access for
-        db: Database session
-        user_id: User ID to check
+        db: Database session (injected via Depends)
+        user_id: User ID to check (injected via Depends)
 
     Returns:
         user_id if access granted
@@ -317,14 +321,18 @@ def verify_case_read_access(case_id: str, db: Session, user_id: str) -> str:
     return user_id
 
 
-def verify_case_write_access(case_id: str, db: Session, user_id: str) -> str:
+def verify_case_write_access(
+    case_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+) -> str:
     """
     Verify user has write access to a case (OWNER or MEMBER role, not VIEWER).
 
     Args:
         case_id: Case ID to check access for
-        db: Database session
-        user_id: User ID to check
+        db: Database session (injected via Depends)
+        user_id: User ID to check (injected via Depends)
 
     Returns:
         user_id if access granted

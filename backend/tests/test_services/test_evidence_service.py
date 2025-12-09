@@ -115,9 +115,11 @@ class TestEvidenceServicePresignedUrl:
 class TestEvidenceServiceUploadComplete:
     """Tests for handle_upload_complete method"""
 
+    @patch("app.services.evidence_service.update_evidence_status")
+    @patch("app.services.evidence_service.invoke_ai_worker")
     @patch("app.services.evidence_service.save_evidence_metadata")
     def test_handle_upload_complete_success(
-        self, mock_save_metadata, evidence_service, sample_case
+        self, mock_save_metadata, mock_invoke_ai_worker, mock_update_status, evidence_service, sample_case
     ):
         """Test successful upload completion handling"""
         # Arrange
@@ -131,6 +133,7 @@ class TestEvidenceServiceUploadComplete:
 
         evidence_service.case_repo.get_by_id.return_value = sample_case
         evidence_service.member_repo.has_access.return_value = True
+        mock_invoke_ai_worker.return_value = {"StatusCode": 202}
 
         # Act
         result = evidence_service.handle_upload_complete(request, user_id)
@@ -138,8 +141,11 @@ class TestEvidenceServiceUploadComplete:
         # Assert
         assert result.case_id == "case_123abc"
         assert result.evidence_id.startswith("ev_")
-        assert result.status == "pending"
+        # After successful AI Worker invocation, status becomes "processing"
+        assert result.status == "processing"
         mock_save_metadata.assert_called_once()
+        mock_invoke_ai_worker.assert_called_once()
+        mock_update_status.assert_called_once_with("ev_temp123", "processing")
 
     @patch("app.services.evidence_service.save_evidence_metadata")
     def test_handle_upload_complete_extracts_filename(

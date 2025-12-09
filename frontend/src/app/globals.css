@@ -138,6 +138,59 @@
   .bg-accent {
     background-color: var(--color-primary);
   }
+
+  /*
+   * React Flow dark mode styles
+   */
+  .dark .react-flow {
+    --xy-background-color: theme('colors.neutral.900');
+  }
+
+  .dark .react-flow__node {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+    color: theme('colors.neutral.100');
+  }
+
+  .dark .react-flow__edge-path {
+    stroke: theme('colors.neutral.400');
+  }
+
+  .dark .react-flow__edge-text {
+    fill: theme('colors.neutral.300');
+  }
+
+  .dark .react-flow__controls {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+  }
+
+  .dark .react-flow__controls-button {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+    fill: theme('colors.neutral.300');
+  }
+
+  .dark .react-flow__controls-button:hover {
+    background-color: theme('colors.neutral.700');
+  }
+
+  .dark .react-flow__minimap {
+    background-color: theme('colors.neutral.800');
+  }
+
+  .dark .react-flow__panel {
+    background-color: theme('colors.neutral.800');
+    border-color: theme('colors.neutral.600');
+  }
+
+  .dark .react-flow__attribution {
+    background-color: transparent;
+  }
+
+  .dark .react-flow__attribution a {
+    color: theme('colors.neutral.500');
+  }
 }
 
 /* ================================================

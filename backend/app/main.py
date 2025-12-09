@@ -260,6 +260,9 @@ app.include_router(billing.client_router, tags=["Client Billing"])
 # Calendar 라우터
 app.include_router(calendar.router, tags=["Calendar"])
 
+# Admin 라우터 (User Management & Audit Log)
+app.include_router(admin.router, tags=["Admin"])
+
 # L-work Demo API (테스트 후 제거 가능)
 try:
     from app.api.l_demo import router as l_demo_router

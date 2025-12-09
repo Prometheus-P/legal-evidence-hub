@@ -1,8 +1,11 @@
 """
 Integration tests for OpenAI API
 Requires: OPENAI_API_KEY in .env
+
+Note: These tests are skipped by default in CI unless a valid OpenAI API key is configured.
 """
 
+import os
 import pytest
 from app.utils.openai_client import (
     generate_embedding,
@@ -10,6 +13,22 @@ from app.utils.openai_client import (
 )
 
 
+def is_openai_api_key_valid():
+    """Check if a valid OpenAI API key is configured"""
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    # Skip if no key, placeholder key, or test key
+    return (
+        api_key
+        and not api_key.startswith("YOUR_")
+        and not api_key.startswith("test-")
+        and not api_key.startswith("sk-test")
+    )
+
+
+@pytest.mark.skipif(
+    not is_openai_api_key_valid(),
+    reason="OpenAI API key not configured or invalid"
+)
 class TestOpenAIIntegration:
     """Integration tests for OpenAI operations"""
 

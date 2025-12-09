@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { CommandPalette } from '@/components/shared/CommandPalette';
+import { KeyboardShortcutsHelp } from '@/components/shared/KeyboardShortcutsHelp';
 
 interface Props {
   children: ReactNode;
@@ -15,6 +16,7 @@ export function AppProviders({ children }: Props) {
       <AuthProvider>
         {children}
         <CommandPalette />
+        <KeyboardShortcutsHelp />
       </AuthProvider>
     </ThemeProvider>
   );

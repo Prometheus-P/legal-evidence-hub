@@ -23,6 +23,7 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { usePartyGraph, type SaveStatus } from '@/hooks/usePartyGraph';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useEvidenceLinks } from '@/hooks/useEvidenceLinks';
 import type {
   PartyNode as PartyNodeData,
@@ -90,16 +91,16 @@ function toFlowEdges(relationships: PartyRelationship[]): PartyEdgeType[] {
 function SaveStatusIndicator({ status }: { status: SaveStatus }) {
   const statusConfig = {
     idle: { text: '', className: '' },
-    saving: { text: '저장 중...', className: 'text-gray-500' },
-    saved: { text: '저장됨 ✓', className: 'text-green-600' },
-    error: { text: '저장 실패 ⚠️', className: 'text-red-600' },
+    saving: { text: '저장 중...', className: 'text-gray-500 dark:text-gray-400' },
+    saved: { text: '저장됨 ✓', className: 'text-green-600 dark:text-green-400' },
+    error: { text: '저장 실패 ⚠️', className: 'text-red-600 dark:text-red-400' },
   };
 
   const config = statusConfig[status];
   if (!config.text) return null;
 
   return (
-    <div className={`absolute top-4 right-4 px-3 py-1 bg-white rounded-full shadow text-sm ${config.className}`}>
+    <div className={`absolute top-4 right-4 px-3 py-1 bg-white dark:bg-neutral-800 rounded-full shadow dark:shadow-neutral-900/50 text-sm ${config.className}`}>
       {config.text}
     </div>
   );
@@ -108,13 +109,13 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
 // Empty state component
 function EmptyState({ onAddParty }: { onAddParty: () => void }) {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900">
       <div className="text-center">
         <div className="text-6xl mb-4">👥</div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
           당사자 관계도
         </h3>
-        <p className="text-gray-500 mb-6 max-w-sm">
+        <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
           당사자를 추가하여 관계도를 시작하세요.<br />
           원고, 피고, 제3자 등을 추가하고 관계를 연결할 수 있습니다.
         </p>
@@ -132,10 +133,10 @@ function EmptyState({ onAddParty }: { onAddParty: () => void }) {
 // Loading state component
 function LoadingState() {
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+    <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-neutral-900">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-        <p className="text-gray-500">관계도를 불러오는 중...</p>
+        <p className="text-gray-500 dark:text-gray-400">관계도를 불러오는 중...</p>
       </div>
     </div>
   );
@@ -144,13 +145,13 @@ function LoadingState() {
 // Error state component
 function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+    <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-neutral-900">
       <div className="text-center">
         <div className="text-6xl mb-4">⚠️</div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
           오류가 발생했습니다
         </h3>
-        <p className="text-gray-500 mb-6">{message}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">{message}</p>
         <button
           onClick={onRetry}
           className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -172,6 +173,7 @@ interface EvidenceItem {
 }
 
 export function PartyGraph({ caseId }: PartyGraphProps) {
+  const { isDark } = useTheme();
   const {
     nodes: partyNodes,
     relationships,
@@ -400,7 +402,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   // Render states
   if (isLoading) {
     return (
-      <div className="relative w-full h-[600px] border rounded-lg overflow-hidden">
+      <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
         <LoadingState />
       </div>
     );
@@ -408,7 +410,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
 
   if (error) {
     return (
-      <div className="relative w-full h-[600px] border rounded-lg overflow-hidden">
+      <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
         <ErrorState message={error} onRetry={refresh} />
       </div>
     );
@@ -416,7 +418,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
 
   if (partyNodes.length === 0) {
     return (
-      <div className="relative w-full h-[600px] border rounded-lg overflow-hidden">
+      <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
         <EmptyState onAddParty={handleAddPartyClick} />
         <PartyModal
           isOpen={partyModalOpen}
@@ -429,18 +431,18 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   }
 
   return (
-    <div className="relative w-full h-[600px] border rounded-lg overflow-hidden">
+    <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
       {/* Toolbar */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
         <button
           onClick={handleAddPartyClick}
-          className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow hover:bg-gray-50 transition-colors text-sm font-medium"
+          className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 rounded-lg shadow dark:shadow-neutral-900/50 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm font-medium"
         >
           + 당사자 추가
         </button>
         <button
           onClick={handleOpenEvidenceLinkModal}
-          className="px-4 py-2 bg-white text-gray-700 rounded-lg shadow hover:bg-gray-50 transition-colors text-sm font-medium"
+          className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 rounded-lg shadow dark:shadow-neutral-900/50 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm font-medium"
         >
           📎 증거 연결
         </button>
@@ -466,9 +468,15 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         defaultEdgeOptions={{
           type: 'relationship',
         }}
+        className={isDark ? 'dark-flow' : ''}
       >
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+        <Controls className={isDark ? 'dark-controls' : ''} />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={16}
+          size={1}
+          color={isDark ? '#404040' : '#e5e5e5'}
+        />
         <MiniMap
           nodeColor={(node) => {
             const data = node.data as FlowNodeData;
@@ -487,7 +495,10 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
                 return '#6B7280';
             }
           }}
-          maskColor="rgba(255, 255, 255, 0.8)"
+          maskColor={isDark ? 'rgba(38, 38, 38, 0.8)' : 'rgba(255, 255, 255, 0.8)'}
+          style={{
+            backgroundColor: isDark ? '#262626' : '#ffffff',
+          }}
         />
       </ReactFlow>
 

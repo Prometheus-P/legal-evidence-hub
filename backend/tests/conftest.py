@@ -46,9 +46,10 @@ def pytest_configure(config):
         "DDB_EVIDENCE_TABLE": "test-evidence-table",
         "QDRANT_HOST": "",  # Empty = in-memory mode for tests
         "OPENAI_API_KEY": "test-openai-key",
+        "LOG_LEVEL": "INFO",  # Force INFO for tests
     }
     # Force test defaults (critical values that must be isolated from .env)
-    force_defaults = ["S3_PRESIGNED_URL_EXPIRE_SECONDS", "DATABASE_URL", "JWT_SECRET"]
+    force_defaults = ["S3_PRESIGNED_URL_EXPIRE_SECONDS", "DATABASE_URL", "JWT_SECRET", "S3_EVIDENCE_BUCKET", "LOG_LEVEL"]
     for key, value in defaults.items():
         if key in force_defaults or not os.environ.get(key):
             os.environ[key] = value

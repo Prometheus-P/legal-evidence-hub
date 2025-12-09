@@ -121,6 +121,33 @@ class PropertyOwner(str, enum.Enum):
     JOINT = "joint"                # 공동 소유
 
 
+# Asset-related enums (for US2 - 재산분할표)
+class AssetCategory(str, enum.Enum):
+    """Asset category enum for property division"""
+    REAL_ESTATE = "real_estate"    # 부동산
+    SAVINGS = "savings"            # 예금/적금
+    STOCKS = "stocks"              # 주식/펀드
+    RETIREMENT = "retirement"      # 퇴직금/연금
+    VEHICLE = "vehicle"            # 자동차
+    INSURANCE = "insurance"        # 보험
+    DEBT = "debt"                  # 부채
+    OTHER = "other"                # 기타
+
+
+class AssetOwnership(str, enum.Enum):
+    """Asset ownership enum"""
+    PLAINTIFF = "plaintiff"        # 원고(의뢰인)
+    DEFENDANT = "defendant"        # 피고(상대방)
+    JOINT = "joint"                # 공동 소유
+
+
+class AssetNature(str, enum.Enum):
+    """Asset nature enum - premarital vs marital"""
+    PREMARITAL = "premarital"      # 혼전 재산 (특유재산)
+    MARITAL = "marital"            # 혼인 중 취득 (공유재산)
+    MIXED = "mixed"                # 혼합 재산
+
+
 class ConfidenceLevel(str, enum.Enum):
     """Prediction confidence level"""
     HIGH = "high"
@@ -200,6 +227,30 @@ class LinkType(str, enum.Enum):
     PROVES = "proves"             # 증명
     INVOLVES = "involves"         # 관련
     CONTRADICTS = "contradicts"   # 반박
+
+
+# ============================================
+# Procedure Stage Enums (US3)
+# ============================================
+class ProcedureStageType(str, enum.Enum):
+    """Korean family litigation procedure stages"""
+    FILED = "filed"                       # 소장 접수
+    SERVED = "served"                     # 송달
+    ANSWERED = "answered"                 # 답변서
+    MEDIATION = "mediation"               # 조정 회부
+    MEDIATION_CLOSED = "mediation_closed" # 조정 종결
+    TRIAL = "trial"                       # 본안 이행
+    JUDGMENT = "judgment"                 # 판결 선고
+    APPEAL = "appeal"                     # 항소심
+    FINAL = "final"                       # 확정
+
+
+class StageStatus(str, enum.Enum):
+    """Status of a procedure stage"""
+    PENDING = "pending"           # 대기
+    IN_PROGRESS = "in_progress"   # 진행중
+    COMPLETED = "completed"       # 완료
+    SKIPPED = "skipped"           # 건너뜀
 
 
 # ============================================
@@ -593,6 +644,85 @@ class DivisionPrediction(Base):
         return f"<DivisionPrediction(id={self.id}, ratio={self.plaintiff_ratio}:{self.defendant_ratio})>"
 
 
+class Asset(Base):
+    """
+    Asset model for detailed property division tracking
+    US2 - 재산분할표 (Asset Division Sheet)
+    """
+    __tablename__ = "assets"
+
+    id = Column(String, primary_key=True, default=lambda: f"asset_{uuid.uuid4().hex[:12]}")
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Basic info
+    category = Column(SQLEnum(AssetCategory), nullable=False)
+    ownership = Column(SQLEnum(AssetOwnership), nullable=False)
+    nature = Column(SQLEnum(AssetNature), nullable=True, default=AssetNature.MARITAL)
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+
+    # Valuation
+    current_value = Column(Integer, nullable=False)  # 현재 가치 (원)
+    acquisition_value = Column(Integer, nullable=True)  # 취득 가치 (원)
+    acquisition_date = Column(DateTime(timezone=True), nullable=True)
+    valuation_date = Column(DateTime(timezone=True), nullable=True)
+    valuation_source = Column(String(100), nullable=True)  # 감정기관 등
+
+    # Division proposal
+    division_ratio_plaintiff = Column(Integer, nullable=True, default=50)  # 원고 분할 비율 (0-100)
+    division_ratio_defendant = Column(Integer, nullable=True, default=50)  # 피고 분할 비율 (0-100)
+    proposed_allocation = Column(SQLEnum(AssetOwnership), nullable=True)  # 제안된 귀속자
+
+    # Evidence link
+    evidence_id = Column(String, ForeignKey("evidence.id"), nullable=True)
+    notes = Column(Text, nullable=True)
+
+    # Metadata
+    created_by = Column(String, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    case = relationship("Case", backref="assets")
+
+    def __repr__(self):
+        return f"<Asset(id={self.id}, name={self.name}, value={self.current_value})>"
+
+
+class AssetDivisionSummary(Base):
+    """
+    Asset division summary - aggregated stats per case
+    US2 - 재산분할표 요약
+    """
+    __tablename__ = "asset_division_summaries"
+
+    id = Column(String, primary_key=True, default=lambda: f"summary_{uuid.uuid4().hex[:12]}")
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+
+    # Totals by category
+    total_assets = Column(Integer, default=0)  # 총 재산액
+    total_debts = Column(Integer, default=0)   # 총 부채액
+    net_value = Column(Integer, default=0)     # 순자산
+
+    # By ownership
+    plaintiff_assets = Column(Integer, default=0)
+    defendant_assets = Column(Integer, default=0)
+    joint_assets = Column(Integer, default=0)
+
+    # Category breakdown (JSON)
+    category_breakdown = Column(JSON, nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    case = relationship("Case", backref="asset_division_summary", uselist=False)
+
+    def __repr__(self):
+        return f"<AssetDivisionSummary(case_id={self.case_id}, net={self.net_value})>"
+
+
 class Evidence(Base):
     """
     Evidence model - uploaded evidence files for cases
@@ -834,3 +964,41 @@ class EvidencePartyLink(Base):
 
     def __repr__(self):
         return f"<EvidencePartyLink(id={self.id}, evidence_id={self.evidence_id}, link_type={self.link_type})>"
+
+
+# ============================================
+# Procedure Stage Model (US3)
+# ============================================
+class ProcedureStageRecord(Base):
+    """
+    Procedure stage record - tracks the progress of a divorce case through stages
+    이혼 사건의 단계별 진행 상황 기록
+    """
+    __tablename__ = "procedure_stage_records"
+
+    id = Column(String, primary_key=True, default=lambda: f"stage_{uuid.uuid4().hex[:12]}")
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Stage info
+    stage = Column(SQLEnum(ProcedureStageType), nullable=False)
+    status = Column(SQLEnum(StageStatus), nullable=False, default=StageStatus.PENDING)
+    order_index = Column(Integer, nullable=False, default=0)  # Display order
+
+    # Dates
+    scheduled_date = Column(DateTime(timezone=True), nullable=True)  # 예정일
+    started_at = Column(DateTime(timezone=True), nullable=True)      # 시작일
+    completed_at = Column(DateTime(timezone=True), nullable=True)    # 완료일
+
+    # Details
+    notes = Column(Text, nullable=True)
+    documents = Column(JSON, nullable=True, default=list)  # Related document IDs
+
+    # Metadata
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    case = relationship("Case", backref="procedure_stages")
+
+    def __repr__(self):
+        return f"<ProcedureStageRecord(id={self.id}, stage={self.stage}, status={self.status})>"

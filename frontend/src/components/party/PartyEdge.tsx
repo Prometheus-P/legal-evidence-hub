@@ -123,8 +123,9 @@ function PartyEdgeComponent({
             onClick={handleClick}
             className={`
               px-2 py-1 rounded-full text-xs font-medium
-              bg-white border shadow-sm
-              hover:shadow-md transition-shadow cursor-pointer
+              bg-white dark:bg-neutral-800 border shadow-sm dark:shadow-neutral-900/50
+              hover:shadow-md dark:hover:shadow-neutral-900/70 transition-shadow cursor-pointer
+              text-gray-800 dark:text-gray-200
               ${selected ? 'ring-2 ring-blue-400' : ''}
             `}
             style={{ borderColor: style.stroke }}
@@ -132,7 +133,7 @@ function PartyEdgeComponent({
             <span className="mr-1">{style.label}</span>
             {typeLabel}
             {data?.start_date && (
-              <span className="ml-1 text-gray-400">
+              <span className="ml-1 text-gray-400 dark:text-gray-500">
                 ({new Date(data.start_date).getFullYear()}~
                 {data.end_date ? new Date(data.end_date).getFullYear() : ''})
               </span>

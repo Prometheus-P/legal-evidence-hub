@@ -32,6 +32,7 @@ import {
   PersonNodeData,
   RelationshipEdgeData,
 } from '@/types/relationship';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface RelationshipFlowProps {
   graph: RelationshipGraph;
@@ -110,6 +111,8 @@ function transformToEdges(edges: RelationshipEdgeType[]): Edge<RelationshipEdgeD
 }
 
 export default function RelationshipFlow({ graph }: RelationshipFlowProps) {
+  const { isDark } = useTheme();
+
   // Transform graph data to React Flow format
   const initialNodes = useMemo(() => transformToNodes(graph.nodes), [graph.nodes]);
   const initialEdges = useMemo(() => transformToEdges(graph.edges), [graph.edges]);
@@ -164,7 +167,12 @@ export default function RelationshipFlow({ graph }: RelationshipFlowProps) {
         }}
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={16}
+          size={1}
+          color={isDark ? '#404040' : '#e5e5e5'}
+        />
         <Controls position="bottom-left" />
         <MiniMap
           position="bottom-right"
@@ -172,7 +180,10 @@ export default function RelationshipFlow({ graph }: RelationshipFlowProps) {
             const data = node.data as PersonNodeData;
             return data.color || '#9E9E9E';
           }}
-          maskColor="rgba(255, 255, 255, 0.8)"
+          maskColor={isDark ? 'rgba(38, 38, 38, 0.8)' : 'rgba(255, 255, 255, 0.8)'}
+          style={{
+            backgroundColor: isDark ? '#262626' : '#ffffff',
+          }}
         />
       </ReactFlow>
 
