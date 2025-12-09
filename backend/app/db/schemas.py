@@ -1248,7 +1248,7 @@ class AssetResponse(BaseModel):
 
 class AssetListResponse(BaseModel):
     """Asset list response with pagination"""
-    items: List[AssetResponse]
+    assets: List[AssetResponse]
     total: int
     page: int = 1
     page_size: int = 20
@@ -1259,6 +1259,8 @@ class DivisionCalculateRequest(BaseModel):
     """Request to calculate property division"""
     plaintiff_ratio: int = Field(50, ge=0, le=100)
     defendant_ratio: int = Field(50, ge=0, le=100)
+    include_separate: bool = Field(False, description="Whether to include separate property in division")
+    notes: Optional[str] = Field(None, description="Additional notes for the calculation")
 
 
 class AssetCategorySummary(BaseModel):
@@ -1273,21 +1275,32 @@ class AssetCategorySummary(BaseModel):
 
 class AssetSheetSummary(BaseModel):
     """Complete asset sheet summary"""
+    division_summary: Optional["DivisionSummaryResponse"] = None
+    category_summaries: List[AssetCategorySummary]
     total_assets: int
-    total_debts: int
-    net_value: int
-    plaintiff_assets: int
-    defendant_assets: int
-    joint_assets: int
-    asset_count: int
-    by_category: List[AssetCategorySummary]
 
 
 class DivisionSummaryResponse(BaseModel):
     """Division calculation summary response"""
-    total_value: int
-    plaintiff_amount: int
-    defendant_amount: int
-    plaintiff_ratio: int
-    defendant_ratio: int
-    sheet_summary: AssetSheetSummary
+    total_marital_assets: int
+    total_separate_plaintiff: int = 0
+    total_separate_defendant: int = 0
+    total_debts: int
+    net_marital_value: int
+    plaintiff_share: int
+    defendant_share: int
+    settlement_amount: int
+    plaintiff_holdings: int
+    defendant_holdings: int
+    # Additional metadata
+    id: Optional[str] = None
+    case_id: Optional[str] = None
+    plaintiff_ratio: Optional[int] = None
+    defendant_ratio: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+# Rebuild models with forward references
+AssetSheetSummary.model_rebuild()
