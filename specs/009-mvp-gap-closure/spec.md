@@ -157,7 +157,7 @@
 **CI 테스트 (US4)**
 - **FR-011**: `ai_worker/tests/conftest.py`에서 환경변수 미설정 시 전체 스킵 대신 특정 통합 테스트만 스킵
 - **FR-012**: CI에서 ai_worker 유닛 테스트 최소 300개 실행
-- **FR-013**: CI에서 backend 테스트 커버리지 65% 이상 검증
+- **FR-013**: CI에서 backend 테스트 커버리지 80% 이상 검증 (Constitution requirement)
 
 **권한 제어 (US5)**
 - **FR-014**: 모든 `/cases/*`, `/evidence/*`, `/draft/*` API에 사건 멤버 권한 검증 미들웨어 적용
@@ -177,10 +177,12 @@
 
 ### Non-Functional Requirements
 
-**Observability (NFR-001~003)**
-- **NFR-001**: 모든 Lambda 함수에서 CloudWatch Logs로 구조화된 로그 출력
+**Observability (NFR-001~003)** - *Deferred to P3 for MVP*
+- **NFR-001**: 모든 Lambda 함수에서 CloudWatch Logs로 구조화된 로그 출력 (JSON format: timestamp, level, message, trace_id)
 - **NFR-002**: Lambda 실행 시간, 메모리 사용량, 에러율 CloudWatch Metrics 수집
 - **NFR-003**: Backend API 응답 시간 로깅 (p50, p95, p99 latency tracking)
+
+> **Note**: NFR-001~003 are deferred to post-MVP (Phase 10). Basic CloudWatch logging is already enabled by default.
 
 ## Success Criteria *(mandatory)*
 
@@ -190,7 +192,7 @@
 - **SC-002**: RAG 검색 결과가 2초 이내에 반환됨
 - **SC-003**: Draft Preview가 30초 이내에 생성됨
 - **SC-004**: CI에서 ai_worker 테스트 300개 이상 실행 (스킵 제외)
-- **SC-005**: Backend 테스트 커버리지 65% 이상 유지
+- **SC-005**: Backend 테스트 커버리지 80% 이상 유지 (Constitution requirement)
 - **SC-006**: 권한 없는 API 접근 시 100% 403 반환
 - **SC-007**: dev→staging 배포가 CI 통과 후 10분 이내 완료
 - **SC-008**: 모든 API 에러 시 사용자 친화적 메시지 표시율 100%

@@ -82,6 +82,7 @@
 - [ ] T017 [US2] Verify `POST /cases/{id}/draft-preview` generates draft with citations in `backend/app/api/drafts.py`
 - [ ] T018 [US2] Verify `GET /cases/{id}/draft-export` generates DOCX/PDF in `backend/app/services/draft_service.py`
 - [ ] T019 [US2] Test draft generation with real case data (requires US1 complete)
+- [ ] T019a [US2] Integrate TipTap editor for draft editing in `frontend/src/components/draft/DraftEditor.tsx` (FR-007a)
 - [ ] T020 [US2] Add smoke test for RAG search in `backend/tests/integration/test_search_smoke.py`
 
 **Checkpoint**: RAG search and Draft generation work with AI Worker processed data
@@ -113,12 +114,12 @@
 
 **Goal**: CI enforces test coverage and all tests actually run
 
-**Independent Test**: Create PR and verify CI runs 300+ tests with 65%+ coverage
+**Independent Test**: Create PR and verify CI runs 300+ tests with 80%+ coverage
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Update backend coverage threshold to 70% in `backend/pytest.ini`
-- [ ] T030 [P] [US4] Update ai_worker coverage threshold to 70% in `ai_worker/pytest.ini`
+- [ ] T029 [US4] Update backend coverage threshold to 80% in `backend/pytest.ini` (Constitution requirement)
+- [ ] T030 [P] [US4] Update ai_worker coverage threshold to 80% in `ai_worker/pytest.ini` (Constitution requirement)
 - [ ] T031 [US4] Fix conftest.py skip logic in `ai_worker/tests/conftest.py` - skip only integration tests on missing env vars
 - [ ] T032 [P] [US4] Add unit tests for draft_service.py in `backend/tests/unit/test_draft_service.py`
 - [ ] T033 [P] [US4] Add unit tests for search_service.py in `backend/tests/unit/test_search_service.py`
@@ -126,7 +127,7 @@
 - [ ] T035 [US4] Verify CI workflow runs tests without skipping in `.github/workflows/ci.yml`
 - [ ] T036 [US4] Run `pytest --cov=app --cov-report=term-missing` locally and fix coverage gaps
 
-**Checkpoint**: CI enforces 70% coverage, all 300+ tests run without skips
+**Checkpoint**: CI enforces 80% coverage (Constitution requirement), all 300+ tests run without skips
 
 ---
 
@@ -182,6 +183,21 @@
 
 ---
 
+## Phase 10: Observability (Priority: P3 - Deferred)
+
+**Purpose**: NFR-001~003 implementation - Deferred post-MVP
+
+> **Note**: Basic CloudWatch logging is enabled by default. These tasks enhance observability.
+
+- [ ] T056 [P] [NFR] Configure structured JSON logging for Lambda in `ai_worker/handler.py`
+- [ ] T057 [P] [NFR] Add CloudWatch custom metrics for Lambda execution in `ai_worker/src/observability/metrics.py`
+- [ ] T058 [P] [NFR] Add API latency logging middleware in `backend/app/middleware/latency.py`
+- [ ] T059 [NFR] Create CloudWatch dashboard for monitoring (AWS Console)
+
+**Checkpoint**: Observability dashboard shows Lambda metrics and API latency percentiles
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -195,6 +211,7 @@
 - **Phase 7 (US5)**: Can start after Phase 1 - independent
 - **Phase 8 (US6)**: Can start after Phase 1 - independent (but recommend after US1)
 - **Phase 9 (Polish)**: Depends on all user stories complete
+- **Phase 10 (Observability)**: Can start after Phase 1 - independent, but deferred to P3
 
 ### User Story Dependencies
 
@@ -306,6 +323,8 @@ Execute in priority order:
 - Most code is already implemented (70-100% complete per user story)
 - Focus is on configuration, verification, and polish
 - AWS tasks (Phase 2) require appropriate IAM permissions
-- CI tasks (US4) may require running tests locally first to identify gaps
+- CI tasks (US4) may require running tests locally first to identify gaps - **80% coverage required per Constitution**
 - Commit after each task or logical group
 - Create PR after each user story for review
+- **Total Tasks**: 59 (T001-T055 + T019a + T056-T059)
+- **NFR Tasks (T056-T059)**: Deferred to post-MVP (Phase 10)

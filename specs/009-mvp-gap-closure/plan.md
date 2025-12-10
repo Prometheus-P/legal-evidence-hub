@@ -9,7 +9,7 @@ Production readiness를 위한 MVP 갭 해소. 현재 구현 상태 분석 결�
 - **AI Worker**: Lambda 코드 100% 완성, S3 권한 설정만 필요
 - **Backend RAG/Draft**: 90-95% 완성, 실제 기능 구현됨 (mock 아님)
 - **Frontend 에러 처리**: 기본 구조 존재, 일관성 개선 필요
-- **CI 테스트**: 실행 중이나 integration 테스트 스킵, 커버리지 65% (목표 80%)
+- **CI 테스트**: 실행 중이나 integration 테스트 스킵, 커버리지 목표 80% (Constitution requirement)
 
 핵심 작업: S3 권한 설정, CI 커버리지 상향, Frontend 에러 처리 통일, 배포 파이프라인 완성
 
@@ -18,7 +18,7 @@ Production readiness를 위한 MVP 갭 해소. 현재 구현 상태 분석 결�
 **Language/Version**: Python 3.11+ (Backend/AI Worker), TypeScript (Frontend)
 **Primary Dependencies**: FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3, TipTap/Quill (draft editor)
 **Storage**: PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud
-**Testing**: pytest (backend/ai_worker, 65% threshold), Jest (frontend), Playwright (E2E)
+**Testing**: pytest (backend/ai_worker, 80% threshold per Constitution), Jest (frontend), Playwright (E2E)
 **Target Platform**: AWS (Lambda, S3, CloudFront, DynamoDB, ECR)
 **Project Type**: Web application (frontend + backend + ai_worker)
 **Performance Goals**: 5min AI analysis, 2sec RAG search, 30sec Draft generation
@@ -146,13 +146,13 @@ frontend/
 | Retry mechanism | ❌ Missing | No automatic retry, no exponential backoff |
 | Toast notifications | ❌ Missing | Inline errors only |
 
-### CI Tests (US4) - 65% Coverage
+### CI Tests (US4) - Target: 80% Coverage (Constitution)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Frontend tests | ✅ Running | Jest, no coverage threshold |
-| Backend tests | ✅ Running | pytest, 65% threshold (target: 80%) |
-| AI Worker tests | ✅ Running | pytest, 65% threshold (target: 80%) |
+| Backend tests | ✅ Running | pytest, 80% threshold (Constitution requirement) |
+| AI Worker tests | ✅ Running | pytest, 80% threshold (Constitution requirement) |
 | Integration tests | ❌ Skipped | `-m "not integration"` in CI |
 | E2E tests | ⚠️ Non-blocking | Playwright, `continue-on-error: true` |
 
@@ -208,7 +208,7 @@ Based on spec priorities and current implementation state:
    - **Effort**: Medium
 
 5. **CI Coverage Increase** (US4)
-   - Increase `--cov-fail-under` from 65 to 70 in pytest.ini
+   - Increase `--cov-fail-under` to 80 in pytest.ini (Constitution requirement)
    - Add missing unit tests to meet threshold
    - **Effort**: Medium-High
 
