@@ -206,6 +206,12 @@ class ProfileVisibility(str, enum.Enum):
     PRIVATE = "private"
 
 
+class AgreementType(str, enum.Enum):
+    """Agreement type enum for user consent tracking"""
+    TERMS_OF_SERVICE = "terms_of_service"  # 이용약관
+    PRIVACY_POLICY = "privacy_policy"       # 개인정보처리방침
+
+
 # ============================================
 # v1 Lawyer Portal Enums
 # ============================================
@@ -1037,3 +1043,25 @@ class ProcedureStageRecord(Base):
 
     def __repr__(self):
         return f"<ProcedureStageRecord(id={self.id}, stage={self.stage}, status={self.status})>"
+
+
+class UserAgreement(Base):
+    """
+    User agreement model - tracks user consent history for legal terms
+    사용자 약관 동의 이력 (FR-025: 법적 고지 및 약관)
+    """
+    __tablename__ = "user_agreements"
+
+    id = Column(String, primary_key=True, default=lambda: f"agree_{uuid.uuid4().hex[:12]}")
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    agreement_type = Column(StrEnumColumn(AgreementType), nullable=False)
+    agreed_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    version = Column(String(20), nullable=False)  # e.g., "1.0", "2024.1"
+    ip_address = Column(String(45), nullable=True)  # IPv4 or IPv6
+    user_agent = Column(String(500), nullable=True)  # Browser/client info
+
+    # Relationships
+    user = relationship("User", backref="agreements")
+
+    def __repr__(self):
+        return f"<UserAgreement(id={self.id}, user_id={self.user_id}, type={self.agreement_type}, version={self.version})>"
