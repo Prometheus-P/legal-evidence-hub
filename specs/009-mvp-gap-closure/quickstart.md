@@ -17,8 +17,8 @@
 ### 1. Clone and switch branch
 
 ```bash
-git clone https://github.com/your-org/leh.git
-cd leh
+git clone https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd.git
+cd ai-camp-2nd-llm-agent-service-project-2nd
 git checkout 009-mvp-gap-closure
 ```
 
