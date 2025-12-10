@@ -443,11 +443,11 @@ json
 
 # 🔍 6. RAG / 검색 API [MVP 이후]
 
-> ⚠️ **Note:** 이 섹션의 API는 MVP 이후 구현 예정입니다.
+> ✅ **Note:** 이 섹션의 API는 구현 완료되었습니다. (Updated: 2025-12-10)
 
 ## 6.1 사건 내 RAG 검색
 
-### `GET /cases/{case_id}/search` [미구현]
+### `GET /cases/{case_id}/search`
 
 - 설명: 사건별 증거를 기반으로 한 의미 검색 (Qdrant + 임베딩)
 
