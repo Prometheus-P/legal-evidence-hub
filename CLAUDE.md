@@ -411,6 +411,8 @@ When implementing features, files typically go in:
 - **Type definition:** `frontend/src/types/{resource}.ts`
 
 ## Active Technologies
+- Python 3.11+ (Backend/AI Worker), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o, Whisper), Qdrant, boto3, TipTap (009-mvp-gap-closure)
+- PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
 
 | Layer | Stack |
 |-------|-------|
