@@ -1,6 +1,6 @@
 """
 Audit Log Service - Business logic for audit log management
-Handles audit log retrieval and CSV export
+Handles audit log retrieval, CSV export, and access denied logging
 """
 
 from sqlalchemy.orm import Session
@@ -15,6 +15,9 @@ from app.db.schemas import (
 from app.repositories.audit_log_repository import AuditLogRepository
 from app.repositories.user_repository import UserRepository
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AuditLogService:
@@ -124,3 +127,40 @@ class AuditLogService:
             ]))
 
         return "\n".join(csv_lines)
+
+    def log_access_denied(
+        self,
+        user_id: str,
+        resource_type: str,
+        resource_id: str
+    ) -> None:
+        """
+        Log an ACCESS_DENIED event to the audit log
+
+        Args:
+            user_id: ID of user who was denied access
+            resource_type: Type of resource (e.g., "case", "evidence", "draft")
+            resource_id: ID of the resource that was denied access to
+
+        Returns:
+            None (fails silently to not interrupt the 403 response)
+        """
+        try:
+            # Format: resource_type:resource_id (e.g., "case:case_123abc")
+            object_id = f"{resource_type}:{resource_id}"
+
+            self.audit_repo.create(
+                user_id=user_id,
+                action=AuditAction.ACCESS_DENIED.value,
+                object_id=object_id
+            )
+            self.db.commit()
+
+            logger.info(
+                f"ACCESS_DENIED logged: user={user_id}, "
+                f"resource_type={resource_type}, resource_id={resource_id}"
+            )
+        except Exception as e:
+            # Don't fail the request if audit logging fails
+            logger.error(f"Failed to log ACCESS_DENIED: {e}")
+            self.db.rollback()

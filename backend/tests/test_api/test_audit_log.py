@@ -499,14 +499,15 @@ class TestAuditLogMiddleware:
 
         Given: AuditAction enum
         When: Check all action types
-        Then: All 16 required actions are present
+        Then: All 17 required actions are present
         """
         expected_actions = [
             "LOGIN", "LOGOUT", "SIGNUP",
             "CREATE_CASE", "VIEW_CASE", "UPDATE_CASE", "DELETE_CASE",
             "UPLOAD_EVIDENCE", "VIEW_EVIDENCE", "DELETE_EVIDENCE",
             "INVITE_USER", "DELETE_USER", "UPDATE_PERMISSIONS",
-            "GENERATE_DRAFT", "EXPORT_DRAFT", "UPDATE_DRAFT"
+            "GENERATE_DRAFT", "EXPORT_DRAFT", "UPDATE_DRAFT",
+            "ACCESS_DENIED"  # Security action for 403 responses
         ]
 
         actual_actions = [action.value for action in AuditAction]
@@ -514,4 +515,4 @@ class TestAuditLogMiddleware:
         for expected in expected_actions:
             assert expected in actual_actions
 
-        assert len(actual_actions) == 16
+        assert len(actual_actions) == 17

@@ -225,3 +225,90 @@ class TestExportAuditLogsCsv:
 
             # Should only have header
             assert result == "ID,User ID,User Email,User Name,Action,Object ID,Timestamp"
+
+
+class TestLogAccessDenied:
+    """Unit tests for log_access_denied method"""
+
+    def test_log_access_denied_success(self):
+        """Successfully log ACCESS_DENIED event"""
+        mock_db = MagicMock()
+
+        with patch.object(AuditLogService, '__init__', lambda x, y: None):
+            service = AuditLogService(mock_db)
+            service.db = mock_db
+            service.audit_repo = MagicMock()
+            service.user_repo = MagicMock()
+
+            service.log_access_denied(
+                user_id="user-123",
+                resource_type="case",
+                resource_id="case-456"
+            )
+
+            service.audit_repo.create.assert_called_once_with(
+                user_id="user-123",
+                action=AuditAction.ACCESS_DENIED.value,
+                object_id="case:case-456"
+            )
+            mock_db.commit.assert_called_once()
+
+    def test_log_access_denied_formats_object_id_correctly(self):
+        """Object ID format is resource_type:resource_id"""
+        mock_db = MagicMock()
+
+        with patch.object(AuditLogService, '__init__', lambda x, y: None):
+            service = AuditLogService(mock_db)
+            service.db = mock_db
+            service.audit_repo = MagicMock()
+            service.user_repo = MagicMock()
+
+            service.log_access_denied(
+                user_id="user-123",
+                resource_type="evidence",
+                resource_id="ev-789"
+            )
+
+            call_args = service.audit_repo.create.call_args
+            assert call_args.kwargs["object_id"] == "evidence:ev-789"
+
+    def test_log_access_denied_handles_exception_gracefully(self):
+        """Should not raise exception on database error"""
+        mock_db = MagicMock()
+
+        with patch.object(AuditLogService, '__init__', lambda x, y: None):
+            service = AuditLogService(mock_db)
+            service.db = mock_db
+            service.audit_repo = MagicMock()
+            service.user_repo = MagicMock()
+
+            # Simulate database error
+            service.audit_repo.create.side_effect = Exception("Database error")
+
+            # Should not raise exception
+            service.log_access_denied(
+                user_id="user-123",
+                resource_type="case",
+                resource_id="case-456"
+            )
+
+            mock_db.rollback.assert_called_once()
+
+    def test_log_access_denied_uses_correct_action(self):
+        """Uses ACCESS_DENIED action"""
+        mock_db = MagicMock()
+
+        with patch.object(AuditLogService, '__init__', lambda x, y: None):
+            service = AuditLogService(mock_db)
+            service.db = mock_db
+            service.audit_repo = MagicMock()
+            service.user_repo = MagicMock()
+
+            service.log_access_denied(
+                user_id="user-123",
+                resource_type="draft",
+                resource_id="draft-001"
+            )
+
+            call_args = service.audit_repo.create.call_args
+            assert call_args.kwargs["action"] == "ACCESS_DENIED"

@@ -478,6 +478,9 @@ class AuditAction(str, Enum):
     EXPORT_DRAFT = "EXPORT_DRAFT"
     UPDATE_DRAFT = "UPDATE_DRAFT"
 
+    # Security actions
+    ACCESS_DENIED = "ACCESS_DENIED"
+
 
 class AuditLogOut(BaseModel):
     """Audit log output schema"""
