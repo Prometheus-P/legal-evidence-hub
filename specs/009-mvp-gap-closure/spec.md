@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "MVP 구현 갭 해소 - 문서/설계 대비 실제 구현 갭을 좁히고 production-ready 상태로 만들기"
 
+## Clarifications
+
+### Session 2025-12-09
+
+- Q: Draft 생성 후 편집 방식? → A: 초안작성에 필요한 웹 편집툴 연결 (Web-based editor integration required)
+- Q: 지원 증거 파일 형식? → A: Images + Audio + Video + PDF + Text (jpg, png, mp3, wav, mp4, pdf, txt, csv)
+- Q: 웹 편집툴 구현 방식? → A: Rich text editor (TipTap/Quill) embedded in frontend
+- Q: 최대 증거 파일 크기? → A: 500MB (영상 녹화 파일 지원)
+- Q: Observability 요구사항? → A: Standard (CloudWatch logs + Lambda metrics + API latency tracking)
+
 ## 배경 (Background)
 
 현재 LEH 프로젝트는 엔터프라이즈급 문서/설계가 완성되어 있으나, 실제 구현과의 갭이 존재:
@@ -127,6 +137,8 @@
 
 **AI Worker (US1)**
 - **FR-001**: S3 버킷 `leh-evidence-dev`, `leh-evidence-prod` 생성 및 Lambda 실행 역할에 권한 부여
+- **FR-001a**: 지원 파일 형식: Images (jpg, png), Audio (mp3, wav), Video (mp4), PDF, Text (txt, csv)
+- **FR-001b**: 최대 파일 크기 500MB (S3 multipart upload, 대용량 영상 지원)
 - **FR-002**: AI Worker Lambda가 S3 `ObjectCreated` 이벤트에 의해 자동 트리거됨
 - **FR-003**: 분석 결과가 DynamoDB `leh_evidence` 테이블에 저장됨
 - **FR-004**: 임베딩 벡터가 Qdrant `case_rag_{case_id}` 컬렉션에 저장됨
@@ -135,6 +147,7 @@
 - **FR-005**: `GET /search?q={query}&case_id={id}` API가 Qdrant에서 유사 증거를 검색하여 반환
 - **FR-006**: `POST /cases/{id}/draft-preview` API가 GPT-4o를 사용하여 초안 생성
 - **FR-007**: Draft 응답에 각 문장별 출처 증거 ID가 포함됨
+- **FR-007a**: 생성된 Draft를 TipTap/Quill 기반 Rich Text Editor에서 수정 가능
 
 **Frontend 에러 처리 (US3)**
 - **FR-008**: 401 응답 시 자동으로 로그인 페이지 리다이렉트 및 메시지 표시
@@ -161,6 +174,13 @@
 - **Evidence**: 증거 파일 메타데이터 (case_id, type, timestamp, ai_summary, labels, qdrant_id)
 - **AuditLog**: 감사 로그 (user_id, action, resource_type, resource_id, ip_address, created_at)
 - **CaseMember**: 사건-사용자 권한 매핑 (case_id, user_id, role: OWNER/MEMBER/VIEWER)
+
+### Non-Functional Requirements
+
+**Observability (NFR-001~003)**
+- **NFR-001**: 모든 Lambda 함수에서 CloudWatch Logs로 구조화된 로그 출력
+- **NFR-002**: Lambda 실행 시간, 메모리 사용량, 에러율 CloudWatch Metrics 수집
+- **NFR-003**: Backend API 응답 시간 로깅 (p50, p95, p99 latency tracking)
 
 ## Success Criteria *(mandatory)*
 

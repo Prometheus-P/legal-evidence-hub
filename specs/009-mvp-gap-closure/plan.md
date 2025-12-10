@@ -16,14 +16,14 @@ Production readiness를 위한 MVP 갭 해소. 현재 구현 상태 분석 결�
 ## Technical Context
 
 **Language/Version**: Python 3.11+ (Backend/AI Worker), TypeScript (Frontend)
-**Primary Dependencies**: FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3
+**Primary Dependencies**: FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3, TipTap/Quill (draft editor)
 **Storage**: PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud
 **Testing**: pytest (backend/ai_worker, 65% threshold), Jest (frontend), Playwright (E2E)
 **Target Platform**: AWS (Lambda, S3, CloudFront, DynamoDB, ECR)
 **Project Type**: Web application (frontend + backend + ai_worker)
 **Performance Goals**: 5min AI analysis, 2sec RAG search, 30sec Draft generation
-**Constraints**: JWT auth (HTTP-only cookies), RBAC, Case isolation (`case_rag_{case_id}`)
-**Scale/Scope**: MVP with 6 user stories, 19 functional requirements
+**Constraints**: JWT auth (HTTP-only cookies), RBAC, Case isolation (`case_rag_{case_id}`), 500MB max file size
+**Scale/Scope**: MVP with 6 user stories, 22 functional requirements, 3 NFRs
 
 ## Constitution Check
 
@@ -49,6 +49,7 @@ Production readiness를 위한 MVP 갭 해소. 현재 구현 상태 분석 결�
 ```text
 specs/009-mvp-gap-closure/
 ├── plan.md              # This file
+├── spec.md              # Feature specification (clarified)
 ├── research.md          # Phase 0 output - 현재 구현 상태 분석
 ├── data-model.md        # Phase 1 output - AuditLog, CaseMember 스키마
 ├── quickstart.md        # Phase 1 output - 로컬 개발 가이드
@@ -56,6 +57,8 @@ specs/009-mvp-gap-closure/
 │   ├── search-api.yaml  # RAG 검색 API
 │   ├── draft-api.yaml   # Draft Preview API
 │   └── audit-api.yaml   # Audit Log API
+├── checklists/          # Requirements quality checklists
+│   └── mvp-readiness.md # 63-item checklist
 └── tasks.md             # Phase 2 output (/speckit.tasks)
 ```
 
@@ -130,7 +133,7 @@ frontend/
 | Qdrant client | ✅ Complete | 478 lines, semantic search + legal knowledge |
 | OpenAI client | ✅ Complete | 150 lines, GPT-4o + embeddings |
 
-**Gap**: Search history storage (returns empty list)
+**Gap**: Search history storage (returns empty list), Rich text editor integration (FR-007a)
 
 ### Frontend Error Handling (US3) - 70% Complete
 
@@ -194,17 +197,22 @@ Based on spec priorities and current implementation state:
 ### P2 - Important (Quality & UX)
 
 3. **Frontend Error Handling Unification** (US3)
-   - Add toast notification system (react-hot-toast or similar)
+   - Add toast notification system (react-hot-toast)
    - Unify loading state naming
    - Add retry mechanism with exponential backoff
    - **Effort**: Medium
 
-4. **CI Coverage Increase** (US4)
-   - Increase `--cov-fail-under` from 65 to 80 in pytest.ini
+4. **Rich Text Editor Integration** (US2)
+   - Add TipTap/Quill editor component
+   - Integrate with draft preview page
+   - **Effort**: Medium
+
+5. **CI Coverage Increase** (US4)
+   - Increase `--cov-fail-under` from 65 to 70 in pytest.ini
    - Add missing unit tests to meet threshold
    - **Effort**: Medium-High
 
-5. **Permission Middleware Audit** (US5)
+6. **Permission Middleware Audit** (US5)
    - Review all `/cases/*`, `/evidence/*` APIs
    - Ensure 403 (not 404) on unauthorized access
    - Add audit_logs writes for all access attempts
@@ -212,13 +220,32 @@ Based on spec priorities and current implementation state:
 
 ### P3 - Nice to Have
 
-6. **Rollback Mechanism** (US6)
+7. **Rollback Mechanism** (US6)
    - Document manual rollback procedure
    - Consider automated rollback on health check failure
    - **Effort**: Medium
 
+8. **Observability Setup** (NFR)
+   - Enable CloudWatch structured logging
+   - Configure Lambda metrics collection
+   - Add API latency tracking
+   - **Effort**: Low-Medium
+
+## Generated Artifacts
+
+Phase 0:
+- [research.md](./research.md) - Implementation state analysis
+
+Phase 1:
+- [data-model.md](./data-model.md) - Entity schemas
+- [contracts/](./contracts/) - API contracts
+- [quickstart.md](./quickstart.md) - Local development guide
+
+Phase 2:
+- [tasks.md](./tasks.md) - Implementation tasks (via /speckit.tasks)
+
 ## Next Steps
 
-1. **Phase 0**: Generate research.md with detailed findings
-2. **Phase 1**: Generate data-model.md, contracts/, quickstart.md
-3. **Phase 2**: Generate tasks.md via `/speckit.tasks`
+1. Review generated artifacts
+2. Run `/speckit.tasks` to generate actionable task list
+3. Begin implementation with P1 items (S3 permissions, AI Worker deploy)

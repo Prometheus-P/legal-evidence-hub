@@ -413,6 +413,7 @@ When implementing features, files typically go in:
 - PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
 - TypeScript 5.x (Frontend), Python 3.11+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
 - PostgreSQL (cases, assets), Backend API (/cases/{id}/assets) (010-calm-control-design)
+- Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3, TipTap/Quill (draft editor) (009-mvp-gap-closure)
 
 ## Recent Changes
 - 009-mvp-gap-closure: (PLANNING) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 70% (needs toast + retry). CI coverage at 65% (target 80%). Key tasks: S3 permission setup, enable AI Worker deployment, unify error handling, increase test coverage.
