@@ -2,7 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('Frontend Style Rules', () => {
-    const projectRoot = path.resolve(__dirname, '../../');
+    // Go up from src/__tests__/misc to frontend root
+    const projectRoot = path.resolve(__dirname, '../../../');
 
     test('globals.css should define body font-size as 16px and use Pretendard', () => {
         const globalsCssPath = path.join(projectRoot, 'src/styles/globals.css');

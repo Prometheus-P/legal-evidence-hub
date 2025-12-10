@@ -33,6 +33,18 @@ jest.mock('../../lib/api/auth', () => ({
     getCurrentUser: jest.fn(),
 }));
 
+// Mock useAuth hook
+jest.mock('../../hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: jest.fn(),
+        logout: jest.fn(),
+        isLoading: false,
+        isAuthenticated: false,
+        user: null,
+        error: null,
+    }),
+}));
+
 const mockGetCurrentUser = authApi.getCurrentUser as jest.MockedFunction<typeof authApi.getCurrentUser>;
 
 // Mock IntersectionObserver

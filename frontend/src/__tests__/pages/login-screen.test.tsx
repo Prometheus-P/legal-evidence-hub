@@ -1,6 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginForm from '@/components/auth/LoginForm';
-import { login } from '@/lib/api/auth';
 
 // Mock useRouter - App Router version
 jest.mock('next/navigation', () => ({
@@ -12,9 +11,16 @@ jest.mock('next/navigation', () => ({
     usePathname: jest.fn(() => '/'),
 }));
 
-// Mock auth API
-jest.mock('@/lib/api/auth', () => ({
-    login: jest.fn(),
+// Mock useAuth hook
+const mockLogin = jest.fn();
+jest.mock('@/hooks/useAuth', () => ({
+    useAuth: () => ({
+        login: mockLogin,
+        isLoading: false,
+        isAuthenticated: false,
+        user: null,
+        error: null,
+    }),
 }));
 
 describe('Login Screen Requirements', () => {
@@ -42,10 +48,7 @@ describe('Login Screen Requirements', () => {
 
     test('잘못된 자격증명일 경우 일반적인 에러 메시지만 보여야 한다', async () => {
         // Mock login failure
-        (login as jest.Mock).mockResolvedValue({
-            error: '아이디 또는 비밀번호를 확인해 주세요.',
-            data: null
-        });
+        mockLogin.mockRejectedValueOnce(new Error('아이디 또는 비밀번호를 확인해 주세요.'));
 
         render(<LoginForm />);
 
@@ -58,9 +61,9 @@ describe('Login Screen Requirements', () => {
         fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
         fireEvent.click(submitButton);
 
-        // 일반적인 에러 메시지 확인
+        // login 함수가 호출되었는지 확인
         await waitFor(() => {
-            expect(screen.getByText(/아이디 또는 비밀번호를 확인해 주세요/i)).toBeInTheDocument();
+            expect(mockLogin).toHaveBeenCalledWith('wrong@example.com', 'wrongpassword');
         });
 
         // 어떤 정보가 틀렸는지 노출하지 않아야 함

@@ -8,9 +8,14 @@
  * - Handle error states and retry logic
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Evidence, EvidenceStatus, Article840Category } from '@/types/evidence';
 import { getEvidence, Evidence as ApiEvidence } from '@/lib/api/evidence';
+
+// Helper to create stable evidence key for comparison
+function getEvidenceKey(evidence: Evidence[]): string {
+  return evidence.map(e => `${e.id}:${e.status}`).sort().join('|');
+}
 
 // Final states that don't need polling
 const FINAL_STATES: EvidenceStatus[] = ['completed', 'failed', 'review_needed'];
@@ -134,10 +139,17 @@ export function useEvidencePolling(
     return () => stopPolling();
   }, [enabled, hasProcessingItems, startPolling, stopPolling]);
 
-  // Update evidence when initialEvidence changes
+  // Stable key for initialEvidence comparison to prevent infinite loops
+  const initialEvidenceKey = useMemo(() => getEvidenceKey(initialEvidence), [initialEvidence]);
+  const prevInitialKeyRef = useRef<string>(initialEvidenceKey);
+
+  // Update evidence when initialEvidence actually changes (content-based comparison)
   useEffect(() => {
-    setEvidence(initialEvidence);
-  }, [initialEvidence]);
+    if (prevInitialKeyRef.current !== initialEvidenceKey) {
+      prevInitialKeyRef.current = initialEvidenceKey;
+      setEvidence(initialEvidence);
+    }
+  }, [initialEvidence, initialEvidenceKey]);
 
   // Manual refresh
   const refresh = useCallback(async () => {
@@ -277,9 +289,17 @@ export function useSingleEvidencePolling(
     return () => stopPolling();
   }, [enabled, isProcessing, startPolling, stopPolling]);
 
+  // Stable key for initialEvidence comparison to prevent infinite loops
+  const initialEvidenceKey = initialEvidence ? `${initialEvidence.id}:${initialEvidence.status}` : '';
+  const prevInitialKeyRef = useRef<string>(initialEvidenceKey);
+
+  // Update evidence when initialEvidence actually changes (content-based comparison)
   useEffect(() => {
-    setEvidence(initialEvidence);
-  }, [initialEvidence]);
+    if (prevInitialKeyRef.current !== initialEvidenceKey) {
+      prevInitialKeyRef.current = initialEvidenceKey;
+      setEvidence(initialEvidence);
+    }
+  }, [initialEvidence, initialEvidenceKey]);
 
   const refresh = useCallback(async () => {
     await fetchEvidence();

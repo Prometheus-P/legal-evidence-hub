@@ -2,7 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('Button Style Rules', () => {
-    const projectRoot = path.resolve(__dirname, '../../');
+    // Go up from src/__tests__/misc to frontend root
+    const projectRoot = path.resolve(__dirname, '../../../');
 
     test('Primary CTA buttons should use accent color (#1ABC9C)', () => {
         const globalsCssPath = path.join(projectRoot, 'src/styles/globals.css');
