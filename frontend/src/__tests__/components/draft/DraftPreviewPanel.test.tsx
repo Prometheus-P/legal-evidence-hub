@@ -65,13 +65,13 @@ const mockPersistDraftState = persistDraftState as jest.Mock;
 const mockCitations: DraftCitation[] = [
   {
     evidenceId: 'ev-1',
+    title: '녹음파일 01',
     quote: '피고가 폭언을 사용한 장면',
-    filename: 'recording_01.mp3',
   },
   {
     evidenceId: 'ev-2',
+    title: '사진 01',
     quote: '부정행위 증거 사진',
-    filename: 'photo_01.jpg',
   },
 ];
 

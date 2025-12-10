@@ -112,8 +112,8 @@ describe('useMessages Hook', () => {
         sender: { id: 'user-456', name: '이의뢰인', role: 'client' },
         recipient_id: 'user-789',
         content: '안녕하세요',
-        attachments: null,
-        read_at: null,
+        attachments: undefined,
+        read_at: undefined,
         created_at: '2024-12-05T09:00:00Z',
         is_mine: false,
       },
@@ -143,8 +143,8 @@ describe('useMessages Hook', () => {
         sender: { id: 'user-789', name: '김변호사', role: 'lawyer' },
         recipient_id: mockRecipientId,
         content: '테스트 메시지',
-        attachments: null,
-        read_at: null,
+        attachments: undefined,
+        read_at: undefined,
         created_at: new Date().toISOString(),
         is_mine: true,
       },
@@ -297,8 +297,8 @@ describe('useMessages Hook', () => {
         sender: { id: 'user-456', name: '이의뢰인', role: 'client' },
         recipient_id: 'user-789',
         content: '새 메시지입니다',
-        attachments: null,
-        read_at: null,
+        attachments: undefined,
+        read_at: undefined,
         created_at: new Date().toISOString(),
         is_mine: false,
       };
@@ -334,8 +334,8 @@ describe('useMessages Hook', () => {
           sender: { id: 'user-456', name: '이의뢰인', role: 'client' },
           recipient_id: 'user-789',
           content: '오프라인 메시지',
-          attachments: null,
-          read_at: null,
+          attachments: undefined,
+          read_at: undefined,
           created_at: new Date().toISOString(),
           is_mine: false,
         },
@@ -396,8 +396,8 @@ describe('useMessages Hook', () => {
                     sender: { id: 'user-789', name: '김변호사', role: 'lawyer' },
                     recipient_id: mockRecipientId,
                     content: '테스트 메시지',
-                    attachments: null,
-                    read_at: null,
+                    attachments: undefined,
+                    read_at: undefined,
                     created_at: new Date().toISOString(),
                     is_mine: true,
                   },
@@ -582,7 +582,7 @@ describe('useMessages Hook', () => {
         expect(result.current.messages).toHaveLength(1);
       });
 
-      expect(result.current.messages[0].read_at).toBeNull();
+      expect(result.current.messages[0].read_at).toBeUndefined();
 
       // Simulate receiving read receipt
       act(() => {
@@ -658,8 +658,8 @@ describe('useMessages Hook', () => {
           sender: { id: 'user-456', name: '이의뢰인', role: 'client' },
           recipient_id: 'user-789',
           content: '이전 메시지',
-          attachments: null,
-          read_at: null,
+          attachments: undefined,
+          read_at: undefined,
           created_at: '2024-12-05T08:00:00Z',
           is_mine: false,
         },

@@ -34,7 +34,6 @@ describe('Plan 3.17 - AI Traceability Panel', () => {
             evidenceId: 'ev_001',
             title: '녹취록_20240501.mp3',
             quote: '피고가 원고에게 "너는 쓸모없는 사람이야"라고 반복적으로 말했습니다.',
-            labels: ['폭언'],
         },
     ];
 
