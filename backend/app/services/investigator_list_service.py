@@ -6,11 +6,11 @@ Business logic for lawyer's investigator management.
 """
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, desc, asc
+from sqlalchemy import or_, desc, asc
 from typing import Optional
 from datetime import datetime, timezone
 
-from app.db.models import User, Case, CaseMember, UserRole, UserStatus, CaseStatus
+from app.db.models import User, Case, CaseMember, UserRole, CaseStatus
 from app.schemas.investigator_list import (
     InvestigatorFilter,
     InvestigatorItem,

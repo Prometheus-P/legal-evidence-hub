@@ -6,7 +6,7 @@ Business logic for lawyer's client management.
 """
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, desc, asc
+from sqlalchemy import or_, desc, asc
 from typing import Optional
 from datetime import datetime, timezone
 

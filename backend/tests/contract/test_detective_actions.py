@@ -7,7 +7,6 @@ Tests for detective action endpoints:
 - POST /detective/cases/{id}/reject
 """
 
-import pytest
 from fastapi import status
 
 

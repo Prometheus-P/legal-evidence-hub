@@ -10,26 +10,20 @@ Endpoints:
 - GET /calendar/reminders - Get due reminders
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
-from app.core.dependencies import get_db, get_current_user_id, require_role
-from app.db.models import CalendarEventType, UserRole
+from app.core.dependencies import get_db, get_current_user_id
 from app.db.schemas import (
     CalendarEventCreate,
     CalendarEventUpdate,
-    CalendarEventOut,
-    CalendarEventListResponse,
 )
 from app.services.calendar_service import CalendarService, create_audit_log
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
-
-
-# Response schemas
-from pydantic import BaseModel
 
 
 class CalendarEventResponse(BaseModel):

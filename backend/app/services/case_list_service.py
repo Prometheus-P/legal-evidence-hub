@@ -7,10 +7,10 @@ Business logic for case list filtering, pagination, and bulk actions.
 
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func, desc, asc
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from datetime import datetime, timezone
 
-from app.db.models import Case, CaseMember, User, CaseStatus, CaseMemberRole
+from app.db.models import Case, CaseMember, CaseStatus
 from app.schemas.case_list import (
     CaseFilter,
     CaseListItem,

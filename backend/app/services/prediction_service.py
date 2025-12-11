@@ -5,7 +5,7 @@ Prediction Service - Business logic for division prediction with AI Worker integ
 import sys
 from pathlib import Path
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 import logging
 
 from app.db.schemas import (
@@ -14,7 +14,7 @@ from app.db.schemas import (
     EvidenceImpact,
     SimilarCase
 )
-from app.db.models import ConfidenceLevel, PropertyType
+from app.db.models import ConfidenceLevel
 from app.repositories.prediction_repository import PredictionRepository
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.case_repository import CaseRepository

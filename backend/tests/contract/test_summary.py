@@ -7,7 +7,6 @@ Tests for summary card endpoints:
 - GET /cases/{case_id}/summary/pdf (download as PDF/HTML)
 """
 
-import pytest
 from fastapi import status
 
 

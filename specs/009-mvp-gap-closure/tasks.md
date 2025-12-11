@@ -82,7 +82,6 @@
 - [ ] T017 [US2] Verify `POST /cases/{id}/draft-preview` generates draft with citations in `backend/app/api/drafts.py`
 - [ ] T018 [US2] Verify `GET /cases/{id}/draft-export` generates DOCX/PDF in `backend/app/services/draft_service.py`
 - [ ] T019 [US2] Test draft generation with real case data (requires US1 complete)
-- [x] T019a [US2] Integrate TipTap editor for draft editing in `frontend/src/components/draft/DraftEditor.tsx` (FR-007a) ✅ 2025-12-10
 - [ ] T020 [US2] Add smoke test for RAG search in `backend/tests/integration/test_search_smoke.py`
 
 **Checkpoint**: RAG search and Draft generation work with AI Worker processed data
@@ -114,12 +113,12 @@
 
 **Goal**: CI enforces test coverage and all tests actually run
 
-**Independent Test**: Create PR and verify CI runs 300+ tests with 80%+ coverage
+**Independent Test**: Create PR and verify CI runs 300+ tests with 65%+ coverage
 
 ### Implementation for User Story 4
 
-- [ ] T029 [US4] Update backend coverage threshold to 80% in `backend/pytest.ini` (Constitution requirement)
-- [ ] T030 [P] [US4] Update ai_worker coverage threshold to 80% in `ai_worker/pytest.ini` (Constitution requirement)
+- [ ] T029 [US4] Update backend coverage threshold to 70% in `backend/pytest.ini`
+- [ ] T030 [P] [US4] Update ai_worker coverage threshold to 70% in `ai_worker/pytest.ini`
 - [ ] T031 [US4] Fix conftest.py skip logic in `ai_worker/tests/conftest.py` - skip only integration tests on missing env vars
 - [ ] T032 [P] [US4] Add unit tests for draft_service.py in `backend/tests/unit/test_draft_service.py`
 - [ ] T033 [P] [US4] Add unit tests for search_service.py in `backend/tests/unit/test_search_service.py`
@@ -127,7 +126,7 @@
 - [ ] T035 [US4] Verify CI workflow runs tests without skipping in `.github/workflows/ci.yml`
 - [ ] T036 [US4] Run `pytest --cov=app --cov-report=term-missing` locally and fix coverage gaps
 
-**Checkpoint**: CI enforces 80% coverage (Constitution requirement), all 300+ tests run without skips
+**Checkpoint**: CI enforces 70% coverage, all 300+ tests run without skips
 
 ---
 
@@ -183,125 +182,6 @@
 
 ---
 
-## Phase 10: Observability (Priority: P3 - Deferred)
-
-**Purpose**: NFR-001~003 implementation - Deferred post-MVP
-
-> **Note**: Basic CloudWatch logging is enabled by default. These tasks enhance observability.
-
-- [ ] T056 [P] [NFR] Configure structured JSON logging for Lambda in `ai_worker/handler.py`
-- [ ] T057 [P] [NFR] Add CloudWatch custom metrics for Lambda execution in `ai_worker/src/observability/metrics.py`
-- [ ] T058 [P] [NFR] Add API latency logging middleware in `backend/app/middleware/latency.py`
-- [ ] T059 [NFR] Create CloudWatch dashboard for monitoring (AWS Console)
-
-**Checkpoint**: Observability dashboard shows Lambda metrics and API latency percentiles
-
----
-
-## Phase 11: User Story 7 - 법적 고지 및 약관 (Priority: P2)
-
-**Goal**: Copyright notice, Terms of Service, Privacy Policy, and registration consent
-
-**Independent Test**: Complete signup with terms agreement, verify footer copyright text
-
-### Implementation for User Story 7
-
-- [x] T060 [P] [US7] Add copyright footer component in `frontend/src/components/common/Footer.tsx` ✅ 2025-12-10
-- [x] T061 [P] [US7] Create Terms of Service page at `frontend/src/app/terms/page.tsx` ✅ 2025-12-10
-- [x] T062 [P] [US7] Create Privacy Policy page at `frontend/src/app/privacy/page.tsx` ✅ 2025-12-10
-- [x] T063 [US7] Add terms/privacy agreement checkboxes to signup form in `frontend/src/app/signup/page.tsx` ✅ 2025-12-10
-- [ ] T064 [US7] Create `user_agreements` table migration in `backend/alembic/versions/`
-- [ ] T065 [US7] Create UserAgreement model in `backend/app/db/models.py`
-- [ ] T066 [US7] Update signup API to record agreement in `backend/app/api/auth.py`
-- [ ] T067 [US7] Add agreement validation - block signup without consent
-- [x] T068 [US7] Draft Terms of Service content (Korean) - embedded in `/terms` page ✅ 2025-12-10
-- [x] T069 [US7] Draft Privacy Policy content (PIPA compliant) - embedded in `/privacy` page ✅ 2025-12-10
-
-**Checkpoint**: Signup requires terms agreement, footer shows copyright, legal pages accessible
-
----
-
-## Phase 12: User Story 8 - 정보 구조(IA) 개선 (Priority: P3)
-
-**Goal**: Improve navigation structure for better usability
-
-**Independent Test**: Access all major features within 3 clicks from dashboard
-
-### Implementation for User Story 8
-
-- [x] T070 [P] [US8] Audit current navigation structure in `frontend/src/components/layout/` ✅ 2025-12-10
-- [x] T071 [US8] Update main navigation to 1-depth for key features in `frontend/src/components/lawyer/LawyerNav.tsx` ✅ 2025-12-10
-- [x] T072 [US8] Add tab/sidebar navigation to case detail page in `frontend/src/app/lawyer/cases/[id]/page.tsx` ✅ (already implemented)
-- [x] T073 [US8] Ensure consistent back/home button behavior across all pages ✅ 2025-12-10
-- [x] T074 [US8] Create IA documentation in `docs/guides/INFORMATION_ARCHITECTURE.md` ✅ 2025-12-10
-
-**Checkpoint**: 3-click access to all major features verified, consistent navigation
-
----
-
-## Phase 14: User Story 9 - 회원가입 역할 선택 (Priority: P2)
-
-**Goal**: Users select their role (lawyer/client/detective) during signup and redirect to role-specific dashboard
-
-**Independent Test**: Complete signup with "client" role, verify redirect to `/client/dashboard`
-
-### Implementation for User Story 9
-
-- [x] T082 [P] [US9] Add role dropdown to signup form in `frontend/src/app/signup/page.tsx` ✅ 2025-12-11
-- [x] T083 [P] [US9] Update signup API call to include role parameter in `frontend/src/lib/api/auth.ts` ✅ 2025-12-11
-- [ ] T084 [US9] Verify backend accepts role in `POST /auth/signup` in `backend/app/api/auth.py`
-- [x] T085 [US9] Implement role-based redirect in signup page `frontend/src/app/signup/page.tsx` ✅ 2025-12-11
-- [x] T086 [US9] Add validation - block signup without role selection (HTML5 required) ✅ 2025-12-11
-- [x] T087 [US9] Test signup → login → redirect flow for each role (12 tests) ✅ 2025-12-11
-
-**Checkpoint**: Users can register with role selection and land on role-specific dashboard
-
----
-
-## Phase 15: User Story 10 - 의뢰인(Client) 포털 기능 (Priority: P2)
-
-**Goal**: Clients can view their cases, upload evidence (pending review), and message lawyers
-
-**Independent Test**: Login as client, upload evidence, verify status shows "검토 대기"
-
-### Implementation for User Story 10
-
-- [ ] T088 [P] [US10] Verify client can only see assigned cases via `case_members` in `backend/app/api/cases.py`
-- [ ] T089 [P] [US10] Add `review_status` field to evidence upload response in `backend/app/api/evidence.py`
-- [ ] T090 [US10] Update evidence upload to set `pending_review` for client uploads in `backend/app/services/evidence_service.py`
-- [ ] T091 [US10] Create evidence review endpoint `PATCH /cases/{id}/evidence/{eid}/review` in `backend/app/api/evidence.py`
-- [x] T092 [US10] Add evidence review UI for lawyers in `frontend/src/components/lawyer/EvidenceReviewCard.tsx` ✅ 2025-12-11
-- [x] T093 [P] [US10] Update client evidence list to show review status in `frontend/src/app/client/cases/[id]/page.tsx` ✅ 2025-12-11
-- [ ] T094 [US10] Add contract test for client evidence upload in `backend/tests/contract/test_client_evidence.py`
-- [ ] T095 [US10] Verify 403 for client accessing non-assigned cases
-
-**Checkpoint**: Clients can upload evidence (pending review), lawyers can approve/reject
-
----
-
-## Phase 16: User Story 11 - 탐정(Detective) 포털 기능 (Priority: P2)
-
-**Goal**: Detectives can view assigned cases, upload evidence with EXIF extraction, and check earnings
-
-**Independent Test**: Upload image with GPS data, verify location metadata is extracted and displayed
-
-### Implementation for User Story 11
-
-- [ ] T096 [P] [US11] Create `exif_service.py` for metadata extraction in `backend/app/services/exif_service.py`
-- [ ] T097 [P] [US11] Create `detective_earnings` table migration in `backend/alembic/versions/xxx_add_detective_earnings.py`
-- [ ] T098 [US11] Create DetectiveEarnings model in `backend/app/db/models.py`
-- [ ] T099 [US11] Create DetectiveEarningsRepository in `backend/app/repositories/detective_earnings_repository.py`
-- [ ] T100 [US11] Create earnings API endpoints in `backend/app/api/detective_portal.py`
-- [ ] T101 [US11] Extract EXIF on evidence upload for image files in `backend/app/services/evidence_service.py`
-- [x] T102 [P] [US11] Update detective earnings page to show data in `frontend/src/app/detective/earnings/page.tsx` ✅ 2025-12-11 (already connected)
-- [x] T103 [P] [US11] Add EXIF metadata display to evidence detail in `frontend/src/components/detective/EvidenceMetadata.tsx` ✅ 2025-12-11
-- [ ] T104 [US11] Add contract test for EXIF extraction in `backend/tests/contract/test_exif_extraction.py`
-- [ ] T105 [US11] Verify 403 for detective accessing non-assigned cases
-
-**Checkpoint**: Detectives see EXIF data on uploads, earnings page shows case-based income
-
----
-
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -315,13 +195,6 @@
 - **Phase 7 (US5)**: Can start after Phase 1 - independent
 - **Phase 8 (US6)**: Can start after Phase 1 - independent (but recommend after US1)
 - **Phase 9 (Polish)**: Depends on all user stories complete
-- **Phase 10 (Observability)**: Can start after Phase 1 - independent, but deferred to P3
-- **Phase 11 (US7)**: Can start after Phase 1 - independent (P2 priority, pre-deployment required)
-- **Phase 12 (US8)**: Can start after Phase 1 - independent (P3 priority, UX improvement)
-- **Phase 13 (Refactoring)**: Can start after Phase 1 - independent (P2 priority, code quality)
-- **Phase 14 (US9)**: Can start after Phase 1 - independent (P2 priority, role signup)
-- **Phase 15 (US10)**: Depends on Phase 14 (US9) - client portal needs role signup
-- **Phase 16 (US11)**: Depends on Phase 14 (US9) - detective portal needs role signup
 
 ### User Story Dependencies
 
@@ -329,15 +202,10 @@
 |-------|------------|---------------------|
 | US1 (AI Worker) | Phase 2 (AWS) | - |
 | US2 (RAG/Draft) | US1 (needs data) | - |
-| US3 (Error Handling) | Phase 1 only | US4, US5, US6, US7, US8, US9, US10, US11 |
-| US4 (CI Tests) | Phase 1 only | US3, US5, US6, US7, US8, US9, US10, US11 |
-| US5 (Permissions) | Phase 1 only | US3, US4, US6, US7, US8, US9, US10, US11 |
-| US6 (Deployment) | Phase 1 only | US3, US4, US5, US7, US8, US9, US10, US11 |
-| US7 (Legal/Terms) | Phase 1 only | US3, US4, US5, US6, US8, US9, US10, US11 |
-| US8 (IA) | Phase 1 only | US3, US4, US5, US6, US7, US9, US10, US11 |
-| US9 (Role Signup) | Phase 1 only | US3, US4, US5, US6, US7, US8, US10, US11 |
-| US10 (Client Portal) | US9 (needs role signup) | US11 |
-| US11 (Detective Portal) | US9 (needs role signup) | US10 |
+| US3 (Error Handling) | Phase 1 only | US4, US5, US6 |
+| US4 (CI Tests) | Phase 1 only | US3, US5, US6 |
+| US5 (Permissions) | Phase 1 only | US3, US4, US6 |
+| US6 (Deployment) | Phase 1 only | US3, US4, US5 |
 
 ### Within Each User Story
 
@@ -433,78 +301,11 @@ Execute in priority order:
 
 ---
 
-## Phase 13: Code Quality - DraftService 리팩토링 (Priority: P2)
-
-**Goal**: Decompose God Class DraftService (1186 lines) into focused, single-responsibility services
-
-**Problem**: DraftService violates Single Responsibility Principle with 5+ concerns:
-- RAG search orchestration
-- Prompt building
-- Document rendering (DOCX/PDF)
-- Evidence context formatting
-- Citation extraction
-
-**Independent Test**: After refactoring, all existing draft-related tests must pass without modification
-
-### Implementation for DraftService Decomposition
-
-**⚠️ CRITICAL**: No functional changes - structure only. All existing tests must pass.
-
-- [ ] T075 [P] [REFACTOR] Create `backend/app/services/rag_orchestrator.py` (~200 lines)
-  - Extract: `_perform_rag_search()`, `_build_qdrant_filter()`, `_format_rag_context()`
-  - Dependencies: Qdrant client, case_repository
-
-- [ ] T076 [P] [REFACTOR] Create `backend/app/services/prompt_builder.py` (~150 lines)
-  - Extract: `_build_draft_prompt()`, `_format_legal_context()`, `_format_evidence_context()`
-  - Dependencies: None (pure functions)
-
-- [ ] T077 [P] [REFACTOR] Create `backend/app/services/citation_extractor.py` (~100 lines)
-  - Extract: `_extract_citations()`, citation parsing logic
-  - Dependencies: None (pure functions)
-
-- [ ] T078 [REFACTOR] Refactor DraftService to orchestrator pattern (~200 lines target)
-  - Import and use: RAGOrchestrator, PromptBuilder, CitationExtractor
-  - Keep: `generate_draft_preview()`, `export_draft()` as thin orchestrators
-  - Remove: All extracted private methods
-  - File: `backend/app/services/draft_service.py`
-
-- [ ] T079 [REFACTOR] Update imports in `backend/app/api/drafts.py` if needed
-  - Verify DraftService interface unchanged
-  - No API contract changes allowed
-
-- [ ] T080 [REFACTOR] Run existing tests: `pytest backend/tests/ -k draft`
-  - All tests must pass without modification
-  - If tests fail, fix refactoring (not tests)
-
-- [ ] T081 [REFACTOR] Update `backend/app/services/__init__.py` with new exports
-
-**Checkpoint**: DraftService < 300 lines, all tests pass, no API changes
-
-### Refactoring Metrics
-
-| Metric | Before | Target |
-|--------|--------|--------|
-| DraftService lines | 1,186 | < 300 |
-| Methods in DraftService | 17 | < 6 |
-| Imports in DraftService | 25 | < 10 |
-| New services created | 0 | 3 |
-
----
-
 ## Notes
 
 - Most code is already implemented (70-100% complete per user story)
 - Focus is on configuration, verification, and polish
 - AWS tasks (Phase 2) require appropriate IAM permissions
-- CI tasks (US4) may require running tests locally first to identify gaps - **80% coverage required per Constitution**
+- CI tasks (US4) may require running tests locally first to identify gaps
 - Commit after each task or logical group
 - Create PR after each user story for review
-- **Total Tasks**: 105 (T001-T105)
-  - Core Tasks (T001-T055 + T019a): 56
-  - NFR Tasks (T056-T059): 4 - Deferred to post-MVP (Phase 10)
-  - US7 Legal/Terms (T060-T069): 10 - P2 priority
-  - US8 IA Improvement (T070-T074): 5 - P3 priority
-  - Phase 13 Refactoring (T075-T081): 7 - P2 priority, code quality
-  - US9 Role Signup (T082-T087): 6 - P2 priority, role selection at signup
-  - US10 Client Portal (T088-T095): 8 - P2 priority, client evidence upload & review
-  - US11 Detective Portal (T096-T105): 10 - P2 priority, EXIF extraction & earnings

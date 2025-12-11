@@ -9,8 +9,7 @@ Tests for backend/app/services/lawyer_dashboard_service.py:
 - Stats cards generation
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from datetime import datetime, timedelta
 from app.services.lawyer_dashboard_service import LawyerDashboardService
 from app.db.models import Case, CaseStatus, CaseMemberRole
@@ -607,7 +606,7 @@ class TestUpcomingEvents:
         from app.db.session import get_db
         from app.db.models import User, CalendarEvent, CaseMember, CalendarEventType
         from app.core.security import hash_password
-        from datetime import timedelta, datetime, timezone
+        from datetime import timezone
         import uuid
 
         db = next(get_db())

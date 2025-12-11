@@ -300,8 +300,9 @@ class TestIdempotencyMetadataStore:
         assert result is None
 
 
+@pytest.mark.integration
 class TestHandlerIdempotency:
-    """Test handler-level idempotency checks"""
+    """Test handler-level idempotency checks (requires full handler import)"""
 
     @pytest.fixture
     def mock_all_dependencies(self):

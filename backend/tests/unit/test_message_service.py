@@ -466,7 +466,6 @@ class TestGetConversationsEdgeCases:
         db.commit()
         db.refresh(user1)
         db.refresh(user2)
-        user2_id = user2.id
 
         # Create case
         case = Case(

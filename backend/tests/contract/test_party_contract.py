@@ -11,7 +11,6 @@ Tests for Party CRUD endpoints:
 - GET /cases/{case_id}/graph - Get full graph (parties + relationships)
 """
 
-import pytest
 from fastapi import status
 
 

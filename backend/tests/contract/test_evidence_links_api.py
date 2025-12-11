@@ -4,7 +4,6 @@ Contract tests for Evidence Links API
 TDD - API contract tests for evidence_links.py
 """
 
-import pytest
 from fastapi import status
 import uuid
 

@@ -5,7 +5,7 @@ Party API Router - REST endpoints for party node management
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import Optional
 
 from app.core.dependencies import (
     get_db,

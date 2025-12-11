@@ -5,7 +5,7 @@ Client List Schemas
 Pydantic schemas for lawyer's client management APIs.
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum

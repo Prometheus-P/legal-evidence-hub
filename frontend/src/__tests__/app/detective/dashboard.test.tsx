@@ -204,13 +204,11 @@ describe('Detective Dashboard Page', () => {
   });
 
   describe('Quick Actions', () => {
-    // TODO: Component structure changed - quick actions section needs to be verified
-    test.skip('should render cases list quick action', async () => {
+    test('should render field record quick action', async () => {
       render(<DetectiveDashboardPage />);
 
       await waitFor(() => {
-        // Dashboard renders stats cards - check for rendered content
-        expect(screen.getByText(/수익|월|조사|의뢰/i)).toBeInTheDocument();
+        expect(screen.getByText('현장 기록')).toBeInTheDocument();
       });
     });
 

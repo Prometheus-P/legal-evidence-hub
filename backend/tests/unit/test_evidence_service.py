@@ -5,7 +5,7 @@ TDD - Improving test coverage for evidence_service.py
 
 import pytest
 from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import uuid
 
 from app.services.evidence_service import EvidenceService
@@ -297,7 +297,7 @@ class TestHandleUploadComplete:
 
         with patch('app.services.evidence_service.save_evidence_metadata') as mock_save, \
              patch('app.services.evidence_service.invoke_ai_worker') as mock_invoke, \
-             patch('app.services.evidence_service.update_evidence_status') as mock_status:
+             patch('app.services.evidence_service.update_evidence_status'):
 
             mock_invoke.return_value = {"StatusCode": 200}
 

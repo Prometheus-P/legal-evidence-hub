@@ -5,7 +5,7 @@ Client Portal Service
 Service for client portal operations including dashboard, case viewing, and evidence upload.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import and_

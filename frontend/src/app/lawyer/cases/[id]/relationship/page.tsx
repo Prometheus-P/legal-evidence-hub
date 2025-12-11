@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   description: '사건 관련 인물들의 관계를 시각적으로 표시합니다',
 };
 
+// Required for static export with dynamic routes
+export function generateStaticParams() {
+  return [{ id: '1' }, { id: '2' }, { id: '3' }];
+}
+
+// Allow dynamic routes not listed in generateStaticParams
+export const dynamicParams = true;
+
 interface RelationshipPageProps {
   params: {
     id: string;

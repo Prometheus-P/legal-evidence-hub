@@ -10,7 +10,6 @@ Tests for backend/app/core/dependencies.py role validation helpers:
 - get_role_redirect_path()
 """
 
-import pytest
 from fastapi import status
 from app.core.security import create_access_token
 from app.db.models import UserRole

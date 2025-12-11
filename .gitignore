@@ -208,6 +208,8 @@ docs/guides/CLAUDE.md
 docs/guides/claude.md
 
 # Personal Claude configuration directory
+# Note: .claude/commands/ is tracked for speckit sharing
+.specify/
 .agent/
 # Note: .claude/commands/ is tracked for speckit sharing
 .specify/

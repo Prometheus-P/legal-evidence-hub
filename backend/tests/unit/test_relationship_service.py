@@ -5,7 +5,6 @@ TDD - Tests for relationship_service.py
 """
 
 import pytest
-from datetime import datetime, timezone
 import uuid
 
 from app.services.relationship_service import RelationshipService

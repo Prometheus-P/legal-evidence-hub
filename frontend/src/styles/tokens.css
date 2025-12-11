@@ -87,6 +87,12 @@
     --color-error-light: rgba(231, 76, 60, 0.1);
     --color-error-contrast: #FFFFFF;
 
+    /* Info (calm blue for notifications) */
+    --color-info: #3498DB;
+    --color-info-hover: #2980B9;
+    --color-info-light: rgba(52, 152, 219, 0.1);
+    --color-info-contrast: #FFFFFF;
+
     /* ================================================
        NEUTRAL SCALE
        ================================================ */

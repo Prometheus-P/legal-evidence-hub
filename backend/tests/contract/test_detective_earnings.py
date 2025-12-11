@@ -6,7 +6,6 @@ Tests for detective earnings endpoint:
 - GET /detective/earnings
 """
 
-import pytest
 from fastapi import status
 
 

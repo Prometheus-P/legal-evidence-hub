@@ -11,10 +11,7 @@ Tests for billing/invoice endpoints:
 - POST /client/billing/{id}/pay (client payment)
 """
 
-import pytest
 from fastapi import status
-from app.core.security import create_access_token
-from app.db.models import UserRole
 
 
 # ============== Invoice List Tests ==============

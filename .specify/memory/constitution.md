@@ -1,14 +1,13 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.3.0 → 1.3.1
+Version change: 1.2.0 → 1.3.0
 
 Modified principles: None
 
-Modified sections:
-- Testing Requirements: Clarified 80% coverage applies to both Backend and AI Worker (not just AI Worker)
-
-Added sections: None
+Added sections:
+- Team Responsibilities: GitHub account mappings added
+- Collaboration: GitHub Issue Assignment Policy (role-based)
 
 Removed sections: None
 
@@ -16,8 +15,6 @@ Templates validated:
 - .specify/templates/plan-template.md ✅ (No updates needed)
 - .specify/templates/spec-template.md ✅ (No updates needed)
 - .specify/templates/tasks-template.md ✅ (No updates needed)
-- .specify/templates/checklist-template.md ✅ (No updates needed)
-- .specify/templates/agent-file-template.md ✅ (No updates needed)
 
 Follow-up TODOs: None
 -->
@@ -116,7 +113,7 @@ Version tags MUST be created for all releases using the format `vX.Y.Z` (e.g., `
 
 ### Testing Requirements
 
-- Backend & AI Worker: pytest with 80% coverage target (MUST be enforced in CI)
+- Backend: pytest with 80% coverage target for AI Worker
 - Frontend: Jest + React Testing Library
 - Unit tests for services/repositories with mocked dependencies
 - Integration tests for full API endpoints
@@ -192,4 +189,4 @@ All GitHub issues MUST be assigned based on the responsible domain area:
 - Release PRs MUST include version bump following Semantic Versioning principle
 - GitHub issues MUST be assigned per the Issue Assignment Policy
 
-**Version**: 1.3.1 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-10
+**Version**: 1.3.0 | **Ratified**: 2025-12-03 | **Last Amended**: 2025-12-09

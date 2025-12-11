@@ -3,7 +3,6 @@ Property Service - Business logic for property division management
 """
 
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.db.schemas import (
     PropertyCreate,
@@ -12,7 +11,6 @@ from app.db.schemas import (
     PropertyListResponse,
     PropertySummary
 )
-from app.db.models import PropertyType
 from app.repositories.property_repository import PropertyRepository
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from fastapi import HTTPException, status
 
-from app.db.models import Asset, AssetDivisionSummary, AssetCategory, AssetOwnership, AssetNature
+from app.db.models import Asset, AssetDivisionSummary, AssetCategory, AssetOwnership
 from app.db.schemas import AssetCreate, AssetUpdate
 from app.repositories.asset_repository import AssetRepository, AssetDivisionSummaryRepository
 from app.services.division_calculator import DivisionCalculator

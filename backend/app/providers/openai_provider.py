@@ -319,7 +319,7 @@ class OpenAIVisionProvider(BaseVisionProvider):
                 }
             )
 
-            logger.info(f"OpenAI vision analysis complete")
+            logger.info("OpenAI vision analysis complete")
             return result
 
         except Exception as e:

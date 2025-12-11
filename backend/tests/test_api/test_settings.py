@@ -14,7 +14,6 @@ Tests for:
 """
 
 from fastapi import status
-import pytest
 
 
 class TestGetSettings:

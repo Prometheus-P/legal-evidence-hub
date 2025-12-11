@@ -15,7 +15,6 @@ Tests for procedure stage endpoints:
 - GET /cases/{case_id}/procedure/next-stages (get valid next stages)
 """
 
-import pytest
 from fastapi import status
 
 

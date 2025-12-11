@@ -7,7 +7,6 @@ Tests for detective case endpoints:
 - GET /detective/cases/{id}
 """
 
-import pytest
 from fastapi import status
 
 

@@ -32,7 +32,6 @@ from app.api import (  # noqa: E402
     drafts,
     evidence,
     evidence_links,
-    jobs,
     lawyer_portal,
     lawyer_clients,
     lawyer_investigators,
@@ -375,6 +374,7 @@ async def migrate_enums_to_lowercase():
 async def migrate_roles_redirect():
     """Redirects to migrate-enums endpoint."""
     return await migrate_enums_to_lowercase()
+
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)
 # Draft preview endpoint (POST /cases/{case_id}/draft-preview) remains in cases router

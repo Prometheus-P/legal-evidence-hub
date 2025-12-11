@@ -6,7 +6,6 @@ import json
 import logging
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
-from datetime import datetime
 
 from app.db.models import Job, JobStatus, JobType
 from app.repositories.job_repository import JobRepository

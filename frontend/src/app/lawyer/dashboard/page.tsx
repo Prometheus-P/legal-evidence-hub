@@ -2,11 +2,13 @@
  * Lawyer Dashboard Page
  * 003-role-based-ui Feature - US2
  * 007-lawyer-portal-v1 Feature - US7 (Today View)
+ * 009-calm-control-design-system - Enhanced with Risk Flags & AI Recommendations
  *
- * - 진행중/검토필요/완료 케이스 통계 카드
- * - 최근 케이스 목록 (5건)
- * - 오늘의 일정 (Today View)
- * - 이번 주 일정 (Weekly Preview)
+ * Calm-Control Dashboard:
+ * - 오늘 내가 통제해야 할 사건/증거/드래프트를 상단에 배치
+ * - 우선순위/위험도 기반 카드 위주 (타임라인 아님)
+ * - 위험 플래그 사건 섹션
+ * - AI 추천 작업 큐 (Preview-only)
  */
 
 'use client';
@@ -15,9 +17,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLawyerDashboard } from '@/hooks/useLawyerDashboard';
 import { useTodayView } from '@/hooks/useTodayView';
+import { useRiskFlags } from '@/hooks/useRiskFlags';
+import { useAIRecommendations } from '@/hooks/useAIRecommendations';
 import { StatsCard } from '@/components/lawyer/StatsCard';
 import { TodayCard } from '@/components/lawyer/TodayCard';
 import { WeeklyPreview } from '@/components/lawyer/WeeklyPreview';
+import { RiskFlagCard } from '@/components/lawyer/RiskFlagCard';
+import { AIRecommendationCard } from '@/components/lawyer/AIRecommendationCard';
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeletons';
 import { useRole } from '@/hooks/useRole';
 
@@ -121,6 +127,8 @@ export default function LawyerDashboardPage() {
     allComplete,
     isLoading: todayLoading,
   } = useTodayView();
+  const { cases: riskCases, isLoading: riskLoading } = useRiskFlags();
+  const { recommendations, isLoading: aiLoading } = useAIRecommendations();
 
   // Loading state
   if (isLoading) {
@@ -170,6 +178,15 @@ export default function LawyerDashboardPage() {
             <StatsCard label="이번 달 완료" value={data?.stats?.completed_this_month || 0} icon={<CompletedIcon />} />
           </>
         )}
+      </div>
+
+      {/* Priority Section: Risk Flags & AI Recommendations (Calm-Control) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Risk Flag Cases - subtle emphasis, no screaming colors */}
+        <RiskFlagCard cases={riskCases} isLoading={riskLoading} />
+
+        {/* AI Recommendations - Preview-only, manual trigger */}
+        <AIRecommendationCard recommendations={recommendations} isLoading={aiLoading} />
       </div>
 
       {/* Today View Section (US7) */}

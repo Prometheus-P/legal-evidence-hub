@@ -22,8 +22,6 @@ from app.providers.factory import (
     get_provider,
     get_llm_provider,
     get_embedding_provider,
-    get_vision_provider,
-    get_stt_provider,
     ProviderType,
     ProviderCategory,
     clear_provider_cache

@@ -337,7 +337,7 @@ class TestPerformRagSearch:
         with patch.object(DraftService, '__init__', lambda x, y: None):
             service = DraftService(mock_db)
 
-            result = service._perform_rag_search("case-123", ["청구원인"])
+            service._perform_rag_search("case-123", ["청구원인"])
 
             # Should search with fault-related keywords
             mock_search_ev.assert_called_once()

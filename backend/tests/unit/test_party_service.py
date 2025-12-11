@@ -5,12 +5,10 @@ TDD - Tests for party_service.py
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 import uuid
 
 from app.services.party_service import PartyService
-from app.db.models import PartyNode, PartyType, Case, CaseMember, User, CaseMemberRole
+from app.db.models import PartyNode, PartyType, Case, User
 from app.db.schemas import PartyNodeCreate, PartyNodeUpdate, Position
 from app.middleware import NotFoundError
 from app.core.security import hash_password

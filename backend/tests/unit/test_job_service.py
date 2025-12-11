@@ -4,12 +4,11 @@ TDD - Improving test coverage for job_service.py
 """
 
 import pytest
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 import json
 
 from app.services.job_service import JobService
-from app.db.models import Job, JobStatus, JobType, Case, CaseMember
+from app.db.models import Job, JobStatus, JobType, Case
 from app.middleware.error_handler import ValidationError, NotFoundError, PermissionError
 
 
@@ -287,7 +286,7 @@ class TestGetUserJobs:
 
             service.job_repo.get_by_user.return_value = mock_jobs
 
-            result = service.get_user_jobs("user-123", status="processing")
+            service.get_user_jobs("user-123", status="processing")
 
             service.job_repo.get_by_user.assert_called_once_with(
                 user_id="user-123",
@@ -409,7 +408,7 @@ class TestCancelJob:
             service.case_member_repo.is_member.return_value = True
             service.job_repo.cancel.return_value = mock_job
 
-            result = service.cancel_job("job-123", "user-123")
+            service.cancel_job("job-123", "user-123")
 
             service.job_repo.cancel.assert_called_once()
 

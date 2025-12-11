@@ -173,7 +173,7 @@ class ProcedureService:
                 # No stages yet, next should be FILED
                 if data.next_stage != ProcedureStageType.FILED:
                     raise ValueError(
-                        f"첫 번째 단계는 '소장 접수'여야 합니다."
+                        "첫 번째 단계는 '소장 접수'여야 합니다."
                     )
                 # Create FILED stage directly
                 return (None, self._create_next_stage(

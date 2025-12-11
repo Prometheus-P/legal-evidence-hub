@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.db.models import (
-    User, Case, CaseMember, InvestigationRecord, UserRole
+    User, Case, CaseMember, InvestigationRecord
 )
 from app.schemas.detective_portal import (
     DetectiveDashboardResponse, DashboardStats, InvestigationSummary,

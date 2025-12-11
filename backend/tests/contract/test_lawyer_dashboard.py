@@ -8,7 +8,6 @@ Tests for GET /lawyer/dashboard endpoint:
 - Role-based access (only internal users)
 """
 
-import pytest
 from fastapi import status
 from app.core.security import create_access_token
 from app.db.models import UserRole

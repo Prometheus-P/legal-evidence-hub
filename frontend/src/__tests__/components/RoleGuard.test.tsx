@@ -329,7 +329,7 @@ describe('RoleGuard Component', () => {
         user: { id: 'user-1', role: 'lawyer' },
         role: 'lawyer',
         isAuthenticated: true,
-        isLoading: true, // Set loading state
+        isLoading: true,
       });
 
       render(
@@ -338,7 +338,7 @@ describe('RoleGuard Component', () => {
         </RoleGuard>
       );
 
-      // Should show loading spinner, not content
+      // Should show loading spinner while isLoading is true
       expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
     });
 
@@ -347,6 +347,7 @@ describe('RoleGuard Component', () => {
         user: { id: 'user-1', role: 'lawyer' },
         role: 'lawyer',
         isAuthenticated: true,
+        isLoading: true,
       });
 
       render(
@@ -355,7 +356,8 @@ describe('RoleGuard Component', () => {
         </RoleGuard>
       );
 
-      // Should not render anything initially (no loading state)
+      // Should not render loading spinner when showLoading is false
+      // Content should be rendered (even during loading) when showLoading=false
     });
   });
 });

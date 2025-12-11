@@ -8,7 +8,6 @@ End-to-end tests for complete party graph workflows:
 - Graph retrieval with parties and relationships
 """
 
-import pytest
 from fastapi import status
 
 
@@ -145,7 +144,7 @@ class TestPartyGraphIntegration:
 
         # Step 2: Create relationships
         # Marriage (plaintiff-defendant)
-        marriage = client.post(
+        client.post(
             f"/cases/{test_case.id}/relationships",
             json={
                 "source_party_id": plaintiff["id"],
@@ -155,10 +154,10 @@ class TestPartyGraphIntegration:
                 "notes": "혼인신고일"
             },
             headers=auth_headers
-        ).json()
+        )
 
         # Affair (defendant-third_party)
-        affair = client.post(
+        client.post(
             f"/cases/{test_case.id}/relationships",
             json={
                 "source_party_id": defendant["id"],
@@ -168,7 +167,7 @@ class TestPartyGraphIntegration:
                 "notes": "불륜관계 시작"
             },
             headers=auth_headers
-        ).json()
+        )
 
         # Parent-child (plaintiff-child)
         client.post(
@@ -472,7 +471,7 @@ class TestEvidenceLinkIntegration:
         ).json()
 
         rel_link = next(
-            (l for l in case_links["links"] if l["relationship_id"] == marriage["id"]),
+            (link for link in case_links["links"] if link["relationship_id"] == marriage["id"]),
             None
         )
         assert rel_link is not None
@@ -523,5 +522,5 @@ class TestEvidenceLinkIntegration:
         ).json()
 
         assert evidence_links["total"] == 2
-        link_types = {l["link_type"] for l in evidence_links["links"]}
+        link_types = {link["link_type"] for link in evidence_links["links"]}
         assert link_types == {"mentions", "proves"}

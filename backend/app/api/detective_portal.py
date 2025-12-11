@@ -10,7 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_db, get_current_user_id, require_role
+from app.core.dependencies import get_db, require_role
 from app.services.detective_portal_service import DetectivePortalService
 from app.services.audit_log_service import AuditLogService
 from app.schemas.detective_portal import (

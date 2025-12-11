@@ -10,7 +10,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 
 from app.db.models import (
-    Case, User, CaseMember, ProcedureStageRecord,
+    Case, User, ProcedureStageRecord,
     ProcedureStageType, StageStatus
 )
 from app.schemas.summary import (

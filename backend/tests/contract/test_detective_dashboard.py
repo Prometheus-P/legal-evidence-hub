@@ -6,10 +6,7 @@ Tests for detective dashboard endpoint:
 - GET /detective/dashboard
 """
 
-import pytest
 from fastapi import status
-from app.core.security import create_access_token
-from app.db.models import UserRole
 
 
 # ============== T077: GET /detective/dashboard Contract Tests ==============

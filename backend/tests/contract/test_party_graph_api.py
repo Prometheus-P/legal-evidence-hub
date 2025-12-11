@@ -4,9 +4,7 @@ Contract tests for Party Graph API
 TDD - API contract tests for party.py and relationships.py
 """
 
-import pytest
 from fastapi import status
-import uuid
 
 
 class TestPartyAPI:

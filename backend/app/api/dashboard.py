@@ -10,7 +10,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import date
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user_id

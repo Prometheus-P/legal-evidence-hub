@@ -12,6 +12,8 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
+import pytest
+
 from src.storage.metadata_store import MetadataStore
 from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile, EvidenceChunk
@@ -149,8 +151,9 @@ class TestCaseListAndStats(unittest.TestCase):
         self.assertEqual(stats["chunk_count"], 3)
 
 
+@pytest.mark.integration
 class TestCaseCompleteDeletion(unittest.TestCase):
-    """케이스 완전 삭제 테스트"""
+    """케이스 완전 삭제 테스트 (Qdrant 연결 필요)"""
 
     def setUp(self):
         """테스트용 임시 데이터베이스 생성"""
@@ -324,8 +327,9 @@ class TestCaseCompleteDeletion(unittest.TestCase):
         self.assertEqual(chunks2[0].content, "case_002 content")
 
 
+@pytest.mark.integration
 class TestCaseIsolationVerification(unittest.TestCase):
-    """케이스 격리 검증 테스트"""
+    """케이스 격리 검증 테스트 (Qdrant 연결 필요)"""
 
     def setUp(self):
         """테스트용 임시 데이터베이스 생성"""

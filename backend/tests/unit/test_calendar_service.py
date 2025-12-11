@@ -207,7 +207,7 @@ class TestUpdateEventFields:
             mock_event_data.location = "New location"
             mock_event_data.reminder_minutes = 60
 
-            result = service.update_event("event-123", "user-123", mock_event_data)
+            service.update_event("event-123", "user-123", mock_event_data)
 
             # Check fields were updated (lines 176, 184, 186)
             assert mock_event.description == "Updated description"

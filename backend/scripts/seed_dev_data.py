@@ -19,7 +19,6 @@ Usage:
 """
 
 import sys
-import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -27,12 +26,11 @@ from pathlib import Path
 backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # noqa: E402
 
-from app.db import session as db_session
-from app.core.security import hash_password
-from app.db.models import (
-    Base,
+from app.db import session as db_session  # noqa: E402
+from app.core.security import hash_password  # noqa: E402
+from app.db.models import (  # noqa: E402
     User, UserRole, UserStatus,
     Case, CaseStatus,
     CaseMember, CaseMemberRole,

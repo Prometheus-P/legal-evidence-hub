@@ -5,7 +5,6 @@ TDD - Tests for evidence_link_service.py
 """
 
 import pytest
-from datetime import datetime, timezone
 import uuid
 
 from app.services.evidence_link_service import EvidenceLinkService

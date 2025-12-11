@@ -17,8 +17,8 @@
 ### 1. Clone and switch branch
 
 ```bash
-git clone https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd.git
-cd ai-camp-2nd-llm-agent-service-project-2nd
+git clone https://github.com/your-org/leh.git
+cd leh
 git checkout 009-mvp-gap-closure
 ```
 
@@ -260,140 +260,6 @@ curl https://api.openai.com/v1/models \
   -H "Authorization: Bearer $OPENAI_API_KEY"
 ```
 
-## US7-US8 Feature Verification
-
-### US7: Legal Notices and Terms
-
-```bash
-# 1. Verify copyright footer exists
-open http://localhost:3000
-# Check footer shows "© 2025 [회사명]. All Rights Reserved. 무단 활용 금지."
-
-# 2. Verify Terms of Service page
-open http://localhost:3000/terms
-# Should display full Terms of Service content
-
-# 3. Verify Privacy Policy page
-open http://localhost:3000/privacy
-# Should display PIPA-compliant Privacy Policy
-
-# 4. Test signup with terms agreement
-curl -X POST http://localhost:8000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "테스트 사용자",
-    "email": "test@test.com",
-    "password": "test1234",
-    "role": "lawyer",
-    "accept_terms": false,
-    "accept_privacy": false
-  }'
-
-# Expected: 400 Bad Request - "약관에 동의해주세요"
-
-# 5. Verify agreement is recorded in database
-psql -h localhost -U postgres -d leh_db -c \
-  "SELECT * FROM user_agreements WHERE user_id = 'user-id-here';"
-
-# Expected: Two records (ToS, Privacy) with agreed_at timestamps
-```
-
-### US8: Information Architecture
-
-```bash
-# 1. Verify main navigation structure
-open http://localhost:3000/lawyer/dashboard
-# Check navigation includes: 사건목록, 증거업로드, 초안생성, 설정 at 1-depth
-
-# 2. Test case detail page navigation
-open http://localhost:3000/lawyer/cases/{case_id}
-# Verify tabs/sidebar for: 증거, 당사자, 초안 (1-click access)
-
-# 3. Test back button behavior
-# Navigate: Dashboard → Case List → Case Detail → Evidence
-# Click back button at each level
-# Verify consistent navigation back to previous page
-
-# 4. Test logo/home navigation
-# Click logo from any page
-# Should redirect to role-specific dashboard (/lawyer/dashboard)
-```
-
----
-
-## US9-11 Feature Verification
-
-### US9: Role Selection at Signup
-
-```bash
-# 1. Open signup page
-open http://localhost:3000/signup
-
-# 2. Verify role dropdown exists (변호사/의뢰인/탐정)
-
-# 3. Test signup with client role
-curl -X POST http://localhost:8000/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "테스트 의뢰인",
-    "email": "client@test.com",
-    "password": "test1234",
-    "role": "client",
-    "accept_terms": true,
-    "accept_privacy": true
-  }'
-
-# Expected: User created with role=client
-```
-
-### US10: Client Portal Evidence Upload
-
-```bash
-# 1. Login as client
-TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"client@test.com","password":"test1234"}' | jq -r '.token')
-
-# 2. Upload evidence (should be pending_review)
-curl -X POST http://localhost:8000/cases/{case_id}/evidence \
-  -H "Authorization: Bearer $TOKEN" \
-  -F "file=@test.jpg"
-
-# Expected: review_status = "pending_review"
-
-# 3. Verify access control (should get 403 for other cases)
-curl -X GET http://localhost:8000/cases/other-case-id \
-  -H "Authorization: Bearer $TOKEN"
-
-# Expected: 403 Forbidden
-```
-
-### US11: Detective Portal EXIF + Earnings
-
-```bash
-# 1. Login as detective
-TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"detective@test.com","password":"test1234"}' | jq -r '.token')
-
-# 2. Upload image with EXIF
-curl -X POST http://localhost:8000/cases/{case_id}/evidence \
-  -H "Authorization: Bearer $TOKEN" \
-  -F "file=@photo_with_gps.jpg"
-
-# 3. Get EXIF metadata
-curl -X GET http://localhost:8000/detective/evidence/{evidence_id}/exif \
-  -H "Authorization: Bearer $TOKEN"
-
-# Expected: gps_latitude, gps_longitude, datetime_original
-
-# 4. Check earnings
-curl -X GET http://localhost:8000/detective/earnings \
-  -H "Authorization: Bearer $TOKEN"
-
-# Expected: total_earned, earnings list
-```
-
 ## Success Verification
 
 After setup, verify:
@@ -404,13 +270,3 @@ After setup, verify:
 4. ✅ S3 upload triggers Lambda (check CloudWatch logs)
 5. ✅ RAG search returns results
 6. ✅ Draft generation completes within 30 seconds
-7. ✅ Copyright footer visible on all pages (US7)
-8. ✅ /terms and /privacy pages accessible (US7)
-9. ✅ Signup requires terms/privacy checkboxes (US7)
-10. ✅ Main navigation has 1-depth access to key features (US8)
-11. ✅ Case detail has tabbed access to evidence/parties/drafts (US8)
-12. ✅ Signup page shows role dropdown (US9)
-13. ✅ Client portal restricts to assigned cases (US10)
-14. ✅ Client evidence shows "검토 대기" status (US10)
-15. ✅ Detective EXIF extraction works (US11)
-16. ✅ Detective earnings page displays data (US11)

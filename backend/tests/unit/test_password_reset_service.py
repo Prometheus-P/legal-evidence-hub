@@ -5,7 +5,7 @@ TDD - Improving test coverage for password_reset_service.py
 
 import pytest
 from datetime import datetime, timezone, timedelta
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import uuid
 
 from app.services.password_reset_service import PasswordResetService

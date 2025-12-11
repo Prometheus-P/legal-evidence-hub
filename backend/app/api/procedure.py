@@ -5,7 +5,7 @@ US3 - 절차 단계 관리 (Procedure Stage Tracking)
 Endpoints for managing litigation procedure stages
 """
 
-from typing import List, Tuple
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,6 @@ from app.schemas.procedure import (
     ProcedureTimelineResponse,
     TransitionToNextStage,
     UpcomingDeadlinesResponse,
-    ProcedureStageType,
     STAGE_LABELS,
 )
 

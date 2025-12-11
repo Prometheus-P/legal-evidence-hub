@@ -5,7 +5,6 @@ TDD for US2 - 재산분할표 (Asset Division Sheet)
 Tests Korean divorce property division calculation based on Civil Code Article 839-2.
 """
 
-import pytest
 from unittest.mock import MagicMock
 from app.services.division_calculator import DivisionCalculator
 from app.db.models import Asset, AssetCategory, AssetOwnership, AssetNature

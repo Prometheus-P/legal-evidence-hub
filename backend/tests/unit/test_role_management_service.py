@@ -3,7 +3,6 @@ Unit tests for Role Management Service
 TDD - Improving test coverage for role_management_service.py
 """
 
-import pytest
 from app.services.role_management_service import RoleManagementService
 from app.db.models import UserRole
 from app.db.schemas import RolePermissions, ResourcePermission

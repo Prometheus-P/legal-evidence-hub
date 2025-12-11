@@ -4,8 +4,7 @@ TDD - Improving test coverage for case_service.py
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
+from unittest.mock import patch
 import uuid
 
 from app.services.case_service import CaseService

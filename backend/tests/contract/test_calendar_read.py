@@ -7,11 +7,10 @@ Tests:
 - GET /calendar/reminders - Get reminders
 """
 
-import pytest
 from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
-from app.db.models import CalendarEvent, CalendarEventType, Case, CaseStatus
+from app.db.models import CalendarEvent, CalendarEventType
 
 
 class TestGetCalendarEvents:

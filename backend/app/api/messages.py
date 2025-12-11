@@ -16,7 +16,6 @@ WebSocket:
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, Query
 from sqlalchemy.orm import Session
 from typing import Optional
-import json
 import asyncio
 from datetime import datetime, timedelta
 

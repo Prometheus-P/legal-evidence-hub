@@ -7,7 +7,6 @@ Tests for detective record endpoints:
 - POST /detective/cases/{id}/report (final report)
 """
 
-import pytest
 from fastapi import status
 
 

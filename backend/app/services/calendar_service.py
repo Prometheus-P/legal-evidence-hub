@@ -12,10 +12,9 @@ Handles:
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
 
 from app.db.models import CalendarEvent, CalendarEventType, Case, AuditLog
-from app.db.schemas import CalendarEventCreate, CalendarEventUpdate, CalendarEventOut
+from app.db.schemas import CalendarEventCreate, CalendarEventUpdate
 
 
 # Event type color mapping

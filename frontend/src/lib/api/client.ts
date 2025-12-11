@@ -49,19 +49,19 @@ export async function apiRequest<T>(
     });
 
     // Handle empty responses (e.g., 204 No Content)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let data: any = null;
+    let data: T | undefined = undefined;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       const text = await response.text();
       if (text) {
-        data = JSON.parse(text);
+        data = JSON.parse(text) as T;
       }
     }
 
     if (!response.ok) {
       // Handle both error formats: { error: { message: "..." } } and { detail: "..." }
-      const errorMessage = data?.error?.message || data?.detail || 'An error occurred';
+      const errorData = data as { error?: { message?: string }; detail?: string } | undefined;
+      const errorMessage = errorData?.error?.message || errorData?.detail || 'An error occurred';
 
       // Handle 401 Unauthorized - redirect to login (but not from /auth/me or if already on login)
       // Note: Cookie cleanup is handled by the logout endpoint

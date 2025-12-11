@@ -3,12 +3,10 @@ Unit tests for Job Repository
 TDD - Improving test coverage for job_repository.py
 """
 
-import pytest
-from datetime import datetime, timezone
 import uuid
 
 from app.repositories.job_repository import JobRepository
-from app.db.models import Job, JobStatus, JobType, User, Case, CaseStatus
+from app.db.models import JobStatus, JobType, User, Case, CaseStatus
 
 
 class TestJobRepositoryInit:

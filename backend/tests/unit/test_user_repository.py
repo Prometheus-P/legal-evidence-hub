@@ -3,8 +3,6 @@ Unit tests for User Repository
 TDD - Improving test coverage for user_repository.py
 """
 
-import pytest
-from datetime import datetime, timezone
 import uuid
 
 from app.repositories.user_repository import UserRepository

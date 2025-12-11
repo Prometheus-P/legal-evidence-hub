@@ -8,7 +8,6 @@ Tests for client portal endpoints:
 - POST /client/cases/{id}/evidence (T057)
 """
 
-import pytest
 from fastapi import status
 from app.core.security import create_access_token
 from app.db.models import UserRole

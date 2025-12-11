@@ -3,11 +3,10 @@ import LoginForm from '@/components/auth/LoginForm';
 import '@testing-library/jest-dom';
 
 // Mock useRouter - App Router version
-const mockPush = jest.fn();
 jest.mock('next/navigation', () => ({
     useRouter() {
         return {
-            push: mockPush,
+            push: jest.fn(),
             replace: jest.fn(),
             prefetch: jest.fn(),
         };
@@ -22,10 +21,10 @@ const mockLogin = jest.fn();
 jest.mock('@/hooks/useAuth', () => ({
     useAuth: () => ({
         login: mockLogin,
+        logout: jest.fn(),
+        user: null,
         isLoading: false,
         isAuthenticated: false,
-        user: null,
-        error: null,
     }),
 }));
 
@@ -43,7 +42,10 @@ describe('LoginForm', () => {
 
     it('shows error on invalid credentials', async () => {
         // Mock login failure
-        mockLogin.mockRejectedValueOnce(new Error('아이디 또는 비밀번호를 확인해 주세요.'));
+        mockLogin.mockResolvedValue({
+            success: false,
+            error: '아이디 또는 비밀번호를 확인해 주세요.',
+        });
 
         render(<LoginForm />);
 
@@ -52,17 +54,14 @@ describe('LoginForm', () => {
         fireEvent.click(screen.getByRole('button', { name: /로그인/i }));
 
         await waitFor(() => {
-            expect(mockLogin).toHaveBeenCalledWith('wrong@example.com', 'wrongpass');
+            expect(screen.getByText(/아이디 또는 비밀번호를 확인해 주세요/i)).toBeInTheDocument();
         });
     });
 
     it('redirects on successful login', async () => {
         // Mock login success
-        mockLogin.mockResolvedValueOnce({
-            id: '1',
-            email: 'test@example.com',
-            name: 'Test User',
-            role: 'user'
+        mockLogin.mockResolvedValue({
+            success: true,
         });
 
         render(<LoginForm />);

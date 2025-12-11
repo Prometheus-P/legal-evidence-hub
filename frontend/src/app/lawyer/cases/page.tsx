@@ -3,25 +3,25 @@
 /**
  * Lawyer Case List Page
  * 003-role-based-ui Feature - US3
+ * 010-dashboard-first-flow - Added case creation functionality
  *
  * Main case management page for lawyers with filtering, sorting, and bulk actions.
  */
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
 import { useCaseList } from '@/hooks/useCaseList';
 import { CaseCard } from '@/components/lawyer/CaseCard';
 import { CaseTable } from '@/components/lawyer/CaseTable';
 import { CaseFilter } from '@/components/lawyer/CaseFilter';
 import { BulkActionBar } from '@/components/lawyer/BulkActionBar';
-import { apiClient } from '@/lib/api/client';
+import AddCaseModal from '@/components/cases/AddCaseModal';
 
 type ViewMode = 'grid' | 'table';
 
 export default function LawyerCasesPage() {
-  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('table');
-  const [isAnalyzing, setIsAnalyzing] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     cases,
     isLoading,
@@ -39,6 +39,7 @@ export default function LawyerCasesPage() {
     clearSelection,
     executeBulkAction,
     isBulkActionLoading,
+    refresh,
   } = useCaseList();
 
   const handleBulkAction = async (action: string, params?: Record<string, string>) => {
@@ -57,25 +58,6 @@ export default function LawyerCasesPage() {
     }
   };
 
-  // Case action handler for quick actions (procedure, assets, ai-analyze)
-  const handleCaseAction = async (caseId: string, action: 'procedure' | 'assets' | 'ai-analyze') => {
-    if (action === 'procedure') {
-      router.push(`/lawyer/cases/${caseId}/procedure`);
-    } else if (action === 'assets') {
-      router.push(`/lawyer/cases/${caseId}/assets`);
-    } else if (action === 'ai-analyze') {
-      setIsAnalyzing(caseId);
-      try {
-        await apiClient.post(`/cases/${caseId}/analyze`);
-        alert('AI 분석이 요청되었습니다. 완료까지 몇 분 정도 소요될 수 있습니다.');
-      } catch {
-        alert('AI 분석 요청 중 오류가 발생했습니다.');
-      } finally {
-        setIsAnalyzing(null);
-      }
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -86,7 +68,7 @@ export default function LawyerCasesPage() {
             총 {pagination.total}건의 케이스
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
@@ -110,6 +92,15 @@ export default function LawyerCasesPage() {
               </svg>
             </button>
           </div>
+          {/* Add Case Button */}
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-lg shadow hover:bg-[var(--color-primary-dark)] transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            새 사건 등록
+          </button>
         </div>
       </div>
 
@@ -152,7 +143,6 @@ export default function LawyerCasesPage() {
                   progress={caseItem.progress}
                   selected={selectedIds.includes(caseItem.id)}
                   onSelect={handleCardSelect}
-                  onAction={handleCaseAction}
                 />
               ))}
             </div>
@@ -165,7 +155,6 @@ export default function LawyerCasesPage() {
                 sortBy={sort.sortBy}
                 sortOrder={sort.sortOrder}
                 onSort={setSort}
-                onAction={handleCaseAction}
               />
             </div>
           )}
@@ -226,6 +215,13 @@ export default function LawyerCasesPage() {
         onAction={handleBulkAction}
         onClearSelection={clearSelection}
         isLoading={isBulkActionLoading}
+      />
+
+      {/* Add Case Modal */}
+      <AddCaseModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={refresh}
       />
     </div>
   );

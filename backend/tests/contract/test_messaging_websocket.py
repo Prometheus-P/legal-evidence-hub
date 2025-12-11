@@ -9,8 +9,6 @@ Tests for WebSocket endpoint:
 """
 
 import pytest
-from fastapi import status
-from fastapi.testclient import TestClient
 from app.core.security import create_access_token
 
 
@@ -28,7 +26,7 @@ class TestWebSocketConnection:
         """
         # Note: TestClient uses sync WebSocket
         with pytest.raises(Exception):
-            with client.websocket_connect("/messages/ws") as websocket:
+            with client.websocket_connect("/messages/ws") as _websocket:
                 pass
 
     def test_should_reject_connection_with_invalid_token(self, client, test_env):
@@ -38,7 +36,7 @@ class TestWebSocketConnection:
         Then: Connection is rejected with 4001 code
         """
         with pytest.raises(Exception):
-            with client.websocket_connect("/messages/ws?token=invalid_token") as websocket:
+            with client.websocket_connect("/messages/ws?token=invalid_token") as _websocket:
                 pass
 
     def test_should_accept_connection_with_valid_token(
@@ -57,7 +55,7 @@ class TestWebSocketConnection:
         })
 
         try:
-            with client.websocket_connect(f"/messages/ws?token={token}") as websocket:
+            with client.websocket_connect(f"/messages/ws?token={token}") as _websocket:
                 # Connection succeeded
                 # Server might send offline_messages or ping
                 # Just verify connection works

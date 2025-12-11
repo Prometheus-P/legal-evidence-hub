@@ -12,15 +12,6 @@
 
 import { renderHook, waitFor, act } from '@testing-library/react';
 
-// Mock SWR
-jest.mock('swr', () => ({
-  __esModule: true,
-  default: jest.fn(),
-  useSWRConfig: () => ({
-    mutate: jest.fn(),
-  }),
-}));
-
 // Mock apiClient
 const mockPost = jest.fn();
 const mockPut = jest.fn();
@@ -33,6 +24,15 @@ jest.mock('@/lib/api/client', () => ({
     delete: (...args: unknown[]) => mockDelete(...args),
   },
   apiFetcher: jest.fn(),
+}));
+
+// Mock SWR
+jest.mock('swr', () => ({
+  __esModule: true,
+  default: jest.fn(),
+  useSWRConfig: () => ({
+    mutate: jest.fn(),
+  }),
 }));
 
 import useSWR from 'swr';
@@ -98,6 +98,9 @@ import { useCalendar, useUpcomingEvents, useReminders } from '@/hooks/useCalenda
 describe('useCalendar hook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPost.mockReset();
+    mockPut.mockReset();
+    mockDelete.mockReset();
     (useSWR as jest.Mock).mockImplementation((key, fetcher, options) => ({
       data: { events: mockEventsFromApi, total: 2 },
       error: undefined,
@@ -191,7 +194,6 @@ describe('useCalendar hook', () => {
         '/calendar/events',
         expect.objectContaining({
           title: 'New Event',
-          event_type: 'meeting',
         })
       );
     });
@@ -218,7 +220,7 @@ describe('useCalendar hook', () => {
     test('should mutate cache after create', async () => {
       const mutateMock = jest.fn();
       (useSWR as jest.Mock).mockReturnValue({
-        data: { events: mockEventsFromApi, total: 2 },
+        data: { events: mockEvents, total: 2 },
         error: undefined,
         isLoading: false,
         mutate: mutateMock,

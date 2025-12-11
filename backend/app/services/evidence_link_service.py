@@ -4,8 +4,8 @@ Evidence Link Service - Business logic for evidence-party linking
 """
 
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from app.db.models import EvidencePartyLink, LinkType
+from typing import Optional
+from app.db.models import EvidencePartyLink
 from app.db.schemas import (
     EvidenceLinkCreate,
     EvidenceLinkResponse,

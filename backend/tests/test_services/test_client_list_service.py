@@ -9,9 +9,6 @@ Tests for:
 - empty result handling
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 
 from app.services.client_list_service import ClientListService
 from app.schemas.client_list import ClientFilter, ClientStatus, ClientSortField, SortOrder

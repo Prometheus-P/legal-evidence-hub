@@ -3,9 +3,8 @@ Unit tests for Billing Service
 TDD - Improving test coverage for billing_service.py
 """
 
-import pytest
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 from app.services.billing_service import BillingService
 from app.db.models import Invoice, InvoiceStatus
@@ -188,7 +187,7 @@ class TestProcessPayment:
             service.db = mock_db
             service._to_invoice_out = MagicMock(return_value=MagicMock())
 
-            result = service.process_payment("invoice-123", "client-123", "credit_card")
+            service.process_payment("invoice-123", "client-123", "credit_card")
 
             # Should update status to PAID
             assert mock_invoice.status == InvoiceStatus.PAID
@@ -255,7 +254,7 @@ class TestUpdateInvoiceSuccess:
                 due_date=datetime(2024, 12, 31, tzinfo=timezone.utc)
             )
 
-            result = service.update_invoice("invoice-123", "lawyer-123", update_data)
+            service.update_invoice("invoice-123", "lawyer-123", update_data)
 
             # Check fields were updated
             assert mock_invoice.amount == "200000"

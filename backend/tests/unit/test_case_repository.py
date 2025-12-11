@@ -3,7 +3,6 @@ Unit tests for Case Repository
 TDD - Improving test coverage for case_repository.py
 """
 
-import pytest
 from datetime import datetime, timezone
 import uuid
 

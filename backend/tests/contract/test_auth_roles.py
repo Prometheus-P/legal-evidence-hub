@@ -8,7 +8,6 @@ Tests for POST /auth/signup endpoint with new roles:
 - Validate role is correctly saved and returned
 """
 
-import pytest
 from fastapi import status
 from app.db.models import UserRole
 

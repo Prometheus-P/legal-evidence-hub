@@ -4,8 +4,6 @@ TDD - Improving test coverage for user_management_service.py
 """
 
 import pytest
-from datetime import datetime, timezone
-from unittest.mock import patch, MagicMock
 import uuid
 
 from app.services.user_management_service import UserManagementService

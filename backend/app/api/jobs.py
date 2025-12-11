@@ -14,7 +14,6 @@ from typing import Optional
 import json
 
 from app.db.session import get_db
-from app.db.models import JobStatus, JobType
 from app.db.schemas import (
     JobCreate,
     JobOut,

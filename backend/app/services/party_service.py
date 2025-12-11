@@ -15,7 +15,7 @@ from app.db.schemas import (
 from app.repositories.party_repository import PartyRepository
 from app.repositories.relationship_repository import RelationshipRepository
 from app.repositories.case_repository import CaseRepository
-from app.middleware import NotFoundError, ValidationError
+from app.middleware import NotFoundError
 import logging
 
 logger = logging.getLogger(__name__)

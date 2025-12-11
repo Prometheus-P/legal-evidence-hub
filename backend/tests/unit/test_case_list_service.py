@@ -3,7 +3,6 @@ Unit tests for Case List Service
 TDD - Improving test coverage for case_list_service.py
 """
 
-import pytest
 from datetime import datetime, timezone
 import uuid
 
@@ -11,7 +10,6 @@ from app.services.case_list_service import CaseListService
 from app.db.models import Case, CaseMember, User, CaseStatus, CaseMemberRole
 from app.schemas.case_list import (
     CaseFilter,
-    CaseSortField,
     SortOrder,
     BulkActionType,
 )

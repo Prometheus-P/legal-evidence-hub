@@ -1,14 +1,13 @@
 /**
- * Asset Sheet Page
- * US2 - 재산분할표 (Asset Division Sheet)
+ * Case Assets Page
+ * 009-calm-control-design-system
  *
- * Korean divorce property division calculation page
- * Based on Civil Code Article 839-2
+ * Asset division management for divorce cases.
  */
 
-import AssetSheetClient from './AssetSheetClient';
+import CaseAssetsClient from './CaseAssetsClient';
 
-// Required for static export with dynamic routes
+// Static params for build-time generation
 export function generateStaticParams() {
   return [{ id: '1' }, { id: '2' }, { id: '3' }];
 }
@@ -16,10 +15,12 @@ export function generateStaticParams() {
 // Allow dynamic routes not listed in generateStaticParams
 export const dynamicParams = true;
 
-interface PageProps {
-  params: { id: string };
+interface Props {
+  params: Promise<{ id: string }>;
 }
 
-export default function AssetSheetPage({ params }: PageProps) {
-  return <AssetSheetClient caseId={params.id} />;
+export default async function CaseAssetsPage({ params }: Props) {
+  const { id } = await params;
+
+  return <CaseAssetsClient caseId={id} />;
 }

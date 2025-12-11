@@ -8,7 +8,7 @@ from sqlalchemy import or_, and_
 from typing import List, Optional
 from datetime import datetime, timezone
 from app.db.models import (
-    Case, CaseStatus, CaseMember,
+    Case, CaseMember,
     User, UserRole, UserStatus,
     Evidence,
     CalendarEvent

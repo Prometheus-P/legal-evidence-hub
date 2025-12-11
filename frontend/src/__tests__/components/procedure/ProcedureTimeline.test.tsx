@@ -93,11 +93,11 @@ describe('ProcedureTimeline', () => {
         />
       );
 
-      // Check all stages are rendered (use getAllByText for stages that may appear multiple times)
+      // Check all stages are rendered (use getAllByText for potentially duplicated labels)
       expect(screen.getByText('소장 접수')).toBeInTheDocument();
       expect(screen.getByText('송달')).toBeInTheDocument();
       expect(screen.getAllByText('답변서').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('조정 회부').length).toBeGreaterThan(0);
+      expect(screen.getByText('조정 회부')).toBeInTheDocument();
     });
 
     it('displays progress percentage', () => {
@@ -385,10 +385,9 @@ describe('ProcedureTimeline', () => {
     });
   });
 
-  describe('Accessibility', () => {
-    // TODO: Component needs tabIndex and aria-label attributes for full accessibility
-    // Skip these tests until component is updated
-    it.skip('stage cards are keyboard accessible', () => {
+  // TODO: Add tabIndex and aria-label to StageCard component for accessibility
+  describe.skip('Accessibility', () => {
+    it('stage cards are keyboard accessible', () => {
       render(
         <ProcedureTimeline
           stages={mockStages}
@@ -408,7 +407,7 @@ describe('ProcedureTimeline', () => {
       });
     });
 
-    it.skip('stage cards have proper aria labels', () => {
+    it('stage cards have proper aria labels', () => {
       render(
         <ProcedureTimeline
           stages={mockStages}

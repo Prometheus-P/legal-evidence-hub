@@ -33,15 +33,19 @@ jest.mock('../../lib/api/auth', () => ({
     getCurrentUser: jest.fn(),
 }));
 
-// Mock useAuth hook
-jest.mock('../../hooks/useAuth', () => ({
+// Mock useAuth hook for components that use AuthProvider
+const mockLogin = jest.fn();
+const mockLogout = jest.fn();
+let mockIsAuthenticated = false;
+let mockIsLoading = false;
+
+jest.mock('@/hooks/useAuth', () => ({
     useAuth: () => ({
-        login: jest.fn(),
-        logout: jest.fn(),
-        isLoading: false,
-        isAuthenticated: false,
-        user: null,
-        error: null,
+        login: mockLogin,
+        logout: mockLogout,
+        user: mockIsAuthenticated ? { id: '1', email: 'test@example.com', role: 'lawyer' } : null,
+        isLoading: mockIsLoading,
+        isAuthenticated: mockIsAuthenticated,
     }),
 }));
 
@@ -70,6 +74,10 @@ describe('Plan 3.19.2 - Navigation Guard', () => {
             push: mockPush,
             replace: mockReplace,
         });
+
+        // Default: not authenticated
+        mockIsAuthenticated = false;
+        mockIsLoading = false;
 
         // Default: not authenticated (API returns error)
         mockGetCurrentUser.mockResolvedValue({

@@ -12,7 +12,7 @@ Handles:
 from datetime import datetime, timezone
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import and_, or_, desc
 import json
 import uuid
 

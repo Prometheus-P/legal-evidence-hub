@@ -3,7 +3,6 @@ Unit tests for Audit Log Service
 TDD - Improving test coverage for audit_log_service.py
 """
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
@@ -170,7 +169,7 @@ class TestExportAuditLogsCsv:
             start = datetime(2024, 1, 1, tzinfo=timezone.utc)
             end = datetime(2024, 12, 31, tzinfo=timezone.utc)
 
-            result = service.export_audit_logs_csv(
+            service.export_audit_logs_csv(
                 start_date=start,
                 end_date=end,
                 user_id="user-123",

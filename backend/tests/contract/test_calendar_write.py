@@ -7,7 +7,6 @@ Tests:
 - DELETE /calendar/events/{id} - Delete event
 """
 
-import pytest
 from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 

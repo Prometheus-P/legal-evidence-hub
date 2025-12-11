@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 import pytest
-from datetime import datetime
 
 # Add the project root directory to Python path
 # This allows imports like "from src.parsers import ..."
@@ -231,7 +230,8 @@ class MockQdrantClient:
 
         results = []
         for i, point in enumerate(filtered_points):
-            if i >= limit: break
+            if i >= limit:
+                break
             results.append(ScoredPoint(
                 id=point.id,
                 version=1,

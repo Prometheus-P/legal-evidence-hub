@@ -16,7 +16,6 @@ Complex integration tests are in the integration test suite.
 
 import pytest
 from fastapi import status
-from app.core.security import create_access_token
 
 
 # ============================================
