@@ -159,19 +159,36 @@ class TestSubmitReport:
 class TestGetEarnings:
     """Unit tests for get_earnings method"""
 
-    def test_get_earnings_returns_mock_data(self):
-        """Returns mock earnings data"""
+    def test_get_earnings_returns_data_from_repository(self):
+        """Returns earnings data from repository"""
+        from decimal import Decimal
+
         mock_db = MagicMock()
 
+        # Mock repository
+        mock_repo = MagicMock()
+        mock_repo.get_earnings_summary.return_value = {
+            "total": Decimal("15000000"),
+            "pending": Decimal("500000")
+        }
+        mock_repo.get_by_detective_id.return_value = []
+
+        # Mock this month query
+        mock_query = MagicMock()
+        mock_query.filter.return_value = mock_query
+        mock_query.all.return_value = []
+        mock_db.query.return_value = mock_query
+
         with patch.object(DetectivePortalService, '__init__', lambda x, y: None):
-            service = DetectivePortalService(mock_db)
-            service.db = mock_db
+            with patch('app.repositories.detective_earnings_repository.DetectiveEarningsRepository', return_value=mock_repo):
+                service = DetectivePortalService(mock_db)
+                service.db = mock_db
 
-            result = service.get_earnings("detective-123")
+                result = service.get_earnings("detective-123")
 
-            assert result.summary.total_earned == 15000000.0
-            assert result.summary.pending_payment == 500000.0
-            assert len(result.transactions) == 2
+                assert result.summary.total_earned == 15000000.0
+                assert result.summary.pending_payment == 500000.0
+                assert len(result.transactions) == 0
 
 
 class TestGetDashboard:

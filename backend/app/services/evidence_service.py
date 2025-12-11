@@ -215,6 +215,25 @@ class EvidenceService:
             "deleted": False
         }
 
+        # Store EXIF metadata if provided (for detective image uploads)
+        if request.exif_metadata:
+            exif_data = {}
+            if request.exif_metadata.gps_latitude is not None:
+                exif_data["gps_latitude"] = request.exif_metadata.gps_latitude
+            if request.exif_metadata.gps_longitude is not None:
+                exif_data["gps_longitude"] = request.exif_metadata.gps_longitude
+            if request.exif_metadata.gps_altitude is not None:
+                exif_data["gps_altitude"] = request.exif_metadata.gps_altitude
+            if request.exif_metadata.datetime_original:
+                exif_data["datetime_original"] = request.exif_metadata.datetime_original
+            if request.exif_metadata.camera_make:
+                exif_data["camera_make"] = request.exif_metadata.camera_make
+            if request.exif_metadata.camera_model:
+                exif_data["camera_model"] = request.exif_metadata.camera_model
+            if exif_data:
+                evidence_metadata["exif_metadata"] = exif_data
+                logger.info(f"EXIF metadata stored for evidence {evidence_id}: {list(exif_data.keys())}")
+
         # Save to DynamoDB
         save_evidence_metadata(evidence_metadata)
 

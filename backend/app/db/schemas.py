@@ -273,6 +273,16 @@ class PresignedUrlResponse(BaseModel):
     s3_key: str
 
 
+class ExifMetadataInput(BaseModel):
+    """EXIF metadata input from client-side extraction"""
+    gps_latitude: Optional[float] = Field(None, description="GPS latitude in decimal degrees")
+    gps_longitude: Optional[float] = Field(None, description="GPS longitude in decimal degrees")
+    gps_altitude: Optional[float] = Field(None, description="GPS altitude in meters")
+    datetime_original: Optional[str] = Field(None, description="Original capture datetime (ISO format)")
+    camera_make: Optional[str] = Field(None, description="Camera manufacturer")
+    camera_model: Optional[str] = Field(None, description="Camera model")
+
+
 class UploadCompleteRequest(BaseModel):
     """Upload complete request schema"""
     case_id: str
@@ -280,6 +290,10 @@ class UploadCompleteRequest(BaseModel):
     s3_key: str
     file_size: int = 0  # File size in bytes
     note: Optional[str] = None
+    exif_metadata: Optional[ExifMetadataInput] = Field(
+        None,
+        description="EXIF metadata extracted from image on client side (for detective uploads)"
+    )
 
 
 class UploadCompleteResponse(BaseModel):
