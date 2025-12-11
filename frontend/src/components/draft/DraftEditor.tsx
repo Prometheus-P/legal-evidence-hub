@@ -313,7 +313,7 @@ const DraftEditor = forwardRef<DraftEditorRef, DraftEditorProps>(
     // Update content when initialContent changes externally
     useEffect(() => {
       if (editor && initialContent !== editor.getHTML()) {
-        editor.commands.setContent(initialContent, false);
+        editor.commands.setContent(initialContent, { emitUpdate: false });
       }
     }, [initialContent, editor]);
 
@@ -328,7 +328,7 @@ const DraftEditor = forwardRef<DraftEditorRef, DraftEditorProps>(
     useImperativeHandle(ref, () => ({
       getHTML: () => editor?.getHTML() || '',
       getText: () => editor?.getText() || '',
-      setContent: (html: string) => editor?.commands.setContent(html, false),
+      setContent: (html: string) => editor?.commands.setContent(html, { emitUpdate: false }),
       insertContent: (content: string) => editor?.commands.insertContent(content),
       focus: () => editor?.commands.focus(),
       clear: () => editor?.commands.clearContent(),
