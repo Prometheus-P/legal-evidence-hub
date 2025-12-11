@@ -8,6 +8,7 @@ DELETE /cases/{id} - Soft delete case
 GET /cases/{id}/evidence - List evidence for a case
 POST /cases/{id}/draft-preview - Generate draft preview
 GET /cases/{id}/draft-export - Export draft as DOCX/PDF
+PATCH /cases/{id}/evidence/{eid}/review - Review client-uploaded evidence
 """
 
 from fastapi import APIRouter, Depends, status, Query
@@ -27,7 +28,9 @@ from app.db.schemas import (
     DraftExportFormat,
     Article840Category,
     AddCaseMembersRequest,
-    CaseMembersListResponse
+    CaseMembersListResponse,
+    EvidenceReviewRequest,
+    EvidenceReviewResponse
 )
 from app.services.case_service import CaseService
 from app.services.evidence_service import EvidenceService
@@ -424,3 +427,51 @@ def get_case_members(
     """
     case_service = CaseService(db)
     return case_service.get_case_members(case_id, user_id)
+
+
+@router.patch("/{case_id}/evidence/{evidence_id}/review", response_model=EvidenceReviewResponse, status_code=status.HTTP_200_OK)
+def review_evidence(
+    case_id: str,
+    evidence_id: str,
+    request: EvidenceReviewRequest,
+    current_user: User = Depends(require_lawyer_or_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Review client-uploaded evidence (approve or reject)
+
+    **Path Parameters:**
+    - case_id: Case ID
+    - evidence_id: Evidence ID to review
+
+    **Request Body:**
+    - action: "approve" or "reject"
+    - comment: Optional review comment
+
+    **Response:**
+    - 200: Evidence reviewed successfully
+    - evidence_id, case_id, review_status, reviewed_by, reviewed_at, comment
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User is not lawyer/admin or doesn't have case access
+    - 404: Case or evidence not found
+    - 400: Evidence is not in pending_review state
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only lawyer or admin can review evidence
+
+    **Notes:**
+    - Only evidence with review_status='pending_review' can be reviewed
+    - Approved evidence will be processed by AI Worker
+    - Rejected evidence will be marked but not processed
+    """
+    evidence_service = EvidenceService(db)
+    return evidence_service.review_evidence(
+        case_id=case_id,
+        evidence_id=evidence_id,
+        reviewer_id=current_user.id,
+        action=request.action,
+        comment=request.comment
+    )

@@ -289,6 +289,7 @@ class UploadCompleteResponse(BaseModel):
     filename: str
     s3_key: str
     status: str  # pending (waiting for AI processing)
+    review_status: Optional[str] = None  # pending_review for client uploads, None for internal uploads
     created_at: datetime
 
 
@@ -309,6 +310,22 @@ class EvidenceListResponse(BaseModel):
     """Evidence list response wrapper (matches frontend expectation)"""
     evidence: list[EvidenceSummary]
     total: int
+
+
+class EvidenceReviewRequest(BaseModel):
+    """Evidence review request schema (for lawyer approval)"""
+    action: str = Field(..., pattern="^(approve|reject)$", description="Review action: approve or reject")
+    comment: Optional[str] = Field(None, max_length=500, description="Optional review comment")
+
+
+class EvidenceReviewResponse(BaseModel):
+    """Evidence review response schema"""
+    evidence_id: str
+    case_id: str
+    review_status: str  # approved, rejected
+    reviewed_by: str
+    reviewed_at: datetime
+    comment: Optional[str] = None
 
 
 class EvidenceDetail(BaseModel):
