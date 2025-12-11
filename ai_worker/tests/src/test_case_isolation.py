@@ -13,10 +13,7 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 
-import pytest
-
 from src.storage.metadata_store import MetadataStore
-from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile, EvidenceChunk
 
 
