@@ -3,8 +3,10 @@
 **Feature**: 009-mvp-gap-closure (MVP 구현 갭 해소)
 **Purpose**: Comprehensive requirements quality validation for production readiness
 **Created**: 2025-12-09
-**Depth**: Thorough (~50 items)
+**Updated**: 2025-12-11
+**Depth**: Thorough (~87 items)
 **Audience**: Author (self-validation)
+**TDD Tests**: 75 tests (EvidenceReviewCard: 41, EvidenceMetadata: 34)
 
 ---
 
@@ -52,44 +54,44 @@
 - [ ] CHK023 - Is the rollback procedure documented? [Gap, Spec §FR-019]
 - [ ] CHK024 - Are deployment approval requirements (manual for prod) specified? [Completeness, Spec §FR-018]
 
-### US7 - 법적 고지 및 약관 (P2)
+### US7 - 법적 고지 및 약관 (P2) ✅ VERIFIED
 
-- [ ] CHK064 - Is copyright footer text explicitly specified? [Completeness, Spec §FR-020]
-- [ ] CHK065 - Are ToS and Privacy checkbox requirements distinct (separate checkboxes)? [Completeness, Spec §FR-021,022]
-- [ ] CHK066 - Is Terms of Service content defined or referenced? [Gap, Spec §FR-023]
-- [ ] CHK067 - Is Privacy Policy PIPA compliance requirements listed? [Completeness, Spec §FR-024]
-- [ ] CHK068 - Is user_agreements schema specified (user_id, agreement_type, version, agreed_at)? [Completeness, Spec §FR-025]
-- [ ] CHK069 - Are agreement re-consent requirements on policy version change defined? [Gap]
+- [x] CHK064 - Is copyright footer text explicitly specified? [Completeness, Spec §FR-020] ✅ T060 implemented in Footer.tsx
+- [x] CHK065 - Are ToS and Privacy checkbox requirements distinct (separate checkboxes)? [Completeness, Spec §FR-021,022] ✅ T063 implemented in signup
+- [x] CHK066 - Is Terms of Service content defined or referenced? [Gap, Spec §FR-023] ✅ T061,T068 - /terms page created
+- [x] CHK067 - Is Privacy Policy PIPA compliance requirements listed? [Completeness, Spec §FR-024] ✅ T062,T069 - /privacy page created
+- [ ] CHK068 - Is user_agreements schema specified (user_id, agreement_type, version, agreed_at)? [Completeness, Spec §FR-025] ⏳ Backend T064-T067 pending
+- [ ] CHK069 - Are agreement re-consent requirements on policy version change defined? [Gap] ⏳ Deferred to post-MVP
 
-### US8 - 정보 구조(IA) 개선 (P3)
+### US8 - 정보 구조(IA) 개선 (P3) ✅ VERIFIED
 
-- [ ] CHK070 - Are specific features required in main navigation 1-depth? [Completeness, Spec §FR-026]
-- [ ] CHK071 - Is "1-click access" measurable (which elements, from which views)? [Clarity, Spec §FR-027]
-- [ ] CHK072 - Are back/home button behaviors defined for each page type? [Gap, Spec §FR-028]
+- [x] CHK070 - Are specific features required in main navigation 1-depth? [Completeness, Spec §FR-026] ✅ T071 - LawyerNav updated
+- [x] CHK071 - Is "1-click access" measurable (which elements, from which views)? [Clarity, Spec §FR-027] ✅ T072 - Case detail tabs implemented
+- [x] CHK072 - Are back/home button behaviors defined for each page type? [Gap, Spec §FR-028] ✅ T073,T074 - IA guide created
 
-### US9 - 회원가입 역할 선택 (P2)
+### US9 - 회원가입 역할 선택 (P2) ✅ VERIFIED (Frontend)
 
-- [ ] CHK073 - Are available roles for self-signup explicitly enumerated? [Completeness, Spec §FR-029]
-- [ ] CHK074 - Is role parameter format and validation specified? [Completeness, Spec §FR-030]
-- [ ] CHK075 - Are role-to-dashboard path mappings documented? [Completeness, Spec §FR-031]
-- [ ] CHK076 - Is error message for missing role selection specified? [Completeness, Spec §FR-032]
+- [x] CHK073 - Are available roles for self-signup explicitly enumerated? [Completeness, Spec §FR-029] ✅ T082 - lawyer/client/detective dropdown
+- [x] CHK074 - Is role parameter format and validation specified? [Completeness, Spec §FR-030] ✅ T083 - API call with role param
+- [x] CHK075 - Are role-to-dashboard path mappings documented? [Completeness, Spec §FR-031] ✅ T085 - Role redirect implemented
+- [x] CHK076 - Is error message for missing role selection specified? [Completeness, Spec §FR-032] ✅ T086 - HTML5 required attribute
 
-### US10 - 의뢰인(Client) 포털 (P2)
+### US10 - 의뢰인(Client) 포털 (P2) ✅ TDD VERIFIED (41 tests)
 
-- [ ] CHK077 - Is "assigned cases" definition clear (via case_members table)? [Clarity, Spec §FR-033]
-- [ ] CHK078 - Is evidence review status enum defined (pending_review, approved, rejected)? [Completeness, Spec §FR-034,035]
-- [ ] CHK079 - Are review workflow permissions specified (who can approve/reject)? [Completeness]
-- [ ] CHK080 - Is client-to-lawyer messaging scope defined (1:1 per case)? [Gap, Spec §FR-036]
-- [ ] CHK081 - Are 403 scenarios for unauthorized case access documented? [Completeness]
+- [ ] CHK077 - Is "assigned cases" definition clear (via case_members table)? [Clarity, Spec §FR-033] ⏳ Backend T088 pending
+- [x] CHK078 - Is evidence review status enum defined (pending_review, approved, rejected)? [Completeness, Spec §FR-034,035] ✅ T092 - EvidenceReviewCard.test.tsx (41 tests)
+- [x] CHK079 - Are review workflow permissions specified (who can approve/reject)? [Completeness] ✅ T092 - Lawyer-only approve/reject buttons
+- [ ] CHK080 - Is client-to-lawyer messaging scope defined (1:1 per case)? [Gap, Spec §FR-036] ⏳ Messaging already implemented
+- [ ] CHK081 - Are 403 scenarios for unauthorized case access documented? [Completeness] ⏳ Backend T095 pending
 
-### US11 - 탐정(Detective) 포털 (P2)
+### US11 - 탐정(Detective) 포털 (P2) ✅ TDD VERIFIED (34 tests)
 
-- [ ] CHK082 - Is detective case assignment mechanism defined? [Gap, Spec §FR-037]
-- [ ] CHK083 - Are supported EXIF fields listed (GPS, datetime, etc.)? [Completeness, Spec §FR-038]
-- [ ] CHK084 - Is EXIF extraction failure handling specified? [Gap]
-- [ ] CHK085 - Are earnings data fields defined (amount, status, dates)? [Completeness, Spec §FR-039]
-- [ ] CHK086 - Is detective_earnings table schema specified? [Completeness, Spec §FR-040]
-- [ ] CHK087 - Are earnings status transitions defined (pending → paid)? [Completeness]
+- [ ] CHK082 - Is detective case assignment mechanism defined? [Gap, Spec §FR-037] ⏳ Via case_members table
+- [x] CHK083 - Are supported EXIF fields listed (GPS, datetime, etc.)? [Completeness, Spec §FR-038] ✅ T103 - EvidenceMetadata.test.tsx (34 tests): GPS, altitude, accuracy, datetime, camera, software, resolution, ISO, shutter, aperture, focal length, flash
+- [x] CHK084 - Is EXIF extraction failure handling specified? [Gap] ✅ T103 - Empty state "메타데이터를 찾을 수 없습니다" message
+- [x] CHK085 - Are earnings data fields defined (amount, status, dates)? [Completeness, Spec §FR-039] ✅ T102 - Earnings page connected
+- [ ] CHK086 - Is detective_earnings table schema specified? [Completeness, Spec §FR-040] ⏳ Backend T097-T100 pending
+- [ ] CHK087 - Are earnings status transitions defined (pending → paid)? [Completeness] ⏳ Backend implementation pending
 
 ---
 
@@ -182,23 +184,33 @@
 - [ ] CHK060 - Is Case Isolation (`case_rag_{case_id}`) enforced with no cross-case queries? [Constitution §II]
 - [ ] CHK061 - Is No Auto-Submit principle maintained (Draft as "Preview Only")? [Constitution §III]
 - [ ] CHK062 - Is AWS-Only Data Storage requirement satisfied (no external storage)? [Constitution §IV]
-- [ ] CHK063 - Is TDD Cycle compliance documented for new test additions? [Constitution §VII, ⚠️ PARTIAL]
+- [x] CHK063 - Is TDD Cycle compliance documented for new test additions? [Constitution §VII] ✅ 75 TDD tests (US10: 41, US11: 34)
 
 ---
 
 ## Summary
 
-| Category | Items | Coverage |
-|----------|-------|----------|
-| Requirement Completeness | 48 | US1-US11 |
-| Requirement Clarity | 6 | Performance metrics, UX terms |
-| Requirement Consistency | 5 | Cross-module alignment |
-| Acceptance Criteria Quality | 4 | Measurability |
-| Scenario Coverage | 9 | Primary/Alternate/Exception/Recovery |
-| Non-Functional Requirements | 6 | Performance, Security, A11y |
-| Dependencies & Assumptions | 4 | External dependencies |
-| Constitution Compliance | 5 | NON-NEGOTIABLE principles |
-| **Total** | **87** | |
+| Category | Items | Verified | Coverage |
+|----------|-------|----------|----------|
+| Requirement Completeness | 48 | 17 | US1-US11 |
+| Requirement Clarity | 6 | 0 | Performance metrics, UX terms |
+| Requirement Consistency | 5 | 0 | Cross-module alignment |
+| Acceptance Criteria Quality | 4 | 0 | Measurability |
+| Scenario Coverage | 9 | 0 | Primary/Alternate/Exception/Recovery |
+| Non-Functional Requirements | 6 | 0 | Performance, Security, A11y |
+| Dependencies & Assumptions | 4 | 0 | External dependencies |
+| Constitution Compliance | 5 | 1 | NON-NEGOTIABLE principles |
+| **Total** | **87** | **18** | **21% verified** |
+
+### Verification Status by User Story
+
+| User Story | Status | Frontend | Backend | Notes |
+|------------|--------|----------|---------|-------|
+| US7 (Legal/Terms) | ✅ 4/6 | Complete | Pending | T064-T067 backend needed |
+| US8 (IA) | ✅ 3/3 | Complete | N/A | All tasks done |
+| US9 (Role Signup) | ✅ 4/4 | Complete | Pending | T084 backend verification |
+| US10 (Client Portal) | ✅ 2/5 | Complete | Pending | 41 TDD tests, backend T088-T095 |
+| US11 (Detective Portal) | ✅ 3/6 | Complete | Pending | 34 TDD tests, backend T096-T105 |
 
 ---
 
@@ -208,3 +220,13 @@
 2. Mark items as checked `[x]` when requirements are confirmed clear/complete
 3. Add `[CLARIFIED]` marker with explanation for items requiring spec updates
 4. Escalate `[BLOCKED]` items that cannot be resolved without stakeholder input
+
+---
+
+## Next Actions (Priority Order)
+
+1. **Backend T064-T067**: user_agreements table + signup API integration (US7)
+2. **Backend T084**: Verify role parameter acceptance in signup API (US9)
+3. **Backend T088-T095**: Client portal API verification (US10)
+4. **Backend T096-T105**: Detective portal API + EXIF service (US11)
+5. **Phase 2-4**: AWS infrastructure + AI Worker + RAG/Draft verification (US1, US2)
