@@ -476,6 +476,239 @@ def classify_exception(exc: Exception) -> ErrorType:
     return ErrorType.UNKNOWN
 
 
+class CloudWatchMetrics:
+    """
+    CloudWatch custom metrics for Lambda execution monitoring.
+
+    Publishes metrics to CloudWatch for:
+    - Lambda execution time
+    - Memory usage (from Lambda context)
+    - Error rates by type
+    - Processing stage durations
+
+    Usage:
+        metrics = CloudWatchMetrics(namespace="LEH/AIWorker")
+
+        # Record execution time
+        metrics.record_execution_time(duration_ms=1500, file_type="image")
+
+        # Record error
+        metrics.record_error(ErrorType.API_ERROR)
+
+        # Flush all metrics (call at end of Lambda execution)
+        metrics.flush()
+    """
+
+    def __init__(
+        self,
+        namespace: str = "LEH/AIWorker",
+        enabled: bool = True,
+        batch_size: int = 20
+    ):
+        """
+        Initialize CloudWatch metrics client.
+
+        Args:
+            namespace: CloudWatch namespace for metrics
+            enabled: Whether to actually publish metrics (disable for testing)
+            batch_size: Number of metrics to batch before publishing
+        """
+        self.namespace = namespace
+        self.enabled = enabled
+        self.batch_size = batch_size
+        self._metrics_buffer: List[Dict[str, Any]] = []
+        self._client = None
+
+    def _get_client(self):
+        """Lazy initialization of CloudWatch client"""
+        if self._client is None:
+            import boto3
+            self._client = boto3.client('cloudwatch')
+        return self._client
+
+    def record_execution_time(
+        self,
+        duration_ms: float,
+        file_type: Optional[str] = None,
+        stage: Optional[ProcessingStage] = None,
+        success: bool = True
+    ):
+        """
+        Record Lambda execution time metric.
+
+        Args:
+            duration_ms: Execution time in milliseconds
+            file_type: Type of file processed (image, audio, pdf, etc.)
+            stage: Processing stage (if stage-specific timing)
+            success: Whether execution was successful
+        """
+        dimensions = [{"Name": "Success", "Value": str(success)}]
+
+        if file_type:
+            dimensions.append({"Name": "FileType", "Value": file_type})
+        if stage:
+            dimensions.append({"Name": "Stage", "Value": stage.value})
+
+        metric_name = "ExecutionTime" if not stage else f"StageTime_{stage.value}"
+
+        self._add_metric(
+            metric_name=metric_name,
+            value=duration_ms,
+            unit="Milliseconds",
+            dimensions=dimensions
+        )
+
+    def record_memory_usage(self, memory_used_mb: int, memory_limit_mb: int):
+        """
+        Record Lambda memory usage metric.
+
+        Args:
+            memory_used_mb: Memory used in MB
+            memory_limit_mb: Memory limit in MB
+        """
+        self._add_metric(
+            metric_name="MemoryUsed",
+            value=memory_used_mb,
+            unit="Megabytes",
+            dimensions=[{"Name": "MemoryLimit", "Value": str(memory_limit_mb)}]
+        )
+
+        # Also record utilization percentage
+        utilization = (memory_used_mb / memory_limit_mb) * 100 if memory_limit_mb > 0 else 0
+        self._add_metric(
+            metric_name="MemoryUtilization",
+            value=utilization,
+            unit="Percent",
+            dimensions=[]
+        )
+
+    def record_error(
+        self,
+        error_type: ErrorType,
+        file_type: Optional[str] = None
+    ):
+        """
+        Record error occurrence metric.
+
+        Args:
+            error_type: Type of error that occurred
+            file_type: Type of file being processed when error occurred
+        """
+        dimensions = [{"Name": "ErrorType", "Value": error_type.value}]
+
+        if file_type:
+            dimensions.append({"Name": "FileType", "Value": file_type})
+
+        self._add_metric(
+            metric_name="ErrorCount",
+            value=1,
+            unit="Count",
+            dimensions=dimensions
+        )
+
+    def record_file_processed(self, file_type: str, file_size_bytes: int):
+        """
+        Record file processing metric.
+
+        Args:
+            file_type: Type of file processed
+            file_size_bytes: Size of file in bytes
+        """
+        self._add_metric(
+            metric_name="FilesProcessed",
+            value=1,
+            unit="Count",
+            dimensions=[{"Name": "FileType", "Value": file_type}]
+        )
+
+        self._add_metric(
+            metric_name="FileSizeBytes",
+            value=file_size_bytes,
+            unit="Bytes",
+            dimensions=[{"Name": "FileType", "Value": file_type}]
+        )
+
+    def _add_metric(
+        self,
+        metric_name: str,
+        value: float,
+        unit: str,
+        dimensions: List[Dict[str, str]]
+    ):
+        """Add metric to buffer"""
+        self._metrics_buffer.append({
+            "MetricName": metric_name,
+            "Value": value,
+            "Unit": unit,
+            "Dimensions": dimensions,
+            "Timestamp": datetime.now(timezone.utc)
+        })
+
+        # Auto-flush if buffer is full
+        if len(self._metrics_buffer) >= self.batch_size:
+            self.flush()
+
+    def flush(self):
+        """
+        Publish all buffered metrics to CloudWatch.
+
+        Call this at the end of Lambda execution to ensure all metrics are sent.
+        """
+        if not self.enabled or not self._metrics_buffer:
+            self._metrics_buffer.clear()
+            return
+
+        try:
+            client = self._get_client()
+
+            # CloudWatch allows max 1000 metrics per request, but we batch smaller
+            for i in range(0, len(self._metrics_buffer), 20):
+                batch = self._metrics_buffer[i:i+20]
+                client.put_metric_data(
+                    Namespace=self.namespace,
+                    MetricData=batch
+                )
+
+            logger = logging.getLogger(__name__)
+            logger.debug(
+                "CloudWatch metrics published",
+                extra={"metric_count": len(self._metrics_buffer)}
+            )
+
+        except Exception as e:
+            # Don't fail Lambda execution due to metrics error
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "Failed to publish CloudWatch metrics",
+                extra={"error": str(e)}
+            )
+
+        finally:
+            self._metrics_buffer.clear()
+
+
+# Singleton instance for convenience
+_metrics_instance: Optional[CloudWatchMetrics] = None
+
+
+def get_metrics(namespace: str = "LEH/AIWorker") -> CloudWatchMetrics:
+    """
+    Get or create CloudWatch metrics singleton.
+
+    Args:
+        namespace: CloudWatch namespace
+
+    Returns:
+        CloudWatchMetrics instance
+    """
+    global _metrics_instance
+    if _metrics_instance is None:
+        import os
+        enabled = os.environ.get("ENABLE_METRICS", "true").lower() == "true"
+        _metrics_instance = CloudWatchMetrics(namespace=namespace, enabled=enabled)
+    return _metrics_instance
+
+
 # Export all public classes and functions
 __all__ = [
     "ProcessingStage",
@@ -486,4 +719,6 @@ __all__ = [
     "JobTracker",
     "log_job_event",
     "classify_exception",
+    "CloudWatchMetrics",
+    "get_metrics",
 ]
