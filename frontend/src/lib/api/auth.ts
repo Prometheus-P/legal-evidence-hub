@@ -46,10 +46,14 @@ export async function logout(): Promise<ApiResponse<void>> {
   });
 }
 
+// T082: Role types for signup
+export type SignupRole = 'lawyer' | 'client' | 'detective';
+
 export interface SignupRequest {
   name: string;
   email: string;
   password: string;
+  role: SignupRole;  // T083: Role parameter for signup
   law_firm?: string;
   accept_terms: boolean;
   accept_privacy: boolean;  // FR-022: 개인정보처리방침 동의

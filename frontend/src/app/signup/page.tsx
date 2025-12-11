@@ -12,12 +12,28 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signup } from '@/lib/api/auth';
+import { signup, SignupRole } from '@/lib/api/auth';
+
+// T082: Role options for signup dropdown
+const ROLE_OPTIONS: { value: SignupRole | ''; label: string; description: string }[] = [
+  { value: '', label: '역할을 선택하세요', description: '' },
+  { value: 'lawyer', label: '변호사', description: '사건 관리 및 법률 서비스 제공' },
+  { value: 'client', label: '의뢰인', description: '법률 서비스 이용' },
+  { value: 'detective', label: '탐정', description: '증거 수집 및 현장 조사' },
+];
+
+// T085: Role-based redirect paths
+const ROLE_DASHBOARD_PATHS: Record<SignupRole, string> = {
+  lawyer: '/lawyer/dashboard',
+  client: '/client/dashboard',
+  detective: '/detective/dashboard',
+};
 
 export default function SignupPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState<SignupRole | ''>('');  // T082: Role state
   const [lawFirm, setLawFirm] = useState('');
   const [password, setPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -30,6 +46,12 @@ export default function SignupPage() {
     setError('');
 
     // Client-side validation
+    // T086: Block signup without role selection
+    if (!role) {
+      setError('역할을 선택해주세요.');
+      return;
+    }
+
     if (password.length < 8) {
       setError('비밀번호는 8자 이상이어야 합니다.');
       return;
@@ -48,11 +70,12 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Real API call to backend
+      // T083: Real API call to backend with role parameter
       const response = await signup({
         name,
         email,
         password,
+        role,  // T083: Include role in signup request
         law_firm: lawFirm || undefined,
         accept_terms: acceptTerms,
         accept_privacy: acceptPrivacy,
@@ -67,6 +90,7 @@ export default function SignupPage() {
       // We only cache user display info locally, NOT the auth token
 
       // Cache user info for display purposes only (not for auth)
+      const userRole = response.data.user?.role || role;
       if (response.data.user) {
         const userData = {
           name: response.data.user.name,
@@ -79,8 +103,9 @@ export default function SignupPage() {
         localStorage.setItem('userCache', JSON.stringify(userData));
       }
 
-      // Redirect to cases page
-      router.push('/cases');
+      // T085: Role-based redirect to appropriate dashboard
+      const redirectPath = ROLE_DASHBOARD_PATHS[userRole as SignupRole] || '/lawyer/dashboard';
+      router.push(redirectPath);
     } catch (err) {
       console.error('Signup error:', err);
       setError('회원가입 중 오류가 발생했습니다.');
@@ -130,6 +155,32 @@ export default function SignupPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="your@email.com"
             />
+          </div>
+
+          {/* T082: Role dropdown */}
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium text-neutral-700 mb-2">
+              역할 <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="role"
+              name="role"
+              required
+              value={role}
+              onChange={(e) => setRole(e.target.value as SignupRole | '')}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent bg-white"
+            >
+              {ROLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value} disabled={option.value === ''}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {role && (
+              <p className="mt-1 text-xs text-neutral-500">
+                {ROLE_OPTIONS.find((opt) => opt.value === role)?.description}
+              </p>
+            )}
           </div>
 
           <div>
