@@ -254,14 +254,27 @@ describe('CaseTable', () => {
       expect(link).toHaveAttribute('href', '/lawyer/cases/1');
     });
 
-    it('renders all case titles as links', () => {
+    it('renders all case links (title + quick actions)', () => {
       render(<CaseTable {...defaultProps} />);
 
+      // Each case has 3 links: title, procedure, assets
       const links = screen.getAllByRole('link');
-      expect(links).toHaveLength(3);
-      expect(links[0]).toHaveAttribute('href', '/lawyer/cases/1');
-      expect(links[1]).toHaveAttribute('href', '/lawyer/cases/2');
-      expect(links[2]).toHaveAttribute('href', '/lawyer/cases/3');
+      expect(links).toHaveLength(9); // 3 cases x 3 links each
+
+      // First case links
+      expect(links[0]).toHaveAttribute('href', '/lawyer/cases/1'); // title
+      expect(links[1]).toHaveAttribute('href', '/lawyer/cases/1/procedure');
+      expect(links[2]).toHaveAttribute('href', '/lawyer/cases/1/assets');
+
+      // Second case links
+      expect(links[3]).toHaveAttribute('href', '/lawyer/cases/2');
+      expect(links[4]).toHaveAttribute('href', '/lawyer/cases/2/procedure');
+      expect(links[5]).toHaveAttribute('href', '/lawyer/cases/2/assets');
+
+      // Third case links
+      expect(links[6]).toHaveAttribute('href', '/lawyer/cases/3');
+      expect(links[7]).toHaveAttribute('href', '/lawyer/cases/3/procedure');
+      expect(links[8]).toHaveAttribute('href', '/lawyer/cases/3/assets');
     });
   });
 });
