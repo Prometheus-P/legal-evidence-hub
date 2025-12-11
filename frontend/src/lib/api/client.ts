@@ -5,7 +5,15 @@
  * Security: Uses HTTP-only cookies for authentication (XSS protection)
  * - Token is never stored in localStorage
  * - Cookies are automatically included via credentials: 'include'
+ *
+ * Error Handling (FR-008, FR-009):
+ * - 401: Redirect to login with session expired message
+ * - 403: Permission denied toast notification
+ * - 500: Server error toast notification
+ * - Network error: Connection error toast notification
  */
+
+import toast from 'react-hot-toast';
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -68,8 +76,19 @@ export async function apiRequest<T>(
         const isAuthPage = window.location.pathname.startsWith('/login') ||
                            window.location.pathname.startsWith('/signup');
         if (!isAuthCheck && !isAuthPage) {
+          toast.error('세션이 만료되었습니다. 다시 로그인해 주세요.');
           window.location.href = '/login';
         }
+      }
+
+      // Handle 403 Forbidden - Permission denied (FR-009)
+      if (response.status === 403 && typeof window !== 'undefined') {
+        toast.error('접근 권한이 없습니다. 담당자에게 문의해 주세요.');
+      }
+
+      // Handle 500+ Server errors (FR-009)
+      if (response.status >= 500 && typeof window !== 'undefined') {
+        toast.error('서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
       }
 
       return {
@@ -83,6 +102,10 @@ export async function apiRequest<T>(
       status: response.status,
     };
   } catch (error) {
+    // Network error - show toast notification (FR-009)
+    if (typeof window !== 'undefined') {
+      toast.error('네트워크 연결에 실패했습니다. 인터넷 연결을 확인해 주세요.');
+    }
     return {
       error: error instanceof Error ? error.message : 'Network error',
       status: 0,

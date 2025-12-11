@@ -30,6 +30,8 @@ interface PortalSidebarProps {
   onLogout: () => void;
   isOpen?: boolean;
   onClose?: () => void;
+  /** Home link destination (defaults to role-specific dashboard) */
+  homeHref?: string;
 }
 
 // Close icon for mobile drawer
@@ -94,6 +96,15 @@ export const NavIcons = {
   Logout: LogoutIcon,
 };
 
+// T073 - FR-028: Role-specific home destinations
+const ROLE_HOME_PATHS: Record<UserRole, string> = {
+  lawyer: '/lawyer/dashboard',
+  client: '/client/dashboard',
+  detective: '/detective/dashboard',
+  admin: '/admin/dashboard',
+  staff: '/staff/dashboard',
+};
+
 export function PortalSidebar({
   role,
   userName,
@@ -102,8 +113,10 @@ export function PortalSidebar({
   onLogout,
   isOpen = true,
   onClose,
+  homeHref,
 }: PortalSidebarProps) {
   const pathname = usePathname();
+  const homePath = homeHref || ROLE_HOME_PATHS[role] || '/';
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -153,9 +166,9 @@ export function PortalSidebar({
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        {/* Logo */}
+        {/* Logo - T073: Home button links to role-specific dashboard */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-white/10">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href={homePath} className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center font-bold">
               LEH
             </div>

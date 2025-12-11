@@ -53,7 +53,7 @@ describe('useSettings', () => {
 
       const { result } = renderHook(() => useSettings());
 
-      expect(result.current.loading).toBe(true);
+      expect(result.current.isLoading).toBe(true);
       expect(result.current.profile).toBeNull();
     });
 
@@ -70,7 +70,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       expect(result.current.profile).toEqual(mockProfile);
@@ -90,7 +90,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       expect(result.current.profile).toBeNull();
@@ -118,7 +118,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       let success: boolean | undefined;
@@ -148,7 +148,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       let success: boolean | undefined;
@@ -175,7 +175,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       expect(result.current.notifications).toEqual(mockNotifications);
@@ -202,7 +202,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       let success: boolean | undefined;
@@ -231,7 +231,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       let success: boolean | undefined;
@@ -258,7 +258,7 @@ describe('useSettings', () => {
       const { result } = renderHook(() => useSettings());
 
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.isLoading).toBe(false);
       });
 
       expect(settingsApi.getProfile).toHaveBeenCalledTimes(1);

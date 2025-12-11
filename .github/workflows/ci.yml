@@ -128,7 +128,7 @@ jobs:
           JWT_SECRET: test_secret_key_for_ci_pipeline_32chars
         run: python -c "from app.db.session import init_db; init_db()"
 
-      - name: Run pytest (skip integration tests)
+      - name: Run pytest (all tests)
         timeout-minutes: 5
         env:
           DATABASE_URL: postgresql://test_user:test_pass@localhost:5432/test_db

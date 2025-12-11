@@ -7,7 +7,7 @@ POST /auth/logout - Logout and clear cookies
 GET /auth/me - Get current user info
 """
 
-from fastapi import APIRouter, Depends, status, Response, Cookie, Header
+from fastapi import APIRouter, Depends, status, Response, Cookie, Header, Request
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.db.session import get_db
@@ -132,8 +132,9 @@ def login(
 
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def signup(
-    request: SignupRequest,
+    signup_request: SignupRequest,
     response: Response,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
@@ -167,14 +168,21 @@ def signup(
     - JWT tokens are signed with HS256 algorithm
     - Token expiration is configurable via JWT_ACCESS_TOKEN_EXPIRE_MINUTES
     - Tokens are stored in HTTP-only cookies (XSS protection)
+    - User agreement records are stored for legal compliance (FR-025)
     """
+    # Extract client info for agreement record
+    client_ip = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
     auth_service = AuthService(db)
     token_response = auth_service.signup(
-        email=request.email,
-        password=request.password,
-        name=request.name,
-        accept_terms=request.accept_terms,
-        role=request.role
+        email=signup_request.email,
+        password=signup_request.password,
+        name=signup_request.name,
+        accept_terms=signup_request.accept_terms,
+        role=signup_request.role,
+        ip_address=client_ip,
+        user_agent=user_agent
     )
 
     # Create refresh token

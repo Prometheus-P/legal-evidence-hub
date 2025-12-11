@@ -185,7 +185,7 @@ class TestCaseServiceGet:
         """
         Given: Case does not exist
         When: get_case_by_id is called
-        Then: Raises NotFoundError
+        Then: Raises PermissionError (prevents info leakage about case existence)
         """
         from app.db.session import get_db
         from app.core.security import hash_password
@@ -203,9 +203,9 @@ class TestCaseServiceGet:
         db.commit()
         db.refresh(user)
 
-        # When/Then
+        # When/Then: PermissionError instead of NotFoundError to prevent info leakage
         service = CaseService(db)
-        with pytest.raises(NotFoundError):
+        with pytest.raises(PermissionError):
             service.get_case_by_id("non-existent-id", user.id)
 
         # Cleanup
@@ -928,7 +928,7 @@ class TestUpdateCaseErrors:
     """Unit tests for update_case error cases"""
 
     def test_update_case_not_found(self, test_env):
-        """NotFoundError when case doesn't exist (line 144)"""
+        """PermissionError when case doesn't exist (prevents info leakage)"""
         from app.db.session import get_db
         from app.core.security import hash_password
 
@@ -948,7 +948,8 @@ class TestUpdateCaseErrors:
         service = CaseService(db)
         update_data = CaseUpdate(title="New Title")
 
-        with pytest.raises(NotFoundError):
+        # PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             service.update_case("nonexistent-case-id", update_data, user.id)
 
         db.delete(user)
@@ -1017,7 +1018,7 @@ class TestDeleteCaseErrors:
     """Unit tests for delete_case error cases"""
 
     def test_delete_case_not_found(self, test_env):
-        """NotFoundError when case doesn't exist (line 180)"""
+        """PermissionError when case doesn't exist (prevents info leakage)"""
         from app.db.session import get_db
         from app.core.security import hash_password
 
@@ -1036,7 +1037,8 @@ class TestDeleteCaseErrors:
 
         service = CaseService(db)
 
-        with pytest.raises(NotFoundError):
+        # PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             service.delete_case("nonexistent-case-id", user.id)
 
         db.delete(user)
@@ -1048,7 +1050,7 @@ class TestAddMembersErrors:
     """Unit tests for add_case_members error cases"""
 
     def test_add_members_case_not_found(self, test_env):
-        """NotFoundError when case doesn't exist (line 236)"""
+        """PermissionError when case doesn't exist (prevents info leakage)"""
         from app.db.session import get_db
         from app.core.security import hash_password
 
@@ -1068,7 +1070,8 @@ class TestAddMembersErrors:
         service = CaseService(db)
         members = [CaseMemberAdd(user_id=user.id, permission=CaseMemberPermission.READ_WRITE)]
 
-        with pytest.raises(NotFoundError):
+        # PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             service.add_case_members("nonexistent-case-id", members, user.id)
 
         db.delete(user)
@@ -1199,7 +1202,7 @@ class TestGetMembersErrors:
     """Unit tests for get_case_members error cases"""
 
     def test_get_members_case_not_found(self, test_env):
-        """NotFoundError when case doesn't exist (line 285)"""
+        """PermissionError when case doesn't exist (prevents info leakage)"""
         from app.db.session import get_db
         from app.core.security import hash_password
 
@@ -1218,7 +1221,8 @@ class TestGetMembersErrors:
 
         service = CaseService(db)
 
-        with pytest.raises(NotFoundError):
+        # PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             service.get_case_members("nonexistent-case-id", user.id)
 
         db.delete(user)

@@ -76,13 +76,13 @@ class TestEvidenceList:
         Given: User does not have access to a case
         When: GET /cases/{case_id}/evidence is called
         Then:
-            - Returns 403 Forbidden (or 404 if case doesn't exist)
+            - Returns 403 Forbidden (prevents info leakage about case existence)
         """
-        # When: GET evidence for non-existent case
+        # When: GET evidence for non-existent case (user has no access)
         response = client.get("/cases/case_nonexistent/evidence", headers=auth_headers)
 
-        # Then: 404 Not Found (case doesn't exist)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Then: 403 Forbidden (prevents information leakage about case existence)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_should_require_authentication(self, client):
         """

@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Signup Role Selection API
+  description: |
+    API for user registration with role selection (US9).
+    Supports self-registration for lawyer, client, and detective roles.
+  version: 1.0.0
+
+paths:
+  /auth/signup:
+    post:
+      summary: Register new user with role
+      description: |
+        Creates a new user account with specified role.
+        Self-signup allowed for: lawyer, client, detective
+      operationId: signup
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                role_required:
+                  summary: Role not selected
+                  value:
+                    detail: "역할을 선택해주세요"
+                    status_code: 400
+                invalid_role:
+                  summary: Invalid role
+                  value:
+                    detail: "유효하지 않은 역할입니다"
+                    status_code: 400
+
+components:
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - role
+        - accept_terms
+        - accept_privacy
+      properties:
+        name:
+          type: string
+          example: "홍길동"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "secure123"
+        role:
+          type: string
+          enum: [lawyer, client, detective]
+          description: |
+            User role selection:
+            - lawyer: 변호사
+            - client: 의뢰인
+            - detective: 탐정/조사원
+        law_firm:
+          type: string
+          description: Optional law firm name (for lawyers)
+        accept_terms:
+          type: boolean
+          description: Terms of Service agreement (required)
+        accept_privacy:
+          type: boolean
+          description: Privacy Policy agreement (required)
+
+    SignupResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+              enum: [lawyer, client, detective]
+        redirect_url:
+          type: string
+          description: Role-specific dashboard URL
+          example: "/client/dashboard"
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer

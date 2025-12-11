@@ -10,6 +10,23 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LawyerCasesPage from '@/app/lawyer/cases/page';
 
+// Mock next/navigation for App Router
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+    };
+  },
+  useSearchParams() {
+    return new URLSearchParams();
+  },
+  usePathname() {
+    return '/lawyer/cases';
+  },
+}));
+
 // Mock useCaseList hook
 const mockSetFilters = jest.fn();
 const mockResetFilters = jest.fn();

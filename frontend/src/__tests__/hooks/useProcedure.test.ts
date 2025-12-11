@@ -65,11 +65,11 @@ describe('useProcedure Hook', () => {
     it('should fetch timeline on mount', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [{ stage: 'answered' as const, label: '답변서' }],
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -89,12 +89,12 @@ describe('useProcedure Hook', () => {
 
     it('should handle fetch error', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
-        data: null,
+        data: undefined,
         error: 'Failed to fetch timeline',
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -111,16 +111,16 @@ describe('useProcedure Hook', () => {
   describe('initializeTimeline', () => {
     it('should initialize timeline successfully', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
-        data: { case_id: 'case_123', stages: [], current_stage: null, progress_percent: 0 },
-        error: null,
+        data: { case_id: 'case_123', stages: [], current_stage: undefined, progress_percent: 0 },
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.initializeProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -145,15 +145,15 @@ describe('useProcedure Hook', () => {
 
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.completeProcedureStage.mockResolvedValue({
         data: completedStage,
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -177,15 +177,15 @@ describe('useProcedure Hook', () => {
 
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.skipProcedureStage.mockResolvedValue({
         data: skippedStage,
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -207,11 +207,11 @@ describe('useProcedure Hook', () => {
     it('should transition to next stage successfully', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [{ stage: 'answered' as const, label: '답변서' }],
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.transitionToNextStage.mockResolvedValue({
         data: {
@@ -220,7 +220,7 @@ describe('useProcedure Hook', () => {
           next_stage: mockStages[2],
           completed_stage: mockStages[1],
         },
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -248,11 +248,11 @@ describe('useProcedure Hook', () => {
     it('getStageById should return correct stage', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -268,11 +268,11 @@ describe('useProcedure Hook', () => {
     it('getStageByType should return correct stage', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
         data: mockTimelineResponse,
-        error: null,
+        error: undefined,
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));
@@ -287,12 +287,12 @@ describe('useProcedure Hook', () => {
 
     it('clearError should clear error state', async () => {
       mockProcedureApi.getProcedureTimeline.mockResolvedValue({
-        data: null,
+        data: undefined,
         error: 'Some error',
       });
       mockProcedureApi.getValidNextStages.mockResolvedValue({
         data: [],
-        error: null,
+        error: undefined,
       });
 
       const { result } = renderHook(() => useProcedure('case_123'));

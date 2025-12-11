@@ -6,7 +6,7 @@ Business logic for detective portal operations.
 """
 
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.db.models import (
@@ -274,40 +274,87 @@ class DetectivePortalService:
         detective_id: str,
         period: Optional[str] = None
     ) -> EarningsResponse:
-        """Get detective earnings"""
-        # Mock earnings data for now
-        # In production, this would come from invoices/payments tables
-        summary = EarningsSummary(
-            total_earned=15000000.0,
-            pending_payment=500000.0,
-            this_month=2450000.0
+        """Get detective earnings from database"""
+        from app.db.models import DetectiveEarnings, EarningsStatus
+        from app.repositories.detective_earnings_repository import DetectiveEarningsRepository
+
+        earnings_repo = DetectiveEarningsRepository(self.db)
+
+        # Get summary
+        summary = earnings_repo.get_earnings_summary(detective_id)
+
+        # Calculate this month's earnings
+        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        this_month_query = (
+            self.db.query(DetectiveEarnings)
+            .filter(
+                DetectiveEarnings.detective_id == detective_id,
+                DetectiveEarnings.created_at >= start_of_month
+            )
+        )
+        this_month_total = sum(e.amount for e in this_month_query.all())
+
+        earnings_summary = EarningsSummary(
+            total_earned=float(summary["total"]),
+            pending_payment=float(summary["pending"]),
+            this_month=float(this_month_total)
         )
 
-        # Mock transactions
-        transactions = [
-            Transaction(
-                id="tx-001",
-                case_id="case-001",
-                case_title="김영희 건",
-                amount=800000.0,
-                status=TransactionStatus.COMPLETED,
-                description="조사비",
-                created_at=datetime.now() - timedelta(days=5)
-            ),
-            Transaction(
-                id="tx-002",
-                case_id="case-002",
-                case_title="박철수 건",
-                amount=500000.0,
-                status=TransactionStatus.PENDING,
-                description="조사비",
-                created_at=datetime.now() - timedelta(days=2)
-            ),
-        ]
+        # Get all earnings as transactions
+        all_earnings = earnings_repo.get_by_detective_id(detective_id)
+
+        transactions = []
+        for earning in all_earnings:
+            # Get case title
+            case = self.db.query(Case).filter(Case.id == earning.case_id).first()
+            case_title = case.title if case else None
+
+            # Map status
+            if earning.status == EarningsStatus.PAID:
+                tx_status = TransactionStatus.COMPLETED
+            else:
+                tx_status = TransactionStatus.PENDING
+
+            transactions.append(Transaction(
+                id=earning.id,
+                case_id=earning.case_id,
+                case_title=case_title,
+                amount=float(earning.amount),
+                status=tx_status,
+                description=earning.description,
+                created_at=earning.created_at
+            ))
 
         return EarningsResponse(
-            summary=summary,
+            summary=earnings_summary,
             transactions=transactions
+        )
+
+    def get_earnings_summary(self, detective_id: str) -> EarningsSummary:
+        """Get earnings summary only (lightweight endpoint)"""
+        from app.db.models import DetectiveEarnings
+        from app.repositories.detective_earnings_repository import DetectiveEarningsRepository
+
+        earnings_repo = DetectiveEarningsRepository(self.db)
+        summary = earnings_repo.get_earnings_summary(detective_id)
+
+        # Calculate this month's earnings
+        start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        this_month_query = (
+            self.db.query(DetectiveEarnings)
+            .filter(
+                DetectiveEarnings.detective_id == detective_id,
+                DetectiveEarnings.created_at >= start_of_month
+            )
+        )
+        this_month_total = sum(e.amount for e in this_month_query.all())
+
+        return EarningsSummary(
+            total_earned=float(summary["total"]),
+            pending_payment=float(summary["pending"]),
+            this_month=float(this_month_total)
         )
 
     # ============== Private Helper Methods ==============

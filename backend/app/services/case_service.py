@@ -110,16 +110,16 @@ class CaseService:
             Case data
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access
+            PermissionError: User does not have access (also for non-existent cases)
         """
+        # Check permission first to prevent information leakage
+        # (don't reveal whether case exists via 404 vs 403)
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        # Check if user has access
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         return CaseOut.model_validate(case)
 
@@ -136,14 +136,9 @@ class CaseService:
             Updated case data
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have write access
+            PermissionError: User does not have write access (also for non-existent cases)
         """
-        case = self.case_repo.get_by_id(case_id)
-        if not case:
-            raise NotFoundError("Case")
-
-        # Check if user has write access (owner or member with read_write)
+        # Check permission first to prevent information leakage
         member = self.member_repo.get_member(case_id, user_id)
         if not member:
             raise PermissionError("You do not have access to this case")
@@ -151,6 +146,10 @@ class CaseService:
         # Only owner and member (not viewer) can update
         if member.role not in [CaseMemberRole.OWNER, CaseMemberRole.MEMBER]:
             raise PermissionError("You do not have permission to update this case")
+
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
 
         # Update case fields
         if update_data.title is not None:
@@ -172,17 +171,16 @@ class CaseService:
             user_id: User ID requesting deletion
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have owner access
+            PermissionError: User does not have owner access (also for non-existent cases)
         """
-        case = self.case_repo.get_by_id(case_id)
-        if not case:
-            raise NotFoundError("Case")
-
-        # Check if user is owner
+        # Check permission first to prevent information leakage
         member = self.member_repo.get_member(case_id, user_id)
         if not member or member.role != CaseMemberRole.OWNER:
             raise PermissionError("Only case owner can delete the case")
+
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
 
         # Soft delete case in RDS
         self.case_repo.soft_delete(case_id)
@@ -226,21 +224,20 @@ class CaseService:
             Updated list of all case members
 
         Raises:
-            NotFoundError: Case not found or user not found
-            PermissionError: User is not owner or admin
-            ValidationError: Invalid member data
+            PermissionError: User is not owner or admin (also for non-existent cases)
+            NotFoundError: User to add not found
         """
-        # Check if case exists
-        case = self.case_repo.get_by_id(case_id)
-        if not case:
-            raise NotFoundError("Case")
-
-        # Check if requester is owner or admin
+        # Check permission first to prevent information leakage
         is_owner = self.member_repo.is_owner(case_id, user_id)
         requester = self.user_repo.get_by_id(user_id)
 
         if not is_owner and (not requester or requester.role.value != "admin"):
             raise PermissionError("Only case owner or admin can add members")
+
+        # Check if case exists (only after permission check)
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
 
         # Validate all users exist
         for member in members:
@@ -276,17 +273,16 @@ class CaseService:
             List of case members with user information
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access to case (also for non-existent cases)
         """
-        # Check if case exists
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Check if case exists (only after permission check)
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        # Check if user has access
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # Get all members
         members = self.member_repo.get_all_members(case_id)

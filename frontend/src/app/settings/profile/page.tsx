@@ -12,7 +12,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { ProfileForm } from '@/components/settings/ProfileForm';
 
 export default function ProfileSettingsPage() {
-  const { profile, loading, updating, error, updateProfile } = useSettings();
+  const { profile, isLoading, isUpdating, error, updateProfile } = useSettings();
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
@@ -51,14 +51,14 @@ export default function ProfileSettingsPage() {
       <div className="rounded-xl border border-[var(--color-border-default)] bg-white p-6 shadow-sm">
         <ProfileForm
           profile={profile}
-          loading={loading}
-          updating={updating}
+          loading={isLoading}
+          updating={isUpdating}
           onSubmit={updateProfile}
         />
       </div>
 
       {/* Account Info */}
-      {profile && !loading && (
+      {profile && !isLoading && (
         <div className="mt-6 rounded-xl border border-[var(--color-border-default)] bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
             계정 정보

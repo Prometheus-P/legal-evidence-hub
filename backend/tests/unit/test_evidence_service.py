@@ -851,7 +851,7 @@ class TestGetCaseEvidence:
     """Unit tests for get_evidence_list (get_case_evidence) method"""
 
     def test_get_case_evidence_case_not_found(self, test_env):
-        """NotFoundError when case doesn't exist (line 278)"""
+        """PermissionError when case doesn't exist (prevents info leakage)"""
         from app.db.session import get_db
         from app.core.security import hash_password
 
@@ -870,7 +870,8 @@ class TestGetCaseEvidence:
 
         service = EvidenceService(db)
 
-        with pytest.raises(NotFoundError):
+        # PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             service.get_evidence_list("nonexistent-case", user.id)
 
         db.delete(user)

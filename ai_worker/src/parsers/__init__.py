@@ -39,39 +39,6 @@ try:
 except ImportError:
     pass  # ffmpeg-python not installed
 
-# V2 Parsers - Enhanced versions with legal citation support
-try:
-    from .kakaotalk_v2 import (  # noqa: F401
-        KakaoTalkParserV2,
-        ParsedMessage as KakaoTalkMessage,
-        ParsingResult as KakaoTalkParsingResult
-    )
-    __all__.extend(["KakaoTalkParserV2", "KakaoTalkMessage", "KakaoTalkParsingResult"])
-except ImportError:
-    pass
-
-try:
-    from .pdf_parser_v2 import PDFParserV2, ParsedPage, PDFParsingResult  # noqa: F401
-    __all__.extend(["PDFParserV2", "ParsedPage", "PDFParsingResult"])
-except ImportError:
-    pass
-
-try:
-    from .audio_parser_v2 import (  # noqa: F401
-        AudioParserV2, AudioSegment, AudioMetadata, AudioParsingResult
-    )
-    __all__.extend(["AudioParserV2", "AudioSegment", "AudioMetadata", "AudioParsingResult"])
-except ImportError:
-    pass
-
-try:
-    from .image_parser_v2 import (  # noqa: F401
-        ImageParserV2, ParsedImage, ImageParsingResult,
-        GPSCoordinates, DeviceInfo, EXIFMetadata
-    )
-    __all__.extend([
-        "ImageParserV2", "ParsedImage", "ImageParsingResult",
-        "GPSCoordinates", "DeviceInfo", "EXIFMetadata"
-    ])
-except ImportError:
-    pass
+# V2 Parsers - Archived (not used in Lambda handler)
+# Located in ./archive/ directory for future reference
+# - kakaotalk_v2.py, pdf_parser_v2.py, audio_parser_v2.py, image_parser_v2.py

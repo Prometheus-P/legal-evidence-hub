@@ -147,18 +147,18 @@ class TestCasesDelete:
         case_ids = [c["id"] for c in cases]
         assert case_id not in case_ids
 
-    def test_should_return_404_for_nonexistent_case(self, client, auth_headers):
+    def test_should_return_403_for_nonexistent_case(self, client, auth_headers):
         """
-        Given: Case does not exist
+        Given: Case does not exist (or user has no access)
         When: DELETE /cases/{id} is called
         Then:
-            - Returns 404 Not Found
+            - Returns 403 Forbidden (prevents info leakage about case existence)
         """
-        # When: DELETE non-existent case
+        # When: DELETE non-existent case (user has no access)
         response = client.delete("/cases/case_nonexistent", headers=auth_headers)
 
-        # Then: 404 Not Found
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Then: 403 Forbidden (prevents information leakage about case existence)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_should_require_owner_permission(self, client, test_user, auth_headers):
         """

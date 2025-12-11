@@ -215,16 +215,17 @@ class TestCaseServiceUpdate:
         mock_db.commit.assert_called_once()
 
     def test_update_case_not_found(self, case_service):
-        """Test updating non-existent case"""
+        """Test updating non-existent case returns PermissionError (prevents info leakage)"""
         # Arrange
         case_id = "nonexistent"
         user_id = "user_456"
         update_data = CaseUpdate(title="수정된 제목")
 
-        case_service.case_repo.get_by_id.return_value = None
+        # No member found means no access
+        case_service.member_repo.get_member.return_value = None
 
-        # Act & Assert
-        with pytest.raises(NotFoundError):
+        # Act & Assert: PermissionError instead of NotFoundError to prevent info leakage
+        with pytest.raises(PermissionError):
             case_service.update_case(case_id, update_data, user_id)
 
     def test_update_case_viewer_no_permission(self, case_service, sample_case):

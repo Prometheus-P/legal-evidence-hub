@@ -13,11 +13,14 @@ from app.db.schemas import (
     UploadCompleteResponse,
     EvidenceSummary,
     EvidenceDetail,
+    EvidenceReviewResponse,
     Article840Tags,
     Article840Category
 )
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
+from app.repositories.user_repository import UserRepository
+from app.db.models import UserRole
 from app.utils.s3 import generate_presigned_upload_url
 from app.utils.dynamo import (
     get_evidence_by_case,
@@ -44,6 +47,7 @@ class EvidenceService:
         self.db = db
         self.case_repo = CaseRepository(db)
         self.member_repo = CaseMemberRepository(db)
+        self.user_repo = UserRepository(db)
 
     @staticmethod
     def _parse_article_840_tags(evidence_data: dict) -> Optional[Article840Tags]:
@@ -163,6 +167,14 @@ class EvidenceService:
         if not self.member_repo.has_access(request.case_id, user_id):
             raise PermissionError("You do not have access to this case")
 
+        # Determine review_status based on uploader role
+        uploader = self.user_repo.get_by_id(user_id)
+        if uploader and uploader.role == UserRole.CLIENT:
+            review_status = "pending_review"
+        else:
+            # Internal users (lawyer, staff, admin) auto-approve
+            review_status = "approved"
+
         # Extract filename from s3_key
         filename = extract_filename_from_s3_key(request.s3_key)
 
@@ -196,11 +208,31 @@ class EvidenceService:
             "size": request.file_size,  # File size in bytes
             "content_type": self._get_content_type(extension),
             "status": "pending",  # Waiting for AI Worker processing
+            "review_status": review_status,  # pending_review for client, approved for internal
             "created_at": created_at.isoformat(),
             "created_by": user_id,
             "note": request.note,
             "deleted": False
         }
+
+        # Store EXIF metadata if provided (for detective image uploads)
+        if request.exif_metadata:
+            exif_data = {}
+            if request.exif_metadata.gps_latitude is not None:
+                exif_data["gps_latitude"] = request.exif_metadata.gps_latitude
+            if request.exif_metadata.gps_longitude is not None:
+                exif_data["gps_longitude"] = request.exif_metadata.gps_longitude
+            if request.exif_metadata.gps_altitude is not None:
+                exif_data["gps_altitude"] = request.exif_metadata.gps_altitude
+            if request.exif_metadata.datetime_original:
+                exif_data["datetime_original"] = request.exif_metadata.datetime_original
+            if request.exif_metadata.camera_make:
+                exif_data["camera_make"] = request.exif_metadata.camera_make
+            if request.exif_metadata.camera_model:
+                exif_data["camera_model"] = request.exif_metadata.camera_model
+            if exif_data:
+                evidence_metadata["exif_metadata"] = exif_data
+                logger.info(f"EXIF metadata stored for evidence {evidence_id}: {list(exif_data.keys())}")
 
         # Save to DynamoDB
         save_evidence_metadata(evidence_metadata)
@@ -227,6 +259,7 @@ class EvidenceService:
                 filename=filename,
                 s3_key=request.s3_key,
                 status="failed",
+                review_status=review_status,
                 created_at=created_at
             )
 
@@ -236,6 +269,7 @@ class EvidenceService:
             filename=filename,
             s3_key=request.s3_key,
             status="processing",
+            review_status=review_status,
             created_at=created_at
         )
 
@@ -269,17 +303,16 @@ class EvidenceService:
             List of evidence summary
 
         Raises:
-            NotFoundError: Case not found
-            PermissionError: User does not have access to case
+            PermissionError: User does not have access (also for non-existent cases)
         """
-        # Check if case exists
+        # Check permission first to prevent information leakage
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Check if case exists (only after permission check)
         case = self.case_repo.get_by_id(case_id)
         if not case:
             raise NotFoundError("Case")
-
-        # Check if user has access to case
-        if not self.member_repo.has_access(case_id, user_id):
-            raise PermissionError("You do not have access to this case")
 
         # Get evidence metadata from DynamoDB
         evidence_list = get_evidence_by_case(case_id)
@@ -466,3 +499,80 @@ class EvidenceService:
             "error_message": evidence.get("error_message"),
             "updated_at": evidence.get("updated_at")
         }
+
+    def review_evidence(
+        self,
+        case_id: str,
+        evidence_id: str,
+        reviewer_id: str,
+        action: str,
+        comment: Optional[str] = None
+    ) -> EvidenceReviewResponse:
+        """
+        Review client-uploaded evidence (approve or reject)
+
+        Args:
+            case_id: Case ID
+            evidence_id: Evidence ID
+            reviewer_id: ID of the reviewer (lawyer/admin)
+            action: "approve" or "reject"
+            comment: Optional review comment
+
+        Returns:
+            EvidenceReviewResponse with updated review status
+
+        Raises:
+            NotFoundError: Case or evidence not found
+            PermissionError: User doesn't have access to case
+            ValueError: Evidence is not in pending_review state
+        """
+        # Check if case exists
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
+
+        # Check if reviewer has access to case
+        if not self.member_repo.has_access(case_id, reviewer_id):
+            raise PermissionError("You do not have access to this case")
+
+        # Get evidence from DynamoDB
+        evidence = get_evidence_by_id(evidence_id)
+        if not evidence:
+            raise NotFoundError("Evidence")
+
+        # Verify evidence belongs to the case
+        if evidence.get("case_id") != case_id:
+            raise NotFoundError("Evidence not found in this case")
+
+        # Check if evidence is in pending_review state
+        current_review_status = evidence.get("review_status")
+        if current_review_status != "pending_review":
+            raise ValueError(f"Evidence cannot be reviewed. Current review_status: {current_review_status}")
+
+        # Determine new review_status
+        new_review_status = "approved" if action == "approve" else "rejected"
+        reviewed_at = datetime.utcnow()
+
+        # Update evidence in DynamoDB
+        additional_fields = {
+            "review_status": new_review_status,
+            "reviewed_by": reviewer_id,
+            "reviewed_at": reviewed_at.isoformat(),
+        }
+        if comment:
+            additional_fields["review_comment"] = comment
+
+        update_evidence_status(
+            evidence_id=evidence_id,
+            status=evidence.get("status", "pending"),  # Keep current processing status
+            additional_fields=additional_fields
+        )
+
+        return EvidenceReviewResponse(
+            evidence_id=evidence_id,
+            case_id=case_id,
+            review_status=new_review_status,
+            reviewed_by=reviewer_id,
+            reviewed_at=reviewed_at,
+            comment=comment
+        )

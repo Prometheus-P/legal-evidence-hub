@@ -1,5 +1,10 @@
 # Team H·P·L - Legal Evidence Hub (LEH)
 
+[![CI](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/ci.yml)
+[![Deploy](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/actions/workflows/deploy_paralegal.yml)
+
+**Test Coverage:** Backend 81% | AI Worker 78% | Frontend ~30%
+
 > "변호사는 사건만 생성하고 증거를 S3에 올린다.
 > AI는 AWS 안에서 증거를 정리·분석해 '소장 초안 후보'를 보여준다.
 > 최종 문서는 언제나 변호사가 직접 결정한다."
@@ -86,7 +91,7 @@ make dev-frontend  # http://localhost:3000
 - AWS 계정 + IAM (S3, DynamoDB 등)
 - OpenAI API 키
 
-### 4.4 환경 변수 설정
+### 4.3 환경 변수 설정
 
 LEH는 **통합 `.env` 파일**을 사용합니다:
 
@@ -103,7 +108,7 @@ cp .env.example .env
 
 > `.env`는 절대 Git에 커밋하지 않습니다.
 
-### 4.5 백엔드 실행 (FastAPI)
+### 4.4 백엔드 실행 (FastAPI)
 
 ```bash
 cd backend
@@ -114,7 +119,7 @@ uvicorn app.main:app --reload
 # http://localhost:8000
 ```
 
-### 4.6 프론트엔드 실행 (Next.js)
+### 4.5 프론트엔드 실행 (Next.js)
 
 ```bash
 cd frontend
@@ -123,7 +128,7 @@ npm run dev
 # http://localhost:3000
 ```
 
-### 4.7 AI Worker 실행 (로컬 테스트)
+### 4.6 AI Worker 실행 (로컬 테스트)
 
 ```bash
 cd ai_worker

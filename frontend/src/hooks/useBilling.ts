@@ -35,7 +35,7 @@ interface UseBillingReturn {
   total: number;
   totalPending: string;
   totalPaid: string;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   filters: InvoiceFilters;
   setFilters: (filters: InvoiceFilters) => void;
@@ -53,12 +53,12 @@ export function useBilling(options: UseBillingOptions = {}): UseBillingReturn {
   const [total, setTotal] = useState(0);
   const [totalPending, setTotalPending] = useState('0');
   const [totalPaid, setTotalPaid] = useState('0');
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<InvoiceFilters>(initialFilters);
 
   const fetchInvoices = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -77,7 +77,7 @@ export function useBilling(options: UseBillingOptions = {}): UseBillingReturn {
     } catch {
       setError('청구서 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [filters, isClient]);
 
@@ -173,7 +173,7 @@ export function useBilling(options: UseBillingOptions = {}): UseBillingReturn {
     total,
     totalPending,
     totalPaid,
-    loading,
+    isLoading,
     error,
     filters,
     setFilters,

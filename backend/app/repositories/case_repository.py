@@ -156,3 +156,24 @@ class CaseRepository:
             .filter(Case.deleted_at < cutoff_date)
             .all()
         )
+
+    def is_user_member_of_case(self, user_id: str, case_id: str) -> bool:
+        """
+        Check if user is a member of the specified case
+
+        Args:
+            user_id: User ID
+            case_id: Case ID
+
+        Returns:
+            True if user is a member, False otherwise
+        """
+        membership = (
+            self.session.query(CaseMember)
+            .filter(
+                CaseMember.user_id == user_id,
+                CaseMember.case_id == case_id
+            )
+            .first()
+        )
+        return membership is not None

@@ -19,6 +19,7 @@ interface CaseCardProps {
   progress: number;
   selected?: boolean;
   onSelect?: (id: string, selected: boolean) => void;
+  onAction?: (id: string, action: 'procedure' | 'assets' | 'ai-analyze') => void;
 }
 
 const statusColors: Record<string, string> = {
@@ -45,6 +46,7 @@ export function CaseCard({
   progress,
   selected = false,
   onSelect,
+  onAction,
 }: CaseCardProps) {
   const statusColor = statusColors[status] || statusColors.active;
   const statusLabel = statusLabels[status] || status;
@@ -113,6 +115,43 @@ export function CaseCard({
       <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
         <span>증거 {evidenceCount}건</span>
         <span>{new Date(updatedAt).toLocaleDateString('ko-KR')}</span>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-center gap-2">
+        <Link
+          href={`/lawyer/cases/${id}/procedure`}
+          className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors"
+          title="절차 진행"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          절차
+        </Link>
+        <Link
+          href={`/lawyer/cases/${id}/assets`}
+          className="flex items-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors"
+          title="재산분할"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          재산
+        </Link>
+        {onAction && (
+          <button
+            type="button"
+            onClick={() => onAction(id, 'ai-analyze')}
+            className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors"
+            title="AI 분석"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            AI
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 """
 Audit Log Middleware - Automatic logging of sensitive API requests
 Logs user actions (LOGIN, VIEW, CREATE, UPDATE, DELETE) to audit_logs table
+Also logs ACCESS_DENIED (403) responses for security monitoring
 """
 
 from fastapi import Request
@@ -12,6 +13,9 @@ from app.repositories.audit_log_repository import AuditLogRepository
 from app.db.schemas import AuditAction
 from typing import Optional
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Sensitive endpoints to log (HTTP method + path pattern)
@@ -61,6 +65,7 @@ def extract_object_id(path: str, pattern: str) -> Optional[str]:
 class AuditLogMiddleware(BaseHTTPMiddleware):
     """
     Middleware to automatically log sensitive API requests to audit_logs table
+    Also logs 403 (ACCESS_DENIED) responses for security monitoring
     """
 
     async def dispatch(self, request: Request, call_next):
@@ -77,9 +82,12 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
         # Call next handler first (to get user_id from auth)
         response: Response = await call_next(request)
 
-        # Only log successful requests (2xx status codes)
+        # Log successful requests (2xx status codes)
         if 200 <= response.status_code < 300:
             await self._log_if_auditable(request, response)
+        # Log 403 Forbidden responses (ACCESS_DENIED)
+        elif response.status_code == 403:
+            await self._log_access_denied(request)
 
         return response
 
@@ -128,8 +136,81 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
             db.commit()
         except Exception as e:
             # Don't fail the request if audit logging fails
-            # Just log the error (in production, use proper logging)
-            print(f"[AuditLogMiddleware] Failed to create audit log: {e}")
+            logger.error(f"Failed to create audit log: {e}")
             db.rollback()
         finally:
             db.close()
+
+    async def _log_access_denied(self, request: Request):
+        """
+        Log ACCESS_DENIED event for 403 responses
+
+        Args:
+            request: FastAPI Request object
+        """
+        # Get user_id from request state (set by JWT dependency)
+        user_id = getattr(request.state, "user_id", None)
+
+        # Skip logging if user_id is not available (unauthenticated request)
+        if not user_id:
+            return
+
+        path = request.url.path
+        method = request.method
+
+        # Extract resource type and ID from path
+        resource_type, resource_id = self._extract_resource_info(path)
+
+        # Format object_id as "resource_type:resource_id"
+        object_id = f"{resource_type}:{resource_id}" if resource_id else resource_type
+
+        # Create audit log entry
+        db: Session = SessionLocal()
+        try:
+            audit_repo = AuditLogRepository(db)
+            audit_repo.create(
+                user_id=user_id,
+                action=AuditAction.ACCESS_DENIED.value,
+                object_id=object_id
+            )
+            db.commit()
+            logger.info(
+                f"ACCESS_DENIED logged: user={user_id}, "
+                f"method={method}, path={path}, resource={object_id}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to log ACCESS_DENIED: {e}")
+            db.rollback()
+        finally:
+            db.close()
+
+    def _extract_resource_info(self, path: str) -> tuple:
+        """
+        Extract resource type and ID from URL path
+
+        Args:
+            path: Request path (e.g., "/cases/case_123abc/evidence")
+
+        Returns:
+            Tuple of (resource_type, resource_id)
+        """
+        # Common resource patterns
+        patterns = [
+            (r"^/cases/([^/]+)/evidence", "evidence"),
+            (r"^/cases/([^/]+)/draft", "draft"),
+            (r"^/cases/([^/]+)/members", "case_members"),
+            (r"^/cases/([^/]+)", "case"),
+            (r"^/evidence/([^/]+)", "evidence"),
+            (r"^/users/([^/]+)", "user"),
+            (r"^/search/semantic", "search"),
+        ]
+
+        for pattern, resource_type in patterns:
+            match = re.match(pattern, path)
+            if match:
+                resource_id = match.group(1) if match.lastindex else None
+                return resource_type, resource_id
+
+        # Default: use first path segment as resource type
+        segments = path.strip("/").split("/")
+        return segments[0] if segments else "unknown", None

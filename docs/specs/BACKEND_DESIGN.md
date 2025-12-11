@@ -1,9 +1,10 @@
 
 ### *FastAPI 기반 Backend 아키텍처 & 내부 구조 설계서*
 
-**버전:** v2.0
-**작성일:** 2025-11-18
+**버전:** v2.1
+**작성일:** 2025-12-10
 **작성자:** Team H(H)
+**최종 수정:** 2025-12-10 (37개 서비스/헬퍼 목록 업데이트)
 **참고 문서:**
 
 * `PRD.md`
@@ -288,42 +289,170 @@ json
 
 # 🧩 10. 서비스 레이어 상세
 
-## 10.1 `case_service.py`
+> **Updated: 2025-12-10** - 전체 37개 서비스/헬퍼 목록 (Phase 13 리팩토링 반영)
 
+## 10.1 Core Services (핵심 서비스)
+
+### `case_service.py`
 * 사건 CRUD
 * 멤버 추가/제거
 * 사건 상태 변경(active → closed)
-* 사건 삭제 시:
+* 사건 삭제 시: Qdrant index 삭제, DynamoDB soft-delete
 
-  * Qdrant index 삭제
-  * DynamoDB soft-delete
-
----
-
-## 10.2 `evidence_service.py`
-
+### `evidence_service.py`
 * Presigned URL 생성
 * DynamoDB 조회
 * S3 key 관리
 * 사건별 증거 통계 집계(필터링)
 
----
-
-## 10.3 `draft_service.py`
-
+### `draft_service.py`
 * RAG 검색 (Qdrant)
 * GPT-4o Prompt 생성
 * 증거 인용문 구조화
 * Draft 텍스트 생성
-* (선택) docx 변환 모듈 호출
+* **Helper classes (Phase 13 리팩토링):**
+  * `rag_orchestrator.py` - RAG 검색 오케스트레이션
+  * `prompt_builder.py` - LLM 프롬프트 구성
+  * `citation_extractor.py` - 증거 인용문 추출
 
----
-
-## 10.4 `search_service.py`
-
+### `search_service.py`
 * Qdrant query builder
 * 라벨/날짜/화자 기반 필터 적용
 * 사건 단위 Top-K 검색
+
+### `auth_service.py`
+* 로그인/로그아웃 처리
+* JWT 토큰 생성/검증
+* 비밀번호 해싱/검증
+
+---
+
+## 10.2 Portal Services (역할별 포털)
+
+### `lawyer_dashboard_service.py`
+* 변호사 대시보드 통계 조회
+* 담당 사건 목록, 일정, 알림
+
+### `client_portal_service.py`
+* 의뢰인 전용 포털 서비스
+* 사건 진행 현황, 메시지, 청구서 조회
+
+### `detective_portal_service.py`
+* 탐정/조사원 전용 포털
+* 현장 조사, GPS 기록, 수익 관리
+
+### `client_list_service.py`
+* 변호사의 의뢰인 목록 관리
+
+### `investigator_list_service.py`
+* 변호사의 조사원 목록 관리
+
+### `case_list_service.py`
+* 사건 목록 조회 (필터링, 페이징)
+
+---
+
+## 10.3 Case Management Services (사건 관리)
+
+### `party_service.py`
+* 당사자 관계 관리 (원고/피고/제3자)
+* 당사자 정보 CRUD
+
+### `relationship_service.py`
+* 당사자 간 관계 정의
+* 관계 그래프 데이터 생성
+
+### `evidence_link_service.py`
+* 증거-당사자 연결 관리
+* 증거 귀속 관계 설정
+
+### `procedure_service.py`
+* 소송 절차 단계 관리
+* 진행 상태 추적
+
+### `property_service.py`
+* 재산 목록 관리
+* 재산분할 기초 데이터
+
+### `asset_service.py`
+* 자산 CRUD
+* 자산 평가/분류
+
+### `division_calculator.py`
+* 재산분할 비율 계산
+* 기여도 분석
+
+### `summary_card_service.py`
+* 사건 요약 카드 생성
+* 핵심 정보 추출
+
+### `prediction_service.py`
+* AI 기반 판결 예측
+* 유사 판례 분석
+
+---
+
+## 10.4 Communication Services (커뮤니케이션)
+
+### `message_service.py`
+* 실시간 메시지 관리
+* 변호사-의뢰인 채팅
+
+### `calendar_service.py`
+* 일정 관리 (재판, 상담, 기한)
+* 캘린더 이벤트 CRUD
+
+### `billing_service.py`
+* 청구서 생성/관리
+* 결제 처리
+
+---
+
+## 10.5 Admin Services (관리자)
+
+### `user_management_service.py`
+* 사용자 CRUD
+* 계정 상태 관리
+
+### `role_management_service.py`
+* 역할/권한 관리
+* RBAC 정책 적용
+
+### `settings_service.py`
+* 사용자 설정 관리
+* 알림 설정, 프로필
+
+### `password_reset_service.py`
+* 비밀번호 재설정
+* 이메일 인증
+
+---
+
+## 10.6 Monitoring Services (모니터링)
+
+### `audit_service.py` / `audit_log_service.py`
+* 감사 로그 기록
+* 활동 추적
+
+### `progress_service.py`
+* 업무 진행률 추적
+* 스태프 대시보드
+
+### `dashboard_service.py`
+* 통계 대시보드
+* KPI 조회
+
+---
+
+## 10.7 Utility Services (유틸리티)
+
+### `document_renderer.py`
+* 문서 생성 (docx, pdf)
+* 템플릿 렌더링
+
+### `job_service.py`
+* 백그라운드 작업 관리
+* Export 작업 상태 추적
 
 ---
 

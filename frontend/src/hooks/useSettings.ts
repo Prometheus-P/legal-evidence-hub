@@ -26,8 +26,8 @@ interface UseSettingsOptions {
 interface UseSettingsReturn {
   profile: UserProfile | null;
   notifications: NotificationSettings | null;
-  loading: boolean;
-  updating: boolean;
+  isLoading: boolean;
+  isUpdating: boolean;
   error: string | null;
   updateProfile: (data: ProfileUpdateRequest) => Promise<boolean>;
   updateNotifications: (data: NotificationUpdateRequest) => Promise<boolean>;
@@ -39,12 +39,12 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [notifications, setNotifications] = useState<NotificationSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -70,7 +70,7 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
     } catch {
       setError('설정을 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -82,7 +82,7 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
 
   const updateProfile = useCallback(
     async (data: ProfileUpdateRequest): Promise<boolean> => {
-      setUpdating(true);
+      setIsUpdating(true);
       setError(null);
 
       try {
@@ -102,7 +102,7 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
         setError('프로필 업데이트 중 오류가 발생했습니다.');
         return false;
       } finally {
-        setUpdating(false);
+        setIsUpdating(false);
       }
     },
     []
@@ -110,7 +110,7 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
 
   const updateNotifications = useCallback(
     async (data: NotificationUpdateRequest): Promise<boolean> => {
-      setUpdating(true);
+      setIsUpdating(true);
       setError(null);
 
       try {
@@ -139,7 +139,7 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
         setError('알림 설정 업데이트 중 오류가 발생했습니다.');
         return false;
       } finally {
-        setUpdating(false);
+        setIsUpdating(false);
       }
     },
     []
@@ -148,8 +148,8 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
   return {
     profile,
     notifications,
-    loading,
-    updating,
+    isLoading,
+    isUpdating,
     error,
     updateProfile,
     updateNotifications,

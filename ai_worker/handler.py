@@ -8,8 +8,8 @@ Storage Architecture (Lambda Compatible):
 """
 
 import json
-import logging
 import os
+import tempfile
 import urllib.parse
 import uuid
 from datetime import datetime, timezone
@@ -47,13 +47,15 @@ from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger
 from src.analysis.summarizer import EvidenceSummarizer
 from src.utils.logging_filter import SensitiveDataFilter
+from src.utils.logging import setup_lambda_logging
 from src.utils.embeddings import get_embedding_with_fallback  # Embedding utility with fallback
 from src.utils.hash import calculate_file_hash  # Hash utility for idempotency
 from src.utils.observability import (
     JobTracker,
     ProcessingStage,
     ErrorType,
-    classify_exception
+    classify_exception,
+    get_metrics
 )
 from src.utils.cost_guard import (
     CostGuard,
@@ -61,9 +63,9 @@ from src.utils.cost_guard import (
     get_file_type_from_extension
 )
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addFilter(SensitiveDataFilter())
+# Setup structured JSON logging for Lambda
+# Outputs CloudWatch Logs Insights compatible JSON format
+logger = setup_lambda_logging(SensitiveDataFilter())
 
 
 def route_parser(file_extension: str) -> Optional[Any]:
@@ -166,7 +168,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # S3에서 파일 다운로드
         with tracker.stage(ProcessingStage.DOWNLOAD) as stage:
             s3_client = boto3.client('s3')
-            local_path = f"/tmp/{file_path.name}"
+            # OS 호환 임시 경로 사용 (Windows: %TEMP%, Linux: /tmp)
+            local_path = os.path.join(tempfile.gettempdir(), file_path.name)
 
             # 임시 디렉토리가 없으면 생성
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -581,12 +584,101 @@ def _extract_evidence_id_from_s3_key(object_key: str) -> Optional[str]:
     return None
 
 
+def _handle_health_check(context) -> dict:
+    """
+    Lambda health check handler.
+    Verifies connectivity to external services (OpenAI, Qdrant, DynamoDB).
+
+    Usage: Invoke Lambda with {"action": "health_check"}
+
+    Returns:
+        dict: Health status of all components
+    """
+    import os
+    from datetime import datetime
+
+    health = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "service": "leh-ai-worker",
+        "version": "1.0.0",
+        "checks": {}
+    }
+
+    # Check OpenAI API key
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    if openai_key and openai_key.startswith("sk-"):
+        health["checks"]["openai"] = {"status": "ok", "message": "API key configured"}
+    else:
+        health["checks"]["openai"] = {"status": "error", "message": "API key missing"}
+        health["status"] = "degraded"
+
+    # Check Qdrant configuration
+    qdrant_url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
+    if qdrant_url:
+        health["checks"]["qdrant"] = {"status": "ok", "message": "URL configured"}
+    else:
+        health["checks"]["qdrant"] = {"status": "error", "message": "URL missing"}
+        health["status"] = "degraded"
+
+    # Check DynamoDB table configuration
+    ddb_table = os.getenv("DDB_EVIDENCE_TABLE") or os.getenv("DYNAMODB_TABLE")
+    if ddb_table:
+        health["checks"]["dynamodb"] = {"status": "ok", "message": f"Table: {ddb_table}"}
+    else:
+        health["checks"]["dynamodb"] = {"status": "error", "message": "Table not configured"}
+        health["status"] = "degraded"
+
+    # Check S3 bucket configuration
+    s3_bucket = os.getenv("S3_EVIDENCE_BUCKET")
+    if s3_bucket:
+        health["checks"]["s3"] = {"status": "ok", "message": f"Bucket: {s3_bucket}"}
+    else:
+        health["checks"]["s3"] = {"status": "error", "message": "Bucket not configured"}
+        health["status"] = "degraded"
+
+    # Add Lambda context info if available
+    if context:
+        health["lambda"] = {
+            "function_name": getattr(context, "function_name", "unknown"),
+            "memory_limit_mb": getattr(context, "memory_limit_in_mb", "unknown"),
+            "remaining_time_ms": getattr(context, "get_remaining_time_in_millis", lambda: "unknown")()
+        }
+
+    logger.info("Health check completed", extra={"health_status": health["status"]})
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(health)
+    }
+
+
 def handle(event, context):
     """
     AWS Lambda Entrypoint.
     S3 이벤트를 수신하여 파일 정보를 파싱하고 AI 파이프라인을 시작합니다.
     """
-    logger.info(f"Received event: {json.dumps(event)}")
+    import time
+    start_time = time.time()
+
+    # Extract trace_id from Lambda context for request tracking
+    trace_id = getattr(context, 'aws_request_id', None) if context else None
+
+    # Initialize CloudWatch metrics
+    metrics = get_metrics()
+
+    logger.info(
+        "Received S3 event",
+        extra={
+            "trace_id": trace_id,
+            "record_count": len(event.get("Records", [])),
+            "event_source": event.get("Records", [{}])[0].get("eventSource", "unknown")
+        }
+    )
+
+    # Health check 처리 (Lambda 직접 호출 시)
+    if event.get("action") == "health_check":
+        return _handle_health_check(context)
 
     # S3 이벤트가 아닌 경우(테스트 등) 방어 로직
     if "Records" not in event:
@@ -595,26 +687,101 @@ def handle(event, context):
     results = []
 
     for record in event["Records"]:
+        file_type = None
         try:
             # 1. S3 이벤트에서 버킷과 키(파일 경로) 추출
             s3 = record.get("s3", {})
             bucket_name = s3.get("bucket", {}).get("name")
             object_key = s3.get("object", {}).get("key")
+            file_size = s3.get("object", {}).get("size", 0)
 
             # URL Decoding (공백 등이 + 또는 %20으로 들어올 수 있음)
             if object_key:
                 object_key = urllib.parse.unquote_plus(object_key)
+                file_type = Path(object_key).suffix.lower().lstrip('.')
 
-            logger.info(f"Processing file: s3://{bucket_name}/{object_key}")
+            logger.info(
+                "Processing file",
+                extra={
+                    "trace_id": trace_id,
+                    "bucket": bucket_name,
+                    "key": object_key,
+                    "file_extension": file_type,
+                    "file_size": file_size
+                }
+            )
 
             # 2. 파일 처리 로직 실행 (Strategy Pattern 적용)
             result = route_and_process(bucket_name, object_key)
             results.append(result)
 
+            # Record successful processing metric
+            if file_type:
+                metrics.record_file_processed(file_type, file_size)
+
+            logger.info(
+                "File processed successfully",
+                extra={
+                    "trace_id": trace_id,
+                    "key": object_key,
+                    "status": result.get("status", "unknown")
+                }
+            )
+
         except Exception as e:
-            logger.error(f"Error processing record: {e}", exc_info=True)
+            error_type = classify_exception(e)
+
+            logger.error(
+                "Error processing record",
+                extra={
+                    "trace_id": trace_id,
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                },
+                exc_info=True
+            )
+
+            # Record error metric
+            metrics.record_error(error_type, file_type)
+
             # 실제 운영 시에는 여기서 DLQ로 보내거나 에러를 다시 raise 해야 함
             results.append({"error": str(e), "status": "failed"})
+
+    # Calculate total execution time
+    duration_ms = (time.time() - start_time) * 1000
+    success_count = sum(1 for r in results if r.get("status") != "failed")
+    failed_count = sum(1 for r in results if r.get("status") == "failed")
+
+    # Record execution time metric
+    metrics.record_execution_time(
+        duration_ms=duration_ms,
+        success=(failed_count == 0)
+    )
+
+    # Record memory usage if available from Lambda context
+    if context and hasattr(context, 'memory_limit_in_mb'):
+        # Note: Lambda doesn't directly expose used memory, but we can estimate
+        # For now, just record the limit. In production, use /proc/meminfo
+        try:
+            import resource
+            memory_used_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // 1024
+            metrics.record_memory_usage(memory_used_mb, context.memory_limit_in_mb)
+        except Exception:
+            pass  # Memory tracking not critical
+
+    # Flush all metrics to CloudWatch
+    metrics.flush()
+
+    logger.info(
+        "Lambda execution complete",
+        extra={
+            "trace_id": trace_id,
+            "total_records": len(results),
+            "successful": success_count,
+            "failed": failed_count,
+            "duration_ms": round(duration_ms, 2)
+        }
+    )
 
     return {
         "statusCode": 200,

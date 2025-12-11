@@ -49,7 +49,8 @@ from app.middleware import (  # noqa: E402
     register_exception_handlers,
     SecurityHeadersMiddleware,
     HTTPSRedirectMiddleware,
-    AuditLogMiddleware
+    AuditLogMiddleware,
+    LatencyLoggingMiddleware
 )
 
 
@@ -127,10 +128,13 @@ app.add_middleware(HTTPSRedirectMiddleware)
 # 2. Security Headers
 app.add_middleware(SecurityHeadersMiddleware)
 
-# 3. Audit Log Middleware (Must be before CORS to log all requests)
+# 3. Latency Logging Middleware (Logs request duration)
+app.add_middleware(LatencyLoggingMiddleware)
+
+# 4. Audit Log Middleware (Must be before CORS to log all requests)
 app.add_middleware(AuditLogMiddleware)
 
-# 4. CORS (Must be after security headers and audit log)
+# 5. CORS (Must be after security headers and audit log)
 # Note: For cross-origin cookie authentication, allow_credentials=True is required
 # API Gateway also has CORS config - they should match
 app.add_middleware(

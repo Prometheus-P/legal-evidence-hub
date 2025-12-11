@@ -1,0 +1,548 @@
+openapi: 3.0.3
+info:
+  title: LEH Asset Division API
+  description: |
+    API for managing asset division records in divorce cases.
+    Supports CRUD operations for marital assets and division calculations.
+  version: 1.0.0
+  contact:
+    name: LEH Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://api.legalevidence.hub
+    description: Production
+
+tags:
+  - name: Assets
+    description: Asset management endpoints
+
+paths:
+  /cases/{case_id}/assets:
+    get:
+      tags:
+        - Assets
+      summary: List case assets
+      description: Retrieve all assets associated with a case
+      operationId: listCaseAssets
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Case identifier
+        - name: asset_type
+          in: query
+          schema:
+            type: string
+            enum: [real_estate, financial, vehicle, business, other]
+          description: Filter by asset type
+        - name: title_holder
+          in: query
+          schema:
+            type: string
+            enum: [plaintiff, defendant, joint]
+          description: Filter by title holder
+      responses:
+        '200':
+          description: Asset list retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Asset'
+                  summary:
+                    $ref: '#/components/schemas/DivisionSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Assets
+      summary: Create asset record
+      description: Add a new asset to the case
+      operationId: createAsset
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetCreateRequest'
+      responses:
+        '201':
+          description: Asset created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cases/{case_id}/assets/{asset_id}:
+    get:
+      tags:
+        - Assets
+      summary: Get asset details
+      operationId: getAsset
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Asset details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Assets
+      summary: Update asset record
+      operationId: updateAsset
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetUpdateRequest'
+      responses:
+        '200':
+          description: Asset updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Assets
+      summary: Delete asset record
+      operationId: deleteAsset
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: asset_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Asset deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/assets/summary:
+    get:
+      tags:
+        - Assets
+      summary: Get division summary
+      description: Calculate and return asset division summary for the case
+      operationId: getAssetDivisionSummary
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Division summary calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DivisionSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Asset:
+      type: object
+      required:
+        - id
+        - case_id
+        - asset_type
+        - name
+        - valuation
+        - title_holder
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Asset unique identifier
+        case_id:
+          type: string
+          format: uuid
+          description: Parent case identifier
+        asset_type:
+          type: string
+          enum: [real_estate, financial, vehicle, business, other]
+          description: |
+            Asset category:
+            - real_estate: 부동산 (아파트, 주택, 토지)
+            - financial: 금융자산 (예금, 주식, 보험)
+            - vehicle: 차량
+            - business: 사업자산
+            - other: 기타
+        name:
+          type: string
+          description: Asset name/description
+          example: "서울시 강남구 역삼동 아파트"
+        valuation:
+          type: number
+          format: double
+          description: Estimated value in KRW
+          example: 1500000000
+        valuation_date:
+          type: string
+          format: date
+          description: Date of valuation
+        title_holder:
+          type: string
+          enum: [plaintiff, defendant, joint]
+          description: |
+            Who holds title:
+            - plaintiff: 원고 명의
+            - defendant: 피고 명의
+            - joint: 공동 명의
+        acquisition_date:
+          type: string
+          format: date
+          description: Date asset was acquired
+        acquisition_type:
+          type: string
+          enum: [pre_marriage, during_marriage, inheritance, gift]
+          description: |
+            How asset was acquired:
+            - pre_marriage: 혼인 전 취득
+            - during_marriage: 혼인 중 취득
+            - inheritance: 상속
+            - gift: 증여
+        plaintiff_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Plaintiff's contribution percentage (0-100)
+          default: 50
+        defendant_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Defendant's contribution percentage (0-100)
+          default: 50
+        claimed_division_ratio:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Claimed division ratio for plaintiff (0-100)
+        evidence_ids:
+          type: array
+          items:
+            type: string
+          description: Linked evidence document IDs
+        notes:
+          type: string
+          description: Additional notes about the asset
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AssetCreateRequest:
+      type: object
+      required:
+        - asset_type
+        - name
+        - valuation
+        - title_holder
+      properties:
+        asset_type:
+          type: string
+          enum: [real_estate, financial, vehicle, business, other]
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        valuation:
+          type: number
+          format: double
+          minimum: 0
+        valuation_date:
+          type: string
+          format: date
+        title_holder:
+          type: string
+          enum: [plaintiff, defendant, joint]
+        acquisition_date:
+          type: string
+          format: date
+        acquisition_type:
+          type: string
+          enum: [pre_marriage, during_marriage, inheritance, gift]
+        plaintiff_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          default: 50
+        defendant_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          default: 50
+        claimed_division_ratio:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        evidence_ids:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          maxLength: 1000
+
+    AssetUpdateRequest:
+      type: object
+      properties:
+        asset_type:
+          type: string
+          enum: [real_estate, financial, vehicle, business, other]
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        valuation:
+          type: number
+          format: double
+          minimum: 0
+        valuation_date:
+          type: string
+          format: date
+        title_holder:
+          type: string
+          enum: [plaintiff, defendant, joint]
+        acquisition_date:
+          type: string
+          format: date
+        acquisition_type:
+          type: string
+          enum: [pre_marriage, during_marriage, inheritance, gift]
+        plaintiff_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        defendant_contribution:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        claimed_division_ratio:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        evidence_ids:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+          maxLength: 1000
+
+    DivisionSummary:
+      type: object
+      description: Summary of asset division calculations
+      properties:
+        total_assets:
+          type: integer
+          description: Total number of assets
+        total_valuation:
+          type: number
+          format: double
+          description: Total value of all assets
+        plaintiff_assets:
+          type: number
+          format: double
+          description: Value of plaintiff-titled assets
+        defendant_assets:
+          type: number
+          format: double
+          description: Value of defendant-titled assets
+        joint_assets:
+          type: number
+          format: double
+          description: Value of jointly-titled assets
+        plaintiff_contribution_average:
+          type: number
+          format: double
+          description: Average plaintiff contribution percentage
+        defendant_contribution_average:
+          type: number
+          format: double
+          description: Average defendant contribution percentage
+        estimated_plaintiff_share:
+          type: number
+          format: double
+          description: Estimated share for plaintiff based on contributions
+        estimated_defendant_share:
+          type: number
+          format: double
+          description: Estimated share for defendant based on contributions
+        by_type:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              count:
+                type: integer
+              total_value:
+                type: number
+                format: double
+          description: Asset breakdown by type
+
+    Error:
+      type: object
+      required:
+        - detail
+        - status_code
+      properties:
+        detail:
+          type: string
+          description: Error message
+        status_code:
+          type: integer
+          description: HTTP status code
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Valuation must be a positive number"
+            status_code: 400
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Not authenticated"
+            status_code: 401
+
+    Forbidden:
+      description: Access denied - not a case member
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "You are not a member of this case"
+            status_code: 403
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            detail: "Asset not found"
+            status_code: 404
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

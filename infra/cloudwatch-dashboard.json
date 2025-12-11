@@ -1,0 +1,157 @@
+{
+  "widgets": [
+    {
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 1,
+      "properties": {
+        "markdown": "# Legal Evidence Hub (LEH) - Monitoring Dashboard"
+      }
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "y": 1,
+      "width": 24,
+      "height": 1,
+      "properties": {
+        "markdown": "## Lambda Functions"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 2,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Lambda Invocations",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/Lambda", "Invocations", "FunctionName", "leh-backend", {"stat": "Sum", "period": 300}],
+          ["AWS/Lambda", "Invocations", "FunctionName", "leh-ai-worker", {"stat": "Sum", "period": 300}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 2,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Lambda Duration (ms)",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/Lambda", "Duration", "FunctionName", "leh-backend", {"stat": "p50", "period": 300, "label": "Backend p50"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "leh-backend", {"stat": "p95", "period": 300, "label": "Backend p95"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "leh-backend", {"stat": "p99", "period": 300, "label": "Backend p99"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "leh-ai-worker", {"stat": "p50", "period": 300, "label": "AI Worker p50"}],
+          ["AWS/Lambda", "Duration", "FunctionName", "leh-ai-worker", {"stat": "p95", "period": 300, "label": "AI Worker p95"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 2,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "title": "Lambda Errors",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/Lambda", "Errors", "FunctionName", "leh-backend", {"stat": "Sum", "period": 300, "color": "#d62728"}],
+          ["AWS/Lambda", "Errors", "FunctionName", "leh-ai-worker", {"stat": "Sum", "period": 300, "color": "#ff7f0e"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 8,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Lambda Concurrent Executions",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "leh-backend", {"stat": "Maximum", "period": 60}],
+          ["AWS/Lambda", "ConcurrentExecutions", "FunctionName", "leh-ai-worker", {"stat": "Maximum", "period": 60}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 8,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Lambda Throttles",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/Lambda", "Throttles", "FunctionName", "leh-backend", {"stat": "Sum", "period": 300, "color": "#d62728"}],
+          ["AWS/Lambda", "Throttles", "FunctionName", "leh-ai-worker", {"stat": "Sum", "period": 300, "color": "#ff7f0e"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "text",
+      "x": 0,
+      "y": 14,
+      "width": 24,
+      "height": 1,
+      "properties": {
+        "markdown": "## S3 & DynamoDB"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 15,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "S3 Bucket Size (leh-evidence-prod)",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/S3", "BucketSizeBytes", "BucketName", "leh-evidence-prod", "StorageType", "StandardStorage", {"stat": "Average", "period": 86400}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 15,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "DynamoDB Read/Write Capacity",
+        "region": "ap-northeast-2",
+        "metrics": [
+          ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "leh_evidence", {"stat": "Sum", "period": 300, "label": "Evidence Read"}],
+          ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "leh_evidence", {"stat": "Sum", "period": 300, "label": "Evidence Write"}],
+          ["AWS/DynamoDB", "ConsumedReadCapacityUnits", "TableName", "leh_case_summary", {"stat": "Sum", "period": 300, "label": "Summary Read"}],
+          ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", "leh_case_summary", {"stat": "Sum", "period": 300, "label": "Summary Write"}]
+        ],
+        "view": "timeSeries",
+        "stacked": false
+      }
+    }
+  ]
+}

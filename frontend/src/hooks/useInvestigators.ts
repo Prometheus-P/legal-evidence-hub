@@ -25,7 +25,7 @@ interface UseInvestigatorsReturn {
   page: number;
   pageSize: number;
   totalPages: number;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   filters: InvestigatorFilter;
   setFilters: (filters: InvestigatorFilter) => void;
@@ -42,12 +42,12 @@ export function useInvestigators(options: UseInvestigatorsOptions = {}): UseInve
   const [page, setPage] = useState(initialFilters.page ?? 1);
   const [pageSize] = useState(initialFilters.page_size ?? 20);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<InvestigatorFilter>(initialFilters);
 
   const fetchInvestigators = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -70,7 +70,7 @@ export function useInvestigators(options: UseInvestigatorsOptions = {}): UseInve
     } catch {
       setError('조사원 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [filters, page, pageSize]);
 
@@ -107,7 +107,7 @@ export function useInvestigators(options: UseInvestigatorsOptions = {}): UseInve
     page,
     pageSize,
     totalPages,
-    loading,
+    isLoading,
     error,
     filters,
     setFilters: handleSetFilters,

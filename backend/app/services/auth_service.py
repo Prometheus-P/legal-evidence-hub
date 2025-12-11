@@ -7,10 +7,11 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from app.repositories.user_repository import UserRepository
 from app.core.security import verify_password, create_access_token, get_token_expire_seconds
-from app.db.models import User
+from app.db.models import User, UserAgreement, AgreementType
 from app.db.schemas import TokenResponse, UserOut
 from app.middleware.error_handler import AuthenticationError, ConflictError, ValidationError
 from app.db.models import UserRole
+from app.core.config import settings
 
 
 class AuthService:
@@ -100,7 +101,9 @@ class AuthService:
         password: str,
         name: str,
         accept_terms: bool,
-        role: Optional[UserRole] = None
+        role: Optional[UserRole] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None
     ) -> TokenResponse:
         """
         Register a new user and generate JWT token
@@ -111,6 +114,8 @@ class AuthService:
             name: User's name
             accept_terms: Terms acceptance flag
             role: Optional user role (defaults to LAWYER if not provided)
+            ip_address: Client IP address for agreement record
+            user_agent: Client user agent for agreement record
 
         Returns:
             TokenResponse with access_token, token_type, expires_in, and user info
@@ -142,6 +147,20 @@ class AuthService:
             name=name,
             role=final_role
         )
+
+        # Record user agreements (Terms of Service and Privacy Policy)
+        # Get current agreement version from settings or use default
+        agreement_version = getattr(settings, 'AGREEMENT_VERSION', '1.0')
+
+        for agreement_type in [AgreementType.TERMS_OF_SERVICE, AgreementType.PRIVACY_POLICY]:
+            agreement = UserAgreement(
+                user_id=user.id,
+                agreement_type=agreement_type,
+                version=agreement_version,
+                ip_address=ip_address,
+                user_agent=user_agent[:500] if user_agent and len(user_agent) > 500 else user_agent
+            )
+            self.session.add(agreement)
 
         # Commit transaction
         self.session.commit()

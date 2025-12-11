@@ -115,9 +115,10 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
       <header className="bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
+            {/* T073 - FR-028: Back button to case detail */}
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push(`/lawyer/cases/${caseId}`)}
                 className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
               >
                 ← 뒤로

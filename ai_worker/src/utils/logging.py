@@ -33,6 +33,7 @@ class JSONFormatter(logging.Formatter):
     JSON 형식 로그 포매터
 
     구조화된 로그 출력으로 로그 분석 및 모니터링 용이
+    CloudWatch Logs Insights 쿼리에 최적화
     """
 
     def __init__(self, include_timestamp: bool = True, include_extra: bool = True):
@@ -49,6 +50,10 @@ class JSONFormatter(logging.Formatter):
 
         if self.include_timestamp:
             log_data["timestamp"] = datetime.now(timezone.utc).isoformat()
+
+        # trace_id for request tracking (set via extra or context)
+        if hasattr(record, 'trace_id'):
+            log_data["trace_id"] = record.trace_id
 
         # 모듈/함수 정보
         log_data["module"] = record.module
@@ -70,7 +75,7 @@ class JSONFormatter(logging.Formatter):
                 'levelname', 'levelno', 'lineno', 'module', 'msecs',
                 'pathname', 'process', 'processName', 'relativeCreated',
                 'stack_info', 'exc_info', 'exc_text', 'thread', 'threadName',
-                'taskName', 'message'
+                'taskName', 'message', 'trace_id'
             }
             extra_data = {
                 k: v for k, v in record.__dict__.items()
@@ -186,6 +191,60 @@ def setup_logging(
         file_handler = logging.FileHandler(log_file, encoding='utf-8')
         file_handler.setFormatter(JSONFormatter())  # 파일은 항상 JSON
         root_logger.addHandler(file_handler)
+
+
+def setup_lambda_logging(sensitive_filter: Optional[logging.Filter] = None) -> logging.Logger:
+    """
+    Lambda 환경용 JSON 로깅 설정
+
+    CloudWatch Logs Insights에서 쿼리 가능한 구조화된 JSON 로그 출력.
+    Lambda 환경에서는 stdout으로 출력되는 로그가 자동으로 CloudWatch로 전송됨.
+
+    Args:
+        sensitive_filter: 민감 데이터 필터 (예: SensitiveDataFilter)
+
+    Returns:
+        설정된 root logger
+
+    Usage:
+        from src.utils.logging import setup_lambda_logging
+        from src.utils.logging_filter import SensitiveDataFilter
+
+        logger = setup_lambda_logging(SensitiveDataFilter())
+        logger.info("Processing file", extra={"trace_id": aws_request_id, "file": "test.jpg"})
+
+    CloudWatch Logs Insights Query Examples:
+        # Error 로그만 조회
+        fields @timestamp, message, trace_id
+        | filter level = "ERROR"
+        | sort @timestamp desc
+
+        # 특정 trace_id 추적
+        fields @timestamp, level, message
+        | filter trace_id = "abc123"
+        | sort @timestamp asc
+    """
+    import os
+
+    root_logger = logging.getLogger()
+
+    # Lambda 환경에서는 기본 핸들러가 있을 수 있으므로 제거
+    root_logger.handlers.clear()
+
+    # 로그 레벨 설정 (환경변수로 제어 가능)
+    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    root_logger.setLevel(getattr(logging, log_level, logging.INFO))
+
+    # JSON 포맷 핸들러 추가
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(JSONFormatter(include_timestamp=True, include_extra=True))
+    root_logger.addHandler(handler)
+
+    # 민감 데이터 필터 추가
+    if sensitive_filter:
+        root_logger.addFilter(sensitive_filter)
+
+    return root_logger
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -333,6 +392,7 @@ __all__ = [
     "ParserLogContext",
     "AnalysisLogContext",
     "setup_logging",
+    "setup_lambda_logging",
     "get_logger",
     "log_parser_start",
     "log_parser_complete",

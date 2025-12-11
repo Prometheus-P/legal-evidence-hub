@@ -13,6 +13,17 @@ from .error_handler import (
 )
 from .security import SecurityHeadersMiddleware, HTTPSRedirectMiddleware
 from .audit_log import AuditLogMiddleware
+from .latency import LatencyLoggingMiddleware, SLOW_REQUEST_THRESHOLD
+from .case_permission import (
+    CasePermissionChecker,
+    get_permission_checker,
+    require_case_access,
+    require_case_write_access,
+    require_case_owner,
+    require_case_access_or_admin,
+    require_case_write_or_admin,
+    require_case_owner_or_admin
+)
 
 __all__ = [
     "LEHException",
@@ -24,5 +35,16 @@ __all__ = [
     "register_exception_handlers",
     "SecurityHeadersMiddleware",
     "HTTPSRedirectMiddleware",
-    "AuditLogMiddleware"
+    "AuditLogMiddleware",
+    "LatencyLoggingMiddleware",
+    "SLOW_REQUEST_THRESHOLD",
+    # Case permission utilities
+    "CasePermissionChecker",
+    "get_permission_checker",
+    "require_case_access",
+    "require_case_write_access",
+    "require_case_owner",
+    "require_case_access_or_admin",
+    "require_case_write_or_admin",
+    "require_case_owner_or_admin"
 ]

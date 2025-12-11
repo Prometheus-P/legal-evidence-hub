@@ -273,6 +273,16 @@ class PresignedUrlResponse(BaseModel):
     s3_key: str
 
 
+class ExifMetadataInput(BaseModel):
+    """EXIF metadata input from client-side extraction"""
+    gps_latitude: Optional[float] = Field(None, description="GPS latitude in decimal degrees")
+    gps_longitude: Optional[float] = Field(None, description="GPS longitude in decimal degrees")
+    gps_altitude: Optional[float] = Field(None, description="GPS altitude in meters")
+    datetime_original: Optional[str] = Field(None, description="Original capture datetime (ISO format)")
+    camera_make: Optional[str] = Field(None, description="Camera manufacturer")
+    camera_model: Optional[str] = Field(None, description="Camera model")
+
+
 class UploadCompleteRequest(BaseModel):
     """Upload complete request schema"""
     case_id: str
@@ -280,6 +290,10 @@ class UploadCompleteRequest(BaseModel):
     s3_key: str
     file_size: int = 0  # File size in bytes
     note: Optional[str] = None
+    exif_metadata: Optional[ExifMetadataInput] = Field(
+        None,
+        description="EXIF metadata extracted from image on client side (for detective uploads)"
+    )
 
 
 class UploadCompleteResponse(BaseModel):
@@ -289,6 +303,7 @@ class UploadCompleteResponse(BaseModel):
     filename: str
     s3_key: str
     status: str  # pending (waiting for AI processing)
+    review_status: Optional[str] = None  # pending_review for client uploads, None for internal uploads
     created_at: datetime
 
 
@@ -309,6 +324,22 @@ class EvidenceListResponse(BaseModel):
     """Evidence list response wrapper (matches frontend expectation)"""
     evidence: list[EvidenceSummary]
     total: int
+
+
+class EvidenceReviewRequest(BaseModel):
+    """Evidence review request schema (for lawyer approval)"""
+    action: str = Field(..., pattern="^(approve|reject)$", description="Review action: approve or reject")
+    comment: Optional[str] = Field(None, max_length=500, description="Optional review comment")
+
+
+class EvidenceReviewResponse(BaseModel):
+    """Evidence review response schema"""
+    evidence_id: str
+    case_id: str
+    review_status: str  # approved, rejected
+    reviewed_by: str
+    reviewed_at: datetime
+    comment: Optional[str] = None
 
 
 class EvidenceDetail(BaseModel):
@@ -477,6 +508,9 @@ class AuditAction(str, Enum):
     GENERATE_DRAFT = "GENERATE_DRAFT"
     EXPORT_DRAFT = "EXPORT_DRAFT"
     UPDATE_DRAFT = "UPDATE_DRAFT"
+
+    # Security actions
+    ACCESS_DENIED = "ACCESS_DENIED"
 
 
 class AuditLogOut(BaseModel):

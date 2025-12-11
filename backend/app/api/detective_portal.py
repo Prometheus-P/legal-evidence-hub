@@ -24,6 +24,7 @@ from app.schemas.detective_portal import (
     ReportRequest,
     ReportResponse,
     EarningsResponse,
+    EarningsSummary,
 )
 
 router = APIRouter(prefix="/detective", tags=["detective-portal"])
@@ -318,3 +319,20 @@ async def get_detective_earnings(
     """
     service = DetectivePortalService(db)
     return service.get_earnings(user_id, period=period)
+
+
+@router.get("/earnings/summary", response_model=EarningsSummary)
+async def get_detective_earnings_summary(
+    db: Session = Depends(get_db),
+    user_id: str = Depends(require_role(["detective"])),
+):
+    """
+    Get detective's earnings summary (lightweight endpoint).
+
+    Returns:
+        - total_earned: Total earnings across all cases
+        - pending_payment: Pending (unpaid) earnings
+        - this_month: Earnings from current month
+    """
+    service = DetectivePortalService(db)
+    return service.get_earnings_summary(user_id)

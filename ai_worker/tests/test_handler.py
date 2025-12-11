@@ -251,11 +251,11 @@ class TestFileProcessing:
         # Then: S3 client가 파일을 다운로드했는지 확인
         mock_boto3.client.assert_called_once_with('s3')
         mock_s3_client.download_file.assert_called_once()
-        # 다운로드 위치가 /tmp인지 확인
+        # 다운로드 위치가 임시 디렉토리인지 확인 (Linux: /tmp, Windows: Temp)
         call_args = mock_s3_client.download_file.call_args[0]
         assert call_args[0] == bucket
         assert call_args[1] == key
-        assert '/tmp' in call_args[2] or 'tmp' in call_args[2].lower()
+        assert '/tmp' in call_args[2] or 'temp' in call_args[2].lower()
 
     @patch.object(handler, 'boto3')
     @patch.object(handler, 'MetadataStore')

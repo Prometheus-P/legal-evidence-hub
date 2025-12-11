@@ -1,13 +1,16 @@
 /**
  * Error Boundary Components
  * 003-role-based-ui Feature - T155
+ * 009-mvp-gap-closure Feature - T028 (Toast integration)
  *
  * Reusable error UI components for error boundaries across all portals.
+ * Integrates with react-hot-toast for user-friendly error notifications.
  */
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export interface ErrorFallbackProps {
   error: Error & { digest?: string };
@@ -23,6 +26,14 @@ export function ErrorFallback({
   title = '오류가 발생했습니다',
   description = '일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.',
 }: ErrorFallbackProps) {
+  // Show toast notification when error occurs
+  useEffect(() => {
+    toast.error(title, {
+      duration: 5000,
+      id: `error-${error.digest || error.message.slice(0, 20)}`, // Prevent duplicate toasts
+    });
+  }, [error, title]);
+
   return (
     <div className="min-h-[400px] flex items-center justify-center p-6">
       <div className="text-center max-w-md">
@@ -117,6 +128,14 @@ export function DetectivePortalError({ error, reset }: ErrorFallbackProps) {
 
 // Network error component
 export function NetworkError({ reset }: { reset: () => void }) {
+  // Show toast notification for network error
+  useEffect(() => {
+    toast.error('네트워크 연결에 문제가 발생했습니다.', {
+      duration: 5000,
+      id: 'network-error',
+    });
+  }, []);
+
   return (
     <div className="min-h-[400px] flex items-center justify-center p-6">
       <div className="text-center max-w-md">

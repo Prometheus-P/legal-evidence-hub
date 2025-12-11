@@ -24,7 +24,7 @@ interface UseClientsReturn {
   page: number;
   pageSize: number;
   totalPages: number;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   filters: ClientFilter;
   setFilters: (filters: ClientFilter) => void;
@@ -41,12 +41,12 @@ export function useClients(options: UseClientsOptions = {}): UseClientsReturn {
   const [page, setPage] = useState(initialFilters.page ?? 1);
   const [pageSize] = useState(initialFilters.page_size ?? 20);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ClientFilter>(initialFilters);
 
   const fetchClients = useCallback(async () => {
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
@@ -69,7 +69,7 @@ export function useClients(options: UseClientsOptions = {}): UseClientsReturn {
     } catch {
       setError('의뢰인 목록을 불러오는 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [filters, page, pageSize]);
 
@@ -106,7 +106,7 @@ export function useClients(options: UseClientsOptions = {}): UseClientsReturn {
     page,
     pageSize,
     totalPages,
-    loading,
+    isLoading,
     error,
     filters,
     setFilters: handleSetFilters,

@@ -206,6 +206,18 @@ class ProfileVisibility(str, enum.Enum):
     PRIVATE = "private"
 
 
+class AgreementType(str, enum.Enum):
+    """Agreement type enum for user consent tracking"""
+    TERMS_OF_SERVICE = "terms_of_service"  # 이용약관
+    PRIVACY_POLICY = "privacy_policy"       # 개인정보처리방침
+
+
+class EarningsStatus(str, enum.Enum):
+    """Detective earnings status enum"""
+    PENDING = "pending"      # 정산 대기
+    PAID = "paid"            # 정산 완료
+
+
 # ============================================
 # v1 Lawyer Portal Enums
 # ============================================
@@ -1037,3 +1049,58 @@ class ProcedureStageRecord(Base):
 
     def __repr__(self):
         return f"<ProcedureStageRecord(id={self.id}, stage={self.stage}, status={self.status})>"
+
+
+class UserAgreement(Base):
+    """
+    User agreement model - tracks user consent history for legal terms
+    사용자 약관 동의 이력 (FR-025: 법적 고지 및 약관)
+    """
+    __tablename__ = "user_agreements"
+
+    id = Column(String, primary_key=True, default=lambda: f"agree_{uuid.uuid4().hex[:12]}")
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    agreement_type = Column(StrEnumColumn(AgreementType), nullable=False)
+    agreed_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    version = Column(String(20), nullable=False)  # e.g., "1.0", "2024.1"
+    ip_address = Column(String(45), nullable=True)  # IPv4 or IPv6
+    user_agent = Column(String(500), nullable=True)  # Browser/client info
+
+    # Relationships
+    user = relationship("User", backref="agreements")
+
+    def __repr__(self):
+        return f"<UserAgreement(id={self.id}, user_id={self.user_id}, type={self.agreement_type}, version={self.version})>"
+
+
+# ============================================
+# Detective Portal Models (US11)
+# ============================================
+class DetectiveEarnings(Base):
+    """
+    Detective earnings model - tracks detective payments per case
+    탐정 정산 데이터 관리 (FR-040)
+    """
+    __tablename__ = "detective_earnings"
+
+    id = Column(String, primary_key=True, default=lambda: f"earn_{uuid.uuid4().hex[:12]}")
+    detective_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    # Payment info
+    amount = Column(Integer, nullable=False)  # 금액 (원 단위)
+    description = Column(String(500), nullable=True)  # 정산 내역 설명
+
+    # Status
+    status = Column(StrEnumColumn(EarningsStatus), nullable=False, default=EarningsStatus.PENDING, index=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    paid_at = Column(DateTime(timezone=True), nullable=True)  # 정산 완료일
+
+    # Relationships
+    detective = relationship("User", foreign_keys=[detective_id])
+    case = relationship("Case", backref="detective_earnings")
+
+    def __repr__(self):
+        return f"<DetectiveEarnings(id={self.id}, detective_id={self.detective_id}, amount={self.amount}, status={self.status})>"

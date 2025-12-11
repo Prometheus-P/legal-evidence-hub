@@ -12,7 +12,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { NotificationSettingsComponent } from '@/components/settings/NotificationSettings';
 
 export default function NotificationSettingsPage() {
-  const { notifications, loading, updating, error, updateNotifications } = useSettings();
+  const { notifications, isLoading, isUpdating, error, updateNotifications } = useSettings();
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
@@ -51,8 +51,8 @@ export default function NotificationSettingsPage() {
       <div className="rounded-xl border border-[var(--color-border-default)] bg-white p-6 shadow-sm">
         <NotificationSettingsComponent
           notifications={notifications}
-          loading={loading}
-          updating={updating}
+          loading={isLoading}
+          updating={isUpdating}
           onSubmit={updateNotifications}
         />
       </div>

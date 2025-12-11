@@ -52,3 +52,36 @@ def setup_test_environment():
             os.environ[key] = default_value
 
     yield
+
+
+def pytest_collection_modifyitems(config, items):
+    """
+    Skip integration tests when required environment variables are missing.
+    Unit tests always run.
+    """
+    # Integration tests require real credentials (not dummy values)
+    integration_env_vars = ["QDRANT_URL", "OPENAI_API_KEY"]
+
+    # Check if real credentials exist (not dummy values starting with "test-")
+    def has_real_credential(var_name):
+        value = os.getenv(var_name)
+        if not value:
+            return False
+        # Dummy values from test_defaults start with "test-" or are localhost URLs
+        if value.startswith("test-"):
+            return False
+        if var_name == "QDRANT_URL" and "localhost" in value:
+            return False
+        return True
+
+    missing_real_creds = not all(
+        has_real_credential(var) for var in integration_env_vars
+    )
+
+    if missing_real_creds:
+        skip_integration = pytest.mark.skip(
+            reason="Integration tests skipped: real credentials not configured"
+        )
+        for item in items:
+            if "integration" in item.keywords:
+                item.add_marker(skip_integration)

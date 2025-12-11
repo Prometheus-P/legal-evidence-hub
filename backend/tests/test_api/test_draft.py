@@ -130,31 +130,31 @@ class TestDraftPreview:
         # Then: Success with default sections
         assert response.status_code == status.HTTP_200_OK
 
-    def test_should_return_404_for_nonexistent_case(self, client, auth_headers):
+    def test_should_return_403_for_nonexistent_case(self, client, auth_headers):
         """
-        Given: Case does not exist
+        Given: Case does not exist (or user has no access)
         When: POST /cases/{case_id}/draft-preview is called
         Then:
-            - Returns 404 Not Found
+            - Returns 403 Forbidden (prevents info leakage about case existence)
         """
-        # When: POST to non-existent case
+        # When: POST to non-existent case (user has no access)
         response = client.post("/cases/case_nonexistent/draft-preview", json={}, headers=auth_headers)
 
-        # Then: 404 Not Found
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Then: 403 Forbidden (prevents information leakage about case existence)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_should_require_case_access_permission(self, client, test_user, auth_headers):
         """
         Given: User does not have access to a case
         When: POST /cases/{case_id}/draft-preview is called
         Then:
-            - Returns 403 Forbidden (or 404 if case doesn't exist)
+            - Returns 403 Forbidden (prevents info leakage about case existence)
         """
-        # When: POST to non-existent case (no permission)
+        # When: POST to non-existent case (user has no access)
         response = client.post("/cases/case_other_user/draft-preview", json={}, headers=auth_headers)
 
-        # Then: 404 (case doesn't exist)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        # Then: 403 Forbidden (prevents information leakage about case existence)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_should_require_authentication(self, client):
         """

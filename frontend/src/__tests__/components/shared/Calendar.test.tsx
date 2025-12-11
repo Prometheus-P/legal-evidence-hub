@@ -28,8 +28,9 @@ jest.mock('next/navigation', () => ({
 const mockEvents = [
   {
     id: 'event-1',
+    user_id: 'user-1',
     title: '재판 출석',
-    event_type: 'court',
+    event_type: 'court' as const,
     start_time: '2024-01-15T09:00:00Z',
     end_time: '2024-01-15T11:00:00Z',
     case_id: 'case-1',
@@ -39,8 +40,9 @@ const mockEvents = [
   },
   {
     id: 'event-2',
+    user_id: 'user-1',
     title: '의뢰인 상담',
-    event_type: 'meeting',
+    event_type: 'meeting' as const,
     start_time: '2024-01-16T14:00:00Z',
     end_time: '2024-01-16T15:00:00Z',
     case_id: 'case-2',
@@ -49,8 +51,9 @@ const mockEvents = [
   },
   {
     id: 'event-3',
+    user_id: 'user-1',
     title: '서류 제출 마감',
-    event_type: 'deadline',
+    event_type: 'deadline' as const,
     start_time: '2024-01-20T18:00:00Z',
     color: '#f59e0b',
   },
@@ -416,8 +419,9 @@ describe('Calendar Component', () => {
       const testDate = new Date('2024-01-15');
       const courtEvent = [{
         id: 'court-1',
+        user_id: 'user-1',
         title: 'Court Event',
-        event_type: 'court',
+        event_type: 'court' as const,
         start_time: '2024-01-15T09:00:00Z',
         color: '#ef4444',
       }];
@@ -439,8 +443,9 @@ describe('Calendar Component', () => {
       const testDate = new Date('2024-01-15');
       const meetingEvent = [{
         id: 'meeting-1',
+        user_id: 'user-1',
         title: 'Meeting Event',
-        event_type: 'meeting',
+        event_type: 'meeting' as const,
         start_time: '2024-01-15T09:00:00Z',
         color: '#3b82f6',
       }];
@@ -461,8 +466,9 @@ describe('Calendar Component', () => {
       const testDate = new Date('2024-01-15');
       const deadlineEvent = [{
         id: 'deadline-1',
+        user_id: 'user-1',
         title: 'Deadline Event',
-        event_type: 'deadline',
+        event_type: 'deadline' as const,
         start_time: '2024-01-15T18:00:00Z',
         color: '#f59e0b',
       }];

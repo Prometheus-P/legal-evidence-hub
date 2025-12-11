@@ -21,7 +21,7 @@ export default function LawyerInvestigatorsPage() {
     page,
     pageSize,
     totalPages,
-    loading,
+    isLoading,
     error,
     setFilters,
     setPage,
@@ -130,14 +130,14 @@ export default function LawyerInvestigatorsPage() {
       )}
 
       {/* Loading State */}
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--color-primary)]" />
         </div>
       )}
 
       {/* Investigator Table */}
-      {!loading && !error && (
+      {!isLoading && !error && (
         <div className="bg-white border border-[var(--color-border-default)] rounded-xl overflow-hidden shadow-sm">
           <table className="min-w-full divide-y divide-[var(--color-border-default)]">
             <thead className="bg-[var(--color-bg-secondary)]">

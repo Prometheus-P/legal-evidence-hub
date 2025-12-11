@@ -26,7 +26,7 @@ export default function LawyerBillingPage() {
     total,
     totalPending,
     totalPaid,
-    loading,
+    isLoading,
     error,
     filters,
     setFilters,
@@ -174,7 +174,7 @@ export default function LawyerBillingPage() {
           total={total}
           totalPending={totalPending}
           totalPaid={totalPaid}
-          loading={loading}
+          loading={isLoading}
           onFilterChange={handleFilterChange}
           onEdit={handleEdit}
           onDelete={handleDelete}

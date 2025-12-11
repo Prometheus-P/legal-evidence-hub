@@ -26,6 +26,7 @@ const mockInvoice: Invoice = {
   id: 'inv_001',
   case_id: 'case_001',
   client_id: 'client_001',
+  lawyer_id: 'lawyer_001',
   amount: '500000',
   status: 'pending',
   description: '착수금',

@@ -20,3 +20,6 @@ export {
   useEvidencePolling,
   useSingleEvidencePolling,
 } from './useEvidencePolling';
+
+// Error handling & retry
+export { useRetry, retryOperation } from './useRetry';

@@ -545,7 +545,7 @@ class VectorStore:
 
         try:
             # Get all points for this case
-            results, _ = self.client.scroll(
+            scroll_result = self.client.scroll(
                 collection_name=collection,
                 scroll_filter=Filter(
                     must=[
@@ -558,6 +558,12 @@ class VectorStore:
                 limit=100,
                 with_payload=True
             )
+
+            # Handle scroll result safely (Mock may return different types)
+            if isinstance(scroll_result, tuple) and len(scroll_result) >= 2:
+                results, _ = scroll_result
+            else:
+                results = scroll_result if scroll_result else []
 
             if not results:
                 return True
@@ -707,7 +713,7 @@ class VectorStore:
             offset = None
 
             while True:
-                points, offset = self.client.scroll(
+                scroll_result = self.client.scroll(
                     collection_name=collection,
                     scroll_filter=Filter(
                         must=[
@@ -721,6 +727,13 @@ class VectorStore:
                     offset=offset,
                     with_payload=True
                 )
+
+                # Handle scroll result safely (Mock may return different types)
+                if isinstance(scroll_result, tuple) and len(scroll_result) >= 2:
+                    points, offset = scroll_result
+                else:
+                    points = scroll_result if scroll_result else []
+                    offset = None
 
                 for point in points:
                     payload = point.payload or {}
