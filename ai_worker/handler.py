@@ -8,7 +8,6 @@ Storage Architecture (Lambda Compatible):
 """
 
 import json
-import logging
 import os
 import urllib.parse
 import uuid
