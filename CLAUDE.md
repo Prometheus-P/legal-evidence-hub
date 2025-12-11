@@ -51,6 +51,87 @@ These rules must NEVER be violated under any circumstances:
    - Commit messages should contain only the actual change description
    - This applies to all commits, PRs, and any git operations
 
+## 작업 수행 체크리스트 (Development Workflow Checklist)
+
+작업 시작 전/중/후 반드시 확인해야 할 항목:
+
+### 1. 작업브랜치 확인 (Branch Verification) - 필수
+```bash
+git branch --show-current  # 현재 브랜치 확인
+git status                 # 작업 상태 확인
+```
+- 올바른 feature 브랜치에서 작업 중인지 확인
+- `main`, `dev` 브랜치에서 직접 작업 금지
+
+### 2. 병렬개발 인지 (Parallel Development Awareness) - 필수
+- 다른 팀원(H, L, P)이 동시에 작업 중인 태스크 파악
+- `specs/{feature}/tasks.md` 에서 담당자별 태스크 확인
+- 충돌 가능성 있는 파일 미리 확인
+- 병렬 작업 시 커밋 전 `git pull --rebase` 수행
+
+### 3. Speckit 준수 (Speckit Compliance) - 필수
+- 모든 기능 구현은 `specs/{feature}/` 디렉토리의 문서 기반
+- 주요 speckit 파일:
+  - `spec.md`: 요구사항 정의
+  - `plan.md`: 구현 계획
+  - `tasks.md`: 태스크 목록 및 상태
+  - `data-model.md`: 데이터 모델
+  - `contracts/*.yaml`: API 계약
+  - `checklists/`: 검증 체크리스트
+- Slash command 활용: `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`
+
+### 4. Plan & Task 관리 (Plan & Task Management) - 필수
+- 작업 시작 전: `tasks.md`에서 해당 태스크 상태 확인
+- 작업 중: TodoWrite 도구로 진행 상황 추적
+- 작업 완료 후:
+  - `tasks.md` 상태 업데이트 (필요시)
+  - GitHub Issue close (완료 코멘트 포함)
+  ```bash
+  gh issue close {number} --comment "Completed in commit {hash}"
+  ```
+
+### 5. TDD 수행 (TDD Compliance) - 필수
+- **RED**: 테스트 먼저 작성 (실패하는 테스트)
+- **GREEN**: 테스트 통과하는 최소 구현
+- **REFACTOR**: 코드 정리
+- 테스트 파일 위치:
+  - Frontend: `frontend/src/__tests__/components/{feature}/`
+  - Backend: `backend/tests/`
+  - AI Worker: `ai_worker/tests/`
+- 커밋 전 테스트 실행 필수:
+  ```bash
+  # Frontend
+  npm test -- {test-file}
+
+  # Backend
+  pytest {test-file}
+  ```
+
+### 6. Issue 확인 및 정리 (Issue Verification & Cleanup) - 필수
+- 작업 전: 관련 GitHub Issue 번호 확인
+- 작업 완료 후:
+  - Issue close with comment
+  - 커밋 메시지에 Issue 번호 참조 (선택)
+- Issue 상태 확인:
+  ```bash
+  gh issue view {number} --json state,title
+  gh issue list --search "label:phase-{n}"
+  ```
+
+### 7. 다음 작업 제안 (Next Task Suggestion) - 권장
+- 현재 태스크 완료 후, 다음 우선순위 태스크 제안
+- `tasks.md`에서 `[ ]` (미완료) 태스크 중 의존성 해결된 항목 확인
+- 담당 역할(P/H/L)에 맞는 태스크 우선 제안
+
+### 작업 완료 시 최종 체크리스트
+```
+□ 테스트 작성 및 통과 확인
+□ 코드 커밋 (의미있는 메시지)
+□ 원격 브랜치에 push
+□ GitHub Issue close
+□ 다음 태스크 확인/제안
+```
+
 ## Common Development Commands
 
 ### Backend (FastAPI)
