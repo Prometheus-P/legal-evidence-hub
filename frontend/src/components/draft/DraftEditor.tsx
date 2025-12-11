@@ -103,9 +103,8 @@ interface MenuBarProps {
 }
 
 const MenuBar = ({ editor }: MenuBarProps) => {
-  if (!editor) return null;
-
   const setLink = useCallback(() => {
+    if (!editor) return;
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('URL', previousUrl);
 
@@ -118,6 +117,8 @@ const MenuBar = ({ editor }: MenuBarProps) => {
 
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
+
+  if (!editor) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-200 bg-neutral-50 rounded-t-xl">
