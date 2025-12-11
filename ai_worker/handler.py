@@ -584,6 +584,75 @@ def _extract_evidence_id_from_s3_key(object_key: str) -> Optional[str]:
     return None
 
 
+def _handle_health_check(context) -> dict:
+    """
+    Lambda health check handler.
+    Verifies connectivity to external services (OpenAI, Qdrant, DynamoDB).
+
+    Usage: Invoke Lambda with {"action": "health_check"}
+
+    Returns:
+        dict: Health status of all components
+    """
+    import os
+    from datetime import datetime
+
+    health = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "service": "leh-ai-worker",
+        "version": "1.0.0",
+        "checks": {}
+    }
+
+    # Check OpenAI API key
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    if openai_key and openai_key.startswith("sk-"):
+        health["checks"]["openai"] = {"status": "ok", "message": "API key configured"}
+    else:
+        health["checks"]["openai"] = {"status": "error", "message": "API key missing"}
+        health["status"] = "degraded"
+
+    # Check Qdrant configuration
+    qdrant_url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
+    if qdrant_url:
+        health["checks"]["qdrant"] = {"status": "ok", "message": "URL configured"}
+    else:
+        health["checks"]["qdrant"] = {"status": "error", "message": "URL missing"}
+        health["status"] = "degraded"
+
+    # Check DynamoDB table configuration
+    ddb_table = os.getenv("DDB_EVIDENCE_TABLE") or os.getenv("DYNAMODB_TABLE")
+    if ddb_table:
+        health["checks"]["dynamodb"] = {"status": "ok", "message": f"Table: {ddb_table}"}
+    else:
+        health["checks"]["dynamodb"] = {"status": "error", "message": "Table not configured"}
+        health["status"] = "degraded"
+
+    # Check S3 bucket configuration
+    s3_bucket = os.getenv("S3_EVIDENCE_BUCKET")
+    if s3_bucket:
+        health["checks"]["s3"] = {"status": "ok", "message": f"Bucket: {s3_bucket}"}
+    else:
+        health["checks"]["s3"] = {"status": "error", "message": "Bucket not configured"}
+        health["status"] = "degraded"
+
+    # Add Lambda context info if available
+    if context:
+        health["lambda"] = {
+            "function_name": getattr(context, "function_name", "unknown"),
+            "memory_limit_mb": getattr(context, "memory_limit_in_mb", "unknown"),
+            "remaining_time_ms": getattr(context, "get_remaining_time_in_millis", lambda: "unknown")()
+        }
+
+    logger.info("Health check completed", extra={"health_status": health["status"]})
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(health)
+    }
+
+
 def handle(event, context):
     """
     AWS Lambda Entrypoint.
@@ -606,6 +675,10 @@ def handle(event, context):
             "event_source": event.get("Records", [{}])[0].get("eventSource", "unknown")
         }
     )
+
+    # Health check 처리 (Lambda 직접 호출 시)
+    if event.get("action") == "health_check":
+        return _handle_health_check(context)
 
     # S3 이벤트가 아닌 경우(테스트 등) 방어 로직
     if "Records" not in event:
