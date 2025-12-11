@@ -47,6 +47,7 @@ from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger
 from src.analysis.summarizer import EvidenceSummarizer
 from src.utils.logging_filter import SensitiveDataFilter
+from src.utils.logging import setup_lambda_logging
 from src.utils.embeddings import get_embedding_with_fallback  # Embedding utility with fallback
 from src.utils.hash import calculate_file_hash  # Hash utility for idempotency
 from src.utils.observability import (
@@ -62,9 +63,9 @@ from src.utils.cost_guard import (
     get_file_type_from_extension
 )
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addFilter(SensitiveDataFilter())
+# Setup structured JSON logging for Lambda
+# Outputs CloudWatch Logs Insights compatible JSON format
+logger = setup_lambda_logging(SensitiveDataFilter())
 
 
 def route_parser(file_extension: str) -> Optional[Any]:
@@ -587,7 +588,17 @@ def handle(event, context):
     AWS Lambda Entrypoint.
     S3 이벤트를 수신하여 파일 정보를 파싱하고 AI 파이프라인을 시작합니다.
     """
-    logger.info(f"Received event: {json.dumps(event)}")
+    # Extract trace_id from Lambda context for request tracking
+    trace_id = getattr(context, 'aws_request_id', None) if context else None
+
+    logger.info(
+        "Received S3 event",
+        extra={
+            "trace_id": trace_id,
+            "record_count": len(event.get("Records", [])),
+            "event_source": event.get("Records", [{}])[0].get("eventSource", "unknown")
+        }
+    )
 
     # S3 이벤트가 아닌 경우(테스트 등) 방어 로직
     if "Records" not in event:
@@ -606,16 +617,51 @@ def handle(event, context):
             if object_key:
                 object_key = urllib.parse.unquote_plus(object_key)
 
-            logger.info(f"Processing file: s3://{bucket_name}/{object_key}")
+            logger.info(
+                "Processing file",
+                extra={
+                    "trace_id": trace_id,
+                    "bucket": bucket_name,
+                    "key": object_key,
+                    "file_extension": Path(object_key).suffix.lower() if object_key else None
+                }
+            )
 
             # 2. 파일 처리 로직 실행 (Strategy Pattern 적용)
             result = route_and_process(bucket_name, object_key)
             results.append(result)
 
+            logger.info(
+                "File processed successfully",
+                extra={
+                    "trace_id": trace_id,
+                    "key": object_key,
+                    "status": result.get("status", "unknown")
+                }
+            )
+
         except Exception as e:
-            logger.error(f"Error processing record: {e}", exc_info=True)
+            logger.error(
+                "Error processing record",
+                extra={
+                    "trace_id": trace_id,
+                    "error_type": type(e).__name__,
+                    "error_message": str(e)
+                },
+                exc_info=True
+            )
             # 실제 운영 시에는 여기서 DLQ로 보내거나 에러를 다시 raise 해야 함
             results.append({"error": str(e), "status": "failed"})
+
+    logger.info(
+        "Lambda execution complete",
+        extra={
+            "trace_id": trace_id,
+            "total_records": len(results),
+            "successful": sum(1 for r in results if r.get("status") != "failed"),
+            "failed": sum(1 for r in results if r.get("status") == "failed")
+        }
+    )
 
     return {
         "statusCode": 200,
