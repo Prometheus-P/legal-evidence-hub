@@ -125,10 +125,16 @@ def test_env():
     For local development, uses SQLite database
     """
     import os as os_module
+    import gc
 
     # Clean up any existing test database (for local SQLite)
+    gc.collect()  # Force garbage collection to release file handles
     if os_module.path.exists("./test.db"):
-        os_module.remove("./test.db")
+        try:
+            os_module.remove("./test.db")
+        except PermissionError:
+            # Windows file locking - will be overwritten
+            pass
 
     # Default test values - only used if not already set in environment
     # Use SQLite for local testing, PostgreSQL for CI
@@ -182,8 +188,16 @@ def test_env():
             os.environ[key] = original_value
 
     # Clean up test database file (for local SQLite)
+    # Note: On Windows, SQLite file may be locked by another process
+    import gc
+    gc.collect()  # Force garbage collection to release file handles
+
     if os_module.path.exists("./test.db"):
-        os_module.remove("./test.db")
+        try:
+            os_module.remove("./test.db")
+        except PermissionError:
+            # Windows file locking - file will be overwritten on next run
+            pass
 
 
 @pytest.fixture(scope="function")

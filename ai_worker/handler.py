@@ -9,6 +9,7 @@ Storage Architecture (Lambda Compatible):
 
 import json
 import os
+import tempfile
 import urllib.parse
 import uuid
 from datetime import datetime, timezone
@@ -167,7 +168,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # S3에서 파일 다운로드
         with tracker.stage(ProcessingStage.DOWNLOAD) as stage:
             s3_client = boto3.client('s3')
-            local_path = f"/tmp/{file_path.name}"
+            # OS 호환 임시 경로 사용 (Windows: %TEMP%, Linux: /tmp)
+            local_path = os.path.join(tempfile.gettempdir(), file_path.name)
 
             # 임시 디렉토리가 없으면 생성
             os.makedirs(os.path.dirname(local_path), exist_ok=True)

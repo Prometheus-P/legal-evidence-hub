@@ -334,11 +334,17 @@ class TestHandlerIdempotency:
         """Test handler skips already processed evidence"""
         from handler import route_and_process
 
-        # Setup: evidence already processed
-        mock_all_dependencies['metadata_store'].check_evidence_processed.return_value = True
+        # Setup: evidence already processed (handler uses get_evidence, not check_evidence_processed)
+        mock_all_dependencies['metadata_store'].get_evidence.return_value = {
+            'evidence_id': 'ev_abc123',
+            'status': 'processed'
+        }
 
-        # Mock file download
+        # Mock file system operations (download creates file in temp)
         with patch('os.makedirs'), \
+             patch('os.path.getsize', return_value=1024), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.remove'), \
              patch('builtins.open', MagicMock()):
 
             result = route_and_process(
@@ -347,20 +353,24 @@ class TestHandlerIdempotency:
             )
 
         assert result['status'] == 'skipped'
-        assert result['reason'] == 'already_processed'
+        assert result['reason'] == 'already_processed_evidence_id'
 
     def test_handler_skips_duplicate_hash(self, mock_all_dependencies):
         """Test handler skips file with duplicate hash"""
         from handler import route_and_process
 
-        # Setup: not processed yet, but hash exists
-        mock_all_dependencies['metadata_store'].check_evidence_processed.return_value = False
+        # Setup: evidence_id not found, but hash exists
+        mock_all_dependencies['metadata_store'].get_evidence.return_value = None
         mock_all_dependencies['metadata_store'].check_hash_exists.return_value = {
             'evidence_id': 'ev_existing',
             'status': 'processed'
         }
 
+        # Mock file system operations (download creates file in temp)
         with patch('os.makedirs'), \
+             patch('os.path.getsize', return_value=1024), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.remove'), \
              patch('builtins.open', MagicMock()):
 
             result = route_and_process(
@@ -369,4 +379,4 @@ class TestHandlerIdempotency:
             )
 
         assert result['status'] == 'skipped'
-        assert result['reason'] == 'duplicate_hash'
+        assert result['reason'] == 'already_processed_hash'
