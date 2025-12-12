@@ -6,8 +6,15 @@
 import ProcedureClient from './ProcedureClient';
 
 // Required for static export with dynamic routes
+// Includes E2E test IDs (test-case-001, test-case-empty)
 export function generateStaticParams() {
-  return [{ id: '1' }, { id: '2' }, { id: '3' }];
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: 'test-case-001' },
+    { id: 'test-case-empty' },
+  ];
 }
 
 // Allow dynamic routes not listed in generateStaticParams

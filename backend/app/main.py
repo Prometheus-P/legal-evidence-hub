@@ -271,6 +271,10 @@ app.include_router(calendar.router, prefix=API_PREFIX, tags=["Calendar"])
 # Summary 라우터 (US8 - Progress Summary Cards)
 app.include_router(summary.router, prefix=API_PREFIX, tags=["Summary"])
 
+# 012-precedent-integration: Precedent Search 라우터 (T023)
+from app.api import precedent
+app.include_router(precedent.router, prefix=API_PREFIX, tags=["Precedent"])
+
 # Admin 라우터 (User Management & Audit Log)
 app.include_router(admin.router, prefix=API_PREFIX, tags=["Admin"])
 # L-work Demo API (테스트 후 제거 가능)
