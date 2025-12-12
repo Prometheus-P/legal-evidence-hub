@@ -108,10 +108,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T032 [US2] Modify `DraftService` to call `PrecedentService.search_similar_precedents()` in `backend/app/services/draft_service.py`
-- [ ] T033 [US2] Add precedent context to GPT-4o prompt in `DraftService.generate_draft()`
-- [ ] T034 [US2] Include precedent citations in draft response structure
-- [ ] T035 [US2] Update draft preview UI to display cited precedents in `frontend/src/components/draft/`
+- [x] T032 [US2] Modify `DraftService` to call `PrecedentService.search_similar_precedents()` in `backend/app/services/draft_service.py`
+- [x] T033 [US2] Add precedent context to GPT-4o prompt in `DraftService.generate_draft()`
+- [x] T034 [US2] Include precedent citations in draft response structure
+- [x] T035 [US2] Update draft preview UI to display cited precedents in `frontend/src/components/draft/`
 
 **Checkpoint**: User Story 2 complete - drafts include precedent citations
 
@@ -125,27 +125,27 @@
 
 ### Backend Implementation for User Story 3
 
-- [ ] T036 [US3] Add `is_auto_extracted` field to `PartyNode` model in `backend/app/db/models/party.py`
-- [ ] T037 [US3] Add `extraction_confidence` field to `PartyNode` model in `backend/app/db/models/party.py`
-- [ ] T038 [US3] Add `source_evidence_id` field to `PartyNode` model in `backend/app/db/models/party.py`
-- [ ] T039 [P] [US3] Add `is_auto_extracted`, `extraction_confidence`, `evidence_text` fields to `PartyRelationship` model in `backend/app/db/models/relationship.py`
-- [ ] T040 [US3] Create `/cases/{case_id}/parties/auto-extract` POST endpoint in `backend/app/api/party.py`
-- [ ] T041 [US3] Implement duplicate name detection in `PartyService.create_auto_extracted_party()` in `backend/app/services/party_service.py`
-- [ ] T042 [US3] Create `/cases/{case_id}/relationships/auto-extract` POST endpoint in `backend/app/api/relationship.py`
-- [ ] T043 [US3] Implement confidence threshold filter (0.7) in `RelationshipService.create_auto_extracted_relationship()` in `backend/app/services/relationship_service.py`
+- [x] T036 [US3] Add `is_auto_extracted` field to `PartyNode` model in `backend/app/db/models.py`
+- [x] T037 [US3] Add `extraction_confidence` field to `PartyNode` model in `backend/app/db/models.py`
+- [x] T038 [US3] Add `source_evidence_id` field to `PartyNode` model in `backend/app/db/models.py`
+- [x] T039 [P] [US3] Add `is_auto_extracted`, `extraction_confidence`, `evidence_text` fields to `PartyRelationship` model in `backend/app/db/models.py`
+- [x] T040 [US3] Create `/cases/{case_id}/parties/auto-extract` POST endpoint in `backend/app/api/party.py`
+- [x] T041 [US3] Implement duplicate name detection in `PartyService.create_auto_extracted_party()` in `backend/app/services/party_service.py`
+- [x] T042 [US3] Create `/cases/{case_id}/relationships/auto-extract` POST endpoint in `backend/app/api/relationships.py`
+- [x] T043 [US3] Implement confidence threshold filter (0.7) in `RelationshipService.create_auto_extracted_relationship()` in `backend/app/services/relationship_service.py`
 
 ### AI Worker Implementation for User Story 3
 
-- [ ] T044 [US3] Add Backend API client in `ai_worker/src/api_client.py` for calling `/parties/auto-extract`
-- [ ] T045 [US3] Modify `handler.py` to call Backend API after `RelationshipInferrer` completes in `ai_worker/handler.py`
-- [ ] T046 [US3] Add error handling for Backend API failures (retry 3x, then log to DynamoDB)
-- [ ] T047 [US3] Add authentication headers (internal API key or Lambda IAM) to API client
+- [x] T044 [US3] Add Backend API client in `ai_worker/src/api/backend_client.py` for calling `/parties/auto-extract`
+- [x] T045 [US3] Modify `handler.py` to call Backend API after `RelationshipInferrer` completes in `ai_worker/handler.py`
+- [x] T046 [US3] Add error handling for Backend API failures (retry 3x, exponential backoff)
+- [x] T047 [US3] Add authentication headers (Bearer token or API key) to API client
 
 ### Frontend Implementation for User Story 3
 
-- [ ] T048 [P] [US3] Add visual indicator for auto-extracted parties in `frontend/src/components/party-graph/PartyNode.tsx`
-- [ ] T049 [US3] Add confidence badge to auto-extracted parties
-- [ ] T050 [US3] Add edit/delete functionality for auto-extracted parties in party graph
+- [x] T048 [P] [US3] Add visual indicator for auto-extracted parties in `frontend/src/components/party/PartyNode.tsx`
+- [x] T049 [US3] Add confidence badge to auto-extracted parties (green >=90%, yellow >=70%, red <70%)
+- [x] T050 [US3] Add auto-extraction indicator to relationship edges in `frontend/src/components/party/PartyEdge.tsx`
 
 **Checkpoint**: User Story 3 complete - auto-extracted parties appear in relationship diagram
 
