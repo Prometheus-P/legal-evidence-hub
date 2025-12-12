@@ -68,6 +68,10 @@ function toFlowNodes(parties: PartyNodeData[]): PartyNodeType[] {
       alias: party.alias,
       occupation: party.occupation,
       birth_year: party.birth_year,
+      // 012-precedent-integration: T048-T050 자동 추출 필드 전달
+      is_auto_extracted: party.is_auto_extracted,
+      extraction_confidence: party.extraction_confidence,
+      source_evidence_id: party.source_evidence_id,
     },
   }));
 }
@@ -83,6 +87,10 @@ function toFlowEdges(relationships: PartyRelationship[]): PartyEdgeType[] {
       start_date: rel.start_date,
       end_date: rel.end_date,
       notes: rel.notes,
+      // 012-precedent-integration: T048-T050 자동 추출 필드 전달
+      is_auto_extracted: rel.is_auto_extracted,
+      extraction_confidence: rel.extraction_confidence,
+      evidence_text: rel.evidence_text,
     },
   }));
 }

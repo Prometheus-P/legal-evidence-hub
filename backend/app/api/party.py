@@ -17,7 +17,9 @@ from app.db.models import PartyType
 from app.db.schemas import (
     PartyNodeCreate,
     PartyNodeUpdate,
-    PartyNodeResponse
+    PartyNodeResponse,
+    AutoExtractedPartyRequest,
+    AutoExtractedPartyResponse
 )
 from app.services.party_service import PartyService
 
@@ -179,3 +181,44 @@ async def get_graph(
 
     service = PartyService(db)
     return service.get_graph(case_id)
+
+
+# ============================================
+# 012-precedent-integration: T040 자동 추출 엔드포인트
+# ============================================
+@router.post(
+    "/auto-extract",
+    response_model=AutoExtractedPartyResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Save auto-extracted party from AI Worker"
+)
+async def auto_extract_party(
+    case_id: str,
+    data: AutoExtractedPartyRequest,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    """
+    Save a party auto-extracted by AI Worker.
+
+    - Checks for duplicate names (similarity threshold 0.8)
+    - Minimum confidence threshold: 0.7
+    - Requires write access to the case.
+
+    Returns:
+        - id: New or existing party ID
+        - is_duplicate: True if matched existing party
+        - matched_party_id: Existing party ID if duplicate
+    """
+    verify_case_write_access(case_id, db, user_id)
+
+    # Confidence threshold check
+    if data.extraction_confidence < 0.7:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Extraction confidence must be at least 0.7"
+        )
+
+    service = PartyService(db)
+    return service.create_auto_extracted_party(case_id, data, user_id)

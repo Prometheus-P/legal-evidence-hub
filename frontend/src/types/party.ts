@@ -35,6 +35,10 @@ export interface PartyNode {
   occupation?: string;
   position: Position;
   extra_data?: Record<string, unknown>;
+  // 012-precedent-integration: T048-T050 자동 추출 필드
+  is_auto_extracted?: boolean;
+  extraction_confidence?: number;
+  source_evidence_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -67,6 +71,10 @@ export interface PartyRelationship {
   start_date?: string;
   end_date?: string;
   notes?: string;
+  // 012-precedent-integration: T048-T050 자동 추출 필드
+  is_auto_extracted?: boolean;
+  extraction_confidence?: number;
+  evidence_text?: string;
   created_at: string;
   updated_at: string;
 }

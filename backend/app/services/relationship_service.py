@@ -12,7 +12,9 @@ from app.db.schemas import (
     RelationshipResponse,
     PartyGraphResponse,
     PartyNodeResponse,
-    Position
+    Position,
+    AutoExtractedRelationshipRequest,
+    AutoExtractedRelationshipResponse
 )
 from app.repositories.relationship_repository import RelationshipRepository
 from app.repositories.party_repository import PartyRepository
@@ -252,6 +254,10 @@ class RelationshipService:
             start_date=relationship.start_date,
             end_date=relationship.end_date,
             notes=relationship.notes,
+            # 012-precedent-integration: T039 자동 추출 필드
+            is_auto_extracted=relationship.is_auto_extracted,
+            extraction_confidence=relationship.extraction_confidence,
+            evidence_text=relationship.evidence_text,
             created_at=relationship.created_at,
             updated_at=relationship.updated_at
         )
@@ -270,4 +276,72 @@ class RelationshipService:
             extra_data=party.extra_data,
             created_at=party.created_at,
             updated_at=party.updated_at
+        )
+
+    # ============================================
+    # 012-precedent-integration: T042-T043 자동 추출 메서드
+    # ============================================
+    def create_auto_extracted_relationship(
+        self,
+        case_id: str,
+        data: AutoExtractedRelationshipRequest,
+        user_id: str
+    ) -> AutoExtractedRelationshipResponse:
+        """
+        Create relationship from AI Worker extraction (T042-T043)
+
+        Args:
+            case_id: Case ID
+            data: Auto-extracted relationship data
+            user_id: User performing the action
+
+        Returns:
+            AutoExtractedRelationshipResponse
+        """
+        # Verify case exists
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError(f"케이스를 찾을 수 없습니다: {case_id}")
+
+        # T043: Confidence threshold check (already enforced in schema, but double-check)
+        if data.extraction_confidence < 0.7:
+            raise ValidationError("추출 신뢰도는 0.7 이상이어야 합니다")
+
+        # Validate both parties exist
+        source_party = self.party_repo.get_by_id(data.source_party_id)
+        if not source_party:
+            raise NotFoundError(f"출발 인물을 찾을 수 없습니다: {data.source_party_id}")
+
+        target_party = self.party_repo.get_by_id(data.target_party_id)
+        if not target_party:
+            raise NotFoundError(f"도착 인물을 찾을 수 없습니다: {data.target_party_id}")
+
+        # Validate parties belong to the case
+        if source_party.case_id != case_id or target_party.case_id != case_id:
+            raise ValidationError("인물이 해당 케이스에 속하지 않습니다")
+
+        # Create auto-extracted relationship
+        relationship = PartyRelationship(
+            case_id=case_id,
+            source_party_id=data.source_party_id,
+            target_party_id=data.target_party_id,
+            type=data.type,
+            is_auto_extracted=True,
+            extraction_confidence=data.extraction_confidence,
+            evidence_text=data.evidence_text
+        )
+
+        self.db.add(relationship)
+        self.db.commit()
+        self.db.refresh(relationship)
+
+        logger.info(
+            f"Auto-extracted relationship created: {relationship.id} "
+            f"({source_party.name} -> {target_party.name}, type={data.type.value}) "
+            f"for case {case_id}"
+        )
+
+        return AutoExtractedRelationshipResponse(
+            id=relationship.id,
+            created=True
         )

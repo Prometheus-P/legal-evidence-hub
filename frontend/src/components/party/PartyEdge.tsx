@@ -21,6 +21,10 @@ export interface PartyEdgeData {
   start_date?: string;
   end_date?: string;
   notes?: string;
+  // 012-precedent-integration: T048-T050 자동 추출 필드
+  is_auto_extracted?: boolean;
+  extraction_confidence?: number;
+  evidence_text?: string;
   onClick?: (id: string) => void;
   [key: string]: unknown;
 }
@@ -129,7 +133,12 @@ function PartyEdgeComponent({
               ${selected ? 'ring-2 ring-blue-400' : ''}
             `}
             style={{ borderColor: style.stroke }}
+            title={data?.is_auto_extracted ? `AI 자동 추출 (신뢰도: ${Math.round((data.extraction_confidence || 0.7) * 100)}%)` : undefined}
           >
+            {/* 012-precedent-integration: T048-T050 자동 추출 표시 */}
+            {data?.is_auto_extracted && (
+              <span className="mr-1 text-purple-500" title="AI 자동 추출">🤖</span>
+            )}
             <span className="mr-1">{style.label}</span>
             {typeLabel}
             {data?.start_date && (

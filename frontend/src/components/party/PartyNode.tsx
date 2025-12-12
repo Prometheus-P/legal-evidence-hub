@@ -18,12 +18,23 @@ export interface PartyNodeData {
   occupation?: string;
   birth_year?: number;
   evidenceCount?: number;
+  // 012-precedent-integration: T048-T050 자동 추출 필드
+  is_auto_extracted?: boolean;
+  extraction_confidence?: number;
+  source_evidence_id?: string;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   [key: string]: unknown;
 }
 
 export type PartyNodeType = Node<PartyNodeData, 'party'>;
+
+// 012-precedent-integration: T048-T050 신뢰도 배지 색상
+function getConfidenceBadgeColor(confidence: number): string {
+  if (confidence >= 0.9) return 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300';
+  if (confidence >= 0.7) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300';
+  return 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300';
+}
 
 // Color mapping for party types (light and dark mode)
 const PARTY_COLORS: Record<PartyType, { bg: string; border: string; icon: string }> = {
@@ -97,6 +108,16 @@ function PartyNodeComponent({ data, selected }: NodeProps<PartyNodeType>) {
         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
           {colors.icon} {label}
         </span>
+
+        {/* 012-precedent-integration: T048-T050 자동 추출 배지 */}
+        {data.is_auto_extracted && (
+          <span
+            className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${getConfidenceBadgeColor(data.extraction_confidence || 0.7)}`}
+            title={`AI 자동 추출 (신뢰도: ${Math.round((data.extraction_confidence || 0.7) * 100)}%)`}
+          >
+            🤖 AI {Math.round((data.extraction_confidence || 0.7) * 100)}%
+          </span>
+        )}
 
         {/* Name */}
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 text-center">

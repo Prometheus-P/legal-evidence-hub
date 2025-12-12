@@ -18,7 +18,9 @@ from app.db.schemas import (
     RelationshipCreate,
     RelationshipUpdate,
     RelationshipResponse,
-    PartyGraphResponse
+    PartyGraphResponse,
+    AutoExtractedRelationshipRequest,
+    AutoExtractedRelationshipResponse
 )
 from app.services.relationship_service import RelationshipService
 
@@ -220,3 +222,34 @@ async def get_party_graph(
 
     service = RelationshipService(db)
     return service.get_party_graph(case_id)
+
+# ============================================
+# 012-precedent-integration: T042 자동 추출 엔드포인트
+# ============================================
+@router.post(
+    "/relationships/auto-extract",
+    response_model=AutoExtractedRelationshipResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Save auto-extracted relationship from AI Worker"
+)
+async def auto_extract_relationship(
+    case_id: str,
+    data: AutoExtractedRelationshipRequest,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    """
+    Save a relationship auto-extracted by AI Worker.
+
+    - Minimum confidence threshold: 0.7 (enforced in schema)
+    - Validates both parties exist
+    - Requires write access to the case.
+
+    Returns:
+        - id: New relationship ID
+        - created: True if newly created
+    """
+    verify_case_write_access(case_id, db, user_id)
+
+    service = RelationshipService(db)
+    return service.create_auto_extracted_relationship(case_id, data, user_id)
