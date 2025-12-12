@@ -382,11 +382,23 @@ class DraftCitation(BaseModel):
     labels: list[str]
 
 
+class PrecedentCitation(BaseModel):
+    """판례 인용 스키마 (012-precedent-integration: T034)"""
+    case_ref: str  # 사건번호 (예: 2020다12345)
+    court: str  # 법원명
+    decision_date: str  # 선고일 (ISO 8601)
+    summary: str  # 판결 요지
+    key_factors: list[str] = []  # 주요 요인
+    similarity_score: float  # 유사도 점수
+    source_url: Optional[str] = None  # 국가법령정보센터 원문 링크
+
+
 class DraftPreviewResponse(BaseModel):
     """Draft preview response schema"""
     case_id: str
     draft_text: str
     citations: list[DraftCitation]
+    precedent_citations: list[PrecedentCitation] = []  # 012-precedent-integration: T034
     generated_at: datetime
     preview_disclaimer: str = "본 문서는 AI가 생성한 미리보기 초안입니다. 법적 효력이 없으며, 변호사의 검토 및 수정이 필수입니다."
 

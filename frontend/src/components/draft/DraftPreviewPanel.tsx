@@ -21,9 +21,11 @@ import {
     Users,
     CheckCircle,
     AlertCircle,
+    Scale,
+    ExternalLink,
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
-import { DraftCitation } from '@/types/draft';
+import { DraftCitation, PrecedentCitation } from '@/types/draft';
 import { DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import EvidenceTraceabilityPanel from './EvidenceTraceabilityPanel';
 import {
@@ -39,6 +41,7 @@ interface DraftPreviewPanelProps {
     caseId: string;
     draftText: string;
     citations: DraftCitation[];
+    precedentCitations?: PrecedentCitation[];  // 012-precedent-integration: T035
     isGenerating: boolean;
     hasExistingDraft: boolean;
     onGenerate: () => void;
@@ -153,6 +156,7 @@ export default function DraftPreviewPanel({
     caseId,
     draftText,
     citations,
+    precedentCitations = [],  // 012-precedent-integration: T035
     isGenerating,
     hasExistingDraft,
     onGenerate,
@@ -867,6 +871,64 @@ export default function DraftPreviewPanel({
                             </div>
                         ))}
                         {citations.length === 0 && <p className="text-sm text-gray-400">아직 연결된 증거가 없습니다.</p>}
+                    </div>
+                </div>
+
+                {/* 012-precedent-integration: T035 - 유사 판례 인용 섹션 */}
+                <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                        <Scale className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-sm font-semibold text-neutral-700">유사 판례 참고자료</h4>
+                        <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                            {precedentCitations.length}건
+                        </span>
+                    </div>
+                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {precedentCitations.length === 0 && (
+                            <p className="text-sm text-gray-400">참고 가능한 유사 판례가 없습니다.</p>
+                        )}
+                        {precedentCitations.map((precedent, index) => (
+                            <div
+                                key={precedent.case_ref + index}
+                                className="rounded-xl border border-blue-100 bg-white p-3 space-y-2"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-900">{precedent.case_ref}</p>
+                                        <p className="text-xs text-gray-500">{precedent.court} | {precedent.decision_date}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                            유사도 {Math.round(precedent.similarity_score * 100)}%
+                                        </span>
+                                        {precedent.source_url && (
+                                            <a
+                                                href={precedent.source_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 hover:text-blue-700 transition-colors"
+                                                title="법령정보센터에서 원문 보기"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-neutral-700 leading-relaxed line-clamp-3">{precedent.summary}</p>
+                                {precedent.key_factors && precedent.key_factors.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                        {precedent.key_factors.map((factor, idx) => (
+                                            <span
+                                                key={idx}
+                                                className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                                            >
+                                                {factor}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

@@ -17,6 +17,7 @@ from app.db.schemas import (
     DraftPreviewRequest,
     DraftPreviewResponse,
     DraftCitation,
+    PrecedentCitation,  # 012-precedent-integration: T034
     DraftExportFormat,
     DraftCreate,
     DraftUpdate,
@@ -36,6 +37,7 @@ from app.utils.qdrant import (
 from app.utils.openai_client import generate_chat_completion
 from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
+from app.services.precedent_service import PrecedentService  # 012-precedent-integration: T032
 
 # Phase 13 refactored services (available for gradual migration)
 
@@ -58,6 +60,7 @@ class DraftService:
         self.db = db
         self.case_repo = CaseRepository(db)
         self.member_repo = CaseMemberRepository(db)
+        self.precedent_service = PrecedentService(db)  # 012-precedent-integration: T032
 
     def generate_draft_preview(
         self,
@@ -112,16 +115,20 @@ class DraftService:
         evidence_results = rag_results.get("evidence", [])
         legal_results = rag_results.get("legal", [])
 
+        # 3.5 Search similar precedents (012-precedent-integration: T032)
+        precedent_results = self._search_precedents_for_draft(case_id)
+
         # 4. Check if template exists for JSON output mode
         template = get_template_by_type("이혼소장")
         use_json_output = template is not None
 
-        # 5. Build GPT-4o prompt with RAG context
+        # 5. Build GPT-4o prompt with RAG context + precedents (012-precedent-integration: T033)
         prompt_messages = self._build_draft_prompt(
             case=case,
             sections=request.sections,
             evidence_context=evidence_results,
             legal_context=legal_results,
+            precedent_context=precedent_results,  # 012-precedent-integration: T033
             language=request.language,
             style=request.style
         )
@@ -152,10 +159,14 @@ class DraftService:
         # 8. Extract citations from RAG results
         citations = self._extract_citations(evidence_results)
 
+        # 8.5 Extract precedent citations (012-precedent-integration: T034)
+        precedent_citations = self._extract_precedent_citations(precedent_results)
+
         return DraftPreviewResponse(
             case_id=case_id,
             draft_text=draft_text,
             citations=citations,
+            precedent_citations=precedent_citations,  # 012-precedent-integration: T034
             generated_at=datetime.now(timezone.utc)
         )
 
@@ -203,23 +214,142 @@ class DraftService:
             "legal": legal_results
         }
 
+    def _search_precedents_for_draft(self, case_id: str) -> List[dict]:
+        """
+        Search similar precedents for draft generation (012-precedent-integration: T032)
+
+        Args:
+            case_id: Case ID
+
+        Returns:
+            List of precedent dictionaries
+        """
+        try:
+            result = self.precedent_service.search_similar_precedents(
+                case_id=case_id,
+                limit=5,  # Top 5 precedents for draft context
+                min_score=0.5
+            )
+            # Convert PrecedentCase objects to dicts for prompt building
+            return [
+                {
+                    "case_ref": p.case_ref,
+                    "court": p.court,
+                    "decision_date": p.decision_date,
+                    "summary": p.summary,
+                    "key_factors": p.key_factors,
+                    "similarity_score": p.similarity_score,
+                    "division_ratio": {
+                        "plaintiff": p.division_ratio.plaintiff,
+                        "defendant": p.division_ratio.defendant
+                    } if p.division_ratio else None
+                }
+                for p in result.precedents
+            ]
+        except Exception as e:
+            # Log error but don't fail draft generation
+            import logging
+            logging.getLogger(__name__).warning(f"Precedent search failed for case {case_id}: {e}")
+            return []
+
+    def _extract_precedent_citations(self, precedent_results: List[dict]) -> List:
+        """
+        Convert precedent results to PrecedentCitation objects (012-precedent-integration: T034)
+
+        Args:
+            precedent_results: List of precedent dictionaries
+
+        Returns:
+            List of PrecedentCitation objects
+        """
+        from urllib.parse import quote
+
+        citations = []
+        for p in precedent_results:
+            # Generate source_url using 법령한글주소 format
+            case_ref = p.get("case_ref", "")
+            decision_date = p.get("decision_date", "")
+            source_url = None
+
+            if case_ref and decision_date:
+                # Convert ISO date to YYYYMMDD
+                date_val = decision_date.replace("-", "")
+                params = f"{case_ref},{date_val}"
+                encoded_params = quote(params, safe="")
+                source_url = f"https://www.law.go.kr/판례/({encoded_params})"
+
+            citations.append(
+                PrecedentCitation(
+                    case_ref=case_ref,
+                    court=p.get("court", ""),
+                    decision_date=decision_date,
+                    summary=p.get("summary", "")[:300],  # Truncate for citation
+                    key_factors=p.get("key_factors", []),
+                    similarity_score=p.get("similarity_score", 0.0),
+                    source_url=source_url
+                )
+            )
+        return citations
+
+    def _format_precedent_context(self, precedent_results: List[dict]) -> str:
+        """
+        Format precedent results for GPT-4o prompt (012-precedent-integration: T033)
+
+        Args:
+            precedent_results: List of precedent dictionaries
+
+        Returns:
+            Formatted precedent context string
+        """
+        if not precedent_results:
+            return "(관련 판례 없음)"
+
+        context_parts = []
+        for i, p in enumerate(precedent_results, 1):
+            case_ref = p.get("case_ref", "")
+            court = p.get("court", "")
+            decision_date = p.get("decision_date", "")
+            summary = p.get("summary", "")
+            key_factors = p.get("key_factors", [])
+            similarity = p.get("similarity_score", 0.0)
+
+            # Format division ratio if exists
+            division_str = ""
+            if p.get("division_ratio"):
+                dr = p["division_ratio"]
+                division_str = f"\n   - 재산분할: 원고 {dr.get('plaintiff', 50)}% / 피고 {dr.get('defendant', 50)}%"
+
+            # Truncate summary safely
+            summary_truncated = summary[:200] + "..." if len(summary) > 200 else summary
+            factors_str = ', '.join(key_factors) if key_factors else 'N/A'
+
+            context_parts.append(
+                f"【판례 {i}】 {case_ref} ({court}, {decision_date}) [유사도: {similarity:.0%}]\n"
+                f"   - 요지: {summary_truncated}\n"
+                f"   - 주요 요인: {factors_str}{division_str}"
+            )
+
+        return "\n\n".join(context_parts)
+
     def _build_draft_prompt(
         self,
         case: any,
         sections: List[str],
         evidence_context: List[dict],
         legal_context: List[dict],
+        precedent_context: List[dict],  # 012-precedent-integration: T033
         language: str,
         style: str
     ) -> List[dict]:
         """
-        Build GPT-4o prompt with evidence and legal RAG context
+        Build GPT-4o prompt with evidence, legal, and precedent RAG context
 
         Args:
             case: Case object
             sections: Sections to generate
             evidence_context: Evidence RAG search results
             legal_context: Legal knowledge RAG search results
+            precedent_context: Similar precedent search results (012-precedent-integration)
             language: Language (ko/en)
             style: Writing style
 
@@ -310,8 +440,9 @@ class DraftService:
         # Build context strings
         evidence_context_str = self._format_evidence_context(evidence_context)
         legal_context_str = self._format_legal_context(legal_context)
+        precedent_context_str = self._format_precedent_context(precedent_context)  # 012-precedent-integration: T033
 
-        # User message - include case info, evidence, and legal context
+        # User message - include case info, evidence, legal, and precedent context
         if use_json_output:
             user_message = {
                 "role": "user",
@@ -327,6 +458,9 @@ class DraftService:
 **관련 법률 조문:**
 {legal_context_str}
 
+**유사 판례 참고자료:**
+{precedent_context_str}
+
 **증거 자료:**
 {evidence_context_str}
 
@@ -335,6 +469,7 @@ class DraftService:
 - 스타일: {style}
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
+- 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
 - 각 주장에 대해 evidence_refs 배열에 증거 번호를 포함해 주세요
 
 위 스키마에 맞는 JSON을 출력하세요. JSON 외의 텍스트는 출력하지 마세요.
@@ -355,6 +490,9 @@ class DraftService:
 **관련 법률 조문:**
 {legal_context_str}
 
+**유사 판례 참고자료:**
+{precedent_context_str}
+
 **증거 자료:**
 {evidence_context_str}
 
@@ -363,6 +501,7 @@ class DraftService:
 - 스타일: {style}
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
+- 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
 - 각 주장에 대해 증거 번호를 명시해 주세요 (예: [갑 제1호증], [갑 제2호증])
 
 소장 초안을 작성해 주세요.
