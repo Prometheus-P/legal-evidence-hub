@@ -1,10 +1,10 @@
 /**
-import { logger } from '@/lib/logger';
  * Hook for Case Relations Graph
  * 009-calm-control-design-system
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import type { Node, Edge } from '@xyflow/react';
 import type { Party, Relation, PartyType, RelationType, CaseGraphData } from '@/types/relations';
 import * as relationsApi from '@/lib/api/relations';

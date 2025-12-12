@@ -415,6 +415,7 @@ class TestBuildDraftPrompt:
                 sections=["청구원인"],
                 evidence_context=[],
                 legal_context=[],
+                precedent_context=[],
                 language="ko",
                 style="formal"
             )
@@ -438,6 +439,7 @@ class TestBuildDraftPrompt:
                 sections=["청구취지"],
                 evidence_context=[],
                 legal_context=[],
+                precedent_context=[],
                 language="ko",
                 style="formal"
             )

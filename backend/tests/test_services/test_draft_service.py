@@ -236,6 +236,7 @@ class TestDraftServicePromptBuilding:
             sections=sections,
             evidence_context=evidence_context,
             legal_context=legal_context,
+            precedent_context=[],
             language="ko",
             style="formal"
         )

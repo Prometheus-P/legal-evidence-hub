@@ -1,10 +1,10 @@
 /**
-import { logger } from '@/lib/logger';
  * Hook for Asset Division
  * 009-calm-control-design-system
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import type { Asset, CreateAssetRequest, DivisionSummary, AssetType } from '@/types/assets';
 import * as assetsApi from '@/lib/api/assets';
 

@@ -1,5 +1,4 @@
 /**
-import { logger } from '@/lib/logger';
  * Evidence DataTable Component
  * Shadcn/ui style with TanStack Table integration
  *
@@ -10,6 +9,7 @@ import { logger } from '@/lib/logger';
  */
 
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 import { flexRender } from '@tanstack/react-table';
 import { ArrowUpDown, MoreVertical, Filter, Sparkles, X, FileText, Loader2, RefreshCw } from 'lucide-react';
 import { Evidence } from '@/types/evidence';
