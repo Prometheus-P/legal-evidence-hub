@@ -10,7 +10,9 @@ from app.db.schemas import (
     PartyNodeCreate,
     PartyNodeUpdate,
     PartyNodeResponse,
-    Position
+    Position,
+    AutoExtractedPartyRequest,
+    AutoExtractedPartyResponse
 )
 from app.repositories.party_repository import PartyRepository
 from app.repositories.relationship_repository import RelationshipRepository
@@ -213,6 +215,10 @@ class PartyService:
             occupation=party.occupation,
             position=Position(x=party.position_x, y=party.position_y),
             extra_data=party.extra_data,
+            # 012-precedent-integration: T036-T038 자동 추출 필드
+            is_auto_extracted=party.is_auto_extracted,
+            extraction_confidence=party.extraction_confidence,
+            source_evidence_id=party.source_evidence_id,
             created_at=party.created_at,
             updated_at=party.updated_at
         )
@@ -231,3 +237,95 @@ class PartyService:
             "created_at": relationship.created_at.isoformat() if relationship.created_at else None,
             "updated_at": relationship.updated_at.isoformat() if relationship.updated_at else None
         }
+
+    # ============================================
+    # 012-precedent-integration: T040-T041 자동 추출 메서드
+    # ============================================
+    def create_auto_extracted_party(
+        self,
+        case_id: str,
+        data: AutoExtractedPartyRequest,
+        user_id: str
+    ) -> AutoExtractedPartyResponse:
+        """
+        Create or find existing party from AI Worker extraction (T040-T041)
+
+        Args:
+            case_id: Case ID
+            data: Auto-extracted party data
+            user_id: User performing the action
+
+        Returns:
+            AutoExtractedPartyResponse with duplicate detection info
+        """
+        # Verify case exists
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError(f"케이스를 찾을 수 없습니다: {case_id}")
+
+        # T041: Check for duplicate (similar name)
+        existing_parties = self.party_repo.get_all_for_case(case_id)
+        matched_party = self._detect_duplicate(data.name, existing_parties)
+
+        if matched_party:
+            logger.info(f"Duplicate party detected: {data.name} matches {matched_party.name} ({matched_party.id})")
+            return AutoExtractedPartyResponse(
+                id=matched_party.id,
+                name=matched_party.name,
+                is_duplicate=True,
+                matched_party_id=matched_party.id
+            )
+
+        # Create new auto-extracted party
+        party = PartyNode(
+            case_id=case_id,
+            type=data.type,
+            name=data.name,
+            alias=data.alias,
+            birth_year=data.birth_year,
+            occupation=data.occupation,
+            position_x=0,
+            position_y=0,
+            is_auto_extracted=True,
+            extraction_confidence=data.extraction_confidence,
+            source_evidence_id=data.source_evidence_id
+        )
+
+        self.db.add(party)
+        self.db.commit()
+        self.db.refresh(party)
+
+        logger.info(f"Auto-extracted party created: {party.id} ({party.name}) for case {case_id}")
+
+        return AutoExtractedPartyResponse(
+            id=party.id,
+            name=party.name,
+            is_duplicate=False,
+            matched_party_id=None
+        )
+
+    def _detect_duplicate(self, new_name: str, existing_parties: list, threshold: float = 0.8) -> Optional[PartyNode]:
+        """
+        Detect duplicate party by name similarity (T041)
+
+        Uses simple character-based similarity for Korean names.
+        Threshold 0.8 = 80% character overlap required.
+        """
+        import difflib
+
+        new_name_normalized = new_name.strip().lower()
+
+        for existing in existing_parties:
+            existing_name_normalized = existing.name.strip().lower()
+
+            # Calculate similarity ratio
+            similarity = difflib.SequenceMatcher(
+                None,
+                new_name_normalized,
+                existing_name_normalized
+            ).ratio()
+
+            if similarity >= threshold:
+                return existing
+
+        return None

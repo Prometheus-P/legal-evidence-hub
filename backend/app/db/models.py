@@ -3,7 +3,7 @@ SQLAlchemy ORM Models for LEH Backend
 Database tables: users, cases, case_members, audit_logs
 """
 
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Integer, Boolean, Text, JSON, UniqueConstraint
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, ForeignKey, Integer, Boolean, Text, JSON, UniqueConstraint, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 from datetime import datetime, timezone
@@ -922,6 +922,10 @@ class PartyNode(Base):
     position_x = Column(Integer, nullable=False, default=0)  # React Flow X coordinate
     position_y = Column(Integer, nullable=False, default=0)  # React Flow Y coordinate
     extra_data = Column(JSON, nullable=True, default=dict)  # Additional info (renamed from metadata)
+    # 012-precedent-integration: T036-T038 자동 추출 필드
+    is_auto_extracted = Column(Boolean, default=False, nullable=False)  # AI가 추출했는지 여부
+    extraction_confidence = Column(Float, nullable=True)  # 추출 신뢰도 (0.0-1.0)
+    source_evidence_id = Column(String, nullable=True)  # 추출 근거 증거 ID
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -960,6 +964,10 @@ class PartyRelationship(Base):
     start_date = Column(DateTime(timezone=True), nullable=True)  # 관계 시작일
     end_date = Column(DateTime(timezone=True), nullable=True)    # 관계 종료일
     notes = Column(Text, nullable=True)
+    # 012-precedent-integration: T039 자동 추출 필드
+    is_auto_extracted = Column(Boolean, default=False, nullable=False)  # AI가 추출했는지 여부
+    extraction_confidence = Column(Float, nullable=True)  # 추출 신뢰도 (0.0-1.0)
+    evidence_text = Column(Text, nullable=True)  # 관계 추론 근거 텍스트
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
