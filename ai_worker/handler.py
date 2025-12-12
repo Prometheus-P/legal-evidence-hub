@@ -46,6 +46,10 @@ from src.storage.vector_store import VectorStore
 from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger
 from src.analysis.summarizer import EvidenceSummarizer
+# 012-precedent-integration: T044-T047 자동 추출 모듈
+from src.analysis.person_extractor import PersonExtractor, extract_persons_from_messages
+from src.analysis.relationship_inferrer import RelationshipInferrer, infer_relationships
+from src.api.backend_client import save_extracted_graph_to_backend
 from src.utils.logging_filter import SensitiveDataFilter
 from src.utils.logging import setup_lambda_logging
 from src.utils.embeddings import get_embedding_with_fallback  # Embedding utility with fallback
@@ -324,6 +328,52 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 categories_detected=list(all_categories)
             )
 
+        # ============================================
+        # 012-precedent-integration: T044-T047 인물/관계 자동 추출
+        # ============================================
+        auto_extract_result = None
+        try:
+            # 전체 텍스트 합치기
+            full_text_for_extraction = "\n".join([msg.content for msg in parsed_result])
+
+            # 인물 추출 (메시지 기반)
+            messages_for_extraction = [
+                {"sender": msg.sender, "content": msg.content}
+                for msg in parsed_result
+            ]
+            extracted_persons = extract_persons_from_messages(messages_for_extraction)
+
+            # 관계 추론
+            inferred_relationships = infer_relationships(full_text_for_extraction)
+
+            tracker.log(
+                f"Auto-extraction: {len(extracted_persons)} persons, {len(inferred_relationships)} relationships"
+            )
+
+            # Backend API 호출하여 저장 (evidence_id 필요)
+            if backend_evidence_id and (extracted_persons or inferred_relationships):
+                auto_extract_result = save_extracted_graph_to_backend(
+                    case_id=case_id,
+                    persons=extracted_persons,
+                    relationships=inferred_relationships,
+                    source_evidence_id=backend_evidence_id,
+                    min_confidence=0.7
+                )
+                tracker.log(
+                    f"Auto-extraction saved: {auto_extract_result.get('parties_saved', 0)} parties, "
+                    f"{auto_extract_result.get('relationships_saved', 0)} relationships"
+                )
+                tracker.add_metadata(auto_extract_result=auto_extract_result)
+
+        except Exception as e:
+            # 자동 추출 실패는 전체 처리를 중단하지 않음
+            tracker.record_error(
+                ErrorType.API_ERROR,
+                f"Auto-extraction failed: {e}",
+                exception=e
+            )
+            logger.warning(f"Auto-extraction failed (non-fatal): {e}")
+
         # EMBED stage - Embedding 생성
         embeddings_data = []
         with tracker.stage(ProcessingStage.EMBED) as embed_stage:
@@ -502,6 +552,8 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
             "chunks_indexed": len(chunk_ids),
             "tags": tags_list,
             "ai_summary": ai_summary,
+            # 012-precedent-integration: T044-T047 자동 추출 결과
+            "auto_extract": auto_extract_result,
             "job_id": tracker.context.job_id,
             "job_summary": tracker.get_summary()
         }
