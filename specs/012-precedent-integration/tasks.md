@@ -155,12 +155,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T051 [P] Update API documentation in `docs/specs/API_SPEC.md` for new endpoints
-- [ ] T052 [P] Add unit tests for `PrecedentService` in `backend/tests/unit/test_precedent_service.py`
-- [ ] T053 [P] Add contract tests for precedent API in `backend/tests/contract/test_precedent_api.py`
+- [x] T051 [P] Update API documentation in `docs/specs/API_SPEC.md` for new endpoints
+- [x] T052 [P] Add unit tests for `PrecedentService` in `backend/tests/unit/test_precedent_service.py`
+- [x] T053 [P] Add contract tests for precedent API in `backend/tests/contract/test_precedent_api.py`
 - [ ] T054 Run E2E tests `frontend/e2e/precedent.spec.ts` and fix any failures
 - [ ] T055 Run quickstart.md verification steps
-- [ ] T056 Update CLAUDE.md Recent Changes section
+- [x] T056 Update CLAUDE.md Recent Changes section
 
 ---
 

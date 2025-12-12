@@ -977,7 +977,133 @@ json
 
 ---
 
-# ✅ 16. 확장 포인트 (v2 이후)
+# ⚖️ 16. Precedent Search API (012-precedent-integration)
+
+유사 판례 검색 및 초안 인용 기능을 위한 API
+
+## 16.1 유사 판례 검색
+
+### `GET /cases/{case_id}/similar-precedents`
+
+- 설명: 사건 증거 기반 유사 판례 검색 (Qdrant 벡터 검색)
+- 쿼리 파라미터:
+  - `limit` (optional): 반환할 판례 수 (default: 10, max: 50)
+  - `min_score` (optional): 최소 유사도 점수 (default: 0.5)
+
+- 응답 (200):
+
+```json
+{
+  "precedents": [
+    {
+      "case_ref": "2022다12345",
+      "court": "대법원",
+      "decision_date": "2023-03-15",
+      "case_type": "이혼",
+      "summary": "판시사항 요약...",
+      "key_factors": ["불륜", "재산분할"],
+      "property_division_ratio": "50:50",
+      "alimony_amount": 30000000,
+      "similarity_score": 0.87,
+      "source_url": "https://www.law.go.kr/..."
+    }
+  ],
+  "total": 5,
+  "search_keywords": ["불륜", "재산분할"]
+}
+```
+
+- 오류 응답:
+  - 403: 사건 접근 권한 없음
+  - 404: 사건 없음
+  - 503: Qdrant 연결 실패 (빈 배열 + warning 반환)
+
+---
+
+# 🤖 17. Auto-Extraction API (012-precedent-integration)
+
+AI Worker가 자동 추출한 인물/관계를 저장하는 API
+
+## 17.1 자동 추출 인물 저장
+
+### `POST /cases/{case_id}/parties/auto-extract`
+
+- 설명: AI Worker가 추출한 인물을 저장 (중복 검출 포함)
+- 요청 Body:
+
+```json
+{
+  "name": "김철수",
+  "type": "plaintiff",
+  "extraction_confidence": 0.85,
+  "source_evidence_id": "ev_abc123",
+  "alias": "철수",
+  "birth_year": 1985,
+  "occupation": "회사원"
+}
+```
+
+- 응답 (201):
+
+```json
+{
+  "id": "party_xyz789",
+  "name": "김철수",
+  "is_duplicate": false,
+  "matched_party_id": null
+}
+```
+
+- 중복 검출 시 (201):
+
+```json
+{
+  "id": "party_existing123",
+  "name": "김철수",
+  "is_duplicate": true,
+  "matched_party_id": "party_existing123"
+}
+```
+
+- 오류 응답:
+  - 400: 신뢰도 0.7 미만
+  - 403: 사건 쓰기 권한 없음
+  - 404: 사건 없음
+
+## 17.2 자동 추출 관계 저장
+
+### `POST /cases/{case_id}/relationships/auto-extract`
+
+- 설명: AI Worker가 추론한 관계를 저장
+- 요청 Body:
+
+```json
+{
+  "source_party_id": "party_abc",
+  "target_party_id": "party_def",
+  "type": "marriage",
+  "extraction_confidence": 0.92,
+  "evidence_text": "2010년 결혼식..."
+}
+```
+
+- 응답 (201):
+
+```json
+{
+  "id": "rel_xyz123",
+  "created": true
+}
+```
+
+- 오류 응답:
+  - 400: 신뢰도 0.7 미만 또는 인물 없음
+  - 403: 사건 쓰기 권한 없음
+  - 404: 인물 없음
+
+---
+
+# ✅ 18. 확장 포인트 (v2 이후)
 
 - Draft 버전 관리 및 편집 이력 (`PUT /cases/{id}/draft`)
 - Opponent Claim 관리 API (상대방 주장 텍스트 + 증거 링크)
