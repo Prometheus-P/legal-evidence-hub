@@ -27,3 +27,5 @@ export {
   AIAnalysisPanel,
   AIAnalysisBadge,
 } from './AIAnalysisPanel';
+
+export { LowConfidenceWarning } from './LowConfidenceWarning';

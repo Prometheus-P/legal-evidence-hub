@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🚨 LEH Project - HYBRID .gitignore
+# LEH Project - HYBRID .gitignore
 # Security First + Project Specific + Optimized Defaults
 # ==============================================================================
 
@@ -11,7 +11,6 @@
 !.env.example
 !.env.production
 !frontend/.env.production
-!.env.production
 *.pem
 *.key
 *.cert
@@ -21,6 +20,7 @@ secrets.json
 credentials.json
 *.api_key
 *.token
+
 # AWS / Cloud Configs
 .aws/
 ~/.aws/
@@ -41,39 +41,6 @@ env/
 ENV/
 .python-version
 
-# 로그 및 임시 파일
-*.log
-logs/
-tmp/
-temp/
-
-###################################
-# 2. AI Worker / LLM 파이프라인
-###################################
-# Storage 데이터 파일만 제외 (Python 코드는 포함)
-ai_worker/**/storage/*.db
-ai_worker/**/storage/*.sqlite3
-ai_worker/**/storage/data/
-
-# 기타 AI Worker 제외 폴더
-ai_worker/.cache/
-ai_worker/workflows/local_debug/
-
-# 임시 파일 (확장자 기반)
-*.tmp
-*.api_key
-*.token
-
-
-###################################
-# 3. 환경 변수 파일 – 민감 정보 보호
-###################################
-# 템플릿은 허용(.env.example)
-.env
-.env.*
-!.env.example
-!.env.production
-!frontend/.env.production
 # Distribution / Packaging
 build/
 dist/
@@ -110,15 +77,6 @@ out/
 
 # Playwright Test Output
 playwright-report/
-test-results/
-playwright/.cache/
-
-# Production Build
-build/
-dist/
-
-# Playwright
-playwright-report/
 playwright/.cache/
 test-results/
 
@@ -154,15 +112,18 @@ Thumbs.db
 Desktop.ini
 
 # ==============================================================================
-# 5. PROJECT SPECIFIC (LEH) - CAREFULLY SCOPED
+# 5. PROJECT SPECIFIC (LEH)
 # ==============================================================================
 # AI Worker Data & Temp
 ai_worker/data/
 ai_worker/temp/
 ai_worker/.cache/
+ai_worker/**/storage/*.db
+ai_worker/**/storage/*.sqlite3
+ai_worker/**/storage/data/
+ai_worker/workflows/local_debug/
 
 # Evidence Files (Raw uploads)
-# Note: We track docs/pdf, so we only ignore raw evidence uploads
 evidence_raw/
 uploads/
 
@@ -171,35 +132,27 @@ docker-data/
 *.pid
 *.sock
 
-# Agent & Personal Configs
-.agent/
-.claude/*
-!.claude/commands/
-/CLAUDE.md
-
-# 개인 파일들 담아주세요
-.local/
-
-# ==============================================================================
-# 6. FILE EXTENSIONS (CAUTION: Only generic binaries/logs)
-# ==============================================================================
-# Logs & Databases
+# Logs & Temp Files
 *.log
+logs/
+tmp/
+temp/
+*.tmp
+
+# ==============================================================================
+# 6. DATABASE & BINARY FILES
+# ==============================================================================
+# Databases
 *.sqlite3
 *.db
 *.dump
 
-# Binary / Media (Locally generated)
-# Note: PDFs in 'docs/' folders SHOULD be tracked.
-# Only ignore these if they are in root or temp folders, but gitignore is recursive.
-# Strategy: Ignore specific heavy media folders instead of global extensions if possible.
-# For now, keeping global ignore for heavy binaries to prevent accidental commit,
-# but using ! to allow specific documentation paths if needed.
+# PDF (exclude from repo, docs should use markdown)
+*.pdf
 
-
-###################################
-# 11. Personal Local Files
-###################################
+# ==============================================================================
+# 7. PERSONAL & LOCAL FILES
+# ==============================================================================
 # Personal CLAUDE.md (prevent accidental commits)
 /CLAUDE.md
 /claude.md
@@ -207,10 +160,9 @@ AGENTS.md
 docs/guides/CLAUDE.md
 docs/guides/claude.md
 
-# Personal Claude configuration directory
-# Note: .claude/commands/ is tracked for speckit sharing
+# Personal configuration directories
+.claude/*
+!.claude/commands/
 .specify/
 .agent/
-# Note: .claude/commands/ is tracked for speckit sharing
-.specify/
-*.pdf
+.local/

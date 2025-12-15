@@ -42,11 +42,11 @@ export function MessageBubble({ message, showSender = true }: MessageBubbleProps
   }, [message.created_at]);
 
   const roleColors: Record<string, string> = {
-    lawyer: 'text-blue-600',
-    client: 'text-green-600',
-    detective: 'text-purple-600',
-    admin: 'text-red-600',
-    staff: 'text-gray-600',
+    lawyer: 'text-blue-600 dark:text-blue-400',
+    client: 'text-green-600 dark:text-green-400',
+    detective: 'text-purple-600 dark:text-purple-400',
+    admin: 'text-red-600 dark:text-red-400',
+    staff: 'text-gray-600 dark:text-gray-400',
   };
 
   return (
@@ -57,14 +57,14 @@ export function MessageBubble({ message, showSender = true }: MessageBubbleProps
         className={`max-w-[70%] ${
           message.is_mine
             ? 'bg-blue-500 text-white rounded-tl-2xl rounded-tr-sm rounded-bl-2xl rounded-br-2xl'
-            : 'bg-gray-100 text-gray-900 rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl'
+            : 'bg-gray-100 dark:bg-neutral-700 text-gray-900 dark:text-gray-100 rounded-tl-sm rounded-tr-2xl rounded-bl-2xl rounded-br-2xl'
         } px-4 py-2 shadow-sm`}
       >
         {/* Sender name (for received messages) */}
         {!message.is_mine && showSender && (
           <p
             className={`text-xs font-medium mb-1 ${
-              roleColors[message.sender.role] || 'text-gray-500'
+              roleColors[message.sender.role] || 'text-gray-500 dark:text-gray-400'
             }`}
           >
             {message.sender.name}
@@ -111,7 +111,7 @@ export function MessageBubble({ message, showSender = true }: MessageBubbleProps
         >
           <span
             className={`text-xs ${
-              message.is_mine ? 'text-blue-100' : 'text-gray-400'
+              message.is_mine ? 'text-blue-100' : 'text-gray-400 dark:text-gray-500'
             }`}
           >
             {formattedTime}

@@ -6,7 +6,9 @@ API endpoints for detective portal including dashboard, case management,
 field records, reports, and earnings.
 """
 
+import logging
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -26,6 +28,8 @@ from app.schemas.detective_portal import (
     EarningsResponse,
     EarningsSummary,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/detective", tags=["detective-portal"])
 
@@ -50,9 +54,10 @@ async def get_detective_dashboard(
     try:
         return service.get_dashboard(user_id)
     except ValueError as e:
+        logger.warning(f"Dashboard not found for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="탐정 대시보드를 찾을 수 없습니다"
         )
 
 
@@ -107,9 +112,10 @@ async def get_detective_case_detail(
             detail="Access denied to this case"
         )
     except KeyError as e:
+        logger.warning(f"Case not found: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 
@@ -147,9 +153,10 @@ async def accept_case(
 
         return result
     except KeyError as e:
+        logger.warning(f"Case accept failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 
@@ -187,9 +194,10 @@ async def reject_case(
 
         return result
     except KeyError as e:
+        logger.warning(f"Case reject failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 
@@ -242,9 +250,10 @@ async def create_field_record(
 
         return result
     except KeyError as e:
+        logger.warning(f"Field record create failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 
@@ -294,9 +303,10 @@ async def submit_report(
 
         return result
     except KeyError as e:
+        logger.warning(f"Report submit failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 

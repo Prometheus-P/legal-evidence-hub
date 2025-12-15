@@ -99,3 +99,49 @@ class InvestigatorDetail(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================
+# Detective Contact CRUD Schemas (Issue #301)
+# FR-011: 탐정 등록, FR-012: 탐정 수정, FR-016: 탐정 삭제
+# ============================================
+class DetectiveContactCreate(BaseModel):
+    """Schema for creating a detective contact"""
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    specialty: Optional[str] = None
+    memo: Optional[str] = None
+
+
+class DetectiveContactUpdate(BaseModel):
+    """Schema for updating a detective contact"""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    specialty: Optional[str] = None
+    memo: Optional[str] = None
+
+
+class DetectiveContactResponse(BaseModel):
+    """Schema for detective contact response"""
+    id: str
+    lawyer_id: str
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    specialty: Optional[str] = None
+    memo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DetectiveContactListResponse(BaseModel):
+    """Paginated detective contact list response"""
+    items: List[DetectiveContactResponse]
+    total: int
+    page: int
+    page_size: int

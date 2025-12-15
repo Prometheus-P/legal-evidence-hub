@@ -66,3 +66,48 @@ export interface ClientStats {
   total_evidence: number;
   total_messages: number;
 }
+
+// ============== Client CRUD Types (US2 - Lawyer Portal) ==============
+
+/**
+ * Client contact for lawyer's address book
+ * Separate from User accounts - these are contacts managed by lawyers
+ * NOTE: Field names must match backend ClientContactResponse schema (snake_case)
+ */
+export interface ClientContact {
+  id: string;
+  lawyer_id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  memo?: string;
+  created_at: string; // ISO 8601
+  updated_at: string;
+}
+
+export interface ClientContactCreate {
+  name: string;
+  phone?: string;
+  email?: string;
+  memo?: string;
+}
+
+export interface ClientContactUpdate {
+  name?: string;
+  phone?: string;
+  email?: string;
+  memo?: string;
+}
+
+export interface ClientContactListResponse {
+  items: ClientContact[];  // NOTE: Backend uses 'items', not 'clients'
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ClientContactQueryParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+}

@@ -5,6 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { RiskFlagCard, RiskCase } from '@/components/lawyer/RiskFlagCard';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 // Mock next/link
 jest.mock('next/link', () => {
@@ -97,7 +98,7 @@ describe('RiskFlagCard', () => {
     it('각 사건이 상세 페이지로 링크된다', () => {
       render(<RiskFlagCard cases={mockCases} />);
       const links = screen.getAllByRole('link');
-      expect(links[0]).toHaveAttribute('href', '/lawyer/cases/case-1');
+      expect(links[0]).toHaveAttribute('href', getCaseDetailPath('lawyer', 'case-1'));
     });
   });
 

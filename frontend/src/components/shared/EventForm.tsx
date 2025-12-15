@@ -161,14 +161,14 @@ export default function EventForm({
     <form onSubmit={handleSubmit} className="space-y-4" data-testid="event-form">
       {/* Submit error */}
       {submitError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
           {submitError}
         </div>
       )}
 
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           제목 <span className="text-red-500">*</span>
         </label>
         <input
@@ -176,8 +176,8 @@ export default function EventForm({
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-            errors.title ? 'border-red-500' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+            errors.title ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           placeholder="일정 제목을 입력하세요"
           disabled={isLoading}
@@ -189,7 +189,7 @@ export default function EventForm({
 
       {/* Event Type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           일정 유형
         </label>
         <div className="flex flex-wrap gap-2">
@@ -221,7 +221,7 @@ export default function EventForm({
 
       {/* Start Time */}
       <div>
-        <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           시작 시간 <span className="text-red-500">*</span>
         </label>
         <input
@@ -229,8 +229,8 @@ export default function EventForm({
           id="startTime"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-            errors.startTime ? 'border-red-500' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+            errors.startTime ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           disabled={isLoading}
         />
@@ -241,7 +241,7 @@ export default function EventForm({
 
       {/* End Time */}
       <div>
-        <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           종료 시간
         </label>
         <input
@@ -249,8 +249,8 @@ export default function EventForm({
           id="endTime"
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-            errors.endTime ? 'border-red-500' : 'border-gray-300'
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100 ${
+            errors.endTime ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
           }`}
           disabled={isLoading}
         />
@@ -261,7 +261,7 @@ export default function EventForm({
 
       {/* Location */}
       <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           장소
         </label>
         <input
@@ -269,7 +269,7 @@ export default function EventForm({
           id="location"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
           placeholder="예: 서울가정법원 301호"
           disabled={isLoading}
         />
@@ -278,14 +278,14 @@ export default function EventForm({
       {/* Case Link */}
       {cases.length > 0 && (
         <div>
-          <label htmlFor="caseId" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="caseId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             연결 사건
           </label>
           <select
             id="caseId"
             value={caseId}
             onChange={(e) => setCaseId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
             disabled={isLoading}
           >
             <option value="">사건 선택 안함</option>
@@ -300,14 +300,14 @@ export default function EventForm({
 
       {/* Reminder */}
       <div>
-        <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="reminder" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           알림
         </label>
         <select
           id="reminder"
           value={reminderMinutes}
           onChange={(e) => setReminderMinutes(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
           disabled={isLoading}
         >
           {REMINDER_OPTIONS.map((opt) => (
@@ -320,7 +320,7 @@ export default function EventForm({
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           메모
         </label>
         <textarea
@@ -328,19 +328,19 @@ export default function EventForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-neutral-900 dark:text-gray-100"
           placeholder="추가 메모를 입력하세요"
           disabled={isLoading}
         />
       </div>
 
       {/* Form Actions */}
-      <div className="flex items-center justify-between pt-4 border-t">
+      <div className="flex items-center justify-between pt-4 border-t dark:border-neutral-700">
         {isEditing && onDelete ? (
           <button
             type="button"
             onClick={handleDelete}
-            className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
             disabled={isLoading}
           >
             삭제
@@ -353,7 +353,7 @@ export default function EventForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
             disabled={isLoading}
           >
             취소

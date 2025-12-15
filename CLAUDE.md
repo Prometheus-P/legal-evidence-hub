@@ -416,9 +416,12 @@ When implementing features, files typically go in:
 - Python 3.11+ (Backend/AI Worker), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, boto3, qdrant-client, openai, react-hot-toast (009-mvp-gap-closure)
 - Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, jose (JWT), Tailwind CSS (011-production-bug-fixes)
 - PostgreSQL (RDS), HTTP-only Cookies (JWT 토큰), CloudFront /api proxy (011-production-bug-fixes)
+- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, Tailwind CSS, jose (JWT) (011-production-bug-fixes)
+- PostgreSQL (RDS), HTTP-only Cookies (JWT) (011-production-bug-fixes)
 
 ## Recent Changes
 - 012-precedent-integration: (COMPLETE) Precedent search and auto-extraction integration. Backend: PrecedentService with Qdrant vector search, DraftService precedent citation integration, auto-extract endpoints for parties/relationships. AI Worker: BackendAPIClient with retry logic, PersonExtractor/RelationshipInferrer integration. Frontend: PrecedentPanel with search/modal, PartyNode/PartyEdge auto-extraction badges with confidence indicators. Key features: 유사 판례 검색, 초안 판례 인용, 인물/관계 자동 추출.
+- 011-production-bug-fixes: (IN PROGRESS) Production bug fixes for US1 & US2. Backend: Cookie authentication fix, security hardening. Frontend: Login redirect fix, middleware improvements.
 - 009-mvp-gap-closure: (PLANNING) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 70% (needs toast + retry). CI coverage at 65% (target 80%). Key tasks: S3 permission setup, enable AI Worker deployment, unify error handling, increase test coverage.
 - 005-lawyer-portal-pages: (CORE COMPLETE) Fixed 404 errors on lawyer portal pages. All pages now render: `/lawyer/clients`, `/lawyer/investigators`, `/settings`, `/lawyer/cases`, `/lawyer/calendar`, `/lawyer/messages`, `/lawyer/billing`. Created frontend types (`client.ts`, `investigator.ts`, `settings.ts`) and API clients. Middleware `/cases` redirect verified. **Future enhancements**: Dedicated backend APIs for clients/investigators/settings, advanced filtering, detail views.
 - 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist, blocked case filtering. Backend: `ProgressService`, `staff_progress.py` router. Frontend: React dashboard with `ProgressCard`, `FeedbackChecklist` components.

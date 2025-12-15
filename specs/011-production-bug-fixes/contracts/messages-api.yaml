@@ -1,0 +1,216 @@
+openapi: 3.0.3
+info:
+  title: Messages API
+  version: 1.0.0
+  description: 메시지 CRUD API
+
+paths:
+  /messages:
+    get:
+      summary: 메시지 목록 조회
+      tags: [Messages]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: folder
+          in: query
+          schema:
+            type: string
+            enum: [inbox, sent]
+            default: inbox
+          description: 받은 메시지(inbox) 또는 보낸 메시지(sent)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: 메시지 목록
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MessageSummary'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+
+    post:
+      summary: 메시지 전송
+      tags: [Messages]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: 메시지 전송 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /messages/{message_id}:
+    get:
+      summary: 메시지 상세 조회
+      tags: [Messages]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 메시지 상세
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: 메시지 삭제 (soft delete)
+      tags: [Messages]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 삭제 완료
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /messages/{message_id}/read:
+    patch:
+      summary: 메시지 읽음 처리
+      tags: [Messages]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 읽음 처리 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+
+  schemas:
+    MessageCreate:
+      type: object
+      properties:
+        recipient_id:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: string
+          minLength: 1
+      required:
+        - recipient_id
+        - subject
+        - content
+
+    MessageSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sender_id:
+          type: string
+          format: uuid
+        sender_name:
+          type: string
+        recipient_id:
+          type: string
+          format: uuid
+        recipient_name:
+          type: string
+        subject:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    Message:
+      allOf:
+        - $ref: '#/components/schemas/MessageSummary'
+        - type: object
+          properties:
+            content:
+              type: string
+            read_at:
+              type: string
+              format: date-time
+              nullable: true
+
+  responses:
+    BadRequest:
+      description: 잘못된 요청
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+
+    NotFound:
+      description: 리소스를 찾을 수 없음
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string

@@ -7,7 +7,7 @@ Tests for app/utils/s3.py
 
 import pytest
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from app.utils.s3 import (
     generate_presigned_upload_url,

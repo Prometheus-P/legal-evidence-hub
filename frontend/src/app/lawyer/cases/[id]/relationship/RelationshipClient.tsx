@@ -14,6 +14,7 @@ import RelationshipFlow from '@/components/relationship/RelationshipFlow';
 import RelationshipLegend from '@/components/relationship/RelationshipLegend';
 import { getCaseRelationships, getMockRelationshipGraph } from '@/lib/api/relationship';
 import { RelationshipGraph } from '@/types/relationship';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 interface RelationshipClientProps {
   caseId: string;
@@ -56,8 +57,9 @@ export default function RelationshipClient({ caseId }: RelationshipClientProps) 
     loadData();
   }, [loadData]);
 
+  const relationshipPath = getLawyerCasePath('relationship', caseId);
   const handleBack = () => {
-    router.push(`/lawyer/cases/${caseId}`);
+    router.push(getCaseDetailPath('lawyer', caseId, { returnUrl: relationshipPath }));
   };
 
   const handleRefresh = () => {

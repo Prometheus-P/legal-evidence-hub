@@ -9,6 +9,7 @@
 'use client';
 
 import Link from 'next/link';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 export interface RiskCase {
   id: string;
@@ -37,7 +38,7 @@ function RiskCaseItem({ caseItem }: { caseItem: RiskCase }) {
 
   return (
     <Link
-      href={`/lawyer/cases/${caseItem.id}`}
+      href={getCaseDetailPath('lawyer', caseItem.id)}
       className="group flex items-start gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors border-l-4 border-error-light hover:border-error"
     >
       <span className="text-lg flex-shrink-0" role="img" aria-label={config.label}>

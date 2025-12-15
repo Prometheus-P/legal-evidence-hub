@@ -10,7 +10,7 @@ import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
 
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 from mangum import Mangum  # noqa: E402 - AWS Lambda handler
@@ -27,8 +27,10 @@ from app.api import (  # noqa: E402
     calendar,
     cases,
     client_portal,
+    clients,
     dashboard,
     detective_portal,
+    detectives,
     drafts,
     evidence,
     evidence_links,
@@ -36,7 +38,9 @@ from app.api import (  # noqa: E402
     lawyer_clients,
     lawyer_investigators,
     messages,
+    notifications,
     party,
+    precedent,
     procedure,
     properties,
     relationships,
@@ -45,6 +49,7 @@ from app.api import (  # noqa: E402
     staff_progress,
     summary,
 )
+from app.core.dependencies import require_admin  # noqa: E402
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
     SecurityHeadersMiddleware,
@@ -272,11 +277,17 @@ app.include_router(calendar.router, prefix=API_PREFIX, tags=["Calendar"])
 app.include_router(summary.router, prefix=API_PREFIX, tags=["Summary"])
 
 # 012-precedent-integration: Precedent Search 라우터 (T023)
-from app.api import precedent
 app.include_router(precedent.router, prefix=API_PREFIX, tags=["Precedent"])
 
 # Admin 라우터 (User Management & Audit Log)
 app.include_router(admin.router, prefix=API_PREFIX, tags=["Admin"])
+
+# Notification 라우터 (Issue #295 - FR-007)
+app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications"])
+
+# Client/Detective Contact 라우터 (Issue #297, #298 - FR-009~012, FR-015~016)
+app.include_router(clients.router, prefix=API_PREFIX, tags=["Client Contacts"])
+app.include_router(detectives.router, prefix=API_PREFIX, tags=["Detective Contacts"])
 # L-work Demo API (테스트 후 제거 가능)
 try:
     from app.api.l_demo import router as l_demo_router
@@ -288,28 +299,27 @@ except ImportError:
 # ============================================
 # TEMPORARY: Database Debug Endpoints
 # Remove after migration is complete
-# SECURITY: Admin authentication required
+# SECURITY: Admin-only access required
 # ============================================
-from app.core.dependencies import require_admin
-from fastapi import Depends as FastAPIDepends
-from app.db.models import User
 
 
 @app.get("/admin/check-roles", tags=["Admin"])
-async def check_roles(current_user: User = FastAPIDepends(require_admin)):
+async def check_roles(admin_user=Depends(require_admin)):
     """
     Check current role values in database and enum type definition.
-
-    Requires admin authentication.
+    ADMIN ONLY - requires admin authentication.
     """
     from app.db.session import get_db
     from sqlalchemy import text
 
     db = next(get_db())
     try:
-        # Check users (mask email for security)
+        # Check users (exclude sensitive data - only show id, email prefix, role)
         result = db.execute(text("SELECT id, email, role::text as role FROM users"))
-        users = [{"id": r[0], "email": r[1][:3] + "***", "role": r[2]} for r in result.fetchall()]
+        users = [
+            {"id": r[0], "email": r[1].split("@")[0] + "@***", "role": r[2]}
+            for r in result.fetchall()
+        ]
 
         # Check enum type definition
         enum_result = db.execute(text("""
@@ -330,16 +340,17 @@ async def check_roles(current_user: User = FastAPIDepends(require_admin)):
 
 
 @app.post("/admin/migrate-enums", tags=["Admin"])
-async def migrate_enums_to_lowercase(current_user: User = FastAPIDepends(require_admin)):
+async def migrate_enums_to_lowercase(admin_user=Depends(require_admin)):
     """
     Migrate all enum values from uppercase to lowercase.
     Handles: userrole, userstatus, and other enums.
-
-    Requires admin authentication.
+    ADMIN ONLY - requires admin authentication.
     """
     from app.db.session import get_db
     from sqlalchemy import text
+    import logging
 
+    logger = logging.getLogger(__name__)
     db = next(get_db())
     try:
         steps = []
@@ -356,8 +367,10 @@ async def migrate_enums_to_lowercase(current_user: User = FastAPIDepends(require
                 try:
                     db.execute(text(f"ALTER TYPE {enum_type} ADD VALUE IF NOT EXISTS '{val}'"))
                     steps.append(f"Added {enum_type}.{val}")
-                except Exception as e:
-                    steps.append(f"Skipped {enum_type}.{val}: {str(e)}")
+                except Exception:
+                    # Log error details server-side only
+                    logger.warning(f"Enum migration skipped: {enum_type}.{val}")
+                    steps.append(f"Skipped {enum_type}.{val}")
             db.commit()
 
             # Step 2: Update from UPPERCASE to lowercase
@@ -369,9 +382,10 @@ async def migrate_enums_to_lowercase(current_user: User = FastAPIDepends(require
                     )
                     db.commit()
                     steps.append(f"Updated {result.rowcount} rows: {table}.{column} {upper_val} -> {val}")
-                except Exception as e:
+                except Exception:
                     db.rollback()
-                    steps.append(f"Error {table}.{column} {upper_val}: {str(e)}")
+                    logger.error(f"Enum migration error: {table}.{column} {upper_val}")
+                    steps.append(f"Error {table}.{column} {upper_val}")
 
         # Verify
         check_result = db.execute(text("SELECT DISTINCT role::text, status::text FROM users"))
@@ -382,22 +396,19 @@ async def migrate_enums_to_lowercase(current_user: User = FastAPIDepends(require
             "steps": steps,
             "final_values": final_values
         }
-    except Exception as e:
+    except Exception:
         db.rollback()
-        return {"status": "error", "message": str(e)}
+        logger.exception("Enum migration failed")
+        return {"status": "error", "message": "Migration failed. Check server logs."}
     finally:
         db.close()
 
 
 # Keep old endpoint for backwards compatibility
 @app.post("/admin/migrate-roles", tags=["Admin"])
-async def migrate_roles_redirect(current_user: User = FastAPIDepends(require_admin)):
-    """
-    Redirects to migrate-enums endpoint.
-
-    Requires admin authentication.
-    """
-    return await migrate_enums_to_lowercase(current_user)
+async def migrate_roles_redirect(admin_user=Depends(require_admin)):
+    """Redirects to migrate-enums endpoint. ADMIN ONLY."""
+    return await migrate_enums_to_lowercase(admin_user)
 
 
 # Note: Timeline router removed (002-evidence-timeline feature incomplete)

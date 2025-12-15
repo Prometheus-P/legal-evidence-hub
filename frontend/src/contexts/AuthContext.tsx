@@ -45,8 +45,9 @@ interface AuthProviderProps {
 }
 
 const USER_CACHE_KEY = 'userCache';
-const ACCESS_TOKEN_KEY = 'accessToken';
 const JUST_LOGGED_IN_KEY = 'justLoggedIn';
+// Note: Authentication is handled via HTTP-only cookies, NOT localStorage
+// The userCache is only for display purposes (name, email) and is NOT used for auth
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
@@ -135,7 +136,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [checkAuth]);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    async (
+      email: string,
+      password: string
+    ): Promise<{ success: boolean; error?: string; role?: UserRole; redirectPath?: string }> => {
       try {
         const response = await apiLogin(email, password);
 
@@ -151,11 +155,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // Store and set user (display info only)
         if (response.data.user) {
+          const userRole = response.data.user.role as UserRole;
           const userData: User = {
             id: response.data.user.id,
             email: response.data.user.email,
             name: response.data.user.name,
-            role: response.data.user.role as UserRole,
+            role: userRole,
             status: 'active', // Default status for newly logged in users
             created_at: new Date().toISOString(), // Will be updated on refresh
           };
@@ -164,10 +169,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Set flag to prevent checkAuth race condition after redirect
           sessionStorage.setItem(JUST_LOGGED_IN_KEY, 'true');
           localStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
-          // Store access token for Authorization header (cross-origin support)
-          if (response.data.access_token) {
-            localStorage.setItem(ACCESS_TOKEN_KEY, response.data.access_token);
-          }
+          // Note: Authentication token is handled via HTTP-only cookie (set by backend)
+          // We do NOT store the access_token in localStorage (XSS protection)
 
           // Set user_data cookie for middleware
           const userDisplayData = {
@@ -177,9 +180,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           };
           document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userDisplayData))}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
-          // Redirect based on role
-          const dashboardPath = getDashboardPath(response.data.user.role as UserRole);
-          router.push(dashboardPath);
+          return {
+            success: true,
+            role: userRole,
+            redirectPath: getDashboardPath(userRole),
+          };
         }
 
         return { success: true };
@@ -190,7 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
       }
     },
-    [router]
+    []
   );
 
   const logout = useCallback(async () => {
@@ -198,9 +203,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Call logout API to clear HTTP-only cookies
       await apiLogout();
     } finally {
-      // Clear all local auth data
+      // Clear all local display data (auth is handled via HTTP-only cookies)
       localStorage.removeItem(USER_CACHE_KEY);
-      // Clear legacy tokens if any (migration)
+      // Clear any legacy tokens that might exist from old versions
+      localStorage.removeItem('accessToken');
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       // Clear display cookie

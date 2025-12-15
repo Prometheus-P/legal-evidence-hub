@@ -28,6 +28,7 @@ from app.db.models import (
     AssetCategory,
     AssetOwnership,
     AssetNature,
+    NotificationType,
 )
 
 
@@ -560,10 +561,10 @@ class AuditLogListResponse(BaseModel):
 
 
 # ============================================
-# Messaging Schemas
+# Messaging Schemas (Legacy - for case-based messaging)
 # ============================================
-class MessageCreate(BaseModel):
-    """Message creation request schema"""
+class MessageCreateLegacy(BaseModel):
+    """Message creation request schema (case-based)"""
     case_id: str
     recipient_id: str
     content: str = Field(..., min_length=1)
@@ -587,8 +588,8 @@ class MessageOut(BaseModel):
         from_attributes = True
 
 
-class MessageListResponse(BaseModel):
-    """Message list response schema"""
+class MessageListResponseLegacy(BaseModel):
+    """Message list response schema (case-based)"""
     messages: List[MessageOut]
     total: int
     unread_count: int = 0
@@ -1396,3 +1397,166 @@ class DivisionSummaryResponse(BaseModel):
 
 # Rebuild models with forward references
 AssetSheetSummary.model_rebuild()
+
+
+# ============================================
+# Notification Schemas (Issue #295 - FR-007)
+# ============================================
+class NotificationCreate(BaseModel):
+    """Create notification request schema"""
+    user_id: str
+    type: NotificationType = NotificationType.SYSTEM
+    title: str = Field(..., min_length=1, max_length=100)
+    content: str = Field(..., min_length=1, max_length=500)
+    related_id: Optional[str] = None
+
+
+class NotificationResponse(BaseModel):
+    """Notification response schema"""
+    id: str
+    user_id: str
+    type: NotificationType
+    title: str
+    content: str
+    is_read: bool
+    related_id: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class NotificationListResponse(BaseModel):
+    """Notification list response schema"""
+    notifications: List[NotificationResponse]
+    unread_count: int
+
+
+class NotificationReadAllResponse(BaseModel):
+    """Response for marking all notifications as read"""
+    updated_count: int
+
+
+# ============================================
+# Message Schemas (Issue #296 - FR-008)
+# ============================================
+class MessageCreate(BaseModel):
+    """Create message request schema"""
+    recipient_id: str
+    subject: Optional[str] = Field(None, max_length=200)
+    content: str = Field(..., min_length=1)
+    case_id: Optional[str] = None
+
+
+class MessageResponse(BaseModel):
+    """Message response schema"""
+    id: str
+    sender_id: str
+    recipient_id: str
+    subject: Optional[str] = None
+    content: str
+    case_id: Optional[str] = None
+    is_read: bool
+    read_at: Optional[datetime] = None
+    created_at: datetime
+    # Include sender/recipient info for convenience
+    sender_name: Optional[str] = None
+    recipient_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class MessageListResponse(BaseModel):
+    """Message list response schema"""
+    messages: List[MessageResponse]
+    total: int
+    page: int
+    limit: int
+
+
+# ============================================
+# Client Contact Schemas (Issue #297 - FR-009~010, FR-015)
+# ============================================
+class ClientContactCreate(BaseModel):
+    """Create client contact request schema"""
+    name: str = Field(..., min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
+    email: Optional[EmailStr] = None
+    memo: Optional[str] = None
+
+
+class ClientContactUpdate(BaseModel):
+    """Update client contact request schema"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
+    email: Optional[EmailStr] = None
+    memo: Optional[str] = None
+
+
+class ClientContactResponse(BaseModel):
+    """Client contact response schema"""
+    id: str
+    lawyer_id: str
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    memo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ClientContactListResponse(BaseModel):
+    """Client contact list response schema"""
+    items: List[ClientContactResponse]
+    total: int
+    page: int
+    limit: int
+
+
+# ============================================
+# Detective Contact Schemas (Issue #298 - FR-011~012, FR-016)
+# ============================================
+class DetectiveContactCreate(BaseModel):
+    """Create detective contact request schema"""
+    name: str = Field(..., min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
+    email: Optional[EmailStr] = None
+    specialty: Optional[str] = Field(None, max_length=100)
+    memo: Optional[str] = None
+
+
+class DetectiveContactUpdate(BaseModel):
+    """Update detective contact request schema"""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
+    email: Optional[EmailStr] = None
+    specialty: Optional[str] = Field(None, max_length=100)
+    memo: Optional[str] = None
+
+
+class DetectiveContactResponse(BaseModel):
+    """Detective contact response schema"""
+    id: str
+    lawyer_id: str
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    specialty: Optional[str] = None
+    memo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DetectiveContactListResponse(BaseModel):
+    """Detective contact list response schema"""
+    items: List[DetectiveContactResponse]
+    total: int
+    page: int
+    limit: int

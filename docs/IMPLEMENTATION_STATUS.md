@@ -1,10 +1,49 @@
 # LEH 서비스 구현 현황
 
-**최종 업데이트:** 2025-12-04
-**브랜치:** L-integration
-**관련 문서:** `IDEAS_IMPLEMENTATION_PLAN.md`
+**최종 업데이트:** 2025-12-12
+**현재 브랜치:** `011-production-bug-fixes`
+**참고 문서:** `docs/IDEAS_IMPLEMENTATION_PLAN.md`, `docs/guides/plan.md`
 
 ---
+
+## 이번 스프린트 요약 (011-production-bug-fixes)
+
+| 상태 | 항목 | 내용 |
+|------|------|------|
+| ✅ 완료 | `useBeforeUnload` 도입 | InvoiceForm/EventForm에 공통 훅 적용, 더티 상태 확인 후 confirmNavigation 수행 |
+| ✅ 완료 | 모달 URL 동기화 | Billing/Calendar 페이지의 생성·수정 모달을 `useModalState`로 이관, 뒤로가기와 deep link 지원 |
+| ✅ 완료 | Landing/Login 네비게이션 | `LandingNav` 에 인증 상태 주입, 로그인 사용자는 로그아웃 CTA 노출 |
+| ⚠️ 모니터링 | 모달 딥링크 UX | URL에서 바로 열린 모달을 닫을 때 `router.back()`이 이전 페이지로 이동할 수 있어 QA 필요 |
+
+### 완료된 작업
+- `frontend/src/components/lawyer/InvoiceForm.tsx`  
+  - `handleCancel` 경유로 취소 버튼을 통합해 `useBeforeUnload` 경고가 항상 노출되도록 수정.
+- `frontend/src/app/lawyer/billing/page.tsx`, `frontend/src/app/lawyer/calendar/page.tsx`  
+  - `useModalState` 기반으로 모달을 열고 닫아 URL 파라미터와 브라우저 히스토리를 일치.
+  - Billing/Calendar 양쪽에서 동일한 모달 컴포넌트(`Modal`) 사용.
+- `frontend/src/app/login/page.tsx`, `frontend/src/app/page.tsx`, `frontend/src/components/landing/LandingNav.tsx`  
+  - Landing 헤더를 로그인 페이지에서도 재사용하고, 인증 상태에 따라 로그인/로그아웃 CTA 토글.
+
+### 남은 리스크 / TODO
+1. **모달 딥링크 UX** – `useModalState`의 기본 `router.back()` 동작이 URL로 직접 진입한 사용자를 이전 페이지로 되돌릴 수 있음. QA 후 필요 시 `replace` 옵션 고려.
+2. **로그아웃 실패 핸들링** – LandingNav에서 로그아웃 실패 시 사용자 알림 미구현. 토스트/Alert 추가 검토.
+3. **문서 반영 범위 확대** – `docs/guides/plan.md` TDD 섹션은 Phase 기반이라 최신 버그픽스 플로우와 괴리가 있음. 차기 스프린트에서 정리.
+
+### QA & 모니터링
+- Billing ↔ Calendar 모달을 URL 파라미터로 직접 열고, 뒤로가기로 닫히는지 수동 확인.
+- Invoice/Event 폼에서 값 수정 후 창/라우팅 시도 시 confirm 다이얼로그가 노출되는지 브라우저별 확인.
+- 로그인 상태에서 Landing → 로그아웃 → 로그인 화면 이동 플로우 리그레션 테스트.
+
+### 참고 이슈 / 파일
+- Hooks: `frontend/src/hooks/useModalState.ts`, `frontend/src/hooks/useBeforeUnload.ts`
+- UI: `frontend/src/components/primitives/Modal/Modal.tsx`
+- Auth: `frontend/src/contexts/AuthContext.tsx`, `frontend/src/hooks/useAuth.ts`
+
+---
+
+## Legacy Phase 기록 (보존용)
+
+> 아래 내용은 2025-12-04 기준 Phase 1~3 진행 상황을 정리한 히스토리입니다. 최신 스프린트 정보는 위 "이번 스프린트 요약"을 참고하세요.
 
 ## 전체 진행 현황
 

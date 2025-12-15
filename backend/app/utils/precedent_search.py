@@ -5,7 +5,7 @@ This module extends qdrant.py with precedent-specific search functionality.
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict
 from qdrant_client.http.models import Distance, VectorParams
 
 from app.utils.qdrant import (

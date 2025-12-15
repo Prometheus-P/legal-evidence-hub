@@ -1,23 +1,23 @@
-# Implementation Plan: Production Bug Fixes
+# Implementation Plan: Production Bug Fixes & Lawyer Portal Completion
 
-**Branch**: `011-production-bug-fixes` | **Date**: 2025-12-11 | **Spec**: [spec.md](spec.md)
+**Branch**: `011-production-bug-fixes` | **Date**: 2025-12-12 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `/specs/011-production-bug-fixes/spec.md`
 
 ## Summary
 
-로그인 성공 후 대시보드로 리다이렉트되지 않고 로그인 페이지로 돌아가는 버그를 수정한다. HTTP-only 쿠키 기반 JWT 인증 시스템에서 프론트엔드-백엔드 간 쿠키 전달 문제와 race condition을 분석하고 해결한다. 프론트엔드 우선 접근으로 시작하되 필요시 백엔드도 수정 가능.
+프로덕션 배포 사이트의 로그인 리다이렉트 버그를 수정하고, Lawyer 포털의 핵심 기능(알림 드롭다운, 메시지 CRUD, 의뢰인/탐정 관리)을 완성한다. HTTP-only 쿠키 기반 JWT 인증의 cross-origin 문제 해결과 역할별 라우팅 정상화가 핵심이며, 이후 CRUD 기능 구현으로 실제 업무 수행이 가능한 상태로 만든다.
 
 ## Technical Context
 
 **Language/Version**: Python 3.11+ (Backend), TypeScript 5.x (Frontend)
-**Primary Dependencies**: FastAPI, Next.js 14, jose (JWT), Tailwind CSS
-**Storage**: PostgreSQL (RDS), HTTP-only Cookies (JWT 토큰)
-**Testing**: pytest (Backend), Jest + React Testing Library (Frontend)
-**Target Platform**: AWS CloudFront (Frontend), AWS EC2/Lambda (Backend API)
-**Project Type**: Web application (frontend + backend)
-**Performance Goals**: 로그인→대시보드 3초 이내 (SC-003)
-**Constraints**: HTTP-only 쿠키 사용 (XSS 방지), Cross-origin 환경 (CloudFront ↔ API)
-**Scale/Scope**: 3 user roles (lawyer, client, detective), 단일 로그인 버그 수정
+**Primary Dependencies**: FastAPI, Next.js 14, React 18, Tailwind CSS, jose (JWT)
+**Storage**: PostgreSQL (RDS), HTTP-only Cookies (JWT)
+**Testing**: pytest (Backend), Jest + React Testing Library (Frontend), Playwright (E2E)
+**Target Platform**: Web (CloudFront CDN, cross-origin API at api.legalevidence.hub)
+**Project Type**: Web application (Backend + Frontend)
+**Performance Goals**: 로그인 → 대시보드 도달 3초 이내
+**Constraints**: HTTP-only 쿠키 (SameSite=None, Secure for cross-origin), CloudFront /api proxy
+**Scale/Scope**: 3개 역할 (lawyer, client, detective), 16개 FR, 8개 SC
 
 ## Constitution Check
 
@@ -25,16 +25,16 @@
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| I. Evidence Integrity | N/A | 이 기능은 증거 처리와 무관 |
-| II. Case Isolation | N/A | 인증은 케이스 레벨 이전에 발생 |
-| III. No Auto-Submit | N/A | AI 출력 없음 |
-| IV. AWS-Only Storage | ✅ | HTTP-only 쿠키 사용 (브라우저 내장 저장) |
-| V. Clean Architecture | ✅ | 기존 구조 유지 (Routers → Services) |
-| VI. Branch Protection | ✅ | feat/* 브랜치에서 작업, PR 통해 dev → main |
-| VII. TDD Cycle | ✅ | 버그 수정 전 테스트 작성 |
-| VIII. Semantic Versioning | ✅ | PATCH 버전으로 릴리스 (버그 수정) |
+| I. Evidence Integrity | N/A | 이 기능은 증거 업로드를 다루지 않음 |
+| II. Case Isolation | N/A | RAG 인덱스 변경 없음 |
+| III. No Auto-Submit | N/A | AI 생성 콘텐츠 없음 |
+| IV. AWS-Only Data Storage | PASS | 모든 데이터 AWS 내 유지 (RDS, S3) |
+| V. Clean Architecture | PASS | Routers → Services → Repositories 패턴 준수 예정 |
+| VI. Branch Protection | PASS | feat/* → dev → main PR 워크플로우 준수 |
+| VII. TDD Cycle | PASS | Frontend 컴포넌트 테스트 작성 예정 |
+| VIII. Semantic Versioning | PASS | 완료 시 v0.2.1 또는 v0.3.0 태그 |
 
-**Gate Status**: ✅ PASSED - No violations
+**Gate Result**: PASS - 모든 관련 원칙 준수
 
 ## Project Structure
 
@@ -43,9 +43,14 @@
 ```text
 specs/011-production-bug-fixes/
 ├── plan.md              # This file
-├── research.md          # Phase 0 output - Auth flow analysis
-├── data-model.md        # Phase 1 output - Auth state entities
-├── quickstart.md        # Phase 1 output - Verification steps
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+│   ├── notifications-api.yaml
+│   ├── messages-api.yaml
+│   ├── clients-api.yaml
+│   └── detectives-api.yaml
 └── tasks.md             # Phase 2 output (/speckit.tasks)
 ```
 
@@ -55,76 +60,101 @@ specs/011-production-bug-fixes/
 backend/
 ├── app/
 │   ├── api/
-│   │   └── auth.py           # 로그인 API, 쿠키 설정
-│   └── core/
-│       ├── security.py       # JWT 생성/검증
-│       └── config.py         # CORS, Cookie 설정
+│   │   ├── auth.py              # 로그인/쿠키 설정 수정
+│   │   ├── notifications.py     # NEW: 알림 API
+│   │   ├── messages.py          # NEW: 메시지 CRUD API
+│   │   ├── clients.py           # NEW: 의뢰인 CRUD API
+│   │   └── detectives.py        # NEW: 탐정 CRUD API
+│   ├── services/
+│   │   ├── notification_service.py  # NEW
+│   │   ├── message_service.py       # NEW
+│   │   ├── client_service.py        # NEW
+│   │   └── detective_service.py     # NEW
+│   ├── repositories/
+│   │   ├── notification_repository.py  # NEW
+│   │   ├── message_repository.py       # NEW
+│   │   ├── client_repository.py        # NEW
+│   │   └── detective_repository.py     # NEW
+│   └── db/
+│       ├── models.py            # Notification, Message, Client, Detective 모델
+│       └── schemas.py           # Pydantic 스키마 추가
 └── tests/
-    └── contract/
-        └── test_auth.py      # 인증 계약 테스트
+    ├── contract/
+    │   ├── test_notifications.py
+    │   ├── test_messages.py
+    │   ├── test_clients.py
+    │   └── test_detectives.py
+    └── unit/
 
 frontend/
 ├── src/
 │   ├── app/
-│   │   └── login/page.tsx    # 로그인 페이지
+│   │   ├── lawyer/
+│   │   │   ├── dashboard/page.tsx  # 대시보드 권한 수정
+│   │   │   ├── clients/page.tsx    # 의뢰인 추가 버튼
+│   │   │   ├── investigators/page.tsx  # 탐정 추가 버튼
+│   │   │   └── messages/page.tsx   # 메시지 CRUD UI
+│   │   └── login/page.tsx          # 리다이렉트 로직 수정
 │   ├── components/
+│   │   ├── shared/
+│   │   │   └── NotificationDropdown.tsx  # NEW: 알림 드롭다운
+│   │   ├── lawyer/
+│   │   │   ├── ClientForm.tsx      # NEW: 의뢰인 추가 폼
+│   │   │   ├── DetectiveForm.tsx   # NEW: 탐정 추가 폼
+│   │   │   └── MessageComposer.tsx # NEW: 메시지 작성
 │   │   └── auth/
-│   │       └── LoginForm.tsx # 로그인 폼 컴포넌트
-│   ├── contexts/
-│   │   └── AuthContext.tsx   # 인증 상태 관리
+│   │       └── RoleGuard.tsx       # 역할 기반 접근 제어 수정
 │   ├── hooks/
-│   │   └── useAuth.ts        # 인증 훅
-│   ├── lib/
-│   │   └── api/
-│   │       ├── auth.ts       # 인증 API 클라이언트
-│   │       └── client.ts     # HTTP 클라이언트 (credentials)
-│   └── middleware.ts         # 라우트 보호
+│   │   ├── useNotifications.ts     # NEW
+│   │   ├── useMessages.ts          # 기존 확장
+│   │   ├── useClients.ts           # NEW
+│   │   └── useDetectives.ts        # NEW
+│   ├── lib/api/
+│   │   ├── notifications.ts        # NEW
+│   │   ├── messages.ts             # 기존 확장
+│   │   ├── clients.ts              # NEW
+│   │   └── detectives.ts           # NEW
+│   └── middleware.ts               # 역할별 라우팅 수정
 └── src/__tests__/
-    └── auth/
-        └── login-flow.test.tsx  # 로그인 플로우 테스트
+    ├── components/
+    │   ├── NotificationDropdown.test.tsx
+    │   ├── ClientForm.test.tsx
+    │   └── DetectiveForm.test.tsx
+    └── hooks/
 ```
 
-**Structure Decision**: Web application (frontend + backend) - 기존 LEH 프로젝트 구조 유지
-
-## Implementation Phases
-
-### Phase 1: Diagnosis & Fix (Critical Path)
-
-1. **Cross-Origin Cookie Investigation**
-   - Production 환경에서 CloudFront → API 간 쿠키 전달 검증
-   - `credentials: 'include'` 설정 확인
-   - CORS_ORIGINS, COOKIE_SAMESITE, COOKIE_SECURE 설정 검증
-
-2. **Race Condition 검증**
-   - JUST_LOGGED_IN_KEY sessionStorage 플래그 동작 확인
-   - router.push() 전에 모든 상태가 저장되는지 검증
-
-3. **Fix Implementation**
-   - 식별된 근본 원인에 따른 수정
-   - Frontend: AuthContext, middleware
-   - Backend (필요시): Cookie 설정, CORS 설정
-
-### Phase 2: Verification & Testing
-
-1. **TDD 테스트 작성**
-   - 로그인 → 대시보드 리다이렉트 플로우 테스트
-   - 페이지 새로고침 후 상태 유지 테스트
-   - 뒤로가기 버튼 처리 테스트
-
-2. **E2E 테스트 (Playwright)**
-   - Production URL에서 실제 로그인 플로우 테스트
+**Structure Decision**: Web application (Backend + Frontend) 구조 사용. 기존 LEH 아키텍처 유지하며 신규 API 엔드포인트와 컴포넌트 추가.
 
 ## Complexity Tracking
 
-> No Constitution violations to justify
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|-----------|------------|-------------------------------------|
+| N/A | 모든 Constitution 원칙 준수 | - |
 
-## Key Investigation Points
+## Implementation Phases
 
-Based on the auth flow research, focus areas for debugging:
+### Phase 1: 로그인/인증 버그 수정 (US1)
+- 쿠키 cross-origin 설정 수정 (SameSite=None, Secure)
+- 역할별 대시보드 리다이렉트 정상화
+- 페이지 새로고침 시 인증 상태 유지
+- E2E 테스트로 검증
 
-| Area | Files | Potential Issue |
-|------|-------|-----------------|
-| Cookie Domain | `backend/app/api/auth.py:54,80,85` | COOKIE_DOMAIN이 production domain과 불일치 가능 |
-| Cross-Origin | `backend/app/core/config.py` | SameSite=None + Secure=True 필요 (HTTPS cross-origin) |
-| Middleware Sync | `frontend/src/middleware.ts:158-164` | user_data 쿠키와 실제 세션 상태 불일치 가능 |
-| Race Condition | `frontend/src/contexts/AuthContext.tsx:182` | router.push() 전 sessionStorage 저장 완료 필요 |
+### Phase 2: 알림 드롭다운 구현 (FR-007)
+- Backend: Notification 모델 및 API
+- Frontend: NotificationDropdown 컴포넌트
+- 알림 유형: case_update, message, system
+
+### Phase 3: 메시지 CRUD (FR-008)
+- Backend: Message 모델 및 CRUD API
+- Frontend: 메시지 목록, 상세, 작성, 삭제 UI
+- API 클라이언트 및 훅 구현
+
+### Phase 4: 의뢰인/탐정 관리 (FR-009~016)
+- Backend: Client, Detective 모델 및 CRUD API
+- Frontend: 추가/수정 폼, 목록 UI
+- 케이스 연결은 별도 기능으로 분리
+
+### Phase 5: Dashboard 접근권한 (FR-013)
+- middleware.ts 역할 체크 로직 검증
+- RoleGuard 컴포넌트 동작 확인
+- 페이지 렌더링 오류 디버깅

@@ -155,11 +155,11 @@ export function MessagesPageContent({
       {/* Page Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             {titles[portalType]}
           </h1>
           {totalUnread > 0 && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               읽지 않은 메시지 {totalUnread}건
             </p>
           )}
@@ -177,7 +177,7 @@ export function MessagesPageContent({
                   : 'bg-red-500'
               }`}
             />
-            <span className="text-gray-500">
+            <span className="text-gray-500 dark:text-gray-400">
               {wsStatus === 'connected'
                 ? '실시간 연결됨'
                 : wsStatus === 'connecting'
@@ -189,10 +189,10 @@ export function MessagesPageContent({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="flex-1 flex bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700 overflow-hidden">
         {/* Conversation List (Left Panel) */}
         <div
-          className={`w-full md:w-80 lg:w-96 border-r border-gray-200 flex-shrink-0 ${
+          className={`w-full md:w-80 lg:w-96 border-r border-gray-200 dark:border-neutral-700 flex-shrink-0 ${
             !isMobileListView ? 'hidden md:block' : ''
           }`}
         >
@@ -226,15 +226,15 @@ export function MessagesPageContent({
           {selectedConversation ? (
             <>
               {/* Conversation Header */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900">
                 {/* Back button (mobile only) */}
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="md:hidden p-1 -ml-1 hover:bg-gray-200 rounded-lg"
+                  className="md:hidden p-1 -ml-1 hover:bg-gray-200 dark:hover:bg-neutral-800 rounded-lg"
                 >
                   <svg
-                    className="w-5 h-5 text-gray-500"
+                    className="w-5 h-5 text-gray-500 dark:text-gray-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -255,10 +255,10 @@ export function MessagesPageContent({
 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
+                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
                     {selectedConversation.other_user.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {selectedConversation.case_title}
                   </p>
                 </div>
@@ -294,10 +294,10 @@ export function MessagesPageContent({
               />
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500">
+            <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
               <div className="text-center">
                 <svg
-                  className="w-16 h-16 mx-auto text-gray-300 mb-4"
+                  className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -309,8 +309,8 @@ export function MessagesPageContent({
                     d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                   />
                 </svg>
-                <p className="text-lg font-medium text-gray-900">대화를 선택하세요</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-lg font-medium text-gray-900 dark:text-gray-100">대화를 선택하세요</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   왼쪽 목록에서 대화를 선택하여 메시지를 확인하세요.
                 </p>
               </div>

@@ -146,11 +146,25 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException) 
 async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """
     Handler for request validation errors (422)
+
+    SECURITY (Issue #281): Only log field locations and error types, not input values.
+    User input may contain sensitive data (passwords, personal info).
     """
     error_id = str(uuid.uuid4())
 
+    # Sanitize errors: exclude 'input' field to prevent logging sensitive user data
+    sanitized_errors = [
+        {
+            "loc": e.get("loc"),
+            "msg": e.get("msg"),
+            "type": e.get("type")
+            # 'input' field intentionally excluded for security
+        }
+        for e in exc.errors()
+    ]
+
     logger.warning(
-        f"Validation Error [{error_id}]: {exc.errors()}",
+        f"Validation Error [{error_id}]: {sanitized_errors}",
         extra={
             "error_id": error_id,
             "path": request.url.path,

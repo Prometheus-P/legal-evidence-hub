@@ -2,7 +2,9 @@
 
 LEH 프로젝트의 모든 문서를 역할별로 정리했습니다.
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-12 _(Sprint: 011-production-bug-fixes)_
+
+> 최신 스프린트 요약은 [`docs/IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md)를 참고하세요.
 
 ---
 
@@ -90,5 +92,6 @@ LEH 프로젝트의 모든 문서를 역할별로 정리했습니다.
 ## Quick Links
 
 - **프로젝트 개요**: [README.md](../README.md)
+- **스프린트 현황**: [docs/IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)
 - **AI 에이전트 규칙**: [CLAUDE.md](../CLAUDE.md)
 - **환경 변수 템플릿**: [.env.example](../.env.example)

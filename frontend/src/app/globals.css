@@ -35,7 +35,7 @@
 
   /* Base body styles */
   body {
-    @apply bg-neutral-50 text-neutral-800 antialiased;
+    @apply bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-gray-100 antialiased;
     font-family: var(--font-pretendard);
   }
 
@@ -85,8 +85,8 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold
-           hover:bg-primary-light active:bg-primary-light
+    @apply bg-white dark:bg-neutral-800 text-primary border-2 border-primary px-6 py-3 rounded-lg font-semibold
+           hover:bg-primary-light dark:hover:bg-neutral-700 active:bg-primary-light dark:active:bg-neutral-600
            transition-colors duration-200
            focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;

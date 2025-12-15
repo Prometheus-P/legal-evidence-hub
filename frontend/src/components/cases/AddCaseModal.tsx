@@ -81,14 +81,14 @@ const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose, onSuccess 
     >
       <form ref={formRef} id="add-case-form" onSubmit={handleSubmit} className="space-y-4">
         {errorMessage && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm" role="alert">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm" role="alert">
             {errorMessage}
           </div>
         )}
         <div>
           <label
             htmlFor="case-title"
-            className="block text-sm font-medium text-neutral-700 mb-1.5"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300 mb-1.5"
           >
             사건명 <span className="text-red-500">*</span>
           </label>
@@ -98,17 +98,17 @@ const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose, onSuccess 
             type="text"
             placeholder="예: 김철수 이혼 소송"
             required
-            className="w-full h-11 px-3 text-base block rounded-lg border bg-white text-neutral-900
-                       border-neutral-300 hover:border-neutral-400
+            className="w-full h-11 px-3 text-base block rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-gray-100
+                       border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500
                        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                       placeholder:text-neutral-400 transition-colors duration-200"
+                       placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-colors duration-200"
           />
         </div>
 
         <div>
           <label
             htmlFor="client-name"
-            className="block text-sm font-medium text-neutral-700 mb-1.5"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300 mb-1.5"
           >
             의뢰인 이름 <span className="text-red-500">*</span>
           </label>
@@ -118,10 +118,10 @@ const AddCaseModal: React.FC<AddCaseModalProps> = ({ isOpen, onClose, onSuccess 
             type="text"
             placeholder="예: 김철수"
             required
-            className="w-full h-11 px-3 text-base block rounded-lg border bg-white text-neutral-900
-                       border-neutral-300 hover:border-neutral-400
+            className="w-full h-11 px-3 text-base block rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-gray-100
+                       border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500
                        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
-                       placeholder:text-neutral-400 transition-colors duration-200"
+                       placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-colors duration-200"
           />
         </div>
 

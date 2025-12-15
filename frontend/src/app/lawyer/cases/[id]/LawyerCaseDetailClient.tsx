@@ -13,6 +13,9 @@ import Link from 'next/link';
 import { apiClient } from '@/lib/api/client';
 import ExplainerCard from '@/components/cases/ExplainerCard';
 import ShareSummaryModal from '@/components/cases/ShareSummaryModal';
+import EditCaseModal from '@/components/cases/EditCaseModal';
+import { ApiCase } from '@/lib/api/cases';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PrecedentPanel } from '@/components/precedent';
 
 interface CaseDetail {
@@ -74,6 +77,9 @@ interface LawyerCaseDetailClientProps {
 export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientProps) {
   const router = useRouter();
   const caseId = id;
+  const detailPath = caseId ? getCaseDetailPath('lawyer', caseId) : '/lawyer/cases/detail';
+  const procedurePath = caseId ? getLawyerCasePath('procedure', caseId) : '/lawyer/cases/procedure';
+  const assetsPath = caseId ? getLawyerCasePath('assets', caseId) : '/lawyer/cases/assets';
 
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +87,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
   const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members'>('evidence');
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const fetchCaseDetail = async () => {
@@ -169,7 +176,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
       </nav>
 
       {/* Header */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -193,8 +200,8 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
           </div>
           <div className="flex gap-2">
             <Link
-              href={`/lawyer/cases/${caseId}/procedure`}
-              className="px-4 py-2 border border-blue-300 text-blue-700 rounded-lg text-sm hover:bg-blue-50 flex items-center gap-2"
+              href={procedurePath}
+              className="px-4 py-2 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 rounded-lg text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -202,8 +209,8 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
               절차 진행
             </Link>
             <Link
-              href={`/lawyer/cases/${caseId}/assets`}
-              className="px-4 py-2 border border-green-300 text-green-700 rounded-lg text-sm hover:bg-green-50 flex items-center gap-2"
+              href={assetsPath}
+              className="px-4 py-2 border border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg text-sm hover:bg-green-50 dark:hover:bg-green-900/30 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -212,14 +219,15 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
             </Link>
             <button
               type="button"
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+              onClick={() => setShowEditModal(true)}
+              className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-neutral-700"
             >
               수정
             </button>
             <button
               type="button"
               onClick={() => setShowSummaryCard(true)}
-              className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg text-sm hover:bg-purple-50 flex items-center gap-2"
+              className="px-4 py-2 border border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 rounded-lg text-sm hover:bg-purple-50 dark:hover:bg-purple-900/30 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -236,7 +244,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
         </div>
 
         {/* Meta Info */}
-        <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-[var(--color-text-secondary)]">담당자</span>
             <p className="font-medium">{caseDetail.ownerName || '-'}</p>
@@ -261,13 +269,13 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
 
         {/* AI Labels */}
         {caseDetail.aiLabels.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
             <span className="text-sm text-[var(--color-text-secondary)]">AI 분석 태그</span>
             <div className="flex flex-wrap gap-2 mt-2">
               {caseDetail.aiLabels.map((label, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-purple-100 text-purple-800 text-sm rounded-full"
+                  className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm rounded-full"
                 >
                   {label}
                 </span>
@@ -279,17 +287,17 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
 
       {/* AI Summary */}
       {caseDetail.aiSummary && (
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
           <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
-            <h3 className="font-semibold text-purple-800">AI 분석 요약</h3>
-            <span className="text-xs text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full">
+            <h3 className="font-semibold text-purple-800 dark:text-purple-300">AI 분석 요약</h3>
+            <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded-full">
               Preview Only
             </span>
           </div>
-          <p className="text-purple-900">{caseDetail.aiSummary}</p>
+          <p className="text-purple-900 dark:text-purple-200">{caseDetail.aiSummary}</p>
         </div>
       )}
 
@@ -297,7 +305,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
       <PrecedentPanel caseId={caseId} />
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-neutral-700">
         <nav className="flex gap-6">
           {[
             { id: 'evidence', label: '증거 자료', count: caseDetail.evidenceCount },
@@ -318,7 +326,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
             >
               {tab.label}
               {tab.count > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+                <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 rounded-full text-xs">
                   {tab.count}
                 </span>
               )}
@@ -328,7 +336,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
         {activeTab === 'evidence' && (
           <div>
             {caseDetail.evidenceCount > 0 ? (
@@ -336,14 +344,14 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
                 {caseDetail.evidenceSummary.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-700 rounded-lg"
                   >
                     <span className="font-medium">{item.type}</span>
                     <span className="text-[var(--color-text-secondary)]">{item.count}건</span>
                   </div>
                 ))}
                 <Link
-                  href={`/cases/${caseId}`}
+                  href={detailPath}
                   className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:underline"
                 >
                   전체 증거 자료 보기
@@ -391,7 +399,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
                 {caseDetail.members.map((member, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-700 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white text-sm font-medium">
@@ -431,6 +439,31 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
         caseTitle={caseDetail.title}
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
+      />
+
+      {/* Edit Case Modal */}
+      <EditCaseModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        caseData={{
+          id: caseDetail.id,
+          title: caseDetail.title,
+          clientName: caseDetail.clientName,
+          description: caseDetail.description,
+        }}
+        onSuccess={(updatedCase: ApiCase) => {
+          setCaseDetail((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  title: updatedCase.title,
+                  clientName: updatedCase.client_name,
+                  description: updatedCase.description,
+                  updatedAt: updatedCase.updated_at,
+                }
+              : null
+          );
+        }}
       />
     </div>
   );

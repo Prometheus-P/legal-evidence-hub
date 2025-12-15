@@ -25,9 +25,12 @@ export default defineConfig({
 
   /* Run local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    command: 'NEXT_PUBLIC_E2E_TEST=true npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 120 * 1000,
+    env: {
+      NEXT_PUBLIC_E2E_TEST: 'true',
+    },
   },
 });

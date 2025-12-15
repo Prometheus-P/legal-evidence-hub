@@ -16,6 +16,14 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import HomePage from '../../app/page';
 
+jest.mock('@/hooks/useAuth', () => ({
+    useAuth: () => ({
+        isAuthenticated: false,
+        isLoading: false,
+        logout: jest.fn(),
+    }),
+}));
+
 // Mock next/image
 jest.mock('next/image', () => ({
     __esModule: true,

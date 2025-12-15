@@ -4,7 +4,6 @@ Contract tests for Precedent API
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from fastapi.testclient import TestClient
 from fastapi import status
 

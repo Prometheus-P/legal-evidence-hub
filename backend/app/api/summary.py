@@ -5,7 +5,9 @@ US8 - 진행 상태 요약 카드 (Progress Summary Cards)
 Endpoints for generating and sharing case summary cards
 """
 
+import logging
 from io import BytesIO
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -13,6 +15,8 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_db, verify_case_read_access
 from app.services.summary_card_service import SummaryCardService
 from app.schemas.summary import CaseSummaryResponse
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/cases/{case_id}/summary", tags=["Summary"])
@@ -38,9 +42,10 @@ async def get_case_summary(
     try:
         return service.generate_summary(case_id)
     except ValueError as e:
+        logger.warning(f"Summary generation failed for case {case_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건 요약을 생성할 수 없습니다"
         )
 
 
@@ -74,9 +79,10 @@ async def get_case_summary_pdf(
         )
 
     except ValueError as e:
+        logger.warning(f"Summary PDF generation failed for case {case_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건 요약 PDF를 생성할 수 없습니다"
         )
 
 

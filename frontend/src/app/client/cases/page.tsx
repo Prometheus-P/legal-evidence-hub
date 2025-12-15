@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { getClientCases } from '@/lib/api/client-portal';
 import { ProgressBar } from '@/components/client/ProgressTracker';
 import type { ClientCaseListItem } from '@/types/client-portal';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 // Status badge colors
 function getStatusColor(status: string) {
@@ -47,7 +48,7 @@ function getStatusText(status: string) {
 function CaseCard({ caseItem }: { caseItem: ClientCaseListItem }) {
   return (
     <Link
-      href={`/client/cases/${caseItem.id}`}
+      href={getCaseDetailPath('client', caseItem.id)}
       className="block bg-white rounded-xl shadow-sm border border-[var(--color-border-default)] hover:shadow-md hover:border-[var(--color-primary)] transition-all"
     >
       <div className="p-5">

@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getDetectiveCases } from '@/lib/api/detective-portal';
 import type { CaseListItem, InvestigationStatus } from '@/types/detective-portal';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 type FilterStatus = InvestigationStatus | 'all';
 
@@ -168,11 +169,11 @@ export default function DetectiveCasesPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--color-border)]">
-                    {cases.map((caseItem) => (
+                      {cases.map((caseItem) => (
                       <tr key={caseItem.id} className="hover:bg-[var(--color-bg-secondary)]">
                         <td className="px-4 py-4">
                           <Link
-                            href={`/detective/cases/${caseItem.id}`}
+                            href={getCaseDetailPath('detective', caseItem.id)}
                             className="font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
                           >
                             {caseItem.title}
@@ -192,7 +193,7 @@ export default function DetectiveCasesPage() {
                         </td>
                         <td className="px-4 py-4 text-right">
                           <Link
-                            href={`/detective/cases/${caseItem.id}`}
+                            href={getCaseDetailPath('detective', caseItem.id)}
                             className="text-[var(--color-primary)] hover:underline"
                           >
                             상세보기

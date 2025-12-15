@@ -24,6 +24,7 @@ import {
 import { Evidence, EvidenceType } from '@/types/evidence';
 import { EvidenceStatusBadge } from './EvidenceStatusBadge';
 import { retryEvidence } from '@/lib/api/evidence';
+import { ConfidenceScore, LowConfidenceWarning } from '@/components/analysis';
 
 interface EvidenceCardProps {
   evidence: Evidence;
@@ -44,11 +45,11 @@ const typeIcons: Record<EvidenceType, React.ReactNode> = {
 
 // Color classes for evidence types
 const typeColors: Record<EvidenceType, string> = {
-  text: 'text-blue-500 bg-blue-50',
-  image: 'text-purple-500 bg-purple-50',
-  audio: 'text-green-500 bg-green-50',
-  video: 'text-red-500 bg-red-50',
-  pdf: 'text-orange-500 bg-orange-50',
+  text: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30',
+  image: 'text-purple-500 bg-purple-50 dark:bg-purple-900/30',
+  audio: 'text-green-500 bg-green-50 dark:bg-green-900/30',
+  video: 'text-red-500 bg-red-50 dark:bg-red-900/30',
+  pdf: 'text-orange-500 bg-orange-50 dark:bg-orange-900/30',
 };
 
 export function EvidenceCard({
@@ -84,18 +85,18 @@ export function EvidenceCard({
   const isCompleted = evidence.status === 'completed' || evidence.status === 'review_needed';
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <div className="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Header with type icon and status */}
-      <div className="flex items-start justify-between p-4 border-b border-gray-100">
+      <div className="flex items-start justify-between p-4 border-b border-gray-100 dark:border-neutral-700">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${typeColors[evidence.type]}`}>
             {typeIcons[evidence.type]}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-gray-900 truncate">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
               {evidence.filename}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {formatFileSize(evidence.size)} &middot;{' '}
               {new Date(evidence.uploadDate).toLocaleDateString('ko-KR')}
             </p>
@@ -109,11 +110,11 @@ export function EvidenceCard({
         {/* Processing indicator */}
         {isProcessing && (
           <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
               <RefreshCw className="w-4 h-4 animate-spin" />
               <span>AI 분석 진행 중...</span>
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-gray-100 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full animate-pulse"
                 style={{ width: '60%' }}
@@ -124,12 +125,12 @@ export function EvidenceCard({
 
         {/* Failed state with retry */}
         {isFailed && (
-          <div className="mb-4 p-3 bg-red-50 rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-700">분석 실패</p>
-                <p className="text-xs text-red-600 mt-1">
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">분석 실패</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                   AI 분석 중 오류가 발생했습니다.
                 </p>
                 {retryError && (
@@ -140,7 +141,7 @@ export function EvidenceCard({
             <button
               onClick={handleRetry}
               disabled={isRetrying}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-neutral-800 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
               {isRetrying ? '재시도 중...' : '재시도'}
@@ -155,7 +156,7 @@ export function EvidenceCard({
               <Sparkles className="w-3.5 h-3.5" />
               <span>AI 요약</span>
             </div>
-            <p className="text-sm text-gray-700 line-clamp-3">{evidence.summary}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">{evidence.summary}</p>
           </div>
         )}
 
@@ -166,27 +167,45 @@ export function EvidenceCard({
               {evidence.labels.slice(0, 4).map((label, idx) => (
                 <span
                   key={idx}
-                  className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
+                  className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 rounded-full"
                 >
                   {label}
                 </span>
               ))}
               {evidence.labels.length > 4 && (
-                <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-gray-400 rounded-full">
                   +{evidence.labels.length - 4}
                 </span>
               )}
             </div>
           </div>
         )}
+
+        {/* AI Confidence Score */}
+        {isCompleted && evidence.article840Tags && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400">AI 분석 신뢰도</span>
+              <ConfidenceScore score={evidence.article840Tags.confidence} size="sm" />
+            </div>
+            {evidence.article840Tags.confidence < 0.6 && (
+              <LowConfidenceWarning
+                confidence={evidence.article840Tags.confidence}
+                context="법적 태깅"
+                variant="inline"
+                dismissible={false}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Actions footer */}
-      <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex gap-2">
+      <div className="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-100 dark:border-neutral-700 flex gap-2">
         {onView && (
           <button
             onClick={() => onView(evidence)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-600 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             상세 보기
@@ -236,7 +255,7 @@ export function EvidenceCardGrid({
 }: EvidenceCardGridProps) {
   if (evidence.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
         <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
         <p>{emptyMessage}</p>
       </div>

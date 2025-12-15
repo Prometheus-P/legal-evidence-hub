@@ -86,7 +86,7 @@ describe('apiRequest', () => {
       await apiRequest('/test');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/test`,
+        `${API_BASE_URL}/api/test`,
         expect.objectContaining({
           credentials: 'include',
         })
@@ -283,7 +283,7 @@ describe('apiClient', () => {
     await apiClient.get('/test');
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/test`,
+      `${API_BASE_URL}/api/test`,
       expect.objectContaining({ method: 'GET' })
     );
   });
@@ -299,7 +299,7 @@ describe('apiClient', () => {
     await apiClient.post('/test', { name: 'Test' });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/test`,
+      `${API_BASE_URL}/api/test`,
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ name: 'Test' }),
@@ -318,7 +318,7 @@ describe('apiClient', () => {
     await apiClient.put('/test/1', { name: 'Updated' });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/test/1`,
+      `${API_BASE_URL}/api/test/1`,
       expect.objectContaining({
         method: 'PUT',
         body: JSON.stringify({ name: 'Updated' }),
@@ -337,7 +337,7 @@ describe('apiClient', () => {
     await apiClient.patch('/test/1', { name: 'Patched' });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/test/1`,
+      `${API_BASE_URL}/api/test/1`,
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ name: 'Patched' }),
@@ -356,7 +356,7 @@ describe('apiClient', () => {
     await apiClient.delete('/test/1');
 
     expect(mockFetch).toHaveBeenCalledWith(
-      `${API_BASE_URL}/test/1`,
+      `${API_BASE_URL}/api/test/1`,
       expect.objectContaining({ method: 'DELETE' })
     );
   });

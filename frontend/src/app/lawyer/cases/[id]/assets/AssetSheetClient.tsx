@@ -16,6 +16,7 @@ import { AssetForm, AssetTable, DivisionSummary } from '@/components/lawyer/asse
 // Using 'unknown' to bridge the gap until types are unified
 import type { Asset as ComponentAsset, DivisionSummary as ComponentDivisionSummary } from '@/types/asset';
 import type { Asset, CreateAssetRequest } from '@/types/assets';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 type ViewMode = 'table' | 'form';
 
@@ -25,6 +26,8 @@ interface AssetSheetClientProps {
 
 export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
   const router = useRouter();
+  const assetsPath = getLawyerCasePath('assets', caseId);
+  const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: assetsPath });
 
   const {
     assets,
@@ -118,7 +121,7 @@ export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
             {/* T073 - FR-028: Back button to case detail */}
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push(`/lawyer/cases/${caseId}`)}
+                onClick={() => router.push(detailPath)}
                 className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
               >
                 ← 뒤로

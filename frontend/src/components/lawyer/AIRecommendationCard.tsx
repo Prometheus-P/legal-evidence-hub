@@ -9,6 +9,7 @@
 'use client';
 
 import Link from 'next/link';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 export interface AIRecommendation {
   id: string;
@@ -46,13 +47,13 @@ function RecommendationItem({ item }: { item: AIRecommendation }) {
   const getActionLink = () => {
     switch (item.type) {
       case 'draft_review':
-        return `/lawyer/cases/${item.caseId}?tab=draft`;
+        return getCaseDetailPath('lawyer', item.caseId, { tab: 'draft' });
       case 'evidence_tagging':
-        return `/lawyer/cases/${item.caseId}?tab=evidence`;
+        return getCaseDetailPath('lawyer', item.caseId, { tab: 'evidence' });
       case 'asset_incomplete':
-        return `/lawyer/cases/${item.caseId}/assets`;
+        return getLawyerCasePath('assets', item.caseId);
       default:
-        return `/lawyer/cases/${item.caseId}`;
+        return getCaseDetailPath('lawyer', item.caseId);
     }
   };
 

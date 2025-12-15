@@ -9,6 +9,7 @@
 
 import Link from 'next/link';
 import { WeekItem as WeekItemType, EVENT_TYPE_LABELS, EVENT_TYPE_COLORS } from '@/lib/api/dashboard';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 interface WeeklyPreviewProps {
   items: WeekItemType[];
@@ -86,8 +87,8 @@ function WeekItem({ item }: { item: WeekItemType }) {
 
       {/* Link Arrow */}
       {item.case_id && (
-        <Link
-          href={`/lawyer/cases/${item.case_id}`}
+            <Link
+              href={getCaseDetailPath('lawyer', item.case_id)}
           className="flex-shrink-0 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-primary)] transition-colors"
         >
           <ChevronRightIcon />

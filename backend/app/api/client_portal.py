@@ -5,6 +5,8 @@ Client Portal API Router
 API endpoints for client portal including dashboard, case viewing, and evidence upload.
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -19,6 +21,8 @@ from app.schemas.client_portal import (
     EvidenceConfirmRequest,
     EvidenceConfirmResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/client", tags=["client-portal"])
 
@@ -45,9 +49,10 @@ async def get_client_dashboard(
     try:
         return service.get_dashboard(user_id)
     except ValueError as e:
+        logger.warning(f"Client dashboard not found for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="의뢰인 대시보드를 찾을 수 없습니다"
         )
 
 
@@ -95,12 +100,13 @@ async def get_client_case_detail(
     except PermissionError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this case"
+            detail="사건에 접근할 권한이 없습니다"
         )
     except ValueError as e:
+        logger.warning(f"Case detail not found for user {user_id}, case {case_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
+            detail="사건을 찾을 수 없습니다"
         )
 
 
@@ -160,12 +166,13 @@ async def request_evidence_upload(
     except PermissionError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this case"
+            detail="사건에 접근할 권한이 없습니다"
         )
     except ValueError as e:
+        logger.warning(f"Evidence upload request failed for case {case_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail="증거 업로드 요청에 실패했습니다. 입력값을 확인해주세요"
         )
 
 
@@ -196,16 +203,19 @@ async def confirm_evidence_upload(
     except ValueError as e:
         error_msg = str(e).lower()
         if "not found" in error_msg:
+            logger.warning(f"Evidence not found for confirmation: {evidence_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=str(e)
+                detail="증거를 찾을 수 없습니다"
             )
+        logger.warning(f"Evidence confirmation failed: {evidence_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail="증거 확인에 실패했습니다"
         )
     except PermissionError as e:
+        logger.warning(f"Permission denied for evidence confirmation: {evidence_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=str(e)
+            detail="증거 확인 권한이 없습니다"
         )

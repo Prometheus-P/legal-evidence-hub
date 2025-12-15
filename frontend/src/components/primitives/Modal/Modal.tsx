@@ -227,7 +227,7 @@ export function Modal({
         style={{ zIndex: 10000, position: 'relative' }}
         className={twMerge(
           clsx(
-            'bg-white rounded-xl shadow-xl',
+            'bg-white dark:bg-neutral-800 rounded-xl shadow-xl',
             'w-full max-h-[85vh] flex flex-col',
             'animate-scale-in',
             'focus:outline-none',
@@ -236,18 +236,18 @@ export function Modal({
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-6 border-b border-neutral-200">
+        <div className="flex items-start justify-between gap-4 p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex-1 min-w-0">
             <h2
               id={titleId}
-              className="text-xl font-bold text-secondary truncate"
+              className="text-xl font-bold text-secondary dark:text-gray-100 truncate"
             >
               {title}
             </h2>
             {description && (
               <p
                 id={descriptionId}
-                className="mt-1 text-sm text-neutral-500"
+                className="mt-1 text-sm text-neutral-500 dark:text-gray-400"
               >
                 {description}
               </p>
@@ -266,13 +266,13 @@ export function Modal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-neutral-800">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
+          <div className="flex justify-end gap-3 p-6 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 rounded-b-xl">
             {footer}
           </div>
         )}

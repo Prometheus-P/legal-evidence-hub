@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
 import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
@@ -18,7 +19,8 @@ import {
   getEvidence,
   UploadProgress
 } from '@/lib/api/evidence';
-import { getCase, Case } from '@/lib/api/cases';
+import { getCase, Case, ApiCase } from '@/lib/api/cases';
+import EditCaseModal from '@/components/cases/EditCaseModal';
 import { generateDraftPreview, DraftCitation as ApiDraftCitation } from '@/lib/api/draft';
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
 
@@ -46,9 +48,21 @@ type UploadStatus = {
 
 interface CaseDetailClientProps {
   id: string;
+  /** Default return URL if not specified in query params */
+  defaultReturnUrl?: string;
+  /** API base path for role-specific endpoints (e.g., '/lawyer') */
+  apiBasePath?: string;
 }
 
-export default function CaseDetailClient({ id }: CaseDetailClientProps) {
+function isValidCaseDetailTab(value: string): value is CaseDetailTab {
+  return value === 'evidence' || value === 'opponent' || value === 'timeline' || value === 'draft';
+}
+
+export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases', apiBasePath = '/lawyer' }: CaseDetailClientProps) {
+    // Issue #290: Support returnUrl for proper back navigation
+    const searchParams = useSearchParams();
+    const returnUrl = searchParams.get('returnUrl') || defaultReturnUrl;
+
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [isLoadingCase, setIsLoadingCase] = useState(true);
     const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
@@ -69,6 +83,14 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         completed: 0,
         total: 0,
     });
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    useEffect(() => {
+      const tabParam = searchParams.get('tab');
+      if (tabParam && isValidCaseDetailTab(tabParam) && tabParam !== activeTab) {
+        setActiveTab(tabParam);
+      }
+    }, [searchParams, activeTab]);
 
     const caseId = id || '';
 
@@ -108,7 +130,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
 
         const fetchCaseData = async () => {
             setIsLoadingCase(true);
-            const response = await getCase(caseId);
+            const response = await getCase(caseId, apiBasePath);
             if (response.data) {
                 setCaseData(response.data);
             }
@@ -116,7 +138,7 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
         };
 
         fetchCaseData();
-    }, [caseId]);
+    }, [caseId, apiBasePath]);
 
     // Auto-polling: silently check for status updates without full re-render
     useEffect(() => {
@@ -325,16 +347,26 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
             <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center">
-                        <Link href="/cases" className="mr-4 text-gray-500 hover:text-gray-800 transition-colors">
+                        {/* Issue #290: Use returnUrl for back navigation */}
+                        <Link href={returnUrl} className="mr-4 text-gray-500 hover:text-gray-800 transition-colors">
                             <ArrowLeft className="w-6 h-6" />
                         </Link>
                         <div>
-                            <h1 className="text-xl font-bold text-secondary">
+                            <h1 className="text-xl font-bold text-secondary dark:text-gray-100">
                                 {isLoadingCase ? '로딩 중...' : caseData?.title || '사건 정보 없음'}
                             </h1>
-                            <p className="text-xs text-gray-500">Case ID: {id}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Case ID: {id}</p>
                         </div>
                     </div>
+                    {caseData && (
+                        <button
+                            type="button"
+                            onClick={() => setShowEditModal(true)}
+                            className="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+                        >
+                            수정
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -569,6 +601,29 @@ export default function CaseDetailClient({ id }: CaseDetailClientProps) {
                 onGenerate={handleGenerateDraft}
                 evidenceList={evidenceList}
             />
+
+            {/* Edit Case Modal */}
+            {caseData && (
+                <EditCaseModal
+                    isOpen={showEditModal}
+                    onClose={() => setShowEditModal(false)}
+                    caseData={{
+                        id: caseData.id,
+                        title: caseData.title,
+                        clientName: caseData.client_name,
+                        description: caseData.description,
+                    }}
+                    onSuccess={(updatedCase: ApiCase) => {
+                        setCaseData({
+                            ...caseData,
+                            title: updatedCase.title,
+                            client_name: updatedCase.client_name,
+                            description: updatedCase.description,
+                            updated_at: updatedCase.updated_at,
+                        });
+                    }}
+                />
+            )}
         </div>
     );
 }

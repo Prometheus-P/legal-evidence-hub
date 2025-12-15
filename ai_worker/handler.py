@@ -47,8 +47,8 @@ from src.storage.schemas import EvidenceFile
 from src.analysis.article_840_tagger import Article840Tagger
 from src.analysis.summarizer import EvidenceSummarizer
 # 012-precedent-integration: T044-T047 자동 추출 모듈
-from src.analysis.person_extractor import PersonExtractor, extract_persons_from_messages
-from src.analysis.relationship_inferrer import RelationshipInferrer, infer_relationships
+from src.analysis.person_extractor import extract_persons_from_messages
+from src.analysis.relationship_inferrer import infer_relationships
 from src.api.backend_client import save_extracted_graph_to_backend
 from src.utils.logging_filter import SensitiveDataFilter
 from src.utils.logging import setup_lambda_logging

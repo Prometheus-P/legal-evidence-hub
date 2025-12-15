@@ -5,7 +5,7 @@ Precedent Search API Router
 엔드포인트: GET /cases/{case_id}/similar-precedents
 """
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, get_current_user_id

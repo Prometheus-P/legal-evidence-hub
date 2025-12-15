@@ -7,7 +7,10 @@
 
 import CaseAssetsClient from './CaseAssetsClient';
 
-// Static params for build-time generation
+// Allow dynamic routes not listed in generateStaticParams
+export const dynamicParams = true;
+
+// Pre-render placeholder routes for static export
 // Includes E2E test IDs (test-case-001, test-case-empty)
 export function generateStaticParams() {
   return [
@@ -19,15 +22,10 @@ export function generateStaticParams() {
   ];
 }
 
-// Allow dynamic routes not listed in generateStaticParams
-export const dynamicParams = true;
-
-interface Props {
-  params: Promise<{ id: string }>;
+interface PageProps {
+  params: { id: string };
 }
 
-export default async function CaseAssetsPage({ params }: Props) {
-  const { id } = await params;
-
-  return <CaseAssetsClient caseId={id} />;
+export default function CaseAssetsPage({ params }: PageProps) {
+  return <CaseAssetsClient caseId={params.id} />;
 }

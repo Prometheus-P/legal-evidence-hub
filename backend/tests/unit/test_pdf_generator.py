@@ -6,9 +6,8 @@ Strategy: Use mocks for WeasyPrint/Jinja2 to test logic without dependencies
 """
 
 import pytest
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import patch, MagicMock
 from datetime import datetime
-from io import BytesIO
 import sys
 import importlib
 
@@ -497,8 +496,6 @@ class TestPdfGeneratorMockedWithSysModules:
 
     def test_init_mocked_with_injected_modules(self):
         """Test __init__ with injected mock modules"""
-        import sys
-        import importlib
 
         # Create mock modules
         mock_weasyprint = MagicMock()

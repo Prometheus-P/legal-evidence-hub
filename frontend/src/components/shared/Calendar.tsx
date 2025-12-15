@@ -94,16 +94,16 @@ interface EventTooltipProps {
 
 function EventTooltip({ event }: EventTooltipProps) {
   return (
-    <div className="bg-white shadow-lg rounded-lg p-3 text-sm max-w-xs z-50">
-      <div className="font-semibold">{event.title}</div>
+    <div className="bg-white dark:bg-neutral-800 shadow-lg rounded-lg p-3 text-sm max-w-xs z-50">
+      <div className="font-semibold dark:text-gray-100">{event.title}</div>
       {event.case_title && (
-        <div className="text-gray-600 mt-1">사건: {event.case_title}</div>
+        <div className="text-gray-600 dark:text-gray-300 mt-1">사건: {event.case_title}</div>
       )}
       {event.location && (
-        <div className="text-gray-600 mt-1">장소: {event.location}</div>
+        <div className="text-gray-600 dark:text-gray-300 mt-1">장소: {event.location}</div>
       )}
       {event.description && (
-        <div className="text-gray-500 mt-1 text-xs">{event.description}</div>
+        <div className="text-gray-500 dark:text-gray-400 mt-1 text-xs">{event.description}</div>
       )}
     </div>
   );
@@ -113,10 +113,10 @@ function EventTooltip({ event }: EventTooltipProps) {
 function CalendarSkeleton() {
   return (
     <div className="animate-pulse" data-testid="calendar-skeleton">
-      <div className="h-10 bg-gray-200 rounded mb-4" />
+      <div className="h-10 bg-gray-200 dark:bg-neutral-700 rounded mb-4" />
       <div className="grid grid-cols-7 gap-1">
         {Array.from({ length: 35 }).map((_, i) => (
-          <div key={i} className="h-24 bg-gray-100 rounded" />
+          <div key={i} className="h-24 bg-gray-100 dark:bg-neutral-900 rounded" />
         ))}
       </div>
     </div>
@@ -245,7 +245,7 @@ export default function Calendar({
           <button
             type="button"
             onClick={() => navFn('PREV')}
-            className="p-1.5 bg-gray-100 rounded hover:bg-gray-200"
+            className="p-1.5 bg-gray-100 dark:bg-neutral-700 rounded hover:bg-gray-200 dark:hover:bg-neutral-800"
             aria-label="이전"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +255,7 @@ export default function Calendar({
           <button
             type="button"
             onClick={() => navFn('NEXT')}
-            className="p-1.5 bg-gray-100 rounded hover:bg-gray-200"
+            className="p-1.5 bg-gray-100 dark:bg-neutral-700 rounded hover:bg-gray-200 dark:hover:bg-neutral-800"
             aria-label="다음"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,7 +273,7 @@ export default function Calendar({
             className={`px-3 py-1.5 rounded text-sm font-medium ${
               currentView === Views.MONTH
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-800'
             }`}
             aria-label="월"
           >
@@ -285,7 +285,7 @@ export default function Calendar({
             className={`px-3 py-1.5 rounded text-sm font-medium ${
               currentView === Views.WEEK
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-800'
             }`}
             aria-label="주"
           >
@@ -297,7 +297,7 @@ export default function Calendar({
             className={`px-3 py-1.5 rounded text-sm font-medium ${
               currentView === Views.DAY
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-800'
             }`}
             aria-label="일"
           >

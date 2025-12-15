@@ -26,6 +26,7 @@ import { RiskFlagCard } from '@/components/lawyer/RiskFlagCard';
 import { AIRecommendationCard } from '@/components/lawyer/AIRecommendationCard';
 import { DashboardSkeleton } from '@/components/shared/LoadingSkeletons';
 import { useRole } from '@/hooks/useRole';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 // Icons for stats cards
 const BriefcaseIcon = () => (
@@ -98,14 +99,14 @@ function RecentCaseItem({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+      className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 truncate">{title}</p>
-        <p className="text-sm text-gray-500">{client_name || '-'}</p>
+        <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{title}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{client_name || '-'}</p>
       </div>
       <div className="flex items-center gap-3">
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusStyles[status] || statusStyles.active}`}>
@@ -140,7 +141,7 @@ export default function LawyerDashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">대시보드</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">대시보드</h1>
           <p className="text-red-500 mt-1">오류: {error}</p>
         </div>
       </div>
@@ -153,8 +154,8 @@ export default function LawyerDashboardPage() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">대시보드</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">대시보드</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           환영합니다{user?.name ? `, ${user.name}님` : ''}. 오늘의 업무 현황을 확인하세요.
         </p>
       </div>
@@ -201,9 +202,9 @@ export default function LawyerDashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Cases - Full width */}
-        <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">최근 케이스</h2>
+        <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700">
+          <div className="p-4 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">최근 케이스</h2>
             <Link
               href="/lawyer/cases"
               className="text-sm text-blue-600 hover:underline"
@@ -211,17 +212,17 @@ export default function LawyerDashboardPage() {
               전체보기
             </Link>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-neutral-700">
             {data?.recent_cases && data.recent_cases.length > 0 ? (
               data.recent_cases.map((caseItem) => (
                 <RecentCaseItem
                   key={caseItem.id}
                   {...caseItem}
-                  onClick={() => router.push(`/lawyer/cases/${caseItem.id}`)}
+                  onClick={() => router.push(getCaseDetailPath('lawyer', caseItem.id))}
                 />
               ))
             ) : (
-              <p className="text-center text-gray-500 py-8">
+              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
                 최근 케이스가 없습니다.
               </p>
             )}

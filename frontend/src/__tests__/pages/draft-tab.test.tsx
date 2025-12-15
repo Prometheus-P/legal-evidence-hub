@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import CaseDetailClient from '@/app/cases/[id]/CaseDetailClient';
+import CaseDetailClient from '@/components/case/CaseDetailClient';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 
 // Case detail page relies on the router param to know which case is open.

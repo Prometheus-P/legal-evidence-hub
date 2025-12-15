@@ -1,7 +1,9 @@
-import LawyerCaseDetailClient from './LawyerCaseDetailClient';
+import CaseDetailClient from '@/components/case/CaseDetailClient';
 
-// Required for static export with dynamic routes
-// Pre-render sample case pages; additional routes are handled at request time
+// Allow dynamic routes not listed in generateStaticParams
+export const dynamicParams = true;
+
+// Pre-render placeholder routes for static export
 // Includes E2E test IDs (test-case-001, test-case-empty)
 export function generateStaticParams() {
   return [
@@ -13,13 +15,16 @@ export function generateStaticParams() {
   ];
 }
 
-// Allow dynamic routes not listed in generateStaticParams
-export const dynamicParams = true;
-
 interface PageProps {
   params: { id: string };
 }
 
 export default function LawyerCaseDetailPage({ params }: PageProps) {
-  return <LawyerCaseDetailClient id={params.id} />;
+  return (
+    <CaseDetailClient
+      id={params.id}
+      apiBasePath="/lawyer"
+      defaultReturnUrl="/lawyer/cases"
+    />
+  );
 }

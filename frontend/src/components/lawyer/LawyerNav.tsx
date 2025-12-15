@@ -1,8 +1,9 @@
 /**
  * LawyerNav Component
  * 003-role-based-ui Feature - US2
+ * Updated: 011-production-bug-fixes - US2 (T042)
  *
- * Navigation sidebar for lawyer portal.
+ * Navigation sidebar for lawyer portal with notification dropdown.
  */
 
 'use client';
@@ -10,6 +11,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRole } from '@/hooks/useRole';
+import { NotificationDropdown } from '@/components/shared/NotificationDropdown';
 
 interface NavItem {
   label: string;
@@ -113,34 +115,36 @@ export function LawyerNav({ collapsed = false, onItemClick }: LawyerNavProps) {
   };
 
   return (
-    <nav className="flex flex-col h-full bg-white border-r border-gray-200">
+    <nav className="flex flex-col h-full bg-white dark:bg-neutral-900 border-r border-gray-200 dark:border-neutral-700">
       {/* Logo/Brand */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
         <Link href="/lawyer/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">LEH</span>
           </div>
           {!collapsed && (
-            <span className="font-semibold text-gray-900">Legal Evidence Hub</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">Legal Evidence Hub</span>
           )}
         </Link>
       </div>
 
-      {/* User Info */}
+      {/* User Info with Notification */}
       {!collapsed && (
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-600 font-medium">
+            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center">
+              <span className="text-gray-600 dark:text-gray-300 font-medium">
                 {user?.name?.charAt(0) || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                 {user?.name || '사용자'}
               </p>
-              <p className="text-xs text-gray-500">{roleDisplayName}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{roleDisplayName}</p>
             </div>
+            {/* T042 - FR-007: 알림 드롭다운 */}
+            <NotificationDropdown />
           </div>
         </div>
       )}
@@ -156,7 +160,7 @@ export function LawyerNav({ collapsed = false, onItemClick }: LawyerNavProps) {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   isActive(item.href)
                     ? 'bg-[var(--color-primary)] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800'
                 }`}
               >
                 {item.icon}
@@ -168,10 +172,10 @@ export function LawyerNav({ collapsed = false, onItemClick }: LawyerNavProps) {
       </div>
 
       {/* Bottom Actions */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 dark:border-neutral-700">
         <Link
           href="/lawyer/settings"
-          className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />

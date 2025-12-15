@@ -10,7 +10,7 @@ from typing import List, Optional
 from sqlalchemy import and_, func
 from sqlalchemy.orm import Session, joinedload
 
-from app.db.models import User, Case, CaseMember, Evidence, AuditLog
+from app.db.models import User, Case, CaseMember, Evidence, AuditLog, CaseStatus
 from app.schemas.client_portal import (
     ClientDashboardResponse,
     CaseSummary,
@@ -59,7 +59,7 @@ class ClientPortalService:
                 .filter(
                     and_(
                         Case.id.in_(case_ids),
-                        Case.status.in_(["active", "open", "in_progress"])
+                        Case.status.in_([CaseStatus.ACTIVE, CaseStatus.OPEN, CaseStatus.IN_PROGRESS])
                     )
                 )
                 .order_by(Case.updated_at.desc())

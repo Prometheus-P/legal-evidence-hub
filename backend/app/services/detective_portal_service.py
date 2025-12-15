@@ -11,7 +11,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import (
-    User, Case, CaseMember, InvestigationRecord
+    User, Case, CaseMember, InvestigationRecord, CaseStatus
 )
 from app.schemas.detective_portal import (
     DetectiveDashboardResponse, DashboardStats, InvestigationSummary,
@@ -35,9 +35,13 @@ class DetectivePortalService:
         if not detective:
             raise ValueError("Detective not found")
 
-        # Get investigation counts
-        active_count = self._get_investigation_count(detective_id, "active")
-        pending_count = self._get_investigation_count(detective_id, "pending")
+        # Get investigation counts (map to actual DB enum values)
+        # DB CaseStatus: active, open, in_progress, closed
+        # "active" investigations = ACTIVE + OPEN status
+        # "pending" requests = IN_PROGRESS (awaiting review)
+        active_count = self._get_investigation_count(detective_id, CaseStatus.ACTIVE)
+        active_count += self._get_investigation_count(detective_id, CaseStatus.OPEN)
+        pending_count = self._get_investigation_count(detective_id, CaseStatus.IN_PROGRESS)
         completed_this_month = self._get_completed_this_month(detective_id)
 
         # Mock earnings for now (would come from invoices table)
@@ -288,17 +292,17 @@ class DetectivePortalService:
         # Get summary
         summary = earnings_repo.get_earnings_summary(detective_id)
 
-        # Calculate this month's earnings
+        # Calculate this month's earnings using DB aggregation (Issue #279)
         start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        this_month_query = (
-            self.db.query(DetectiveEarnings)
+        this_month_total = (
+            self.db.query(func.coalesce(func.sum(DetectiveEarnings.amount), 0))
             .filter(
                 DetectiveEarnings.detective_id == detective_id,
                 DetectiveEarnings.created_at >= start_of_month
             )
+            .scalar()
         )
-        this_month_total = sum(e.amount for e in this_month_query.all())
 
         earnings_summary = EarningsSummary(
             total_earned=float(summary["total"]),
@@ -344,17 +348,17 @@ class DetectivePortalService:
         earnings_repo = DetectiveEarningsRepository(self.db)
         summary = earnings_repo.get_earnings_summary(detective_id)
 
-        # Calculate this month's earnings
+        # Calculate this month's earnings using DB aggregation (Issue #279)
         start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-        this_month_query = (
-            self.db.query(DetectiveEarnings)
+        this_month_total = (
+            self.db.query(func.coalesce(func.sum(DetectiveEarnings.amount), 0))
             .filter(
                 DetectiveEarnings.detective_id == detective_id,
                 DetectiveEarnings.created_at >= start_of_month
             )
+            .scalar()
         )
-        this_month_total = sum(e.amount for e in this_month_query.all())
 
         return EarningsSummary(
             total_earned=float(summary["total"]),
@@ -364,7 +368,7 @@ class DetectivePortalService:
 
     # ============== Private Helper Methods ==============
 
-    def _get_investigation_count(self, detective_id: str, status: str) -> int:
+    def _get_investigation_count(self, detective_id: str, status: CaseStatus) -> int:
         """Get count of investigations by status"""
         return (
             self.db.query(Case)
@@ -384,7 +388,7 @@ class DetectivePortalService:
             .join(CaseMember, Case.id == CaseMember.case_id)
             .filter(
                 CaseMember.user_id == detective_id,
-                Case.status == "completed",
+                Case.status == CaseStatus.CLOSED,  # "completed" maps to CLOSED
                 Case.updated_at >= start_of_month
             )
             .count()
@@ -392,13 +396,14 @@ class DetectivePortalService:
 
     def _get_active_investigations(self, detective_id: str) -> List[InvestigationSummary]:
         """Get active investigations for dashboard (N+1 optimized)"""
+        # Map to actual DB enum values: ACTIVE, OPEN, IN_PROGRESS (not closed)
         cases = (
             self.db.query(Case)
             .join(CaseMember, Case.id == CaseMember.case_id)
             .options(joinedload(Case.members).joinedload(CaseMember.user))
             .filter(
                 CaseMember.user_id == detective_id,
-                Case.status.in_(["active", "pending", "review"])
+                Case.status.in_([CaseStatus.ACTIVE, CaseStatus.OPEN, CaseStatus.IN_PROGRESS])
             )
             .limit(5)
             .all()
@@ -541,13 +546,19 @@ class DetectivePortalService:
             .first()
         )
 
-    def _map_case_status(self, status: str) -> InvestigationStatus:
-        """Map case status to investigation status"""
+    def _map_case_status(self, status) -> InvestigationStatus:
+        """Map CaseStatus enum to InvestigationStatus for UI display.
+
+        DB CaseStatus enum values: active, open, in_progress, closed
+        Maps to InvestigationStatus: ACTIVE, PENDING, REVIEW, COMPLETED
+        """
+        # Handle both CaseStatus enum and string values
+        status_value = status.value if isinstance(status, CaseStatus) else str(status)
+
         status_map = {
-            "pending": InvestigationStatus.PENDING,
             "active": InvestigationStatus.ACTIVE,
-            "review": InvestigationStatus.REVIEW,
-            "completed": InvestigationStatus.COMPLETED,
+            "open": InvestigationStatus.ACTIVE,       # open = active investigation
+            "in_progress": InvestigationStatus.REVIEW,  # in_progress = under review
             "closed": InvestigationStatus.COMPLETED,
         }
-        return status_map.get(status, InvestigationStatus.PENDING)
+        return status_map.get(status_value, InvestigationStatus.PENDING)

@@ -46,7 +46,8 @@ const clientNavItems: NavItem[] = [
   },
 ];
 
-const ALLOWED_ROLES: UserRole[] = ['client'];
+// Admin can access all portals for administrative purposes
+const ALLOWED_ROLES: UserRole[] = ['client', 'admin'];
 
 export default function ClientLayout({
   children,

@@ -90,6 +90,13 @@ const createContextValue = (overrides?: Partial<AuthContextValue>): AuthContextV
   ...overrides,
 });
 
+type LoginResult = {
+  success: boolean;
+  error?: string;
+  role?: UserRole;
+  redirectPath?: string;
+};
+
 describe('useAuth Hook', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
@@ -281,14 +288,15 @@ describe('AuthProvider Integration', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      let loginResult: { success: boolean; error?: string };
+      let loginResult: LoginResult;
       await act(async () => {
         loginResult = await result.current.login('lawyer@example.com', 'password');
       });
 
       expect(loginResult!.success).toBe(true);
+      expect(loginResult!.role).toBe('lawyer');
+      expect(loginResult!.redirectPath).toBe('/lawyer/dashboard');
       expect(mockApiLogin).toHaveBeenCalledWith('lawyer@example.com', 'password');
-      expect(mockPush).toHaveBeenCalledWith('/lawyer/dashboard');
       expect(result.current.user?.email).toBe('lawyer@example.com');
     });
 
@@ -309,7 +317,7 @@ describe('AuthProvider Integration', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      let loginResult: { success: boolean; error?: string };
+      let loginResult: LoginResult;
       await act(async () => {
         loginResult = await result.current.login('wrong@example.com', 'wrong');
       });
@@ -333,7 +341,7 @@ describe('AuthProvider Integration', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      let loginResult: { success: boolean; error?: string };
+      let loginResult: LoginResult;
       await act(async () => {
         loginResult = await result.current.login('test@example.com', 'password');
       });
@@ -545,11 +553,14 @@ describe('AuthProvider Integration', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
+      let loginResult: LoginResult;
       await act(async () => {
-        await result.current.login(`${role}@example.com`, 'password');
+        loginResult = await result.current.login(`${role}@example.com`, 'password');
       });
 
-      expect(mockPush).toHaveBeenCalledWith(expectedPath);
+      expect(loginResult!.redirectPath).toBe(expectedPath);
+      expect(loginResult!.role).toBe(role);
+      expect(mockPush).not.toHaveBeenCalled();
     });
   });
 });

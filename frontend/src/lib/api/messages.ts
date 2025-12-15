@@ -12,6 +12,11 @@ import type {
   UnreadCountResponse,
   SendMessageRequest,
   MarkReadRequest,
+  DirectMessage,
+  DirectMessageSummary,
+  DirectMessageListResponse,
+  DirectMessageQueryParams,
+  DirectMessageCreate,
 } from '@/types/message';
 
 const BASE_PATH = '/messages';
@@ -233,3 +238,76 @@ export function createMessageWebSocket(
     },
   };
 }
+
+// ============== Direct Message API (US2 - Lawyer Portal) ==============
+
+const DIRECT_MESSAGE_PATH = '/direct-messages';
+
+/**
+ * Get list of direct messages (inbox or sent)
+ */
+export async function getDirectMessages(
+  params?: DirectMessageQueryParams
+): Promise<ApiResponse<DirectMessageListResponse>> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.folder) {
+    searchParams.append('folder', params.folder);
+  }
+  if (params?.page) {
+    searchParams.append('page', String(params.page));
+  }
+  if (params?.limit) {
+    searchParams.append('limit', String(params.limit));
+  }
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${DIRECT_MESSAGE_PATH}?${queryString}` : DIRECT_MESSAGE_PATH;
+
+  return apiClient.get<DirectMessageListResponse>(url);
+}
+
+/**
+ * Get a single direct message by ID
+ */
+export async function getDirectMessage(
+  messageId: string
+): Promise<ApiResponse<DirectMessage>> {
+  return apiClient.get<DirectMessage>(`${DIRECT_MESSAGE_PATH}/${messageId}`);
+}
+
+/**
+ * Send a new direct message
+ */
+export async function sendDirectMessage(
+  data: DirectMessageCreate
+): Promise<ApiResponse<DirectMessage>> {
+  return apiClient.post<DirectMessage>(DIRECT_MESSAGE_PATH, data);
+}
+
+/**
+ * Delete a direct message (soft delete for current user)
+ */
+export async function deleteDirectMessage(
+  messageId: string
+): Promise<ApiResponse<{ success: boolean }>> {
+  return apiClient.delete<{ success: boolean }>(`${DIRECT_MESSAGE_PATH}/${messageId}`);
+}
+
+/**
+ * Mark a direct message as read
+ */
+export async function markDirectMessageAsRead(
+  messageId: string
+): Promise<ApiResponse<DirectMessage>> {
+  return apiClient.patch<DirectMessage>(`${DIRECT_MESSAGE_PATH}/${messageId}/read`, {});
+}
+
+// Re-export direct message types
+export type {
+  DirectMessage,
+  DirectMessageSummary,
+  DirectMessageListResponse,
+  DirectMessageQueryParams,
+  DirectMessageCreate,
+};

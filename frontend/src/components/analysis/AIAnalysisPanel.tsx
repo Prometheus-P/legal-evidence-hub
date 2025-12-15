@@ -23,10 +23,10 @@ export function AIAnalysisPanel({ evidence, isLoading = false }: AIAnalysisPanel
 
   if (evidence.status !== 'completed' && evidence.status !== 'review_needed') {
     return (
-      <div className="bg-gray-50 rounded-lg p-6 text-center">
+      <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-6 text-center">
         <Brain className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-        <h3 className="font-medium text-gray-700 mb-1">AI 분석 대기 중</h3>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-1">AI 분석 대기 중</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           증거가 처리되면 분석 결과가 표시됩니다.
         </p>
       </div>
@@ -35,10 +35,10 @@ export function AIAnalysisPanel({ evidence, isLoading = false }: AIAnalysisPanel
 
   if (!hasAnalysis) {
     return (
-      <div className="bg-gray-50 rounded-lg p-6 text-center">
+      <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-6 text-center">
         <AlertCircle className="w-10 h-10 mx-auto mb-3 text-gray-400" />
-        <h3 className="font-medium text-gray-700 mb-1">분석 결과 없음</h3>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-1">분석 결과 없음</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           이 증거에 대한 AI 분석 결과가 없습니다.
         </p>
       </div>
@@ -73,11 +73,11 @@ export function AIAnalysisPanel({ evidence, isLoading = false }: AIAnalysisPanel
 // Article 840 분석 섹션
 function Article840Section({ tags }: { tags: Article840Tags }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Tags className="w-5 h-5 text-primary" />
-          <h3 className="font-semibold text-gray-800">민법 840조 분류</h3>
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200">민법 840조 분류</h3>
         </div>
         <ConfidenceScore score={tags.confidence} size="sm" />
       </div>
@@ -87,13 +87,13 @@ function Article840Section({ tags }: { tags: Article840Tags }) {
           <Article840TagList categories={tags.categories} size="md" />
 
           {tags.matchedKeywords.length > 0 && (
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs text-gray-500 mb-1">매칭된 키워드</p>
+            <div className="pt-2 border-t border-gray-100 dark:border-neutral-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">매칭된 키워드</p>
               <div className="flex flex-wrap gap-1">
                 {tags.matchedKeywords.map((keyword, idx) => (
                   <span
                     key={idx}
-                    className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded"
+                    className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 rounded"
                   >
                     {keyword}
                   </span>
@@ -103,7 +103,7 @@ function Article840Section({ tags }: { tags: Article840Tags }) {
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           특정 이혼 사유에 해당하지 않는 일반 증거입니다.
         </p>
       )}
@@ -114,12 +114,12 @@ function Article840Section({ tags }: { tags: Article840Tags }) {
 // 요약 섹션
 function SummarySection({ summary }: { summary: string }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
       <div className="flex items-center gap-2 mb-3">
         <FileText className="w-5 h-5 text-blue-600" />
-        <h3 className="font-semibold text-gray-800">AI 요약</h3>
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200">AI 요약</h3>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
         {summary}
       </p>
     </div>
@@ -129,10 +129,10 @@ function SummarySection({ summary }: { summary: string }) {
 // 인사이트 섹션
 function InsightsSection({ insights }: { insights: AIInsight[] }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
       <div className="flex items-center gap-2 mb-3">
         <Brain className="w-5 h-5 text-purple-600" />
-        <h3 className="font-semibold text-gray-800">AI 인사이트</h3>
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200">AI 인사이트</h3>
         <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full">
           {insights.length}개
         </span>
@@ -145,10 +145,10 @@ function InsightsSection({ insights }: { insights: AIInsight[] }) {
 // 라벨 섹션
 function LabelsSection({ labels }: { labels: string[] }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
       <div className="flex items-center gap-2 mb-3">
         <Tags className="w-5 h-5 text-teal-600" />
-        <h3 className="font-semibold text-gray-800">분석 라벨</h3>
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200">분석 라벨</h3>
       </div>
       <div className="flex flex-wrap gap-2">
         {labels.map((label, idx) => (
@@ -169,29 +169,29 @@ function AIAnalysisPanelSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       {/* Article 840 skeleton */}
-      <div className="bg-gray-100 rounded-lg p-4">
-        <div className="h-5 bg-gray-200 rounded w-32 mb-3" />
+      <div className="bg-gray-100 dark:bg-neutral-700 rounded-lg p-4">
+        <div className="h-5 bg-gray-200 dark:bg-neutral-600 rounded w-32 mb-3" />
         <div className="flex gap-2">
-          <div className="h-6 bg-gray-200 rounded w-20" />
-          <div className="h-6 bg-gray-200 rounded w-24" />
+          <div className="h-6 bg-gray-200 dark:bg-neutral-600 rounded w-20" />
+          <div className="h-6 bg-gray-200 dark:bg-neutral-600 rounded w-24" />
         </div>
       </div>
 
       {/* Summary skeleton */}
-      <div className="bg-gray-100 rounded-lg p-4">
-        <div className="h-5 bg-gray-200 rounded w-24 mb-3" />
+      <div className="bg-gray-100 dark:bg-neutral-700 rounded-lg p-4">
+        <div className="h-5 bg-gray-200 dark:bg-neutral-600 rounded w-24 mb-3" />
         <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-full" />
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 dark:bg-neutral-600 rounded w-full" />
+          <div className="h-4 bg-gray-200 dark:bg-neutral-600 rounded w-3/4" />
         </div>
       </div>
 
       {/* Insights skeleton */}
-      <div className="bg-gray-100 rounded-lg p-4">
-        <div className="h-5 bg-gray-200 rounded w-28 mb-3" />
+      <div className="bg-gray-100 dark:bg-neutral-700 rounded-lg p-4">
+        <div className="h-5 bg-gray-200 dark:bg-neutral-600 rounded w-28 mb-3" />
         <div className="space-y-2">
-          <div className="h-16 bg-gray-200 rounded" />
-          <div className="h-16 bg-gray-200 rounded" />
+          <div className="h-16 bg-gray-200 dark:bg-neutral-600 rounded" />
+          <div className="h-16 bg-gray-200 dark:bg-neutral-600 rounded" />
         </div>
       </div>
     </div>

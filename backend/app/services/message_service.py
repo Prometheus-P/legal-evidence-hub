@@ -1,17 +1,19 @@
 """
 Message Service for real-time communication
 003-role-based-ui Feature - US6
+Updated for Issue #296 - FR-008
 
 Handles:
 - Message CRUD operations
 - Conversation management
 - Unread message tracking
 - Offline message queue
+- Soft delete support (Issue #296)
 """
 
 from datetime import datetime, timezone
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, desc
 import json
 import uuid
@@ -26,6 +28,11 @@ from app.schemas.message import (
     ConversationListResponse,
     UnreadCountResponse,
     OtherUserInfo,
+)
+from app.db.schemas import (
+    MessageCreate as MessageCreateV2,
+    MessageResponse as MessageResponseV2,
+    MessageListResponse as MessageListResponseV2,
 )
 
 
@@ -338,3 +345,183 @@ class MessageService:
             created_at=message.created_at,
             is_mine=message.sender_id == current_user_id,
         )
+
+    # ============================================
+    # Issue #296 - FR-008: New message methods
+    # ============================================
+    def _to_message_response_v2(self, message: Message) -> MessageResponseV2:
+        """Convert Message model to MessageResponseV2 (with sender/recipient names)."""
+        return MessageResponseV2(
+            id=message.id,
+            sender_id=message.sender_id,
+            recipient_id=message.recipient_id,
+            subject=message.subject,
+            content=message.content,
+            case_id=message.case_id,
+            is_read=message.is_read,
+            read_at=message.read_at,
+            created_at=message.created_at,
+            sender_name=message.sender.name if message.sender else None,
+            recipient_name=message.recipient.name if message.recipient else None,
+        )
+
+    def send_message_v2(
+        self,
+        sender_id: str,
+        data: MessageCreateV2,
+    ) -> MessageResponseV2:
+        """Send a new message (Issue #296 version)."""
+        # Verify recipient exists
+        recipient = self.db.query(User).filter(User.id == data.recipient_id).first()
+        if not recipient:
+            raise ValueError("Recipient not found")
+
+        message = Message(
+            id=f"msg_{uuid.uuid4().hex[:12]}",
+            sender_id=sender_id,
+            recipient_id=data.recipient_id,
+            subject=data.subject,
+            content=data.content,
+            case_id=data.case_id,
+            created_at=datetime.now(timezone.utc),
+        )
+
+        self.db.add(message)
+        self.db.commit()
+        self.db.refresh(message)
+
+        # Reload with relationships
+        message = (
+            self.db.query(Message)
+            .options(joinedload(Message.sender), joinedload(Message.recipient))
+            .filter(Message.id == message.id)
+            .first()
+        )
+        return self._to_message_response_v2(message)
+
+    def get_inbox_v2(
+        self,
+        user_id: str,
+        page: int = 1,
+        limit: int = 20,
+    ) -> MessageListResponseV2:
+        """Get received messages (inbox) - Issue #296."""
+        query = (
+            self.db.query(Message)
+            .options(joinedload(Message.sender))
+            .filter(
+                Message.recipient_id == user_id,
+                Message.is_deleted_by_recipient == False,  # noqa: E712
+            )
+            .order_by(Message.created_at.desc())
+        )
+
+        total = query.count()
+        messages = query.offset((page - 1) * limit).limit(limit).all()
+
+        return MessageListResponseV2(
+            messages=[self._to_message_response_v2(m) for m in messages],
+            total=total,
+            page=page,
+            limit=limit,
+        )
+
+    def get_sent_v2(
+        self,
+        user_id: str,
+        page: int = 1,
+        limit: int = 20,
+    ) -> MessageListResponseV2:
+        """Get sent messages - Issue #296."""
+        query = (
+            self.db.query(Message)
+            .options(joinedload(Message.recipient))
+            .filter(
+                Message.sender_id == user_id,
+                Message.is_deleted_by_sender == False,  # noqa: E712
+            )
+            .order_by(Message.created_at.desc())
+        )
+
+        total = query.count()
+        messages = query.offset((page - 1) * limit).limit(limit).all()
+
+        return MessageListResponseV2(
+            messages=[self._to_message_response_v2(m) for m in messages],
+            total=total,
+            page=page,
+            limit=limit,
+        )
+
+    def get_message_v2(self, message_id: str, user_id: str) -> MessageResponseV2:
+        """Get a specific message (marks as read if recipient) - Issue #296."""
+        message = (
+            self.db.query(Message)
+            .options(joinedload(Message.sender), joinedload(Message.recipient))
+            .filter(Message.id == message_id)
+            .first()
+        )
+
+        if not message:
+            raise KeyError("Message not found")
+
+        # Check access
+        if message.sender_id != user_id and message.recipient_id != user_id:
+            raise PermissionError("Not authorized to access this message")
+
+        # Check if deleted for this user
+        if message.sender_id == user_id and message.is_deleted_by_sender:
+            raise KeyError("Message not found")
+        if message.recipient_id == user_id and message.is_deleted_by_recipient:
+            raise KeyError("Message not found")
+
+        # Mark as read if recipient is viewing
+        if message.recipient_id == user_id and not message.is_read:
+            message.is_read = True
+            message.read_at = datetime.now(timezone.utc)
+            self.db.commit()
+            self.db.refresh(message)
+
+        return self._to_message_response_v2(message)
+
+    def delete_message_v2(self, message_id: str, user_id: str) -> bool:
+        """Delete a message (soft delete) - Issue #296."""
+        message = self.db.query(Message).filter(Message.id == message_id).first()
+
+        if not message:
+            raise KeyError("Message not found")
+
+        # Check access
+        if message.sender_id != user_id and message.recipient_id != user_id:
+            raise PermissionError("Not authorized to delete this message")
+
+        if message.sender_id == user_id:
+            message.is_deleted_by_sender = True
+        elif message.recipient_id == user_id:
+            message.is_deleted_by_recipient = True
+
+        self.db.commit()
+        return True
+
+    def mark_as_read_v2(self, message_id: str, user_id: str) -> MessageResponseV2:
+        """Mark a message as read - Issue #296."""
+        message = (
+            self.db.query(Message)
+            .options(joinedload(Message.sender), joinedload(Message.recipient))
+            .filter(Message.id == message_id)
+            .first()
+        )
+
+        if not message:
+            raise KeyError("Message not found")
+
+        if message.recipient_id != user_id:
+            raise PermissionError("Only recipient can mark message as read")
+
+        if not message.is_read:
+            message.is_read = True
+            message.read_at = datetime.now(timezone.utc)
+            self.db.commit()
+            self.db.refresh(message)
+
+        return self._to_message_response_v2(message)

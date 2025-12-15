@@ -12,6 +12,14 @@
 import { render, screen } from '@testing-library/react';
 import LandingPage from '../page';
 
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    isAuthenticated: false,
+    isLoading: false,
+    logout: jest.fn(),
+  }),
+}));
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: () => ({

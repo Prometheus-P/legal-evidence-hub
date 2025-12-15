@@ -12,6 +12,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
@@ -27,6 +28,7 @@ import LandingFooter from '@/components/landing/LandingFooter';
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated, logout, isLoading } = useAuth();
 
 
   useEffect(() => {
@@ -69,7 +71,12 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Navigation */}
-      <LandingNav isScrolled={isScrolled} />
+      <LandingNav
+        isScrolled={isScrolled}
+        isAuthenticated={isAuthenticated}
+        authLoading={isLoading}
+        onLogout={logout}
+      />
 
       {/* Main Content */}
       <main>

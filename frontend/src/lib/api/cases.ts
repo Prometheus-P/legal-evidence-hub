@@ -30,6 +30,12 @@ export interface CreateCaseRequest {
   description?: string;
 }
 
+export interface UpdateCaseRequest {
+  title?: string;
+  client_name?: string;
+  description?: string;
+}
+
 export interface CaseListResponse {
   cases: ApiCase[];
   total: number;
@@ -64,9 +70,11 @@ export async function getCases(): Promise<ApiResponse<CaseListResponse>> {
 
 /**
  * Get a single case by ID
+ * @param caseId - Case ID
+ * @param basePath - Optional base path for role-specific endpoints (e.g., '/lawyer')
  */
-export async function getCase(caseId: string): Promise<ApiResponse<ApiCase>> {
-  return apiRequest<ApiCase>(`/cases/${caseId}`, {
+export async function getCase(caseId: string, basePath: string = ''): Promise<ApiResponse<ApiCase>> {
+  return apiRequest<ApiCase>(`${basePath}/cases/${caseId}`, {
     method: 'GET',
   });
 }
@@ -108,5 +116,44 @@ export async function updateCaseStatus(
 export async function deleteCase(caseId: string): Promise<ApiResponse<void>> {
   return apiRequest<void>(`/cases/${caseId}`, {
     method: 'DELETE',
+  });
+}
+
+/**
+ * Update case details (title, client_name, description)
+ */
+export async function updateCase(
+  caseId: string,
+  data: UpdateCaseRequest
+): Promise<ApiResponse<ApiCase>> {
+  return apiRequest<ApiCase>(`/cases/${caseId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
+// ================================
+// Case Members
+// ================================
+
+export interface CaseMember {
+  user_id: string;
+  name: string;
+  email: string;
+  permission: 'read' | 'read_write';
+  role: 'owner' | 'member' | 'viewer';
+}
+
+export interface CaseMembersResponse {
+  members: CaseMember[];
+  total: number;
+}
+
+export async function getCaseMembers(caseId: string): Promise<ApiResponse<CaseMembersResponse>> {
+  return apiRequest<CaseMembersResponse>(`/cases/${caseId}/members`, {
+    method: 'GET',
   });
 }

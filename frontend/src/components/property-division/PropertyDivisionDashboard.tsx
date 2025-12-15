@@ -207,21 +207,21 @@ export default function PropertyDivisionDashboard({
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow p-5">
-          <p className="text-sm text-neutral-500 mb-1">총 자산</p>
-          <p className="text-2xl font-bold text-green-600">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">총 자산</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-500">
             {formatAmount(summary.total_assets)}
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow p-5">
-          <p className="text-sm text-neutral-500 mb-1">총 부채</p>
-          <p className="text-2xl font-bold text-red-600">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">총 부채</p>
+          <p className="text-2xl font-bold text-red-600 dark:text-red-500">
             {formatAmount(summary.total_debts)}
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow p-5">
-          <p className="text-sm text-neutral-500 mb-1">순재산</p>
-          <p className="text-2xl font-bold text-primary">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">순재산</p>
+          <p className="text-2xl font-bold text-primary dark:text-primary-light">
             {formatAmount(summary.net_value)}
           </p>
         </div>
@@ -238,8 +238,8 @@ export default function PropertyDivisionDashboard({
           animated={true}
         />
       ) : (
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-          <p className="text-neutral-500 mb-4">아직 예측이 없습니다</p>
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 text-center">
+          <p className="text-neutral-500 dark:text-neutral-400 mb-4">아직 예측이 없습니다</p>
           <button
             type="button"
             onClick={handleCalculatePrediction}
@@ -263,19 +263,19 @@ export default function PropertyDivisionDashboard({
 
       {/* Evidence Impacts */}
       {prediction && prediction.evidence_impacts.length > 0 && (
-        <div className="bg-white rounded-xl shadow p-5">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
           <button
             type="button"
             onClick={() => setExpandedEvidence(!expandedEvidence)}
             className="w-full flex items-center justify-between"
           >
-            <h3 className="font-bold text-neutral-800">
+            <h3 className="font-bold text-neutral-800 dark:text-neutral-200">
               증거 영향도 ({prediction.evidence_impacts.length}건)
             </h3>
             {expandedEvidence ? (
-              <ChevronUp className="w-5 h-5 text-neutral-500" />
+              <ChevronUp className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-500" />
+              <ChevronDown className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
             )}
           </button>
           {expandedEvidence && (
@@ -283,17 +283,17 @@ export default function PropertyDivisionDashboard({
               {prediction.evidence_impacts.map((impact, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg"
                 >
                   <div>
-                    <p className="font-medium text-neutral-800">{impact.evidence_type}</p>
-                    <p className="text-sm text-neutral-500">{impact.reason}</p>
+                    <p className="font-medium text-neutral-800 dark:text-neutral-200">{impact.evidence_type}</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{impact.reason}</p>
                   </div>
                   <div
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
                       impact.direction === 'plaintiff'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-red-100 text-red-700'
+                        ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                        : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
                     }`}
                   >
                     {impact.direction === 'plaintiff' ? '원고' : '피고'} +
@@ -308,37 +308,37 @@ export default function PropertyDivisionDashboard({
 
       {/* Similar Cases */}
       {prediction && prediction.similar_cases.length > 0 && (
-        <div className="bg-white rounded-xl shadow p-5">
+        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
           <button
             type="button"
             onClick={() => setExpandedSimilar(!expandedSimilar)}
             className="w-full flex items-center justify-between"
           >
-            <h3 className="font-bold text-neutral-800">
+            <h3 className="font-bold text-neutral-800 dark:text-neutral-200">
               유사 판례 ({prediction.similar_cases.length}건)
             </h3>
             {expandedSimilar ? (
-              <ChevronUp className="w-5 h-5 text-neutral-500" />
+              <ChevronUp className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-500" />
+              <ChevronDown className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
             )}
           </button>
           {expandedSimilar && (
             <div className="mt-4 space-y-3">
               {prediction.similar_cases.map((sc, idx) => (
-                <div key={idx} className="p-3 bg-neutral-50 rounded-lg">
+                <div key={idx} className="p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-neutral-800">{sc.case_ref}</p>
-                    <span className="text-sm text-neutral-500">
+                    <p className="font-medium text-neutral-800 dark:text-neutral-200">{sc.case_ref}</p>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
                       유사도: {(sc.similarity_score * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <p className="text-sm text-primary font-medium">분할비율: {sc.division_ratio}</p>
+                  <p className="text-sm text-primary dark:text-primary-light font-medium">분할비율: {sc.division_ratio}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {sc.key_factors.map((factor, i) => (
                       <span
                         key={i}
-                        className="text-xs px-2 py-1 bg-neutral-200 text-neutral-700 rounded"
+                        className="text-xs px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded"
                       >
                         {factor}
                       </span>
@@ -352,9 +352,9 @@ export default function PropertyDivisionDashboard({
       )}
 
       {/* Property List */}
-      <div className="bg-white rounded-xl shadow p-5">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-neutral-800">
+          <h3 className="font-bold text-neutral-800 dark:text-neutral-200">
             재산 목록 ({properties.length}건)
           </h3>
           <div className="flex gap-2">
@@ -363,7 +363,7 @@ export default function PropertyDivisionDashboard({
                 type="button"
                 onClick={handleCalculatePrediction}
                 disabled={isCalculating}
-                className="px-3 py-2 text-sm border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors flex items-center gap-1"
+                className="px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1"
               >
                 <RefreshCw className={`w-4 h-4 ${isCalculating ? 'animate-spin' : ''}`} />
                 재계산
@@ -381,25 +381,25 @@ export default function PropertyDivisionDashboard({
         </div>
 
         {properties.length === 0 ? (
-          <div className="text-center py-12 text-neutral-500">
-            <Building2 className="w-12 h-12 mx-auto mb-3 text-neutral-300" />
+          <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
+            <Building2 className="w-12 h-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
             <p>등록된 재산이 없습니다</p>
             <p className="text-sm mt-1">재산을 추가하여 분할 예측을 시작하세요</p>
           </div>
         ) : (
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
             {properties.map((property) => (
               <div
                 key={property.id}
                 className="flex items-center justify-between py-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-neutral-100 rounded-lg text-neutral-600">
+                  <div className="p-2 bg-neutral-100 dark:bg-neutral-700 rounded-lg text-neutral-600 dark:text-neutral-300">
                     {PROPERTY_TYPE_ICONS[property.property_type]}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-800">
+                      <span className="font-medium text-neutral-800 dark:text-neutral-200">
                         {PROPERTY_TYPE_LABELS[property.property_type]}
                       </span>
                       <span
@@ -410,13 +410,13 @@ export default function PropertyDivisionDashboard({
                         {PROPERTY_OWNER_LABELS[property.owner]}
                       </span>
                       {property.is_premarital && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300">
                           특유재산
                         </span>
                       )}
                     </div>
                     {property.description && (
-                      <p className="text-sm text-neutral-500">{property.description}</p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400">{property.description}</p>
                     )}
                   </div>
                 </div>
@@ -424,8 +424,8 @@ export default function PropertyDivisionDashboard({
                   <span
                     className={`font-bold ${
                       property.property_type === 'debt'
-                        ? 'text-red-600'
-                        : 'text-neutral-800'
+                        ? 'text-red-600 dark:text-red-500'
+                        : 'text-neutral-800 dark:text-neutral-200'
                     }`}
                   >
                     {property.property_type === 'debt' && '-'}
@@ -434,7 +434,7 @@ export default function PropertyDivisionDashboard({
                   <div className="flex gap-1">
                     <button
                       type="button"
-                      className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+                      className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                       aria-label="수정"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -442,7 +442,7 @@ export default function PropertyDivisionDashboard({
                     <button
                       type="button"
                       onClick={() => handleDeleteProperty(property.id)}
-                      className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                       aria-label="삭제"
                     >
                       <Trash2 className="w-4 h-4" />

@@ -4,8 +4,7 @@ Unit tests for PrecedentService
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
+from unittest.mock import Mock, patch
 
 from app.services.precedent_service import PrecedentService
 from app.schemas.precedent import (

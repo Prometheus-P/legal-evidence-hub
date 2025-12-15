@@ -3,7 +3,7 @@ Unit tests for PredictionService
 """
 
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 from datetime import datetime
 
 from app.services.prediction_service import PredictionService
@@ -66,7 +66,7 @@ class TestPredictionServiceInit:
              patch('app.services.prediction_service.CaseRepository') as mock_case, \
              patch('app.services.prediction_service.CaseMemberRepository') as mock_member:
 
-            service = PredictionService(mock_db)
+            _service = PredictionService(mock_db)  # noqa: F841
 
             mock_pred.assert_called_once_with(mock_db)
             mock_prop.assert_called_once_with(mock_db)

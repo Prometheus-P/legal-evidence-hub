@@ -3,7 +3,6 @@ Unit tests for PromptBuilder Service
 TDD - Improving test coverage for prompt_builder.py
 """
 
-import pytest
 from unittest.mock import patch, MagicMock
 from app.services.prompt_builder import PromptBuilder, get_prompt_builder
 

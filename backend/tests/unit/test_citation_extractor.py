@@ -3,7 +3,6 @@ Unit tests for CitationExtractor Service
 TDD - Improving test coverage for citation_extractor.py
 """
 
-import pytest
 from app.services.citation_extractor import CitationExtractor, get_citation_extractor
 from app.db.schemas import DraftCitation
 

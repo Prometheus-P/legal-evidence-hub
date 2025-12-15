@@ -6,7 +6,6 @@ Tests the security logic for internal API key verification via API endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 
 class TestVerifyInternalApiKeyIntegration:

@@ -5,6 +5,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { AIRecommendationCard, AIRecommendation } from '@/components/lawyer/AIRecommendationCard';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 // Mock next/link
 jest.mock('next/link', () => {
@@ -118,19 +119,22 @@ describe('AIRecommendationCard', () => {
     it('draft_review 타입은 draft 탭으로 링크된다', () => {
       render(<AIRecommendationCard recommendations={[mockRecommendations[0]]} />);
       const link = screen.getByText('검토하기').closest('a');
-      expect(link).toHaveAttribute('href', '/lawyer/cases/case-1?tab=draft');
+      expect(link).toHaveAttribute('href', getCaseDetailPath('lawyer', 'case-1', { tab: 'draft' }));
     });
 
     it('evidence_tagging 타입은 evidence 탭으로 링크된다', () => {
       render(<AIRecommendationCard recommendations={[mockRecommendations[1]]} />);
       const link = screen.getByText('태깅하기').closest('a');
-      expect(link).toHaveAttribute('href', '/lawyer/cases/case-2?tab=evidence');
+      expect(link).toHaveAttribute(
+        'href',
+        getCaseDetailPath('lawyer', 'case-2', { tab: 'evidence' })
+      );
     });
 
     it('asset_incomplete 타입은 assets 페이지로 링크된다', () => {
       render(<AIRecommendationCard recommendations={[mockRecommendations[2]]} />);
       const link = screen.getByText('입력하기').closest('a');
-      expect(link).toHaveAttribute('href', '/lawyer/cases/case-3/assets');
+      expect(link).toHaveAttribute('href', getLawyerCasePath('assets', 'case-3'));
     });
   });
 

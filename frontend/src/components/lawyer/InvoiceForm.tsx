@@ -7,12 +7,16 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Invoice, InvoiceCreateRequest, InvoiceStatus } from '@/types/billing';
+
+type ClientOption = { id: string; name: string; email?: string };
 
 interface InvoiceFormProps {
   invoice?: Invoice | null;
   cases?: Array<{ id: string; title: string; client_id?: string; client_name?: string }>;
+  clients?: ClientOption[];
+  loadCaseClients?: (caseId: string) => Promise<ClientOption[]>;
   onSubmit: (data: InvoiceCreateRequest | { amount?: string; description?: string; status?: InvoiceStatus; due_date?: string }) => Promise<void>;
   onCancel?: () => void;
   loading?: boolean;
@@ -37,6 +41,8 @@ interface FormErrors {
 export default function InvoiceForm({
   invoice,
   cases = [],
+  clients = [],
+  loadCaseClients,
   onSubmit,
   onCancel,
   loading = false,
@@ -53,16 +59,87 @@ export default function InvoiceForm({
     status: invoice?.status || 'pending',
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [caseClients, setCaseClients] = useState<ClientOption[]>([]);
+  const [caseClientsLoading, setCaseClientsLoading] = useState(false);
+  const [caseClientsError, setCaseClientsError] = useState<string | null>(null);
 
-  // Update client_id when case_id changes
+  // Load clients for selected case when loader is provided
   useEffect(() => {
-    if (!isEdit && formData.case_id) {
-      const selectedCase = cases.find((c) => c.id === formData.case_id);
-      if (selectedCase?.client_id) {
-        setFormData((prev) => ({ ...prev, client_id: selectedCase.client_id || '' }));
+    if (isEdit || !loadCaseClients) {
+      setCaseClients([]);
+      setCaseClientsError(null);
+      setCaseClientsLoading(false);
+      return;
+    }
+
+    if (!formData.case_id) {
+      setCaseClients([]);
+      setCaseClientsError(null);
+      setCaseClientsLoading(false);
+      if (formData.client_id) {
+        setFormData((prev) => ({ ...prev, client_id: '' }));
+      }
+      return;
+    }
+
+    let active = true;
+    setCaseClientsLoading(true);
+    setCaseClientsError(null);
+
+    loadCaseClients(formData.case_id)
+      .then((caseClientsForCase) => {
+        if (!active) return;
+        setCaseClients(caseClientsForCase);
+        if (caseClientsForCase.length === 1) {
+          setFormData((prev) => ({ ...prev, client_id: caseClientsForCase[0].id }));
+        } else if (!caseClientsForCase.some((client) => client.id === formData.client_id)) {
+          setFormData((prev) => ({ ...prev, client_id: '' }));
+        }
+
+        if (caseClientsForCase.length === 0) {
+          setCaseClientsError('이 사건에 연결된 의뢰인을 찾을 수 없습니다.');
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setCaseClients([]);
+        setCaseClientsError('사건의 의뢰인 정보를 불러오지 못했습니다.');
+      })
+      .finally(() => {
+        if (active) {
+          setCaseClientsLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [formData.case_id, formData.client_id, isEdit, loadCaseClients]);
+
+  // Fallback auto-selection when loader is not provided
+  useEffect(() => {
+    if (isEdit || loadCaseClients) return;
+
+    if (!formData.case_id) {
+      if (formData.client_id) {
+        setFormData((prev) => ({ ...prev, client_id: '' }));
+      }
+      return;
+    }
+
+    const selectedCase = cases.find((c) => c.id === formData.case_id);
+    if (selectedCase?.client_id && formData.client_id !== selectedCase.client_id) {
+      setFormData((prev) => ({ ...prev, client_id: selectedCase.client_id || '' }));
+      return;
+    }
+
+    if (selectedCase?.client_name && !formData.client_id) {
+      const match = clients.find((client) => client.name === selectedCase.client_name);
+      if (match) {
+        setFormData((prev) => ({ ...prev, client_id: match.id }));
       }
     }
-  }, [formData.case_id, cases, isEdit]);
+  }, [cases, clients, formData.case_id, formData.client_id, isEdit, loadCaseClients]);
 
   const handleInputChange = useCallback(
     (field: keyof FormData) =>
@@ -131,7 +208,11 @@ export default function InvoiceForm({
     [formData, validate, onSubmit, isEdit]
   );
 
-  const selectedCase = cases.find((c) => c.id === formData.case_id);
+  const availableClients = useMemo(
+    () => (caseClients.length > 0 ? caseClients : clients),
+    [caseClients, clients]
+  );
+  const selectedClient = availableClients.find((client) => client.id === formData.client_id);
 
   return (
     <form onSubmit={handleSubmit} className={`bg-white rounded-lg ${className}`}>
@@ -166,16 +247,59 @@ export default function InvoiceForm({
           </div>
         )}
 
+        {/* Client Selection */}
+        {!isEdit && (
+          <div>
+            <label
+              htmlFor="invoice-client"
+              className="block text-sm font-medium text-[var(--color-text-primary)] mb-2"
+            >
+              청구 대상 의뢰인 <span className="text-[var(--color-error)]">*</span>
+            </label>
+            <select
+              id="invoice-client"
+              value={formData.client_id}
+              onChange={handleInputChange('client_id')}
+              disabled={availableClients.length === 0 || caseClientsLoading}
+              className={`w-full px-4 py-3 border rounded-lg
+                focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent
+                ${errors.client_id ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'}`}
+            >
+              <option value="">
+                {caseClientsLoading
+                  ? '의뢰인 정보를 불러오는 중...'
+                  : availableClients.length
+                  ? '의뢰인을 선택하세요'
+                  : '연결된 의뢰인이 없습니다'}
+              </option>
+              {availableClients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                  {client.email ? ` (${client.email})` : ''}
+                </option>
+              ))}
+            </select>
+            {caseClientsError && (
+              <p className="mt-1 text-sm text-[var(--color-error)]">{caseClientsError}</p>
+            )}
+            {errors.client_id && (
+              <p className="mt-1 text-sm text-[var(--color-error)]">{errors.client_id}</p>
+            )}
+          </div>
+        )}
+
         {/* Client Info (read-only) */}
-        {!isEdit && selectedCase && (
+        {!isEdit && selectedClient && (
           <div>
             <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
-              의뢰인
+              의뢰인 정보
             </label>
             <div className="px-4 py-3 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg">
-              {selectedCase.client_name || '의뢰인 정보 없음'}
+              <p className="font-medium text-[var(--color-text-primary)]">{selectedClient.name}</p>
+              {selectedClient.email && (
+                <p className="text-sm text-[var(--color-text-secondary)]">{selectedClient.email}</p>
+              )}
             </div>
-            <input type="hidden" value={formData.client_id} />
           </div>
         )}
 

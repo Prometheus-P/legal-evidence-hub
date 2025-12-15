@@ -20,18 +20,16 @@ export async function getCaseSummary(
 /**
  * Download case summary as PDF (HTML)
  * Opens in new window for printing/saving
+ *
+ * Security: Uses HTTP-only cookies for authentication (credentials: 'include')
  */
 export async function downloadCaseSummaryPdf(caseId: string): Promise<void> {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 
-  const url = `${baseUrl}/cases/${caseId}/summary/pdf`;
+  const url = `${baseUrl}/api/cases/${caseId}/summary/pdf`;
 
-  // Fetch with auth token
+  // Fetch with HTTP-only cookie authentication
   const response = await fetch(url, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
     credentials: 'include',
   });
 
@@ -57,17 +55,15 @@ export async function downloadCaseSummaryPdf(caseId: string): Promise<void> {
 
 /**
  * Download case summary as file (triggers download)
+ *
+ * Security: Uses HTTP-only cookies for authentication (credentials: 'include')
  */
 export async function downloadCaseSummaryFile(caseId: string): Promise<void> {
   const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 
-  const url = `${baseUrl}/cases/${caseId}/summary/pdf`;
+  const url = `${baseUrl}/api/cases/${caseId}/summary/pdf`;
 
   const response = await fetch(url, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
     credentials: 'include',
   });
 

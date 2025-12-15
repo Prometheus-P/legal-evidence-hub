@@ -6,9 +6,7 @@ Tests the following endpoints:
 - GET /cases/{case_id}/members - List case members
 """
 
-import pytest
-from unittest.mock import patch
-from app.db.models import UserRole, CaseMemberRole
+from app.db.models import CaseMemberRole
 
 
 class TestCaseSharing:

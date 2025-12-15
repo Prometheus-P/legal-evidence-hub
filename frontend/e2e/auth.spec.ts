@@ -157,6 +157,130 @@ test.describe('Authentication Flow', () => {
     });
   }); // Corrected closing brace for Signup Page test.describe
 
+  /**
+   * 011-production-bug-fixes: Login Redirect Bug Tests
+   * These tests verify the fix for the production login redirect issue
+   * Root cause: Cross-origin cookie configuration (SameSite/Secure)
+   */
+  test.describe('Login Redirect Bug Fix (011)', () => {
+    test('T006: should redirect to role-specific dashboard after login @real-api', async ({ page, request }) => {
+      // Skip if backend not available
+      try {
+        const healthCheck = await request.get('http://localhost:8000/health');
+        if (!healthCheck.ok()) {
+          test.skip();
+          return;
+        }
+      } catch {
+        test.skip();
+        return;
+      }
+
+      // Create unique test user
+      const uniqueEmail = `login-redirect-${Date.now()}@test.com`;
+      await page.goto('/signup');
+
+      const nameInput = page.locator('input[name="name"]');
+      await expect(nameInput).toBeVisible({ timeout: 10000 });
+
+      await nameInput.fill('Login Test User');
+      await page.locator('input[type="email"]').fill(uniqueEmail);
+      await page.locator('input[type="password"]').fill('password123');
+      await page.locator('select[name="role"]').selectOption('lawyer');
+      await page.locator('input[type="checkbox"]').check();
+      await page.getByRole('button', { name: /무료 체험 시작/i }).click();
+
+      // Should redirect to lawyer dashboard (not back to login!)
+      await page.waitForURL('**/lawyer/dashboard', { timeout: 15000 });
+
+      const finalUrl = page.url();
+      expect(finalUrl).toContain('/lawyer/dashboard');
+      expect(finalUrl).not.toContain('/login');
+    });
+
+    test('T007: should maintain login state after page refresh @real-api', async ({ page, request }) => {
+      // Skip if backend not available
+      try {
+        const healthCheck = await request.get('http://localhost:8000/health');
+        if (!healthCheck.ok()) {
+          test.skip();
+          return;
+        }
+      } catch {
+        test.skip();
+        return;
+      }
+
+      // Create and login with test user
+      const uniqueEmail = `refresh-test-${Date.now()}@test.com`;
+      await page.goto('/signup');
+
+      const nameInput = page.locator('input[name="name"]');
+      await expect(nameInput).toBeVisible({ timeout: 10000 });
+
+      await nameInput.fill('Refresh Test User');
+      await page.locator('input[type="email"]').fill(uniqueEmail);
+      await page.locator('input[type="password"]').fill('password123');
+      await page.locator('select[name="role"]').selectOption('lawyer');
+      await page.locator('input[type="checkbox"]').check();
+      await page.getByRole('button', { name: /무료 체험 시작/i }).click();
+
+      // Wait for dashboard
+      await page.waitForURL('**/lawyer/dashboard', { timeout: 15000 });
+
+      // Refresh the page
+      await page.reload();
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(2000);
+
+      // Should still be on dashboard (not redirected to login)
+      const urlAfterRefresh = page.url();
+      expect(urlAfterRefresh).toContain('/lawyer/dashboard');
+      expect(urlAfterRefresh).not.toContain('/login');
+    });
+
+    test('T008: should redirect authenticated user from /login to dashboard @real-api', async ({ page, request }) => {
+      // Skip if backend not available
+      try {
+        const healthCheck = await request.get('http://localhost:8000/health');
+        if (!healthCheck.ok()) {
+          test.skip();
+          return;
+        }
+      } catch {
+        test.skip();
+        return;
+      }
+
+      // Create and login with test user
+      const uniqueEmail = `back-button-${Date.now()}@test.com`;
+      await page.goto('/signup');
+
+      const nameInput = page.locator('input[name="name"]');
+      await expect(nameInput).toBeVisible({ timeout: 10000 });
+
+      await nameInput.fill('Back Button Test User');
+      await page.locator('input[type="email"]').fill(uniqueEmail);
+      await page.locator('input[type="password"]').fill('password123');
+      await page.locator('select[name="role"]').selectOption('lawyer');
+      await page.locator('input[type="checkbox"]').check();
+      await page.getByRole('button', { name: /무료 체험 시작/i }).click();
+
+      // Wait for dashboard
+      await page.waitForURL('**/lawyer/dashboard', { timeout: 15000 });
+
+      // Try to navigate back to /login (simulating back button or direct navigation)
+      await page.goto('/login');
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(2000);
+
+      // Should be redirected back to dashboard (not stay on login)
+      const finalUrl = page.url();
+      expect(finalUrl).toContain('/lawyer/dashboard');
+      expect(finalUrl).not.toContain('/login');
+    });
+  });
+
   test.describe('Navigation Guard', () => {
     test('should handle unauthenticated access to /cases', async ({ page }) => {
       // Ensure no auth token

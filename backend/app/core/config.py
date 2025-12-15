@@ -86,9 +86,42 @@ class Settings(BaseSettings):
     # ============================================
     # Cookie Settings
     # ============================================
+    # Note: For cross-origin (CloudFront → API), production MUST use:
+    #   COOKIE_SECURE=true, COOKIE_SAMESITE=none
+    # These are auto-configured based on APP_ENV if not explicitly set.
     COOKIE_SECURE: bool = Field(default=False, env="COOKIE_SECURE")  # True in production (HTTPS)
     COOKIE_SAMESITE: str = Field(default="lax", env="COOKIE_SAMESITE")  # lax | strict | none
     COOKIE_DOMAIN: str = Field(default="", env="COOKIE_DOMAIN")  # Empty = current domain
+
+    @model_validator(mode='after')
+    def validate_cookie_settings_for_production(self):
+        """
+        Auto-configure cookie settings for cross-origin in production/dev environments.
+        Cross-origin (CloudFront frontend → API backend) requires:
+        - SameSite=None (allows cross-site cookie transmission)
+        - Secure=True (required when SameSite=None, HTTPS only)
+        """
+        import os
+
+        # Check if explicitly set via environment variable
+        explicit_samesite = os.environ.get("COOKIE_SAMESITE")
+        explicit_secure = os.environ.get("COOKIE_SECURE")
+
+        if self.APP_ENV in ("prod", "production", "dev"):
+            # Auto-configure for cross-origin if not explicitly set
+            if explicit_samesite is None:
+                self.COOKIE_SAMESITE = "none"
+            if explicit_secure is None:
+                self.COOKIE_SECURE = True
+
+            # Validate SameSite=None requires Secure=True
+            if self.COOKIE_SAMESITE.lower() == "none" and not self.COOKIE_SECURE:
+                raise ValueError(
+                    "COOKIE_SECURE must be True when COOKIE_SAMESITE is 'none'. "
+                    "Cross-origin cookies require both settings for security."
+                )
+
+        return self
 
     # ============================================
     # Public API Base URL (used by frontend/backoffice)

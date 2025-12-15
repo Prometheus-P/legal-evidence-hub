@@ -284,18 +284,17 @@ class CaseService:
         if not case:
             raise NotFoundError("Case")
 
-        # Get all members
+        # Get all members (with eagerly loaded user data - Issue #280)
         members = self.member_repo.get_all_members(case_id)
 
-        # Convert to response schema
+        # Convert to response schema using eager-loaded user
         member_outs = []
         for member in members:
-            user = self.user_repo.get_by_id(member.user_id)
-            if user:
+            if member.user:  # User is eager-loaded, no extra query needed
                 member_outs.append(CaseMemberOut(
-                    user_id=user.id,
-                    name=user.name,
-                    email=user.email,
+                    user_id=member.user.id,
+                    name=member.user.name,
+                    email=member.user.email,
                     permission=self._role_to_permission(member.role),
                     role=member.role
                 ))

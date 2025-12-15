@@ -15,11 +15,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getClientCaseDetail } from '@/lib/api/client-portal';
 import EvidenceUploader from '@/components/client/EvidenceUploader';
 import { ProgressBar } from '@/components/client/ProgressTracker';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 function EvidencePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const caseId = searchParams?.get('caseId') ?? null;
+  const caseDetailPath = caseId ? getCaseDetailPath('client', caseId) : '/client/cases/detail';
 
   const [caseTitle, setCaseTitle] = useState<string>('');
   const [canUpload, setCanUpload] = useState(true);
@@ -102,8 +104,8 @@ function EvidencePageContent() {
         <p className="text-[var(--color-text-secondary)] mb-4">
           이 케이스는 현재 증거 업로드가 제한되어 있습니다.
         </p>
-        <Link
-          href={`/client/cases/${caseId}`}
+          <Link
+            href={caseDetailPath}
           className="inline-block px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
         >
           케이스 상세로 돌아가기
@@ -116,8 +118,8 @@ function EvidencePageContent() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <Link
-          href={`/client/cases/${caseId}`}
+          <Link
+            href={caseDetailPath}
           className="inline-flex items-center gap-1 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] mb-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +206,7 @@ function EvidencePageContent() {
             </button>
             <button
               type="button"
-              onClick={() => router.push(`/client/cases/${caseId}`)}
+              onClick={() => caseId && router.push(caseDetailPath)}
               className="flex-1 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-opacity"
             >
               케이스 상세로

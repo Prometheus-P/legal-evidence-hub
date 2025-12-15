@@ -1,12 +1,11 @@
-
 ### *REST API 명세서 (MVP)*
 
-**버전:** v3.0
-**작성일:** 2025-12-09
-**작성자:** Team H (Backend)
+**버전:** v3.1
+**작성일:** 2025-12-12
+**작성자:** Gemini
 **관련 문서:** `PRD.md`, `ARCHITECTURE.md`, `BACKEND_DESIGN.md`, `AI_PIPELINE_DESIGN.md`, `FRONTEND_SPEC.md`
 
-> **v3.0 변경사항**: 007-lawyer-portal-v1 API 추가 (Party Graph, Evidence Links, Assets, Procedure Stages, Summary Card, Global Search, Calendar)
+> **v3.1 변경사항**: API 경로에 `/api` 접두사 추가, 누락된 인증/검색/설정 API 엔드포인트 추가, 역할 기반 경로 명시
 
 ---
 
@@ -18,7 +17,7 @@
 - 주요 리소스(Cases, Evidence, Draft)의 요청/응답 형식 정의
 - 인증/에러 공통 규칙 정의
 
-> 참고: 기존 Paralegal API 설계의 엔드포인트 구조와 에러 처리 원칙을 계승하되, S3 Presigned URL, 사건별 RAG, Preview-only Draft 등 LEH 아키텍처에 맞게 재구성했다. :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}
+> 참고: 기존 Paralegal API 설계의 엔드포인트 구조와 에러 처리 원칙을 계승하되, S3 Presigned URL, 사건별 RAG, Preview-only Draft 등 LEH 아키텍처에 맞게 재구성했다.
 
 ---
 
@@ -27,6 +26,7 @@
 ## 1.1 Base
 
 - Base URL (예시): `https://api.leh.app`
+- 모든 API 경로는 `/api` 접두사로 시작
 - 모든 API는 **JSON** 기반 (파일 업로드는 예외)
 
 ## 1.2 인증
@@ -38,7 +38,7 @@ http
 Authorization: Bearer <JWT_TOKEN>
 `
 
-- `/auth/login`, `/health` 일부를 제외하면 **모든 엔드포인트에 필수**
+- `/api/auth/login`, `/api/health` 일부를 제외하면 **모든 엔드포인트에 필수**
 
 ## 1.3 공통 응답 형식
 
@@ -80,7 +80,7 @@ json
 
 ## 2.1 로그인
 
-### `POST /auth/login`
+### `POST /api/auth/login`
 
 - 설명: 이메일/비밀번호로 로그인 후 JWT 발급
 - 요청 Body:
@@ -111,9 +111,31 @@ json
 
   - 401: 잘못된 인증 정보 (메시지는 항상 일반적인 문구로)
 
-## 2.2 토큰 갱신 (옵션)
+## 2.2 내 정보 조회
 
-### `POST /auth/refresh`
+### `GET /api/auth/me`
+
+- 설명: 현재 로그인된 사용자의 정보를 반환합니다. `Authorization` 헤더의 토큰을 기반으로 사용자를 식별합니다.
+- 응답 (200):
+
+json
+{
+  "data": {
+    "id": "uuid",
+    "name": "홍길동",
+    "email": "user@example.com",
+    "role": "LAWYER",
+    "status": "active",
+    "created_at": "2025-01-15T10:00:00Z"
+  }
+}
+
+- 오류:
+  - 401: 유효한 토큰이 없는 경우
+
+## 2.3 토큰 갱신 (옵션)
+
+### `POST /api/auth/refresh`
 
 - 설명: Refresh Token으로 Access Token 재발급 (도입 시)
 
@@ -121,9 +143,11 @@ json
 
 # 📁 3. 사건(Case) API
 
+> **Note on Role-Based Access**: Case-related APIs are namespaced by user roles. The `{role}` path parameter should be one of `lawyer`, `client`, or `detective`. For example, a lawyer would access `GET /api/lawyer/cases`.
+
 ## 3.1 사건 목록 조회
 
-### `GET /cases`
+### `GET /api/{role}/cases`
 
 - 설명: 로그인한 사용자가 접근 가능한 사건 리스트
 - 쿼리 파라미터:
@@ -150,7 +174,7 @@ json
 
 ## 3.2 사건 생성
 
-### `POST /cases`
+### `POST /api/{role}/cases`
 
 - 설명: 새로운 사건 생성
 - 요청 Body:
@@ -178,7 +202,7 @@ json
 
 ## 3.3 사건 상세 조회
 
-### `GET /cases/{case_id}`
+### `GET /api/{role}/cases/{case_id}`
 
 - 설명: 사건 요약 정보 조회
 - 응답 (200):
@@ -200,7 +224,7 @@ json
 
 ## 3.4 사건 수정
 
-### `PATCH /cases/{case_id}`
+### `PATCH /api/{role}/cases/{case_id}`
 
 - 설명: 사건 제목/설명 수정
 - 요청 Body:
@@ -217,7 +241,7 @@ json
 
 ## 3.5 사건 종료(Soft Delete)
 
-### `DELETE /cases/{case_id}`
+### `DELETE /api/{role}/cases/{case_id}`
 
 - 설명:
 
@@ -238,7 +262,7 @@ LEH는 **Presigned URL + S3 직접 업로드**를 사용한다.
 
 ## 4.1 업로드용 Presigned URL 발급
 
-### `POST /evidence/presigned-url`
+### `POST /api/evidence/presigned-url`
 
 - 설명: 특정 사건에 대한 S3 업로드 URL 발급
 - 요청 Body:
@@ -272,7 +296,7 @@ json
 
 ## 4.2 업로드 완료 알림
 
-### `POST /evidence/upload-complete`
+### `POST /api/evidence/upload-complete`
 
 - 설명: 클라이언트가 S3 업로드를 마친 후 백엔드에 알리는 엔드포인트
 
@@ -306,7 +330,7 @@ json
 
 ## 4.3 사건별 증거 목록 조회 (타임라인용)
 
-### `GET /cases/{case_id}/evidence`
+### `GET /api/cases/{case_id}/evidence`
 
 - 설명: 타임라인·리스트 표기를 위한 사건별 증거 메타데이터 조회
 
@@ -339,7 +363,7 @@ json
 
 ## 4.4 증거 상세 조회
 
-### `GET /evidence/{evidence_id}`
+### `GET /api/evidence/{evidence_id}`
 
 - 설명: 특정 증거의 상세 정보 + 원본 다운로드 URL
 
@@ -374,7 +398,7 @@ LEH는 **“Preview 전용 Draft”**만 제공하며,
 
 ## 5.1 Draft Preview 생성
 
-### `POST /cases/{case_id}/draft-preview`
+### `POST /api/cases/{case_id}/draft-preview`
 
 - 설명:
 
@@ -418,7 +442,7 @@ json
 
 ## 5.2 Draft Preview 조회 (선택)
 
-### `GET /cases/{case_id}/draft-preview`
+### `GET /api/cases/{case_id}/draft-preview`
 
 - 설명: 최근 생성된 Draft Preview 조회 (캐싱/이력 관리용)
 - 응답: 200 / 404 (아직 생성 전)
@@ -427,7 +451,7 @@ json
 
 ## 5.3 Draft docx 다운로드
 
-### `GET /cases/{case_id}/draft-export`
+### `GET /api/cases/{case_id}/draft-export`
 
 - 설명:
 
@@ -447,13 +471,13 @@ json
 
 ## 6.1 사건 내 RAG 검색
 
-### `GET /cases/{case_id}/search`
+### `GET /api/cases/{case_id}/search`
 
 - 설명: 사건별 증거를 기반으로 한 의미 검색 (Qdrant + 임베딩)
 
 - 쿼리 파라미터:
 
-  - `q`: 검색 질의 (예: `"폭언이 집중된 시점"`)
+  - `q`: 검색 질의 (예: "폭언이 집중된 시점")
   - `label` (옵션): 유책사유 라벨 필터
   - `limit` (옵션): 기본 20
 
@@ -477,7 +501,7 @@ json
 
 ## 7.1 Health Check
 
-### `GET /health`
+### `GET /api/health`
 
 - 설명: 단순 헬스 체크 (모니터링/로드밸런서용)
 - 응답 (200):
@@ -493,33 +517,33 @@ json
 
 1. **로그인**
 
-   - `POST /auth/login` → JWT 획득
+   - `POST /api/auth/login` → JWT 획득
 
 2. **사건 생성 & 진입**
 
-   - `POST /cases` → 새 사건 ID
-   - `GET /cases/{case_id}` → 상세 조회
+   - `POST /api/{role}/cases` → 새 사건 ID
+   - `GET /api/{role}/cases/{case_id}` → 상세 조회
 
 3. **증거 업로드**
 
-   - `POST /evidence/presigned-url` → S3 업로드 정보
+   - `POST /api/evidence/presigned-url` → S3 업로드 정보
    - 클라이언트가 S3에 직접 업로드
-   - `POST /evidence/upload-complete` → Evidence 생성 (status=`processing`)
-   - AI Worker 완료 후 `GET /cases/{case_id}/evidence`에서 `status=done` 확인
+   - `POST /api/evidence/upload-complete` → Evidence 생성 (status=`processing`)
+   - AI Worker 완료 후 `GET /api/cases/{case_id}/evidence`에서 `status=done` 확인
 
 4. **타임라인/세부 내용 확인**
 
-   - `GET /cases/{case_id}/evidence` → 리스트
-   - `GET /evidence/{evidence_id}` → 전문/요약/다운로드 URL
+   - `GET /api/cases/{case_id}/evidence` → 리스트
+   - `GET /api/evidence/{evidence_id}` → 전문/요약/다운로드 URL
 
 5. **Draft Preview 생성/다운로드**
 
-   - `POST /cases/{case_id}/draft-preview` → 초안 텍스트 + 인용 증거
-   - `GET /cases/{case_id}/draft-export` → docx 파일 다운로드
+   - `POST /api/cases/{case_id}/draft-preview` → 초안 텍스트 + 인용 증거
+   - `GET /api/cases/{case_id}/draft-export` → docx 파일 다운로드
 
 6. **사건 종료**
 
-   - `DELETE /cases/{case_id}` → 사건 상태 종료, RAG index 제거
+   - `DELETE /api/{role}/cases/{case_id}` → 사건 상태 종료, RAG index 제거
 
 ---
 
@@ -527,7 +551,7 @@ json
 
 ## 8.1 진행 상황 요약 조회
 
-### `GET /staff/progress`
+### `GET /api/staff/progress`
 
 - **권한**: `staff`, `lawyer`, `admin`
 - **설명**: Paralegal/Lawyer가 배정된 사건들의 증거 수집, AI 상태, 피드백 체크리스트를 한 번에 조회.
@@ -575,7 +599,7 @@ json
 
 ## 8.2 체크리스트 상태 갱신
 
-### `PATCH /staff/progress/{case_id}/checklist/{item_id}`
+### `PATCH /api/staff/progress/{case_id}/checklist/{item_id}`
 
 - **권한**: `staff`, `lawyer`, `admin`
 - **설명**: 파라리걸이 mid-demo 피드백 항목을 완료/대기 상태로 토글하거나 메모를 남길 때 사용.
@@ -622,7 +646,7 @@ json
 
 ## 9.1 당사자 목록 조회
 
-### `GET /cases/{case_id}/parties`
+### `GET /api/cases/{case_id}/parties`
 
 - **권한**: case_members (READ)
 - **설명**: 사건에 등록된 모든 당사자 노드 조회
@@ -651,7 +675,7 @@ json
 
 ## 9.2 당사자 생성
 
-### `POST /cases/{case_id}/parties`
+### `POST /api/cases/{case_id}/parties`
 
 - **권한**: case_members (WRITE)
 - **요청 Body**
@@ -669,7 +693,7 @@ json
 
 ## 9.3 당사자 관계 목록
 
-### `GET /cases/{case_id}/relationships`
+### `GET /api/cases/{case_id}/relationships`
 
 - **응답 (200)**
 
@@ -691,7 +715,7 @@ json
 
 ## 9.4 관계 생성
 
-### `POST /cases/{case_id}/relationships`
+### `POST /api/cases/{case_id}/relationships`
 
 - **type 값**: `marriage` | `affair` | `parent_child` | `sibling` | `in_law` | `cohabit`
 
@@ -703,7 +727,7 @@ json
 
 ## 10.1 증거 링크 목록
 
-### `GET /cases/{case_id}/evidence-links`
+### `GET /api/cases/{case_id}/evidence-links`
 
 - **쿼리 파라미터**:
   - `party_id` (optional): 특정 당사자에 연결된 링크만
@@ -728,7 +752,7 @@ json
 
 ## 10.2 증거 링크 생성
 
-### `POST /cases/{case_id}/evidence-links`
+### `POST /api/cases/{case_id}/evidence-links`
 
 - **relevance 값**: `primary` | `supporting` | `context`
 
@@ -740,7 +764,7 @@ json
 
 ## 11.1 자산 목록 조회
 
-### `GET /cases/{case_id}/assets`
+### `GET /api/cases/{case_id}/assets`
 
 - **쿼리 파라미터**:
   - `category` (optional): `real_estate` | `financial` | `vehicle` | `business` | `retirement` | `other`
@@ -770,7 +794,7 @@ json
 
 ## 11.2 자산 요약 조회
 
-### `GET /cases/{case_id}/assets/summary`
+### `GET /api/cases/{case_id}/assets/summary`
 
 - **응답 (200)**
 
@@ -796,7 +820,7 @@ json
 
 ## 12.1 절차 단계 목록
 
-### `GET /cases/{case_id}/procedure/stages`
+### `GET /api/cases/{case_id}/procedure/stages`
 
 - **응답 (200)**
 
@@ -828,7 +852,7 @@ json
 
 ## 12.2 절차 단계 상태 업데이트
 
-### `PATCH /cases/{case_id}/procedure/stages/{stage_id}`
+### `PATCH /api/cases/{case_id}/procedure/stages/{stage_id}`
 
 - **요청 Body**
 
@@ -848,7 +872,7 @@ json
 
 ## 13.1 요약 카드 조회
 
-### `GET /cases/{case_id}/summary`
+### `GET /api/cases/{case_id}/summary`
 
 - **응답 (200)**
 
@@ -887,51 +911,128 @@ json
 
 ## 13.2 요약 카드 PDF 다운로드
 
-### `GET /cases/{case_id}/summary/pdf`
+### `GET /api/cases/{case_id}/summary/pdf`
 
 - **응답**: HTML (print-ready format)
 - **Content-Type**: `text/html`
 
 ---
 
-# 🔍 14. Global Search API (US6)
+# ⚙️ 14. Settings API
 
-전역 검색 및 명령 팔레트용 API.
+사용자 설정 관련 API.
 
-## 14.1 전역 검색
+## 14.1 프로필 조회
 
-### `GET /search`
+### `GET /api/settings/profile`
 
-- **쿼리 파라미터**:
-  - `q`: 검색어 (필수)
-  - `category` (optional): `case` | `client` | `evidence` | `calendar`
-  - `limit` (optional): 기본 20
-- **응답 (200)**
-
+- **설명**: 현재 사용자의 프로필 정보 조회
+- **응답 (200)**:
 ```json
 {
-  "items": [
-    {
-      "id": "case_001",
-      "type": "case",
-      "title": "김○○ 이혼 사건",
-      "subtitle": "2024가합12345",
-      "url": "/lawyer/cases/case_001"
-    }
-  ],
-  "total": 15
+  "id": "user-uuid",
+  "name": "홍길동",
+  "email": "hong@example.com",
+  "phone_number": "010-1234-5678",
+  "profile_image_url": "https://..."
+}
+```
+
+## 14.2 프로필 수정
+
+### `PUT /api/settings/profile`
+
+- **요청 Body**:
+```json
+{
+  "name": "홍길동",
+  "phone_number": "010-1111-2222",
+  "profile_image_url": "https://..."
+}
+```
+- **응답 (200)**:
+```json
+{
+  "message": "프로필이 업데이트되었습니다."
+}
+```
+
+## 14.3 알림 설정 조회
+
+### `GET /api/settings/notifications`
+
+- **응답 (200)**:
+```json
+{
+  "email_notifications": {
+    "case_updates": true,
+    "new_messages": true,
+    "weekly_summary": false
+  },
+  "push_notifications": {
+    "case_updates": true,
+    "new_messages": true
+  }
+}
+```
+
+## 14.4 알림 설정 수정
+
+### `PUT /api/settings/notifications`
+
+- **요청 Body**:
+```json
+{
+  "email_notifications": {
+    "weekly_summary": true
+  }
+}
+```
+- **응답 (200)**:
+```json
+{
+  "message": "알림 설정이 업데이트되었습니다."
+}
+```
+
+## 14.5 보안 설정 조회
+
+### `GET /api/settings/security`
+
+- **응답 (200)**:
+```json
+{
+  "mfa_enabled": true,
+  "last_password_change": "2025-10-01T10:00:00Z"
+}
+```
+
+## 14.6 비밀번호 변경
+
+### `POST /api/settings/security/change-password`
+
+- **요청 Body**:
+```json
+{
+  "current_password": "...",
+  "new_password": "..."
+}
+```
+- **응답 (200)**:
+```json
+{
+  "message": "비밀번호가 변경되었습니다."
 }
 ```
 
 ---
-
 # 📅 15. Calendar API
 
 일정 관리 API.
 
 ## 15.1 일정 목록 조회
 
-### `GET /calendar/events`
+### `GET /api/calendar/events`
 
 - **쿼리 파라미터**:
   - `start`: ISO 날짜 (필수)
@@ -959,7 +1060,7 @@ json
 
 ## 15.2 일정 생성
 
-### `POST /calendar/events`
+### `POST /api/calendar/events`
 
 - **요청 Body**
 
@@ -1105,7 +1206,7 @@ AI Worker가 자동 추출한 인물/관계를 저장하는 API
 
 # ✅ 18. 확장 포인트 (v2 이후)
 
-- Draft 버전 관리 및 편집 이력 (`PUT /cases/{id}/draft`)
+- Draft 버전 관리 및 편집 이력 (`PUT /api/cases/{id}/draft`)
 - Opponent Claim 관리 API (상대방 주장 텍스트 + 증거 링크)
 - Webhook 기반 비동기 알림 (증거 분석 완료, Draft 생성 완료 등)
 - Admin용 감사 로그 조회 API

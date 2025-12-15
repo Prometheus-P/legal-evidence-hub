@@ -26,7 +26,7 @@ describe('plan 3.15: 케이스 공유 모달', () => {
 
     // 검색어 입력 시 필터링이 동작하는지(다른 팀원이 사라지는지)만 확인한다.
     await user.type(searchInput, '홍길동');
-    expect(screen.queryByText(/이영희/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('lee@example.com')).not.toBeInTheDocument();
 
     const memberCheckbox = screen.getByRole('checkbox', {
       name: /홍길동 선택/i,

@@ -57,7 +57,7 @@ class TestPropertyServiceInit:
              patch('app.services.property_service.CaseRepository') as mock_case, \
              patch('app.services.property_service.CaseMemberRepository') as mock_member:
 
-            service = PropertyService(mock_db)
+            _service = PropertyService(mock_db)  # noqa: F841
 
             mock_prop.assert_called_once_with(mock_db)
             mock_case.assert_called_once_with(mock_db)

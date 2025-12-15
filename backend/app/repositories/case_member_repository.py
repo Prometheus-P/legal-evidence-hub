@@ -3,9 +3,9 @@ CaseMember Repository - Data access layer for CaseMember model
 Handles case membership and permissions
 """
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
-from app.db.models import CaseMember, CaseMemberRole, User
+from app.db.models import CaseMember, CaseMemberRole
 
 
 class CaseMemberRepository:
@@ -91,17 +91,17 @@ class CaseMemberRepository:
 
     def get_all_members(self, case_id: str) -> List[CaseMember]:
         """
-        Get all members of a case with user information
+        Get all members of a case with user information (eager loaded)
 
         Args:
             case_id: Case ID
 
         Returns:
-            List of CaseMember instances with joined User data
+            List of CaseMember instances with eagerly loaded User data
         """
         return (
             self.session.query(CaseMember)
-            .join(User, CaseMember.user_id == User.id)
+            .options(joinedload(CaseMember.user))  # Issue #280: Eager load user
             .filter(CaseMember.case_id == case_id)
             .all()
         )

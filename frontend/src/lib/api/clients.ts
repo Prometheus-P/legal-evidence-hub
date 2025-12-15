@@ -47,3 +47,85 @@ export async function getClientDetail(
 
 // Re-export types for convenience
 export type { ClientItem, ClientListResponse, ClientFilter, ClientDetail };
+
+// ============== Client Contact CRUD (US2 - Lawyer Portal) ==============
+
+import type {
+  ClientContact,
+  ClientContactCreate,
+  ClientContactUpdate,
+  ClientContactListResponse,
+  ClientContactQueryParams,
+} from '@/types/client';
+
+const CLIENT_CONTACTS_PATH = '/clients';
+
+/**
+ * Get list of client contacts
+ */
+export async function getClientContacts(
+  params?: ClientContactQueryParams
+): Promise<ApiResponse<ClientContactListResponse>> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.search) {
+    searchParams.append('search', params.search);
+  }
+  if (params?.page) {
+    searchParams.append('page', String(params.page));
+  }
+  if (params?.limit) {
+    searchParams.append('limit', String(params.limit));
+  }
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${CLIENT_CONTACTS_PATH}?${queryString}` : CLIENT_CONTACTS_PATH;
+
+  return apiClient.get<ClientContactListResponse>(url);
+}
+
+/**
+ * Get a single client contact by ID
+ */
+export async function getClientContact(
+  clientId: string
+): Promise<ApiResponse<ClientContact>> {
+  return apiClient.get<ClientContact>(`${CLIENT_CONTACTS_PATH}/${clientId}`);
+}
+
+/**
+ * Create a new client contact
+ */
+export async function createClientContact(
+  data: ClientContactCreate
+): Promise<ApiResponse<ClientContact>> {
+  return apiClient.post<ClientContact>(CLIENT_CONTACTS_PATH, data);
+}
+
+/**
+ * Update an existing client contact
+ */
+export async function updateClientContact(
+  clientId: string,
+  data: ClientContactUpdate
+): Promise<ApiResponse<ClientContact>> {
+  return apiClient.patch<ClientContact>(`${CLIENT_CONTACTS_PATH}/${clientId}`, data);
+}
+
+/**
+ * Delete a client contact
+ */
+export async function deleteClientContact(
+  clientId: string
+): Promise<ApiResponse<{ success: boolean }>> {
+  return apiClient.delete<{ success: boolean }>(`${CLIENT_CONTACTS_PATH}/${clientId}`);
+}
+
+// Re-export contact types
+export type {
+  ClientContact,
+  ClientContactCreate,
+  ClientContactUpdate,
+  ClientContactListResponse,
+  ClientContactQueryParams,
+};

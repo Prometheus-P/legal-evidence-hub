@@ -68,7 +68,8 @@ const detectiveNavItems: NavItem[] = [
   },
 ];
 
-const ALLOWED_ROLES: UserRole[] = ['detective'];
+// Admin can access all portals for administrative purposes
+const ALLOWED_ROLES: UserRole[] = ['detective', 'admin'];
 
 export default function DetectiveLayout({
   children,

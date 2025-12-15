@@ -94,8 +94,8 @@ function NotificationItem({
 }) {
   return (
     <div
-      className={`p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-        !notification.read ? 'bg-blue-50/50' : ''
+      className={`p-3 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer transition-colors ${
+        !notification.read ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''
       }`}
       onClick={onClick}
       role="button"
@@ -106,17 +106,17 @@ function NotificationItem({
         <NotificationIcon type={notification.type} />
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-sm ${!notification.read ? 'font-semibold' : ''} text-gray-900 truncate`}>
+            <p className={`text-sm ${!notification.read ? 'font-semibold' : ''} text-gray-900 dark:text-gray-100 truncate`}>
               {notification.title}
             </p>
             {!notification.read && (
               <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1.5" />
             )}
           </div>
-          <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
             {notification.message}
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             {formatRelativeTime(notification.created_at)}
           </p>
         </div>
@@ -171,12 +171,12 @@ export default function NotificationBell({
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
         aria-label={`알림 ${displayUnreadCount > 0 ? `(${displayUnreadCount}개 읽지 않음)` : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
 
@@ -190,10 +190,10 @@ export default function NotificationBell({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-neutral-700 overflow-hidden z-50">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">알림</h3>
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">알림</h3>
             {displayUnreadCount > 0 && onMarkAllRead && (
               <button
                 onClick={onMarkAllRead}
@@ -207,12 +207,12 @@ export default function NotificationBell({
           {/* Notification List */}
           <div className="max-h-[400px] overflow-y-auto">
             {isLoading ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto" />
                 <p className="mt-2 text-sm">불러오는 중...</p>
               </div>
             ) : notifications.length > 0 ? (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-neutral-700">
                 {notifications.map((notification) => (
                   <NotificationItem
                     key={notification.id}
@@ -233,7 +233,7 @@ export default function NotificationBell({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 py-3 border-t border-gray-200 flex justify-between">
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-neutral-700 flex justify-between">
               <button
                 onClick={() => {
                   setIsOpen(false);
@@ -246,7 +246,7 @@ export default function NotificationBell({
               {onClearAll && (
                 <button
                   onClick={onClearAll}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   모두 삭제
                 </button>

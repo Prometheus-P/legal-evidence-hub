@@ -70,11 +70,11 @@ export default function LawyerCasesPage() {
         </div>
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 dark:bg-neutral-700 rounded-lg p-1">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow' : ''}`}
+              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-neutral-800 shadow' : ''}`}
               title="카드 보기"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +84,7 @@ export default function LawyerCasesPage() {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded ${viewMode === 'table' ? 'bg-white shadow' : ''}`}
+              className={`p-2 rounded ${viewMode === 'table' ? 'bg-white dark:bg-neutral-800 shadow' : ''}`}
               title="테이블 보기"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export default function LawyerCasesPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
               <CaseTable
                 cases={cases}
                 selectedIds={selectedIds}
@@ -175,8 +175,8 @@ export default function LawyerCasesPage() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">케이스 없음</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">케이스 없음</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 검색 조건에 맞는 케이스가 없습니다.
               </p>
             </div>
@@ -189,7 +189,7 @@ export default function LawyerCasesPage() {
                 type="button"
                 onClick={() => setPage(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-3 py-1 rounded border border-gray-300 dark:border-neutral-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 이전
               </button>
@@ -200,7 +200,7 @@ export default function LawyerCasesPage() {
                 type="button"
                 onClick={() => setPage(pagination.page + 1)}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-1 rounded border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-3 py-1 rounded border border-gray-300 dark:border-neutral-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-neutral-700"
               >
                 다음
               </button>

@@ -7,19 +7,43 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useBilling } from '@/hooks/useBilling';
+import { getLawyerCases, type CaseListItem } from '@/lib/api/lawyer';
+import { getClients } from '@/lib/api/clients';
+import { getCaseMembers } from '@/lib/api/cases';
 import InvoiceList from '@/components/lawyer/InvoiceList';
 import InvoiceForm from '@/components/lawyer/InvoiceForm';
 import type { Invoice, InvoiceStatus, InvoiceCreateRequest, InvoiceUpdateRequest } from '@/types/billing';
+import type { ClientItem } from '@/types/client';
 
 type ViewMode = 'list' | 'create' | 'edit';
+
+interface CaseOption {
+  id: string;
+  title: string;
+  client_name?: string;
+  client_id?: string;
+}
+
+interface ClientOption {
+  id: string;
+  name: string;
+  email?: string;
+}
+
+const CASES_PAGE_SIZE = 100;
+const CLIENTS_PAGE_SIZE = 100;
 
 export default function LawyerBillingPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [caseOptions, setCaseOptions] = useState<CaseOption[]>([]);
+  const [clientOptions, setClientOptions] = useState<ClientOption[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState(true);
+  const [optionError, setOptionError] = useState<string | null>(null);
 
   const {
     invoices,
@@ -35,12 +59,109 @@ export default function LawyerBillingPage() {
     remove,
   } = useBilling();
 
-  // Mock cases for demo (in real app, fetch from API)
-  const mockCases = [
-    { id: 'case_001', title: '김○○ 이혼 소송', client_id: 'client_001', client_name: '김철수' },
-    { id: 'case_002', title: '이○○ 재산분할', client_id: 'client_002', client_name: '이영희' },
-    { id: 'case_003', title: '박○○ 양육권 분쟁', client_id: 'client_003', client_name: '박민수' },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAllCases = async (): Promise<CaseOption[]> => {
+      const collected: CaseListItem[] = [];
+      let page = 1;
+      let total = Infinity;
+
+      while (collected.length < total) {
+        const response = await getLawyerCases({
+          page,
+          limit: CASES_PAGE_SIZE,
+          sort_by: 'updated_at',
+        });
+
+        if (response.error || !response.data) {
+          throw new Error(response.error || '사건 목록을 불러오지 못했습니다.');
+        }
+
+        collected.push(...response.data.cases);
+        total = response.data.total;
+
+        if (response.data.cases.length < CASES_PAGE_SIZE) {
+          break;
+        }
+
+        page += 1;
+      }
+
+      return collected.map((caseItem) => ({
+        id: caseItem.id,
+        title: caseItem.title,
+        client_name: caseItem.client_name,
+      }));
+    };
+
+    const fetchAllClients = async (): Promise<ClientOption[]> => {
+      const clients: ClientOption[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      do {
+        const response = await getClients({
+          page,
+          page_size: CLIENTS_PAGE_SIZE,
+          status: 'active',
+        });
+
+        if (response.error || !response.data) {
+          throw new Error(response.error || '의뢰인 목록을 불러오지 못했습니다.');
+        }
+
+        clients.push(
+          ...response.data.items.map((client: ClientItem) => ({
+            id: client.id,
+            name: client.name,
+            email: client.email,
+          }))
+        );
+
+        totalPages = response.data.total_pages;
+        page += 1;
+      } while (page <= totalPages);
+
+      return clients;
+    };
+
+    async function loadOptions() {
+      setOptionsLoading(true);
+      setOptionError(null);
+
+      try {
+        const [caseList, clientList] = await Promise.all([
+          fetchAllCases(),
+          fetchAllClients(),
+        ]);
+
+        if (!isMounted) return;
+
+        setCaseOptions(caseList);
+        setClientOptions(clientList);
+
+        if (caseList.length === 0) {
+          setOptionError('등록된 사건이 없습니다. 먼저 사건을 생성해 주세요.');
+        }
+      } catch (error) {
+        if (!isMounted) return;
+        setCaseOptions([]);
+        setClientOptions([]);
+        setOptionError('청구서 발행에 필요한 데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        if (isMounted) {
+          setOptionsLoading(false);
+        }
+      }
+    }
+
+    loadOptions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleFilterChange = useCallback(
     (status: InvoiceStatus | null) => {
@@ -112,6 +233,37 @@ export default function LawyerBillingPage() {
     setViewMode('list');
     setEditingInvoice(null);
   }, []);
+
+  const clientMap = useMemo(() => {
+    const map = new Map<string, ClientOption>();
+    clientOptions.forEach((client) => {
+      map.set(client.id, client);
+    });
+    return map;
+  }, [clientOptions]);
+
+  const loadCaseClients = useCallback(
+    async (caseId: string) => {
+      const response = await getCaseMembers(caseId);
+
+      if (response.error || !response.data) {
+        throw new Error(response.error || '사건 구성원을 불러오지 못했습니다.');
+      }
+
+      const deduped = new Map<string, ClientOption>();
+
+      response.data.members.forEach((member) => {
+        if (member.role === 'owner') return;
+        const client = clientMap.get(member.user_id);
+        if (client) {
+          deduped.set(client.id, client);
+        }
+      });
+
+      return Array.from(deduped.values());
+    },
+    [clientMap]
+  );
 
   return (
     <div className="space-y-6">
@@ -189,11 +341,18 @@ export default function LawyerBillingPage() {
           <div className="p-6 border-b border-[var(--color-border)]">
             <h2 className="text-xl font-semibold">새 청구서 발행</h2>
           </div>
+          {optionError && (
+            <div className="mx-6 mt-4 mb-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-[var(--color-error)]">
+              {optionError}
+            </div>
+          )}
           <InvoiceForm
-            cases={mockCases}
+            cases={caseOptions}
+            clients={clientOptions}
+            loadCaseClients={loadCaseClients}
             onSubmit={handleCreate as (data: InvoiceCreateRequest | InvoiceUpdateRequest) => Promise<void>}
             onCancel={handleCancel}
-            loading={formLoading}
+            loading={formLoading || optionsLoading}
           />
         </div>
       )}

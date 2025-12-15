@@ -130,6 +130,12 @@ function getUserFromCookie(request: NextRequest): { role: UserRole } | null {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // E2E test mode: bypass auth checks when running Playwright tests
+  // This allows tests to access protected routes without real authentication
+  if (process.env.NEXT_PUBLIC_E2E_TEST === 'true') {
+    return NextResponse.next();
+  }
+
   // Skip static files and API routes
   if (isStaticOrApi(pathname)) {
     return NextResponse.next();

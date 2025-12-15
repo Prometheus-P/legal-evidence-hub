@@ -9,6 +9,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { getLawyerCasePath } from '@/lib/portalPaths';
 
 interface CaseItem {
   id: string;
@@ -95,7 +96,7 @@ export function CaseTable({
 
   const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
     <th
-      className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+      className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -107,8 +108,8 @@ export function CaseTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+        <thead className="bg-gray-50 dark:bg-neutral-900">
           <tr>
             <th className="px-4 py-3 w-10">
               <input
@@ -139,11 +140,11 @@ export function CaseTable({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
           {cases.map((caseItem) => (
             <tr
               key={caseItem.id}
-              className={`hover:bg-gray-50 ${selectedIds.includes(caseItem.id) ? 'bg-blue-50' : ''}`}
+              className={`hover:bg-gray-50 dark:hover:bg-neutral-700 ${selectedIds.includes(caseItem.id) ? 'bg-blue-50 dark:bg-neutral-700' : ''}`}
             >
               <td className="px-4 py-3">
                 <input
@@ -155,7 +156,7 @@ export function CaseTable({
               </td>
               <td className="px-4 py-3">
                 <Link
-                  href={`/lawyer/cases/${caseItem.id}`}
+                  href={getLawyerCasePath('detail', caseItem.id)}
                   className="font-medium text-[var(--color-text-primary)] hover:text-[var(--color-primary)]"
                 >
                   {caseItem.title}
@@ -174,7 +175,7 @@ export function CaseTable({
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-16 h-1.5 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-[var(--color-primary)] rounded-full"
                       style={{ width: `${caseItem.progress}%` }}
@@ -194,8 +195,8 @@ export function CaseTable({
               <td className="px-4 py-3">
                 <div className="flex items-center gap-1">
                   <Link
-                    href={`/lawyer/cases/${caseItem.id}/procedure`}
-                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    href={getLawyerCasePath('procedure', caseItem.id)}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-neutral-700 rounded transition-colors"
                     title="절차 진행"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,8 +204,8 @@ export function CaseTable({
                     </svg>
                   </Link>
                   <Link
-                    href={`/lawyer/cases/${caseItem.id}/assets`}
-                    className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+                    href={getLawyerCasePath('assets', caseItem.id)}
+                    className="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-neutral-700 rounded transition-colors"
                     title="재산분할"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +216,7 @@ export function CaseTable({
                     <button
                       type="button"
                       onClick={() => onAction(caseItem.id, 'ai-analyze')}
-                      className="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                      className="p-1.5 text-purple-600 hover:bg-purple-50 dark:hover:bg-neutral-700 rounded transition-colors"
                       title="AI 분석"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

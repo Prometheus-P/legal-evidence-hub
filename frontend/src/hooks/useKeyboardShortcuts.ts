@@ -47,6 +47,9 @@ export function useKeyboardShortcuts({
       for (const shortcut of shortcutsRef.current) {
         if (shortcut.enabled === false) continue;
 
+        // Guard against undefined event.key (some special keys)
+        if (!event.key || !shortcut.key) continue;
+
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
         const metaMatch = shortcut.metaKey ? event.metaKey || event.ctrlKey : true;
         const ctrlMatch = shortcut.ctrlKey ? event.ctrlKey : true;
@@ -82,7 +85,9 @@ export function useKeyboardShortcuts({
  */
 export function getModifierKey(): string {
   if (typeof window === 'undefined') return 'Ctrl';
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  // navigator.platform is deprecated, use userAgent as fallback
+  const platform = navigator.platform || navigator.userAgent || '';
+  const isMac = platform.toUpperCase().indexOf('MAC') >= 0;
   return isMac ? '⌘' : 'Ctrl';
 }
 
@@ -105,7 +110,10 @@ export function formatShortcut(shortcut: ShortcutConfig): string {
   if (shortcut.altKey) {
     parts.push('Alt');
   }
-  parts.push(shortcut.key.toUpperCase());
+  // Guard against undefined shortcut.key
+  if (shortcut.key) {
+    parts.push(shortcut.key.toUpperCase());
+  }
 
   return parts.join(' + ');
 }

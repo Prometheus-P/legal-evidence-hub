@@ -259,13 +259,46 @@ describe('Middleware - Role-Based Routing', () => {
 
     test('should redirect /cases to role-appropriate portal for lawyer', () => {
       const request = createMockRequest('/cases', {
-        access_token: 'valid_token',
         user_data: encodeURIComponent(JSON.stringify({ role: 'lawyer' })),
       });
 
       const result = middleware(request);
 
       expect(mockRedirect).toHaveBeenCalled();
+      expect(result).toHaveProperty('url', 'http://localhost:3000/lawyer/cases');
+    });
+
+    test('should redirect /cases to role-appropriate portal for detective', () => {
+      const request = createMockRequest('/cases', {
+        user_data: encodeURIComponent(JSON.stringify({ role: 'detective' })),
+      });
+
+      const result = middleware(request);
+
+      expect(mockRedirect).toHaveBeenCalled();
+      expect(result).toHaveProperty('url', 'http://localhost:3000/detective/cases');
+    });
+
+    test('should redirect /cases to role-appropriate portal for client', () => {
+      const request = createMockRequest('/cases', {
+        user_data: encodeURIComponent(JSON.stringify({ role: 'client' })),
+      });
+
+      const result = middleware(request);
+
+      expect(mockRedirect).toHaveBeenCalled();
+      expect(result).toHaveProperty('url', 'http://localhost:3000/client/cases');
+    });
+
+    test('should redirect nested /cases/some-id to role-appropriate portal for lawyer', () => {
+      const request = createMockRequest('/cases/123-abc', {
+        user_data: encodeURIComponent(JSON.stringify({ role: 'lawyer' })),
+      });
+
+      const result = middleware(request);
+
+      expect(mockRedirect).toHaveBeenCalled();
+      expect(result).toHaveProperty('url', 'http://localhost:3000/lawyer/cases/123-abc');
     });
   });
 

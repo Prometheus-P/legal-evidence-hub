@@ -87,21 +87,33 @@ export default function SignupPage() {
         return;
       }
 
-      // Authentication token is now handled via HTTP-only cookie (set by backend)
-      // We only cache user display info locally, NOT the auth token
+      // Store access token for Authorization header (cross-origin support)
+      // This matches the login flow in AuthContext
+      if (response.data.access_token) {
+        localStorage.setItem('accessToken', response.data.access_token);
+      }
 
-      // Cache user info for display purposes only (not for auth)
+      // Cache user info for display purposes
       const userRole = response.data.user?.role || role;
       if (response.data.user) {
         const userData = {
+          id: response.data.user.id,
           name: response.data.user.name,
           email: response.data.user.email,
           role: response.data.user.role,
+          status: 'active',
+          created_at: new Date().toISOString(),
         };
         // Set user_data cookie for middleware
-        document.cookie = `user_data=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${7 * 24 * 60 * 60}`;
-        // Cache for display purposes
+        document.cookie = `user_data=${encodeURIComponent(JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+        }))}; path=/; max-age=${7 * 24 * 60 * 60}`;
+        // Cache full user data (matches AuthContext format)
         localStorage.setItem('userCache', JSON.stringify(userData));
+        // Set flag to prevent checkAuth race condition after redirect (matches login flow)
+        sessionStorage.setItem('justLoggedIn', 'true');
       }
 
       // T085: Role-based redirect to appropriate dashboard

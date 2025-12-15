@@ -165,7 +165,7 @@ PLAYWRIGHT_BASE_URL="http://localhost:3000" npx playwright test auth.spec.ts
 PLAYWRIGHT_BASE_URL="https://dpbf86zqulqfy.cloudfront.net" npx playwright test auth.spec.ts
 ```
 
-## Success Checklist
+## Success Checklist (US1 - Login Bug)
 
 - [ ] 로그인 API가 올바른 Set-Cookie 헤더 반환
 - [ ] 쿠키가 브라우저에 저장됨 (Application 탭)
@@ -174,3 +174,181 @@ PLAYWRIGHT_BASE_URL="https://dpbf86zqulqfy.cloudfront.net" npx playwright test a
 - [ ] 뒤로가기 시 대시보드로 리다이렉트
 - [ ] 로그아웃 후 모든 쿠키/스토리지 정리됨
 - [ ] 모든 역할에서 정상 작동
+
+---
+
+# Quickstart: Lawyer Portal Features (US2)
+
+**Date**: 2025-12-12
+
+## Prerequisites
+
+- US1 로그인 버그 수정 완료
+- Lawyer 역할 계정으로 로그인 가능
+- Backend API 서버 실행 중
+
+## Verification Steps
+
+### Step 6: 알림 드롭다운 (FR-007)
+
+1. Lawyer 계정으로 로그인
+2. 상단 네비게이션에서 알림 버튼 (aria-label="알림") 클릭
+3. 드롭다운 메뉴 표시 확인
+
+**Success Criteria**:
+- [ ] SC-005: 알림 버튼 클릭 시 드롭다운 표시
+- [ ] 알림 목록 로드됨 (빈 목록이어도 OK)
+- [ ] 알림 클릭 시 읽음 처리
+
+**API Test**:
+```bash
+curl "https://api.legalevidence.hub/notifications?limit=10" \
+  -H "Cookie: access_token=<token>" \
+  -i
+```
+
+### Step 7: 메시지 기능 (FR-008)
+
+1. 좌측 네비게이션에서 "메시지" 메뉴 클릭
+2. 메시지 페이지로 이동 확인
+3. 메시지 작성, 전송, 읽기, 삭제 테스트
+
+**Success Criteria**:
+- [ ] SC-006: 메시지 목록 조회 정상
+- [ ] 메시지 작성 폼 표시
+- [ ] 메시지 전송 성공
+- [ ] 메시지 상세 조회 정상
+- [ ] 메시지 삭제 성공
+
+**API Tests**:
+```bash
+# 받은 메시지 목록
+curl "https://api.legalevidence.hub/messages?folder=inbox" \
+  -H "Cookie: access_token=<token>"
+
+# 메시지 전송
+curl -X POST "https://api.legalevidence.hub/messages" \
+  -H "Cookie: access_token=<token>" \
+  -H "Content-Type: application/json" \
+  -d '{"recipient_id":"<user_id>","subject":"테스트","content":"테스트 메시지"}'
+```
+
+### Step 8: 의뢰인 관리 (FR-009~010, FR-015)
+
+1. 좌측 네비게이션에서 "의뢰인" 메뉴 클릭
+2. 의뢰인 목록 페이지 표시 확인
+3. "의뢰인 추가" 버튼 클릭
+4. 폼에 기본 정보 입력 (이름, 연락처)
+5. 저장 후 목록에 표시 확인
+
+**Success Criteria**:
+- [ ] SC-007: 의뢰인 추가 폼 표시
+- [ ] 의뢰인 목록 조회 정상
+- [ ] 의뢰인 추가 성공
+- [ ] 의뢰인 수정 성공
+- [ ] 의뢰인 삭제 성공
+
+**API Tests**:
+```bash
+# 의뢰인 목록
+curl "https://api.legalevidence.hub/clients" \
+  -H "Cookie: access_token=<token>"
+
+# 의뢰인 추가
+curl -X POST "https://api.legalevidence.hub/clients" \
+  -H "Cookie: access_token=<token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"홍길동","phone":"010-1234-5678"}'
+```
+
+### Step 9: 탐정 관리 (FR-011~012, FR-016)
+
+1. 좌측 네비게이션에서 "탐정" 메뉴 클릭
+2. 탐정 목록 페이지 표시 확인
+3. "탐정 추가" 버튼 클릭
+4. 폼에 기본 정보 입력 (이름, 연락처, 전문분야)
+5. 저장 후 목록에 표시 확인
+
+**Success Criteria**:
+- [ ] SC-007: 탐정 추가 폼 표시
+- [ ] 탐정 목록 조회 정상
+- [ ] 탐정 추가 성공
+- [ ] 탐정 수정 성공
+- [ ] 탐정 삭제 성공
+
+**API Tests**:
+```bash
+# 탐정 목록
+curl "https://api.legalevidence.hub/detectives" \
+  -H "Cookie: access_token=<token>"
+
+# 탐정 추가
+curl -X POST "https://api.legalevidence.hub/detectives" \
+  -H "Cookie: access_token=<token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"김탐정","phone":"010-9876-5432","specialty":"불륜 조사"}'
+```
+
+### Step 10: Dashboard 접근권한 (FR-013)
+
+1. Lawyer 계정으로 로그인
+2. `/lawyer/dashboard` 직접 URL 접근
+3. 페이지 정상 렌더링 확인
+
+**Success Criteria**:
+- [ ] SC-008: /lawyer/dashboard 정상 렌더링
+- [ ] 권한 오류 없음
+- [ ] 페이지 컴포넌트 정상 표시
+
+## Test Commands (US2)
+
+```bash
+# Backend Contract Tests
+cd backend && pytest tests/contract/test_notifications.py -v
+cd backend && pytest tests/contract/test_messages.py -v
+cd backend && pytest tests/contract/test_clients.py -v
+cd backend && pytest tests/contract/test_detectives.py -v
+
+# Frontend Component Tests
+cd frontend && npm test -- --testPathPattern=NotificationDropdown
+cd frontend && npm test -- --testPathPattern=ClientForm
+cd frontend && npm test -- --testPathPattern=DetectiveForm
+
+# E2E Tests
+PLAYWRIGHT_BASE_URL="https://dpbf86zqulqfy.cloudfront.net" \
+  npx playwright test lawyer-portal.spec.ts
+```
+
+## Success Checklist (US2 - Lawyer Portal)
+
+- [ ] 알림 드롭다운 표시
+- [ ] 알림 읽음 처리 동작
+- [ ] 메시지 페이지 접근 가능
+- [ ] 메시지 CRUD 모두 동작
+- [ ] 의뢰인 추가 버튼 동작
+- [ ] 의뢰인 CRUD 모두 동작
+- [ ] 탐정 추가 버튼 동작
+- [ ] 탐정 CRUD 모두 동작
+- [ ] /lawyer/dashboard 정상 렌더링
+
+## Troubleshooting (US2)
+
+### Problem: 알림 드롭다운이 표시되지 않음
+
+**Cause**: NotificationDropdown 컴포넌트 미구현 또는 이벤트 핸들러 누락
+**Fix**: NotificationBell 컴포넌트에서 드롭다운 상태 토글 확인
+
+### Problem: 의뢰인/탐정 추가 폼이 표시되지 않음
+
+**Cause**: 모달/폼 컴포넌트 미구현
+**Fix**: ClientForm, DetectiveForm 컴포넌트 구현 확인
+
+### Problem: API 403 오류
+
+**Cause**: Lawyer 역할 확인 실패
+**Fix**: 로그인한 사용자의 role이 "lawyer"인지 확인
+
+### Problem: CRUD 작업 실패
+
+**Cause**: Backend API 미구현 또는 라우터 미등록
+**Fix**: `backend/app/main.py`에 라우터 등록 확인

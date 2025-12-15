@@ -77,14 +77,14 @@ export function StatsCard({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}
+      className={`bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 ${className}`}
       role="region"
       aria-label={`${label} 통계`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
         </div>
         {icon && (
           <div className="p-3 bg-[var(--color-primary-light,#e0f2fe)] rounded-lg">
@@ -103,7 +103,7 @@ export function StatsCard({
           {formatChange() !== null && (
             <span className="text-sm font-medium">{formatChange()}</span>
           )}
-          <span className="text-xs text-gray-500 ml-1">지난 주 대비</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">지난 주 대비</span>
         </div>
       )}
     </div>
@@ -116,16 +116,16 @@ export function StatsCard({
 export function StatsCardSkeleton({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse ${className}`}
+      className={`bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-200 dark:border-neutral-700 p-6 animate-pulse ${className}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="h-4 w-20 bg-gray-200 rounded mb-2" />
-          <div className="h-8 w-16 bg-gray-200 rounded" />
+          <div className="h-4 w-20 bg-gray-200 dark:bg-neutral-700 rounded mb-2" />
+          <div className="h-8 w-16 bg-gray-200 dark:bg-neutral-700 rounded" />
         </div>
-        <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+        <div className="w-12 h-12 bg-gray-200 dark:bg-neutral-700 rounded-lg" />
       </div>
-      <div className="mt-4 h-4 w-24 bg-gray-200 rounded" />
+      <div className="mt-4 h-4 w-24 bg-gray-200 dark:bg-neutral-700 rounded" />
     </div>
   );
 }

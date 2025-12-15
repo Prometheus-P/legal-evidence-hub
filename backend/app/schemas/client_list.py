@@ -103,3 +103,46 @@ class ClientDetail(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================
+# Client Contact CRUD Schemas (Issue #300)
+# FR-009: 의뢰인 등록, FR-010: 의뢰인 수정, FR-015: 의뢰인 삭제
+# ============================================
+class ClientContactCreate(BaseModel):
+    """Schema for creating a client contact"""
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    memo: Optional[str] = None
+
+
+class ClientContactUpdate(BaseModel):
+    """Schema for updating a client contact"""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    memo: Optional[str] = None
+
+
+class ClientContactResponse(BaseModel):
+    """Schema for client contact response"""
+    id: str
+    lawyer_id: str
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    memo: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ClientContactListResponse(BaseModel):
+    """Paginated client contact list response"""
+    items: List[ClientContactResponse]
+    total: int
+    page: int
+    page_size: int

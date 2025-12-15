@@ -43,6 +43,7 @@ class CaseStatus(str, enum.Enum):
     ACTIVE = "active"
     OPEN = "open"              # 진행 중 (open and active)
     IN_PROGRESS = "in_progress"  # 검토 대기 (being actively worked)
+    REVIEW = "review"          # 변호사 검토 단계
     CLOSED = "closed"
 
 
@@ -285,6 +286,7 @@ class User(Base):
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
     name = Column(String, nullable=False)
+    phone = Column(String, nullable=True)  # 연락처
     role = Column(StrEnumColumn(UserRole), nullable=False, default=UserRole.LAWYER)
     status = Column(StrEnumColumn(UserStatus), nullable=False, default=UserStatus.ACTIVE)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -500,15 +502,20 @@ class DocumentTemplate(Base):
 class Message(Base):
     """
     Message model - real-time communication between users
+    Updated for Issue #294, #296 - FR-008
     """
     __tablename__ = "messages"
 
     id = Column(String, primary_key=True, default=lambda: f"msg_{uuid.uuid4().hex[:12]}")
-    case_id = Column(String, ForeignKey("cases.id"), nullable=False, index=True)
+    case_id = Column(String, ForeignKey("cases.id"), nullable=True, index=True)  # Optional case link
     sender_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     recipient_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    content = Column(String, nullable=False)
+    subject = Column(String(200), nullable=True)  # Message subject
+    content = Column(Text, nullable=False)
     attachments = Column(String, nullable=True)  # JSON string of attachment URLs
+    is_read = Column(Boolean, nullable=False, default=False)
+    is_deleted_by_sender = Column(Boolean, nullable=False, default=False)
+    is_deleted_by_recipient = Column(Boolean, nullable=False, default=False)
     read_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -517,7 +524,7 @@ class Message(Base):
     recipient = relationship("User", foreign_keys=[recipient_id])
 
     def __repr__(self):
-        return f"<Message(id={self.id}, sender_id={self.sender_id}, case_id={self.case_id})>"
+        return f"<Message(id={self.id}, sender_id={self.sender_id}, recipient_id={self.recipient_id})>"
 
 
 class CalendarEvent(Base):
@@ -1112,3 +1119,88 @@ class DetectiveEarnings(Base):
 
     def __repr__(self):
         return f"<DetectiveEarnings(id={self.id}, detective_id={self.detective_id}, amount={self.amount}, status={self.status})>"
+
+
+# ============================================
+# Notification & Communication Models (Issue #294-296)
+# ============================================
+class NotificationType(str, enum.Enum):
+    """Notification type enum"""
+    CASE_UPDATE = "case_update"
+    MESSAGE = "message"
+    EVIDENCE = "evidence"
+    DEADLINE = "deadline"
+    SYSTEM = "system"
+
+
+class Notification(Base):
+    """
+    Notification model - user notifications
+    Issue #294, #295 - FR-007
+    """
+    __tablename__ = "notifications"
+
+    id = Column(String, primary_key=True, default=lambda: f"notif_{uuid.uuid4().hex[:12]}")
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    type = Column(StrEnumColumn(NotificationType), nullable=False, default=NotificationType.SYSTEM)
+    title = Column(String(100), nullable=False)
+    content = Column(String(500), nullable=False)
+    is_read = Column(Boolean, nullable=False, default=False)
+    related_id = Column(String, nullable=True)  # case_id, message_id, etc.
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    user = relationship("User", backref="notifications")
+
+    def __repr__(self):
+        return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type}, is_read={self.is_read})>"
+
+
+# ============================================
+# Client/Detective Contact Models (Issue #294, #297-298)
+# ============================================
+class ClientContact(Base):
+    """
+    Client contact model - Lawyer's client contacts
+    Issue #294, #297 - FR-009~010, FR-015
+    """
+    __tablename__ = "client_contacts"
+
+    id = Column(String, primary_key=True, default=lambda: f"client_{uuid.uuid4().hex[:12]}")
+    lawyer_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=True)
+    email = Column(String(255), nullable=True)
+    memo = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    lawyer = relationship("User", backref="client_contacts")
+
+    def __repr__(self):
+        return f"<ClientContact(id={self.id}, name={self.name}, lawyer_id={self.lawyer_id})>"
+
+
+class DetectiveContact(Base):
+    """
+    Detective contact model - Lawyer's detective contacts
+    Issue #294, #298 - FR-011~012, FR-016
+    """
+    __tablename__ = "detective_contacts"
+
+    id = Column(String, primary_key=True, default=lambda: f"det_{uuid.uuid4().hex[:12]}")
+    lawyer_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    phone = Column(String(20), nullable=True)
+    email = Column(String(255), nullable=True)
+    specialty = Column(String(100), nullable=True)
+    memo = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    # Relationships
+    lawyer = relationship("User", backref="detective_contacts")
+
+    def __repr__(self):
+        return f"<DetectiveContact(id={self.id}, name={self.name}, specialty={self.specialty})>"

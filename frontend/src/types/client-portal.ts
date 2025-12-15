@@ -75,7 +75,7 @@ export interface EvidenceSummary {
   file_name: string;
   file_type: 'image' | 'audio' | 'video' | 'document';
   uploaded_at: string;
-  status: 'pending' | 'processed' | 'verified';
+  status: 'pending' | 'processed' | 'verified' | 'approved' | 'pending_review' | 'rejected';
   ai_labels: string[];
 }
 

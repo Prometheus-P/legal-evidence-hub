@@ -10,13 +10,24 @@
 
 'use client';
 
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 
 interface LandingNavProps {
   isScrolled?: boolean;
+  isAuthenticated?: boolean;
+  authLoading?: boolean;
+  onLogout?: () => Promise<void> | void;
 }
 
-export default function LandingNav({ isScrolled = false }: LandingNavProps) {
+export default function LandingNav({
+  isScrolled = false,
+  isAuthenticated = false,
+  authLoading = false,
+  onLogout,
+}: LandingNavProps) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault();
     const element = document.getElementById(sectionId);
@@ -24,6 +35,18 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const handleLogout = useCallback(async () => {
+    if (!onLogout || isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+    } catch (error) {
+      console.error('로그아웃 실패', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, onLogout]);
 
   return (
     <nav
@@ -79,13 +102,25 @@ export default function LandingNav({ isScrolled = false }: LandingNavProps) {
           >
             고객사례
           </a>
-          <Link
-            href="/login"
-            className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-            aria-label="로그인 페이지로 이동"
-          >
-            로그인
-          </Link>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut || authLoading}
+              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
+              aria-label="로그아웃"
+            >
+              {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="로그인 페이지로 이동"
+            >
+              로그인
+            </Link>
+          )}
           <Link
             href="/signup"
             className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"

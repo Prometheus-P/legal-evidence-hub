@@ -100,12 +100,12 @@ export function MessageInput({
   };
 
   return (
-    <div className="border-t border-gray-200 bg-white p-4">
+    <div className="border-t border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-4">
       <div className="flex items-end gap-2">
         {/* Attachment button (placeholder for future implementation) */}
         <button
           type="button"
-          className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
           title="파일 첨부"
           disabled={disabled}
         >
@@ -132,7 +132,7 @@ export function MessageInput({
             placeholder={placeholder}
             disabled={disabled || isSending}
             rows={1}
-            className="w-full px-4 py-2 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-neutral-900 disabled:cursor-not-allowed dark:bg-neutral-900 dark:text-gray-100"
             style={{ maxHeight: '150px' }}
           />
         </div>

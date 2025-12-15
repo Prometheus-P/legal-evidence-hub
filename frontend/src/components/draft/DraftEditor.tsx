@@ -88,7 +88,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
     title={title}
     className={`
       p-2 rounded-lg transition-colors
-      ${isActive ? 'bg-primary/10 text-primary' : 'text-neutral-600 hover:bg-neutral-100'}
+      ${isActive ? 'bg-primary/10 text-primary' : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700'}
       ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
     `}
   >
@@ -96,7 +96,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children }: Toolbar
   </button>
 );
 
-const ToolbarDivider = () => <div className="w-px h-6 bg-neutral-200 mx-1" />;
+const ToolbarDivider = () => <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-600 mx-1" />;
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -121,7 +121,7 @@ const MenuBar = ({ editor }: MenuBarProps) => {
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-200 bg-neutral-50 rounded-t-xl">
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 rounded-t-xl">
       {/* History */}
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
@@ -337,12 +337,12 @@ const DraftEditor = forwardRef<DraftEditorRef, DraftEditorProps>(
 
     return (
       <div
-        className={`border border-neutral-200 rounded-xl bg-white overflow-hidden ${className}`}
+        className={`border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-900 overflow-hidden ${className}`}
       >
         <MenuBar editor={editor} />
         <EditorContent
           editor={editor}
-          className="[&_.ProseMirror]:outline-none [&_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.is-editor-empty:first-child::before]:text-neutral-400 [&_.is-editor-empty:first-child::before]:float-left [&_.is-editor-empty:first-child::before]:h-0 [&_.is-editor-empty:first-child::before]:pointer-events-none"
+          className="[&_.ProseMirror]:outline-none [&_.ProseMirror]:text-neutral-900 dark:[&_.ProseMirror]:text-gray-100 [&_.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.is-editor-empty:first-child::before]:text-neutral-400 dark:[&_.is-editor-empty:first-child::before]:text-neutral-500 [&_.is-editor-empty:first-child::before]:float-left [&_.is-editor-empty:first-child::before]:h-0 [&_.is-editor-empty:first-child::before]:pointer-events-none"
         />
       </div>
     );

@@ -7,7 +7,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from app.repositories.user_repository import UserRepository
 from app.core.security import verify_password, create_access_token, get_token_expire_seconds
-from app.db.models import User, UserAgreement, AgreementType
+from app.db.models import User, UserAgreement, AgreementType, UserSettings
 from app.db.schemas import TokenResponse, UserOut
 from app.middleware.error_handler import AuthenticationError, ConflictError, ValidationError
 from app.db.models import UserRole
@@ -161,6 +161,16 @@ class AuthService:
                 user_agent=user_agent[:500] if user_agent and len(user_agent) > 500 else user_agent
             )
             self.session.add(agreement)
+
+        # Create default user settings
+        user_settings = UserSettings(
+            user_id=user.id,
+            timezone="Asia/Seoul",
+            language="ko",
+            email_notifications=True,
+            push_notifications=True
+        )
+        self.session.add(user_settings)
 
         # Commit transaction
         self.session.commit()

@@ -114,7 +114,7 @@ export function MessageList({
 
       {/* Empty state */}
       {messages.length === 0 && !isLoading && (
-        <div className="flex flex-col items-center justify-center h-full text-gray-500">
+        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
           <svg
             className="w-12 h-12 mb-2"
             fill="none"
@@ -138,9 +138,9 @@ export function MessageList({
         <div key={group.date}>
           {/* Date separator */}
           <div className="flex items-center justify-center my-4">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="px-3 text-xs text-gray-400 bg-white">{group.date}</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-gray-200 dark:bg-neutral-700" />
+            <span className="px-3 text-xs text-gray-400 bg-white dark:bg-neutral-800">{group.date}</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-neutral-700" />
           </div>
 
           {/* Messages */}
@@ -164,7 +164,7 @@ export function MessageList({
 
       {/* Typing indicator */}
       {typingUsers.length > 0 && (
-        <div className="flex items-center gap-2 text-gray-500 text-sm">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
           <div className="flex gap-1">
             <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
             <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

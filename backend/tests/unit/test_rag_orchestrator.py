@@ -3,8 +3,7 @@ Unit tests for RAGOrchestrator Service
 TDD - Improving test coverage for rag_orchestrator.py
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from app.services.rag_orchestrator import RAGOrchestrator, get_rag_orchestrator
 
 

@@ -88,7 +88,7 @@ export function InsightCard({
       >
         <div className="flex items-center gap-2">
           <Icon className={`w-5 h-5 ${config.iconClass}`} />
-          <span className="font-medium text-gray-800">{insight.title}</span>
+          <span className="font-medium text-gray-800 dark:text-gray-200">{insight.title}</span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full ${config.bgClass} ${config.iconClass} border ${config.borderClass}`}
           >
@@ -113,10 +113,10 @@ export function InsightCard({
       {/* Content */}
       {isExpanded && (
         <div className="px-3 pb-3 pt-0">
-          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
             {insight.content}
           </p>
-          <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
+          <div className="mt-2 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
             <span>
               신뢰도: <ConfidenceScore score={insight.confidence} size="sm" showBar={false} />
             </span>

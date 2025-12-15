@@ -8,6 +8,7 @@
 import { useProcedure } from '@/hooks/useProcedure';
 import { ProcedureTimeline } from '@/components/procedure';
 import Link from 'next/link';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 interface ProcedureClientProps {
   caseId: string;
@@ -29,6 +30,9 @@ export default function ProcedureClient({ caseId }: ProcedureClientProps) {
     isInitialized,
   } = useProcedure(caseId);
 
+  const procedurePath = getLawyerCasePath('procedure', caseId);
+  const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: procedurePath });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -37,7 +41,7 @@ export default function ProcedureClient({ caseId }: ProcedureClientProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href={`/lawyer/cases/${caseId}`}
+                href={detailPath}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

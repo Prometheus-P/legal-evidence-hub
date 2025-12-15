@@ -74,6 +74,25 @@ afterAll(() => {
   global.WebSocket = originalWebSocket;
 });
 
+// Suppress act() warnings for WebSocket async callbacks
+// The warnings occur because setTimeout in MockWebSocket fires outside act()
+// Tests still pass correctly - this is a known limitation with WebSocket testing
+const originalConsoleError = console.error;
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation((...args) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('not wrapped in act')
+    ) {
+      return; // Suppress act() warnings
+    }
+    originalConsoleError.call(console, ...args);
+  });
+});
+afterAll(() => {
+  jest.restoreAllMocks();
+});
+
 // Mock the messaging API
 const mockGetMessages = jest.fn();
 const mockSendMessageApi = jest.fn();

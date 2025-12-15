@@ -122,3 +122,61 @@ export interface TypingIndicator {
   caseId: string;
   timestamp: number;
 }
+
+// ============== Direct Message Types (US2 - Lawyer Portal) ==============
+
+/**
+ * Direct message between users (not case-specific)
+ * Used in /lawyer/messages page
+ */
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  recipientId: string;
+  recipientName: string;
+  subject: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string; // ISO 8601
+  readAt?: string;
+}
+
+export interface DirectMessageSummary {
+  id: string;
+  senderId: string;
+  senderName: string;
+  recipientId: string;
+  recipientName: string;
+  subject: string;
+  preview: string; // First 100 chars of content
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface DirectMessageListResponse {
+  messages: DirectMessageSummary[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface DirectMessageQueryParams {
+  folder: 'inbox' | 'sent';
+  page?: number;
+  limit?: number;
+}
+
+export interface DirectMessageCreate {
+  recipientId: string;
+  subject: string;
+  content: string;
+}
+
+export interface DirectMessageState {
+  messages: DirectMessageSummary[];
+  total: number;
+  currentMessage: DirectMessage | null;
+  isLoading: boolean;
+  error: string | null;
+}

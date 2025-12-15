@@ -219,3 +219,92 @@ test('complete login flow', async ({ page }) => {
 1. 먼저 Production 환경의 쿠키 설정 검증 (브라우저 DevTools Network 탭)
 2. 쿠키가 전달되지 않으면 Backend 설정 수정
 3. 쿠키가 전달되면 Race Condition 재검증
+
+---
+
+# Research: Lawyer Portal Features (US2)
+
+**Date**: 2025-12-12
+**Purpose**: 알림, 메시지, 의뢰인/탐정 관리 기능 구현 방향 결정
+
+## 1. 알림 시스템 아키텍처
+
+### Decision
+Polling 기반 알림 조회 (5분 간격), 실시간은 Phase 2로 연기
+
+### Rationale
+- 실시간 WebSocket은 인프라 복잡도 증가
+- MVP 단계에서는 polling으로 충분한 UX 제공 가능
+- 알림 드롭다운에서 최근 10개만 표시
+
+### Alternatives Considered
+| Alternative | Rejected Because |
+|-------------|------------------|
+| WebSocket | 인프라 복잡도, Lambda 미지원, 추가 비용 |
+| Server-Sent Events | 브라우저 호환성, Lambda 미지원 |
+| Push Notifications | 브라우저 권한 필요, UX 복잡 |
+
+---
+
+## 2. 메시지 기능 구현 방식
+
+### Decision
+Database 기반 메시지 저장 (PostgreSQL), REST API CRUD
+
+### Rationale
+- 기존 인프라(RDS) 활용으로 추가 비용 없음
+- 단순 CRUD로 빠른 구현 가능
+- 실시간 채팅은 요구사항 아님 (비동기 메시지)
+
+### Alternatives Considered
+| Alternative | Rejected Because |
+|-------------|------------------|
+| 외부 메시징 서비스 (SendGrid, etc.) | 추가 비용, 통합 복잡도 |
+| DynamoDB | 기존 RDS로 충분, 일관성 유지 |
+
+---
+
+## 3. 의뢰인/탐정 데이터 모델
+
+### Decision
+User 테이블과 별도 Client/Detective 테이블로 관리
+
+### Rationale
+- User는 인증 계정 (lawyer, client, detective 역할)
+- Client/Detective는 Lawyer가 관리하는 "연락처" 개념
+- Client/Detective가 시스템 계정이 아닐 수 있음 (외부 연락처)
+
+### Alternatives Considered
+| Alternative | Rejected Because |
+|-------------|------------------|
+| User 테이블 확장 | 인증 계정과 연락처 개념 혼동 |
+| JSON 필드 저장 | 검색/필터링 어려움, 정규화 위반 |
+
+---
+
+## 4. 프론트엔드 상태 관리
+
+### Decision
+React Query (TanStack Query) + Context API 조합
+
+### Rationale
+- 서버 상태(알림, 메시지, 의뢰인, 탐정)는 React Query로 캐싱
+- 인증 상태는 AuthContext로 전역 관리
+- 이미 프로젝트에서 사용 중인 패턴 유지
+
+### Alternatives Considered
+| Alternative | Rejected Because |
+|-------------|------------------|
+| Redux | 보일러플레이트 과다, 서버 상태에 부적합 |
+| Zustand | 기존 패턴과 일관성 유지 선호 |
+
+---
+
+## Summary
+
+| Area | Decision | Key Consideration |
+|------|----------|-------------------|
+| 알림 | Polling (5분) | 단순성, MVP 적합 |
+| 메시지 | RDS + REST CRUD | 기존 인프라 활용 |
+| 연락처 | 별도 Client/Detective 테이블 | User와 분리 |
+| 상태관리 | React Query + Context | 기존 패턴 유지 |

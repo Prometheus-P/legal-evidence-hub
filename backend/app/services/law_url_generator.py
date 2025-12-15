@@ -8,7 +8,6 @@ LawUrlGenerator - 국가법령정보센터 법령한글주소 URL 생성기
 
 from typing import Optional
 from urllib.parse import quote
-import re
 
 
 class LawUrlGenerator:

@@ -54,3 +54,85 @@ export type {
   InvestigatorFilter,
   InvestigatorDetail,
 };
+
+// ============== Detective Contact CRUD (US2 - Lawyer Portal) ==============
+
+import type {
+  DetectiveContact,
+  DetectiveContactCreate,
+  DetectiveContactUpdate,
+  DetectiveContactListResponse,
+  DetectiveContactQueryParams,
+} from '@/types/investigator';
+
+const DETECTIVE_CONTACTS_PATH = '/detectives';
+
+/**
+ * Get list of detective contacts
+ */
+export async function getDetectiveContacts(
+  params?: DetectiveContactQueryParams
+): Promise<ApiResponse<DetectiveContactListResponse>> {
+  const searchParams = new URLSearchParams();
+
+  if (params?.search) {
+    searchParams.append('search', params.search);
+  }
+  if (params?.page) {
+    searchParams.append('page', String(params.page));
+  }
+  if (params?.limit) {
+    searchParams.append('limit', String(params.limit));
+  }
+
+  const queryString = searchParams.toString();
+  const url = queryString ? `${DETECTIVE_CONTACTS_PATH}?${queryString}` : DETECTIVE_CONTACTS_PATH;
+
+  return apiClient.get<DetectiveContactListResponse>(url);
+}
+
+/**
+ * Get a single detective contact by ID
+ */
+export async function getDetectiveContact(
+  detectiveId: string
+): Promise<ApiResponse<DetectiveContact>> {
+  return apiClient.get<DetectiveContact>(`${DETECTIVE_CONTACTS_PATH}/${detectiveId}`);
+}
+
+/**
+ * Create a new detective contact
+ */
+export async function createDetectiveContact(
+  data: DetectiveContactCreate
+): Promise<ApiResponse<DetectiveContact>> {
+  return apiClient.post<DetectiveContact>(DETECTIVE_CONTACTS_PATH, data);
+}
+
+/**
+ * Update an existing detective contact
+ */
+export async function updateDetectiveContact(
+  detectiveId: string,
+  data: DetectiveContactUpdate
+): Promise<ApiResponse<DetectiveContact>> {
+  return apiClient.patch<DetectiveContact>(`${DETECTIVE_CONTACTS_PATH}/${detectiveId}`, data);
+}
+
+/**
+ * Delete a detective contact
+ */
+export async function deleteDetectiveContact(
+  detectiveId: string
+): Promise<ApiResponse<{ success: boolean }>> {
+  return apiClient.delete<{ success: boolean }>(`${DETECTIVE_CONTACTS_PATH}/${detectiveId}`);
+}
+
+// Re-export contact types
+export type {
+  DetectiveContact,
+  DetectiveContactCreate,
+  DetectiveContactUpdate,
+  DetectiveContactListResponse,
+  DetectiveContactQueryParams,
+};

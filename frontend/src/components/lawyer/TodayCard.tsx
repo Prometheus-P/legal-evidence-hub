@@ -9,6 +9,7 @@
 
 import Link from 'next/link';
 import { TodayItem, EVENT_TYPE_LABELS, EVENT_TYPE_COLORS } from '@/lib/api/dashboard';
+import { getCaseDetailPath } from '@/lib/portalPaths';
 
 interface TodayCardProps {
   items: TodayItem[];
@@ -91,7 +92,7 @@ function UrgentItem({ item }: { item: TodayItem }) {
         </div>
         {item.case_id && (
           <Link
-            href={`/lawyer/cases/${item.case_id}`}
+            href={getCaseDetailPath('lawyer', item.case_id)}
             className="text-xs text-blue-600 hover:underline whitespace-nowrap"
           >
             {item.case_title || '케이스 보기'}

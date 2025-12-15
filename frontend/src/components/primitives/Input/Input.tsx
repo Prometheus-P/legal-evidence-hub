@@ -95,7 +95,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-neutral-700 mb-1.5"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300 mb-1.5"
           >
             {label}
             {required && (
@@ -112,7 +112,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {/* Left icon */}
           {leftIcon && (
             <span
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none"
               aria-hidden="true"
             >
               {leftIcon}
@@ -130,9 +130,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={twMerge(
               clsx(
                 // Base styles
-                'block rounded-lg border bg-white text-neutral-900',
+                'block rounded-lg border bg-white dark:bg-neutral-900 text-neutral-900 dark:text-gray-100',
                 'transition-colors duration-200',
-                'placeholder:text-neutral-400',
+                'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
                 // Size
                 sizeStyles[inputSize],
                 // Width
@@ -145,9 +145,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 // Error state
                 error
                   ? 'border-error focus:ring-error focus:border-error'
-                  : 'border-neutral-300 hover:border-neutral-400',
+                  : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500',
                 // Disabled state
-                disabled && 'bg-neutral-100 cursor-not-allowed opacity-50',
+                disabled && 'bg-neutral-100 dark:bg-neutral-800 cursor-not-allowed opacity-50',
                 className
               )
             )}
@@ -157,7 +157,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {/* Right icon */}
           {rightIcon && (
             <span
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none"
               aria-hidden="true"
             >
               {rightIcon}
@@ -190,7 +190,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {/* Hint text */}
         {hint && !error && (
-          <p id={hintId} className="mt-1.5 text-sm text-neutral-500">
+          <p id={hintId} className="mt-1.5 text-sm text-neutral-500 dark:text-gray-400">
             {hint}
           </p>
         )}

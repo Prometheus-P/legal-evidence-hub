@@ -9,12 +9,22 @@
 
 import Link from 'next/link';
 import { AssetDivisionForm } from '@/components/case/AssetDivisionForm';
+import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 
 interface CaseAssetsClientProps {
   caseId: string;
 }
 
 export default function CaseAssetsClient({ caseId }: CaseAssetsClientProps) {
+  const assetsPath = getLawyerCasePath('assets', caseId);
+  const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: assetsPath });
+  const evidenceTabPath = getCaseDetailPath('lawyer', caseId, {
+    tab: 'evidence',
+    returnUrl: assetsPath,
+  });
+  const draftTabPath = getCaseDetailPath('lawyer', caseId, { tab: 'draft', returnUrl: assetsPath });
+  const relationsPath = getLawyerCasePath('relations', caseId);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -26,7 +36,7 @@ export default function CaseAssetsClient({ caseId }: CaseAssetsClientProps) {
           </p>
         </div>
         <Link
-          href={`/lawyer/cases/${caseId}`}
+          href={detailPath}
           className="text-sm text-teal-600 hover:text-teal-700"
         >
           ← 케이스 상세로 돌아가기
@@ -37,19 +47,19 @@ export default function CaseAssetsClient({ caseId }: CaseAssetsClientProps) {
       <div className="border-b border-gray-200">
         <nav className="flex gap-8">
           <Link
-            href={`/lawyer/cases/${caseId}`}
+            href={detailPath}
             className="py-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent"
           >
             개요
           </Link>
           <Link
-            href={`/lawyer/cases/${caseId}/evidence`}
+            href={evidenceTabPath}
             className="py-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent"
           >
             증거
           </Link>
           <Link
-            href={`/lawyer/cases/${caseId}/relations`}
+            href={relationsPath}
             className="py-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent"
           >
             관계도
@@ -58,7 +68,7 @@ export default function CaseAssetsClient({ caseId }: CaseAssetsClientProps) {
             재산
           </span>
           <Link
-            href={`/lawyer/cases/${caseId}/draft`}
+            href={draftTabPath}
             className="py-3 text-sm text-gray-500 hover:text-gray-700 border-b-2 border-transparent"
           >
             초안

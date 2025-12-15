@@ -6,7 +6,7 @@ Precedent Search Service
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List
 from sqlalchemy.orm import Session
 
 from app.schemas.precedent import (

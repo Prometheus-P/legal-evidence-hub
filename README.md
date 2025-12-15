@@ -202,7 +202,15 @@ main  ←  dev  ←  feat/*
 
 ---
 
-## 7. 문서 허브
+## 7. 최근 업데이트 (2025-12-12)
+
+- **URL 기반 모달/폼 UX**: Billing·Calendar 페이지가 `useModalState`로 전환되어 뒤로가기와 딥링크가 모두 작동합니다. InvoiceForm/EventForm에는 `useBeforeUnload`가 적용돼 입력값 유실을 방지합니다.
+- **Landing/Login 네비게이션 통합**: `LandingNav`를 로그인 화면에서도 재사용하고 인증 상태를 주입해 로그인 사용자는 즉시 로그아웃할 수 있습니다.
+- **문서 동기화**: `docs/IMPLEMENTATION_STATUS.md`와 본 README에 현행 스프린트 정보가 정리돼 있습니다.
+
+---
+
+## 8. 문서 허브
 
 | 카테고리 | 문서 |
 |----------|------|
@@ -215,7 +223,7 @@ main  ←  dev  ←  feat/*
 
 ---
 
-## 8. 최종 산출물
+## 9. 최종 산출물
 
 1. **운영 가능한 변호사 대시보드**
    - 사건 생성, 증거 업로드, 타임라인, 필터, Draft Preview
