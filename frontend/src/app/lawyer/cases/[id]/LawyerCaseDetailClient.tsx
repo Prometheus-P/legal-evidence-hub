@@ -327,7 +327,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
               `}
             >
               {tab.label}
-              {tab.count > 0 && (
+              {tab.count != null && tab.count > 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 rounded-full text-xs">
                   {tab.count}
                 </span>
