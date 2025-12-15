@@ -95,6 +95,7 @@ def get_cases(
     status: Optional[List[str]] = Query(None, description="Filter by status(es)"),
     search: Optional[str] = Query(None, description="Search in title, description, client name"),
     client_name: Optional[str] = Query(None, description="Filter by client name"),
+    include_closed: bool = Query(False, description="Include closed/deleted cases"),
 ):
     """
     Get paginated case list with filters.
@@ -107,6 +108,7 @@ def get_cases(
     - status: Filter by status(es) - can be multiple
     - search: Search in title, description, client name
     - client_name: Filter by client name
+    - include_closed: Include closed/deleted cases (default: false)
 
     **Response:**
     - items: List of cases
@@ -132,6 +134,7 @@ def get_cases(
         page_size=page_size,
         sort_by=sort_by,
         sort_order=sort_order,
+        include_closed=include_closed,
     )
 
 

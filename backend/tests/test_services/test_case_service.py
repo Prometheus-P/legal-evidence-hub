@@ -46,16 +46,6 @@ def sample_case():
 
 
 @pytest.fixture
-def sample_member():
-    """Sample CaseMember model instance"""
-    member = Mock(spec=CaseMember)
-    member.case_id = "case_123abc"
-    member.user_id = "user_456"
-    member.role = CaseMemberRole.OWNER
-    return member
-
-
-@pytest.fixture
 def sample_user():
     """Sample User model instance"""
     user = Mock(spec=User)
@@ -64,6 +54,17 @@ def sample_user():
     user.name = "테스트 사용자"
     user.role = UserRole.LAWYER
     return user
+
+
+@pytest.fixture
+def sample_member(sample_user):
+    """Sample CaseMember model instance"""
+    member = Mock(spec=CaseMember)
+    member.case_id = "case_123abc"
+    member.user_id = "user_456"
+    member.role = CaseMemberRole.OWNER
+    member.user = sample_user  # Link user for get_case_members
+    return member
 
 
 class TestCaseServiceCreate:

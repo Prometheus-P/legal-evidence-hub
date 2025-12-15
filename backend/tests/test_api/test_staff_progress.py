@@ -90,13 +90,43 @@ def test_staff_progress_filters_blocked(api_client):
         assert called_filters.blocked_only is True
 
 
-def test_staff_progress_rejects_external_user(api_client):
-    client, user = api_client
-    user.role = UserRole.CLIENT
+def test_staff_progress_rejects_external_user():
+    """Test that external users (CLIENT role) are rejected with 403."""
+    from fastapi.responses import JSONResponse
+    from app.middleware.error_handler import PermissionError as LEHPermissionError
 
-    response = client.get("/staff/progress")
+    # Create a fresh app with CLIENT user to avoid fixture caching issues
+    app = FastAPI()
+    app.include_router(router)
 
-    assert response.status_code == 403
+    # Add exception handler for PermissionError (needed since we're using a fresh app)
+    @app.exception_handler(LEHPermissionError)
+    async def permission_error_handler(request, exc):
+        return JSONResponse(
+            status_code=403,
+            content={"detail": exc.message}
+        )
+
+    # Create user with CLIENT role
+    client_user = SimpleNamespace(
+        id="client_1",
+        role=UserRole.CLIENT,
+        name="Client User",
+        email="client@example.com"
+    )
+
+    def override_client_user():
+        return client_user
+
+    def override_db():
+        yield MagicMock()
+
+    app.dependency_overrides[get_current_user] = override_client_user
+    app.dependency_overrides[get_db] = override_db
+
+    with TestClient(app) as test_client:
+        response = test_client.get("/staff/progress")
+        assert response.status_code == 403
 
 
 def test_staff_progress_updates_checklist_item(api_client):

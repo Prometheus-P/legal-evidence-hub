@@ -206,6 +206,50 @@ class CaseService:
 
         self.db.commit()
 
+    def hard_delete_case(self, case_id: str, user_id: str):
+        """
+        Permanently delete a case (hard delete)
+
+        Args:
+            case_id: Case ID
+            user_id: User ID requesting deletion
+
+        Raises:
+            PermissionError: User does not have owner access (also for non-existent cases)
+        """
+        # Check permission first to prevent information leakage
+        member = self.member_repo.get_member(case_id, user_id)
+        if not member or member.role != CaseMemberRole.OWNER:
+            raise PermissionError("Only case owner can delete the case")
+
+        # include_deleted=True to allow deleting already soft-deleted cases
+        case = self.case_repo.get_by_id(case_id, include_deleted=True)
+        if not case:
+            raise NotFoundError("Case")
+
+        # Delete Qdrant RAG collection for this case
+        try:
+            deleted = delete_case_collection(case_id)
+            if deleted:
+                logger.info(f"Deleted Qdrant collection for case {case_id}")
+            else:
+                logger.warning(f"Qdrant collection for case {case_id} not found or already deleted")
+        except Exception as e:
+            logger.error(f"Failed to delete Qdrant collection for case {case_id}: {e}")
+
+        # Clear DynamoDB evidence metadata for this case
+        try:
+            cleared_count = clear_case_evidence(case_id)
+            logger.info(f"Cleared {cleared_count} evidence items from DynamoDB for case {case_id}")
+        except Exception as e:
+            logger.error(f"Failed to clear DynamoDB evidence for case {case_id}: {e}")
+
+        # Hard delete case from RDS (this also cascades to case_members)
+        self.case_repo.hard_delete(case_id)
+        self.db.commit()
+
+        logger.info(f"Permanently deleted case {case_id} by user {user_id}")
+
     def add_case_members(
         self,
         case_id: str,

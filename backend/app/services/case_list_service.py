@@ -38,6 +38,7 @@ class CaseListService:
         page_size: int = 20,
         sort_by: CaseSortField = CaseSortField.UPDATED_AT,
         sort_order: SortOrder = SortOrder.DESC,
+        include_closed: bool = False,
     ) -> CaseListResponse:
         """
         Get paginated case list with filters.
@@ -49,6 +50,7 @@ class CaseListService:
             page_size: Items per page
             sort_by: Field to sort by
             sort_order: Sort direction
+            include_closed: If True, include closed/soft-deleted cases
 
         Returns:
             Paginated case list response
@@ -67,6 +69,14 @@ class CaseListService:
                 CaseMember.user_id == user_id
             )
         ).distinct()
+
+        # Filter by closed status
+        if include_closed:
+            # Show ONLY closed cases (for "종료" tab)
+            query = query.filter(Case.status == CaseStatus.CLOSED)
+        else:
+            # Show only active cases (not closed)
+            query = query.filter(Case.status != CaseStatus.CLOSED)
 
         # Apply filters
         if filters:
@@ -89,7 +99,7 @@ class CaseListService:
         # Convert to response items
         items = [self._case_to_list_item(case) for case in cases]
 
-        # Get status counts
+        # Get status counts (include all for tab badge counts)
         status_counts = self._get_status_counts(user_id)
 
         total_pages = (total + page_size - 1) // page_size
@@ -191,8 +201,9 @@ class CaseListService:
 
     def _get_status_counts(self, user_id: str) -> dict:
         """Get case counts by status"""
+        # Use distinct count to avoid duplicates from outer join
         results = (
-            self.db.query(Case.status, func.count(Case.id))
+            self.db.query(Case.status, func.count(func.distinct(Case.id)))
             .join(
                 CaseMember,
                 and_(

@@ -258,13 +258,12 @@ class TestCaseRepositoryHardDelete:
 
     def test_hard_delete_success(self, case_repository, mock_session, sample_case):
         """Test successful hard deletion"""
-        # Arrange
+        # Arrange - hard_delete calls get_by_id with include_deleted=True
+        # which only uses one filter (no deleted_at filter)
         mock_query = Mock()
-        mock_filter1 = Mock()
-        mock_filter2 = Mock()
-        mock_filter2.first.return_value = sample_case
-        mock_filter1.filter.return_value = mock_filter2
-        mock_query.filter.return_value = mock_filter1
+        mock_filter = Mock()
+        mock_filter.first.return_value = sample_case
+        mock_query.filter.return_value = mock_filter
         mock_session.query.return_value = mock_query
 
         # Act
@@ -277,13 +276,11 @@ class TestCaseRepositoryHardDelete:
 
     def test_hard_delete_not_found(self, case_repository, mock_session):
         """Test hard deletion when case doesn't exist"""
-        # Arrange
+        # Arrange - hard_delete calls get_by_id with include_deleted=True
         mock_query = Mock()
-        mock_filter1 = Mock()
-        mock_filter2 = Mock()
-        mock_filter2.first.return_value = None
-        mock_filter1.filter.return_value = mock_filter2
-        mock_query.filter.return_value = mock_filter1
+        mock_filter = Mock()
+        mock_filter.first.return_value = None
+        mock_query.filter.return_value = mock_filter
         mock_session.query.return_value = mock_query
 
         # Act

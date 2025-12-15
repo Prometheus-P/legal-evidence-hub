@@ -318,7 +318,7 @@ class Case(Base):
 
     # Relationships
     owner = relationship("User", back_populates="created_cases", foreign_keys=[created_by])
-    members = relationship("CaseMember", back_populates="case")
+    members = relationship("CaseMember", back_populates="case", cascade="all, delete-orphan")
 
     @property
     def is_deleted(self) -> bool:
@@ -335,7 +335,7 @@ class CaseMember(Base):
     """
     __tablename__ = "case_members"
 
-    case_id = Column(String, ForeignKey("cases.id"), primary_key=True)
+    case_id = Column(String, ForeignKey("cases.id", ondelete="CASCADE"), primary_key=True)
     user_id = Column(String, ForeignKey("users.id"), primary_key=True)
     role = Column(StrEnumColumn(CaseMemberRole), nullable=False, default=CaseMemberRole.VIEWER)
 

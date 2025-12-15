@@ -319,14 +319,18 @@ def export_draft(
 @router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_case(
     case_id: str,
+    permanent: bool = Query(False, description="Permanently delete (hard delete)"),
     user_id: str = Depends(verify_case_write_access),
     db: Session = Depends(get_db)
 ):
     """
-    Soft delete a case (set status to closed)
+    Delete a case (soft or hard delete)
 
     **Path Parameters:**
     - case_id: Case ID
+
+    **Query Parameters:**
+    - permanent: If true, permanently delete (hard delete). Default: false (soft delete)
 
     **Response:**
     - 204: Case deleted successfully (no content)
@@ -338,11 +342,15 @@ def delete_case(
     - Only case owner can delete the case
 
     **Note:**
-    - This is a soft delete - case status is set to "closed"
-    - Qdrant collection for the case will be deleted
+    - Soft delete (default): Case status is set to "closed"
+    - Hard delete (permanent=true): Case is permanently removed from database
+    - Both options delete Qdrant collection and DynamoDB evidence
     """
     case_service = CaseService(db)
-    case_service.delete_case(case_id, user_id)
+    if permanent:
+        case_service.hard_delete_case(case_id, user_id)
+    else:
+        case_service.delete_case(case_id, user_id)
     return None
 
 

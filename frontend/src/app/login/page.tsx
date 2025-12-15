@@ -53,9 +53,13 @@ export default function LoginPage() {
     );
   }
 
-  // If authenticated, don't render login form (redirect will happen)
+  // If authenticated, show redirecting message (redirect will happen via useEffect)
   if (isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-neutral-600">대시보드로 이동 중...</div>
+      </div>
+    );
   }
 
   return (

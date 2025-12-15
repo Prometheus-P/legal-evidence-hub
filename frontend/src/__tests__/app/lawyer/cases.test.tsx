@@ -7,7 +7,6 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import LawyerCasesPage from '@/app/lawyer/cases/page';
 
 // Mock next/navigation for App Router
@@ -82,6 +81,10 @@ const defaultHookReturn = {
   clearSelection: mockClearSelection,
   executeBulkAction: mockExecuteBulkAction,
   isBulkActionLoading: false,
+  refresh: jest.fn(),
+  showClosed: false,
+  setShowClosed: jest.fn(),
+  permanentDeleteCase: jest.fn(),
 };
 
 jest.mock('@/hooks/useCaseList', () => ({
@@ -127,11 +130,12 @@ describe('LawyerCasesPage', () => {
       expect(screen.getByTitle('테이블 보기')).toBeInTheDocument();
     });
 
-    it('renders case filter component', () => {
+    it('renders active/closed tabs', () => {
       render(<LawyerCasesPage />);
 
-      // CaseFilter should render search and filter controls
-      expect(screen.getByPlaceholderText(/검색/i)).toBeInTheDocument();
+      // Active/Closed tabs should be rendered
+      expect(screen.getByText('활성 사건')).toBeInTheDocument();
+      expect(screen.getByText('종료된 사건')).toBeInTheDocument();
     });
   });
 
@@ -210,34 +214,36 @@ describe('LawyerCasesPage', () => {
     });
   });
 
-  describe('Filtering', () => {
-    it('calls setFilters when search input changes', async () => {
-      const user = userEvent.setup();
-      render(<LawyerCasesPage />);
-
-      const searchInput = screen.getByPlaceholderText(/검색/i);
-      await user.type(searchInput, '이혼');
-
-      // Filter should be called (debounced)
-      await waitFor(() => {
-        expect(mockSetFilters).toHaveBeenCalled();
-      }, { timeout: 1000 });
-    });
-
-    it('calls resetFilters when reset button clicked', async () => {
+  describe('Tab Switching', () => {
+    it('switches to closed tab when clicked', async () => {
+      const mockSetShowClosed = jest.fn();
       mockUseCaseList.mockReturnValue({
         ...defaultHookReturn,
-        filters: { search: '테스트', status: ['active'], clientName: '' },
+        setShowClosed: mockSetShowClosed,
       });
 
       render(<LawyerCasesPage />);
 
-      // Find and click reset/clear button
-      const resetButton = screen.getByText(/초기화|전체/i);
-      if (resetButton) {
-        fireEvent.click(resetButton);
-        expect(mockResetFilters).toHaveBeenCalled();
-      }
+      const closedTab = screen.getByText('종료된 사건');
+      fireEvent.click(closedTab);
+
+      expect(mockSetShowClosed).toHaveBeenCalledWith(true);
+    });
+
+    it('switches to active tab when clicked', async () => {
+      const mockSetShowClosed = jest.fn();
+      mockUseCaseList.mockReturnValue({
+        ...defaultHookReturn,
+        showClosed: true,
+        setShowClosed: mockSetShowClosed,
+      });
+
+      render(<LawyerCasesPage />);
+
+      const activeTab = screen.getByText('활성 사건');
+      fireEvent.click(activeTab);
+
+      expect(mockSetShowClosed).toHaveBeenCalledWith(false);
     });
   });
 
@@ -354,12 +360,9 @@ describe('LawyerCasesPage', () => {
     it('renders status badges in table', () => {
       render(<LawyerCasesPage />);
 
-      // Status badges appear in both filter and table, so check for multiple
-      const activeElements = screen.getAllByText('활성');
-      const inProgressElements = screen.getAllByText('검토 대기');
-
-      expect(activeElements.length).toBeGreaterThanOrEqual(1);
-      expect(inProgressElements.length).toBeGreaterThanOrEqual(1);
+      // Status badges appear in table
+      expect(screen.getByText('활성')).toBeInTheDocument();
+      expect(screen.getByText('검토 대기')).toBeInTheDocument();
     });
   });
 });

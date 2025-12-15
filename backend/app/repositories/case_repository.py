@@ -129,7 +129,8 @@ class CaseRepository:
         Returns:
             True if deleted, False if not found
         """
-        case = self.get_by_id(case_id)
+        # include_deleted=True to allow deleting soft-deleted cases
+        case = self.get_by_id(case_id, include_deleted=True)
         if not case:
             return False
 

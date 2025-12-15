@@ -71,26 +71,27 @@ export async function apiRequest<T>(
       const errorData = data as { error?: { message?: string }; detail?: string } | undefined;
       const errorMessage = errorData?.error?.message || errorData?.detail || 'An error occurred';
 
-      // Handle 401 Unauthorized - redirect to login (but not from /auth/me or if already on login)
-      // Note: Cookie cleanup is handled by the logout endpoint
+      // Handle 401 Unauthorized - redirect to login
       if (response.status === 401 && typeof window !== 'undefined') {
-        // Clear any legacy localStorage tokens (migration cleanup)
+        // Clear tokens
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('userCache');
+        
         // Don't redirect if:
-        // 1. We're checking auth status (/auth/me) - 401 is expected for unauthenticated users
-        // 2. We're already on the login/signup page
-        const isAuthCheck = endpoint === '/auth/me' || endpoint === '/api/auth/me';
-        const isAuthPage = window.location.pathname.startsWith('/login') ||
+        // 1. Auth check (/auth/me)
+        // 2. Already on auth pages
+        // 3. On Landing Page (Root)
+        const isAuthCheck = endpoint.includes('/auth/me');
+        const isAuthPage = window.location.pathname.startsWith('/login') || 
                            window.location.pathname.startsWith('/signup');
-        if (!isAuthCheck && !isAuthPage) {
-          toast.error('세션이 만료되었습니다. 다시 로그인해 주세요.');
-          window.location.href = '/login';
+        const isLandingPage = window.location.pathname === '/';
+
+        if (!isAuthCheck && !isAuthPage && !isLandingPage) {
+          window.location.href = '/login?expired=true';
         }
       }
-
       // Handle 403 Forbidden - Permission denied (FR-009)
       if (response.status === 403 && typeof window !== 'undefined') {
         toast.error('접근 권한이 없습니다. 담당자에게 문의해 주세요.');

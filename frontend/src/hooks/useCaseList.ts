@@ -114,10 +114,15 @@ interface UseCaseListReturn {
   setSelectedIds: (ids: string[]) => void;
   clearSelection: () => void;
 
+  // Tab (active/closed)
+  showClosed: boolean;
+  setShowClosed: (show: boolean) => void;
+
   // Actions
   refresh: () => void;
   executeBulkAction: (action: string, params?: Record<string, string>) => Promise<BulkActionResult[]>;
   isBulkActionLoading: boolean;
+  permanentDeleteCase: (caseId: string) => Promise<boolean>;
 }
 
 const defaultFilters: FilterState = {
@@ -148,6 +153,7 @@ export function useCaseList(): UseCaseListReturn {
   const [sort, setSortState] = useState<SortState>(defaultSort);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+  const [showClosed, setShowClosedState] = useState(false);
 
   const fetchCases = useCallback(async () => {
     setIsLoading(true);
@@ -160,6 +166,7 @@ export function useCaseList(): UseCaseListReturn {
       params.append('page_size', pagination.pageSize.toString());
       params.append('sort_by', sort.sortBy);
       params.append('sort_order', sort.sortOrder);
+      params.append('include_closed', showClosed.toString());
 
       if (filters.search) {
         params.append('search', filters.search);
@@ -210,7 +217,7 @@ export function useCaseList(): UseCaseListReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [pagination.page, pagination.pageSize, sort.sortBy, sort.sortOrder, filters]);
+  }, [pagination.page, pagination.pageSize, sort.sortBy, sort.sortOrder, filters, showClosed]);
 
   useEffect(() => {
     fetchCases();
@@ -252,6 +259,31 @@ export function useCaseList(): UseCaseListReturn {
 
   const refresh = useCallback(() => {
     fetchCases();
+  }, [fetchCases]);
+
+  const setShowClosed = useCallback((show: boolean) => {
+    setShowClosedState(show);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    setSelectedIds([]);
+  }, []);
+
+  const permanentDeleteCase = useCallback(async (caseId: string): Promise<boolean> => {
+    setError(null);
+
+    try {
+      const response = await apiClient.delete(`/cases/${caseId}?permanent=true`);
+
+      if (response.error) {
+        throw new Error(response.error || '삭제에 실패했습니다.');
+      }
+
+      // Refresh list after deletion
+      await fetchCases();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다.');
+      return false;
+    }
   }, [fetchCases]);
 
   const executeBulkAction = useCallback(
@@ -310,9 +342,12 @@ export function useCaseList(): UseCaseListReturn {
     selectedIds,
     setSelectedIds,
     clearSelection,
+    showClosed,
+    setShowClosed,
     refresh,
     executeBulkAction,
     isBulkActionLoading,
+    permanentDeleteCase,
   };
 }
 
