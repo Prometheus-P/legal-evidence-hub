@@ -246,11 +246,43 @@ class EvidenceService:
                 case_id=request.case_id
             )
             logger.info(f"AI Worker invocation result: {invoke_result}")
-            # Update status to processing if invocation succeeded
-            update_evidence_status(evidence_id, "processing")
+
+            # Check the actual result status from invoke_ai_worker
+            result_status = invoke_result.get("status", "")
+
+            if result_status == "invoked":
+                # Lambda successfully invoked - update to processing
+                update_evidence_status(evidence_id, "processing")
+            elif result_status == "skipped":
+                # Lambda is disabled - keep as pending, log info
+                logger.info(f"AI Worker disabled - evidence {evidence_id} stays pending for manual processing")
+                # Don't update status, keep as "pending"
+                return UploadCompleteResponse(
+                    evidence_id=evidence_id,
+                    case_id=request.case_id,
+                    filename=filename,
+                    s3_key=request.s3_key,
+                    status="pending",
+                    review_status=review_status,
+                    created_at=created_at
+                )
+            else:
+                # Error or unexpected status - mark as failed
+                error_msg = invoke_result.get("error_message", f"Lambda invocation failed with status: {result_status}")
+                logger.error(f"AI Worker invocation failed for evidence {evidence_id}: {error_msg}")
+                update_evidence_status(evidence_id, "failed", error_message=error_msg)
+                return UploadCompleteResponse(
+                    evidence_id=evidence_id,
+                    case_id=request.case_id,
+                    filename=filename,
+                    s3_key=request.s3_key,
+                    status="failed",
+                    review_status=review_status,
+                    created_at=created_at
+                )
         except Exception as e:
-            # Mark as failed if AI Worker invocation fails
-            logger.error(f"AI Worker invocation failed for evidence {evidence_id}: {e}")
+            # Mark as failed if AI Worker invocation raises unexpected exception
+            logger.error(f"AI Worker invocation exception for evidence {evidence_id}: {e}")
             update_evidence_status(evidence_id, "failed", error_message=str(e))
             # Still return success - the evidence record exists, just needs retry
             return UploadCompleteResponse(
@@ -439,10 +471,7 @@ class EvidenceService:
         if not s3_key:
             raise ValueError("Evidence missing s3_key - cannot retry")
 
-        # Update status to processing
-        update_evidence_status(evidence_id, "processing", error_message=None)
-
-        # Re-invoke AI Worker
+        # Re-invoke AI Worker (status update happens after successful invocation)
         try:
             invoke_result = invoke_ai_worker(
                 bucket=settings.S3_EVIDENCE_BUCKET,
@@ -452,12 +481,37 @@ class EvidenceService:
             )
             logger.info(f"AI Worker retry invocation result for {evidence_id}: {invoke_result}")
 
-            return {
-                "success": True,
-                "message": "Evidence processing restarted",
-                "evidence_id": evidence_id,
-                "status": "processing"
-            }
+            # Check the actual result status from invoke_ai_worker
+            result_status = invoke_result.get("status", "")
+
+            if result_status == "invoked":
+                # Update status to processing only after successful Lambda invocation
+                update_evidence_status(evidence_id, "processing", error_message=None)
+                return {
+                    "success": True,
+                    "message": "Evidence processing restarted",
+                    "evidence_id": evidence_id,
+                    "status": "processing"
+                }
+            elif result_status == "skipped":
+                # Lambda is disabled - revert to pending
+                update_evidence_status(evidence_id, "pending", error_message=None)
+                return {
+                    "success": False,
+                    "message": "AI Worker is disabled. Evidence remains pending for manual processing.",
+                    "evidence_id": evidence_id,
+                    "status": "pending"
+                }
+            else:
+                # Error or unexpected status
+                error_msg = invoke_result.get("error_message", f"Lambda invocation failed with status: {result_status}")
+                update_evidence_status(evidence_id, "failed", error_message=error_msg)
+                return {
+                    "success": False,
+                    "message": f"Retry failed: {error_msg}",
+                    "evidence_id": evidence_id,
+                    "status": "failed"
+                }
         except Exception as e:
             # Mark as failed again
             logger.error(f"AI Worker retry failed for evidence {evidence_id}: {e}")

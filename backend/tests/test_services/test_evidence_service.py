@@ -133,7 +133,8 @@ class TestEvidenceServiceUploadComplete:
 
         evidence_service.case_repo.get_by_id.return_value = sample_case
         evidence_service.member_repo.has_access.return_value = True
-        mock_invoke_ai_worker.return_value = {"StatusCode": 202}
+        # invoke_ai_worker returns {"status": "invoked"} on success
+        mock_invoke_ai_worker.return_value = {"status": "invoked", "request_id": "test-request-id"}
 
         # Act
         result = evidence_service.handle_upload_complete(request, user_id)
