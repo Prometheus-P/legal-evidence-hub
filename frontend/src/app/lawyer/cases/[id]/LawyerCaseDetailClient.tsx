@@ -17,6 +17,7 @@ import EditCaseModal from '@/components/cases/EditCaseModal';
 import { ApiCase } from '@/lib/api/cases';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PrecedentPanel } from '@/components/precedent';
+import { PartyGraph } from '@/components/party/PartyGraph';
 
 interface CaseDetail {
   id: string;
@@ -84,7 +85,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members'>('evidence');
+  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members' | 'relations'>('evidence');
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -311,6 +312,7 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
             { id: 'evidence', label: '증거 자료', count: caseDetail.evidenceCount },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length },
             { id: 'members', label: '팀원', count: caseDetail.members.length },
+            { id: 'relations', label: '관계도', count: null },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -418,6 +420,12 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
                 팀원이 없습니다.
               </p>
             )}
+          </div>
+        )}
+
+        {activeTab === 'relations' && (
+          <div className="h-[600px]">
+            <PartyGraph caseId={caseId} />
           </div>
         )}
       </div>

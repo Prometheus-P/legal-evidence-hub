@@ -46,6 +46,7 @@ export function useKeyboardShortcuts({
 
       for (const shortcut of shortcutsRef.current) {
         if (shortcut.enabled === false) continue;
+        if (!shortcut.key || !event.key) continue;
 
         // Guard against undefined event.key (some special keys)
         if (!event.key || !shortcut.key) continue;
