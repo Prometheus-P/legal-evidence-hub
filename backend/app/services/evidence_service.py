@@ -461,10 +461,10 @@ class EvidenceService:
         if not self.member_repo.has_access(case_id, user_id):
             raise PermissionError("You do not have access to this case")
 
-        # Only allow retry for failed evidence
+        # Allow retry for failed, pending, or stuck processing evidence
         current_status = evidence.get("status", "")
-        if current_status not in ["failed", "pending"]:
-            raise ValueError(f"Cannot retry evidence with status '{current_status}'. Only 'failed' or 'pending' evidence can be retried.")
+        if current_status not in ["failed", "pending", "processing"]:
+            raise ValueError(f"Cannot retry evidence with status '{current_status}'. Only 'failed', 'pending', or 'processing' evidence can be retried.")
 
         # Get required fields
         s3_key = evidence.get("s3_key")

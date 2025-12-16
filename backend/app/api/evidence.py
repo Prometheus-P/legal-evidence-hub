@@ -228,13 +228,13 @@ def retry_evidence_processing(
     - status: New status after retry attempt
 
     **Errors:**
-    - 400: Evidence not in failed state (cannot retry)
+    - 400: Evidence not in retryable state (cannot retry)
     - 401: Not authenticated
     - 403: User does not have access to case
     - 404: Evidence not found
 
     **Process:**
-    1. Validates evidence is in "failed" or "pending" state
+    1. Validates evidence is in "failed", "pending", or "processing" state
     2. Updates status to "processing"
     3. Re-invokes AI Worker Lambda
     4. If invocation fails, status returns to "failed"
@@ -242,6 +242,7 @@ def retry_evidence_processing(
     **State Machine:**
     - FAILED → PROCESSING (on retry)
     - PENDING → PROCESSING (on retry)
+    - PROCESSING → PROCESSING (on retry for stuck items)
     """
     evidence_service = EvidenceService(db)
     try:
