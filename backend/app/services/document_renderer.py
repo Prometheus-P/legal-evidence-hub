@@ -391,3 +391,132 @@ class DocumentRenderer:
 
         logger.warning("Failed to parse JSON from response")
         return None
+
+    # ==========================================================================
+    # Line-Based Template Rendering (Phase: 라인별 JSON 템플릿)
+    # ==========================================================================
+
+    def render_line_based(self, lines: List[Dict[str, Any]]) -> str:
+        """
+        라인 기반 JSON 템플릿을 포맷팅된 텍스트로 렌더링
+
+        각 라인의 format 정보를 적용하여 정확한 레이아웃 생성
+
+        Args:
+            lines: 라인 딕셔너리 리스트 (line, text, format 포함)
+
+        Returns:
+            포맷팅된 텍스트 문자열
+
+        Example:
+            lines = [
+                {"line": 1, "text": "소장", "format": {"align": "center", "bold": True}},
+                {"line": 2, "text": "", "format": {"spacing_after": 1}},
+                {"line": 3, "text": "원고: 김영희", "format": {"indent": 0}}
+            ]
+            renderer.render_line_based(lines)
+        """
+        output_lines = []
+
+        for line in lines:
+            text = line.get("text", "")
+            fmt = line.get("format", {})
+
+            # 들여쓰기 적용
+            indent = fmt.get("indent", 0)
+            if indent > 0:
+                text = " " * indent + text
+
+            # 정렬 적용
+            align = fmt.get("align", "left")
+            if align == "center":
+                text = text.center(self.width)
+            elif align == "right":
+                text = text.rjust(self.width)
+
+            output_lines.append(text)
+
+            # 줄간격 적용
+            spacing_after = fmt.get("spacing_after", 0)
+            for _ in range(spacing_after):
+                output_lines.append("")
+
+        return "\n".join(output_lines)
+
+    def render_line_based_sections(
+        self,
+        lines: List[Dict[str, Any]],
+        section_filter: Optional[str] = None
+    ) -> str:
+        """
+        특정 섹션만 필터링하여 렌더링
+
+        Args:
+            lines: 라인 딕셔너리 리스트
+            section_filter: 렌더링할 섹션 이름 (None이면 전체)
+
+        Returns:
+            필터링된 포맷팅 텍스트
+        """
+        if section_filter:
+            filtered = [l for l in lines if l.get("section") == section_filter]
+        else:
+            filtered = lines
+
+        return self.render_line_based(filtered)
+
+    def lines_to_html(self, lines: List[Dict[str, Any]]) -> str:
+        """
+        라인 기반 JSON을 HTML로 변환 (미리보기용)
+
+        Args:
+            lines: 라인 딕셔너리 리스트
+
+        Returns:
+            HTML 문자열
+        """
+        html_parts = ['<div class="document-preview">']
+
+        for line in lines:
+            text = line.get("text", "")
+            fmt = line.get("format", {})
+
+            # CSS 스타일 구성
+            styles = []
+
+            # 정렬
+            align = fmt.get("align", "left")
+            styles.append(f"text-align: {align}")
+
+            # 들여쓰기
+            indent = fmt.get("indent", 0)
+            if indent > 0:
+                styles.append(f"padding-left: {indent * 6}px")
+
+            # 굵기
+            if fmt.get("bold", False):
+                styles.append("font-weight: bold")
+
+            # 글자 크기
+            font_size = fmt.get("font_size", 12)
+            if font_size != 12:
+                styles.append(f"font-size: {font_size}pt")
+
+            # 줄간격
+            spacing_after = fmt.get("spacing_after", 0)
+            if spacing_after > 0:
+                styles.append(f"margin-bottom: {spacing_after * 12}px")
+
+            style_str = "; ".join(styles)
+
+            # 빈 줄 처리
+            if not text:
+                html_parts.append(f'<p style="{style_str}">&nbsp;</p>')
+            else:
+                # HTML 이스케이프
+                import html
+                safe_text = html.escape(text)
+                html_parts.append(f'<p style="{style_str}">{safe_text}</p>')
+
+        html_parts.append('</div>')
+        return "\n".join(html_parts)

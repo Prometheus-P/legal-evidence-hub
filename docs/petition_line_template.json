@@ -1,0 +1,645 @@
+{
+  "template_type": "이혼소송청구",
+  "version": "2.0.0",
+  "source": "법원 공식 양식 (105_C2835)",
+  "description": "대한민국 가정법원 이혼소송 소장 - 라인별 JSON 템플릿",
+  "page_settings": {
+    "paper_size": "A4",
+    "margin_top_mm": 25,
+    "margin_bottom_mm": 25,
+    "margin_left_mm": 30,
+    "margin_right_mm": 25,
+    "default_font": "바탕",
+    "default_font_size": 12,
+    "line_height": 1.6
+  },
+  "lines": [
+    {
+      "line": 1,
+      "section": "header",
+      "text": "이 혼 소 송 청 구",
+      "format": {
+        "align": "center",
+        "bold": true,
+        "font_size": 16,
+        "spacing_before": 0,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 2,
+      "section": "parties",
+      "text": "원          고",
+      "format": {
+        "align": "left",
+        "bold": false,
+        "indent": 0,
+        "spacing_before": 2,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 3,
+      "section": "parties",
+      "text": "{{원고이름}}",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_name",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 4,
+      "section": "parties",
+      "text": "(연락 가능한 전화번호: {{원고전화번호}})",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_phone",
+      "format": {
+        "align": "right",
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 5,
+      "section": "parties",
+      "text": "주민등록번호    {{원고주민번호_앞}}-{{원고주민번호_뒤}}",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_resident_number",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 6,
+      "section": "parties",
+      "text": "주민등록지      {{원고주민등록지}}",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_registered_address",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 7,
+      "section": "parties",
+      "text": "실제 사는 곳    {{원고실제주소}}",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_actual_address",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 8,
+      "section": "parties",
+      "text": "등록기준지      {{원고등록기준지}}",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_origin",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 9,
+      "section": "parties",
+      "text": "피          고",
+      "format": {
+        "align": "left",
+        "bold": false,
+        "indent": 0,
+        "spacing_before": 1,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 10,
+      "section": "parties",
+      "text": "{{피고이름}}",
+      "is_placeholder": true,
+      "placeholder_key": "defendant_name",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 11,
+      "section": "parties",
+      "text": "주민등록번호    {{피고주민번호_앞}}-{{피고주민번호_뒤}}",
+      "is_placeholder": true,
+      "placeholder_key": "defendant_resident_number",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 12,
+      "section": "parties",
+      "text": "주민등록지      {{피고주민등록지}}",
+      "is_placeholder": true,
+      "placeholder_key": "defendant_registered_address",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 13,
+      "section": "parties",
+      "text": "실제 사는 곳    {{피고실제주소}}",
+      "is_placeholder": true,
+      "placeholder_key": "defendant_actual_address",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 14,
+      "section": "parties",
+      "text": "등록기준지      {{피고등록기준지}}",
+      "is_placeholder": true,
+      "placeholder_key": "defendant_origin",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 15,
+      "section": "parties",
+      "text": "사  건  본  인",
+      "format": {
+        "align": "left",
+        "bold": false,
+        "indent": 0,
+        "spacing_before": 1,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 16,
+      "section": "parties",
+      "text": "{{사건본인이름}}",
+      "is_placeholder": true,
+      "placeholder_key": "child_name",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 17,
+      "section": "parties",
+      "text": "주민등록번호    {{사건본인주민번호_앞}}-{{사건본인주민번호_뒤}}",
+      "is_placeholder": true,
+      "placeholder_key": "child_resident_number",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 18,
+      "section": "parties",
+      "text": "주소            {{사건본인주소}}",
+      "is_placeholder": true,
+      "placeholder_key": "child_address",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 19,
+      "section": "parties",
+      "text": "등록기준지      {{사건본인등록기준지}}",
+      "is_placeholder": true,
+      "placeholder_key": "child_origin",
+      "format": {
+        "align": "left",
+        "indent": 14,
+        "spacing_after": 2
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 20,
+      "section": "claims",
+      "text": "청 구 취 지",
+      "format": {
+        "align": "center",
+        "bold": true,
+        "font_size": 14,
+        "spacing_before": 2,
+        "spacing_after": 1
+      }
+    },
+    {
+      "line": 21,
+      "section": "claims",
+      "text": "1. 원고와 피고는 이혼한다.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 22,
+      "section": "claims",
+      "text": "{{청구취지_친권}}",
+      "is_placeholder": true,
+      "placeholder_key": "claim_custody",
+      "placeholder_hint": "2. 사건본인의 친권자로 원고(피고)를 지정한다.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "has_children"
+    },
+    {
+      "line": 23,
+      "section": "claims",
+      "text": "{{청구취지_양육비}}",
+      "is_placeholder": true,
+      "placeholder_key": "claim_child_support",
+      "placeholder_hint": "3. 피고는 원고에게 양육비로 매월 금 OOO원을 지급하라.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "request_child_support"
+    },
+    {
+      "line": 24,
+      "section": "claims",
+      "text": "{{청구취지_위자료}}",
+      "is_placeholder": true,
+      "placeholder_key": "claim_alimony",
+      "placeholder_hint": "4. 피고는 원고에게 위자료로 금 OOO원을 지급하라.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "request_alimony"
+    },
+    {
+      "line": 25,
+      "section": "claims",
+      "text": "{{청구취지_재산분할}}",
+      "is_placeholder": true,
+      "placeholder_key": "claim_property",
+      "placeholder_hint": "5. 피고는 원고에게 재산분할로 금 OOO원을 지급하라.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      },
+      "conditional": true,
+      "condition_key": "request_property_division"
+    },
+    {
+      "line": 26,
+      "section": "claims",
+      "text": "{{청구취지_소송비용번호}}. 소송비용은 피고의 부담으로 한다.",
+      "is_placeholder": true,
+      "placeholder_key": "claim_costs_number",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 27,
+      "section": "claims",
+      "text": "라는 판결을 구합니다.",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_before": 0,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 28,
+      "section": "grounds",
+      "text": "청 구 원 인",
+      "format": {
+        "align": "center",
+        "bold": true,
+        "font_size": 14,
+        "spacing_before": 2,
+        "spacing_after": 1
+      }
+    },
+    {
+      "line": 29,
+      "section": "grounds",
+      "text": "{{청구원인_내용}}",
+      "is_placeholder": true,
+      "placeholder_key": "grounds_content",
+      "placeholder_hint": "(원고와 피고가 이혼을 해야 하는 사유를 구체적으로 기재하십시오.)",
+      "ai_generated": true,
+      "format": {
+        "align": "left",
+        "indent": 2,
+        "line_spacing": 1.6,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 30,
+      "section": "attachments",
+      "text": "첨 부 서 류",
+      "format": {
+        "align": "center",
+        "bold": true,
+        "font_size": 14,
+        "spacing_before": 2,
+        "spacing_after": 1
+      }
+    },
+    {
+      "line": 31,
+      "section": "attachments",
+      "text": "1. 가족관계증명서(상세)    1통",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 32,
+      "section": "attachments",
+      "text": "2. 혼인관계증명서          1통",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 33,
+      "section": "attachments",
+      "text": "3. 주민등록등본             1통",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 0
+      }
+    },
+    {
+      "line": 34,
+      "section": "attachments",
+      "text": "{{첨부서류_추가}}",
+      "is_placeholder": true,
+      "placeholder_key": "additional_attachments",
+      "placeholder_hint": "4. 증거자료 등",
+      "format": {
+        "align": "left",
+        "indent": 0,
+        "spacing_after": 2
+      },
+      "conditional": true,
+      "condition_key": "has_additional_attachments"
+    },
+    {
+      "line": 35,
+      "section": "footer",
+      "text": "20{{연도}}. {{월}}. {{일}}.",
+      "is_placeholder": true,
+      "placeholder_key": "date",
+      "format": {
+        "align": "center",
+        "spacing_before": 3,
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 36,
+      "section": "footer",
+      "text": "원고    {{원고이름}}    (서명 또는 날인)",
+      "is_placeholder": true,
+      "placeholder_key": "plaintiff_signature",
+      "format": {
+        "align": "center",
+        "spacing_after": 2
+      }
+    },
+    {
+      "line": 37,
+      "section": "footer",
+      "text": "{{법원이름}} 귀중",
+      "is_placeholder": true,
+      "placeholder_key": "court_name",
+      "format": {
+        "align": "right",
+        "bold": true,
+        "spacing_after": 0
+      }
+    }
+  ],
+  "placeholders": {
+    "plaintiff_name": {
+      "description": "원고 이름",
+      "required": true,
+      "source": "case_data"
+    },
+    "plaintiff_phone": {
+      "description": "원고 연락처",
+      "required": true,
+      "source": "case_data"
+    },
+    "plaintiff_resident_number": {
+      "description": "원고 주민등록번호",
+      "required": true,
+      "source": "case_data",
+      "format": "######-#******"
+    },
+    "plaintiff_registered_address": {
+      "description": "원고 주민등록지",
+      "required": true,
+      "source": "case_data"
+    },
+    "plaintiff_actual_address": {
+      "description": "원고 실제 거주지",
+      "required": true,
+      "source": "case_data"
+    },
+    "plaintiff_origin": {
+      "description": "원고 등록기준지",
+      "required": true,
+      "source": "case_data"
+    },
+    "defendant_name": {
+      "description": "피고 이름",
+      "required": true,
+      "source": "case_data"
+    },
+    "defendant_resident_number": {
+      "description": "피고 주민등록번호",
+      "required": true,
+      "source": "case_data",
+      "format": "######-#******"
+    },
+    "defendant_registered_address": {
+      "description": "피고 주민등록지",
+      "required": true,
+      "source": "case_data"
+    },
+    "defendant_actual_address": {
+      "description": "피고 실제 거주지",
+      "required": true,
+      "source": "case_data"
+    },
+    "defendant_origin": {
+      "description": "피고 등록기준지",
+      "required": true,
+      "source": "case_data"
+    },
+    "child_name": {
+      "description": "사건본인(자녀) 이름",
+      "required": false,
+      "source": "case_data",
+      "condition": "has_children"
+    },
+    "child_resident_number": {
+      "description": "사건본인 주민등록번호",
+      "required": false,
+      "source": "case_data",
+      "condition": "has_children"
+    },
+    "child_address": {
+      "description": "사건본인 주소",
+      "required": false,
+      "source": "case_data",
+      "condition": "has_children"
+    },
+    "child_origin": {
+      "description": "사건본인 등록기준지",
+      "required": false,
+      "source": "case_data",
+      "condition": "has_children"
+    },
+    "claim_custody": {
+      "description": "친권 지정 청구",
+      "required": false,
+      "source": "ai_generated",
+      "condition": "has_children"
+    },
+    "claim_child_support": {
+      "description": "양육비 청구",
+      "required": false,
+      "source": "ai_generated",
+      "condition": "request_child_support"
+    },
+    "claim_alimony": {
+      "description": "위자료 청구",
+      "required": false,
+      "source": "ai_generated",
+      "condition": "request_alimony"
+    },
+    "claim_property": {
+      "description": "재산분할 청구",
+      "required": false,
+      "source": "ai_generated",
+      "condition": "request_property_division"
+    },
+    "grounds_content": {
+      "description": "청구원인 (이혼 사유)",
+      "required": true,
+      "source": "ai_generated",
+      "ai_instruction": "증거 자료를 바탕으로 민법 제840조에 해당하는 이혼 사유를 구체적으로 작성"
+    },
+    "date": {
+      "description": "작성 날짜",
+      "required": true,
+      "source": "system",
+      "format": "YYYY. MM. DD."
+    },
+    "court_name": {
+      "description": "관할 법원",
+      "required": true,
+      "source": "case_data"
+    }
+  },
+  "conditions": {
+    "has_children": {
+      "description": "미성년 자녀가 있는 경우",
+      "affects_lines": [15, 16, 17, 18, 19, 22]
+    },
+    "request_child_support": {
+      "description": "양육비를 청구하는 경우",
+      "affects_lines": [23]
+    },
+    "request_alimony": {
+      "description": "위자료를 청구하는 경우",
+      "affects_lines": [24]
+    },
+    "request_property_division": {
+      "description": "재산분할을 청구하는 경우",
+      "affects_lines": [25]
+    },
+    "has_additional_attachments": {
+      "description": "추가 첨부서류가 있는 경우",
+      "affects_lines": [34]
+    }
+  },
+  "legal_references": {
+    "민법_제840조": {
+      "title": "재판상 이혼 사유",
+      "clauses": [
+        {"number": 1, "text": "배우자에게 부정한 행위가 있었을 때"},
+        {"number": 2, "text": "배우자가 악의로 다른 일방을 유기한 때"},
+        {"number": 3, "text": "배우자 또는 그 직계존속으로부터 심히 부당한 대우를 받았을 때"},
+        {"number": 4, "text": "자기의 직계존속이 배우자로부터 심히 부당한 대우를 받았을 때"},
+        {"number": 5, "text": "배우자의 생사가 3년 이상 분명하지 아니한 때"},
+        {"number": 6, "text": "기타 혼인을 계속하기 어려운 중대한 사유가 있을 때"}
+      ]
+    }
+  },
+  "metadata": {
+    "created_at": "2024-12-16",
+    "created_by": "system",
+    "last_updated": "2024-12-16",
+    "total_lines": 37,
+    "sections": ["header", "parties", "claims", "grounds", "attachments", "footer"]
+  }
+}
