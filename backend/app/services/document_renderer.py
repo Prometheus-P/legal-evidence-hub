@@ -459,7 +459,7 @@ class DocumentRenderer:
             필터링된 포맷팅 텍스트
         """
         if section_filter:
-            filtered = [l for l in lines if l.get("section") == section_filter]
+            filtered = [line for line in lines if line.get("section") == section_filter]
         else:
             filtered = lines
 

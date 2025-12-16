@@ -6,9 +6,7 @@ Tests are written FIRST, then implementation follows.
 """
 
 import pytest
-import json
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
 
 # These imports will fail until implementation is done
 # This is expected in TDD - tests first, then implementation
@@ -399,7 +397,6 @@ class TestGenerateLineBasedDraft:
     ):
         """Full integration test: template -> placeholders -> AI content -> text"""
         from app.services.draft_service import DraftService
-        from app.db.schemas import DraftPreviewRequest
 
         # Setup mocks
         mock_get_template.return_value = {
