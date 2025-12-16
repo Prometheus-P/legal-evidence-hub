@@ -6,7 +6,8 @@ GET /cases/{id} - Get case detail
 PATCH /cases/{id} - Update case
 DELETE /cases/{id} - Soft delete case
 GET /cases/{id}/evidence - List evidence for a case
-POST /cases/{id}/draft-preview - Generate draft preview
+POST /cases/{id}/draft-preview - Generate draft preview (hierarchical)
+POST /cases/{id}/draft-preview-lines - Generate line-based draft preview
 GET /cases/{id}/draft-export - Export draft as DOCX/PDF
 PATCH /cases/{id}/evidence/{eid}/review - Review client-uploaded evidence
 """
@@ -30,7 +31,9 @@ from app.db.schemas import (
     AddCaseMembersRequest,
     CaseMembersListResponse,
     EvidenceReviewRequest,
-    EvidenceReviewResponse
+    EvidenceReviewResponse,
+    LineBasedDraftRequest,
+    LineBasedDraftResponse
 )
 from app.services.case_service import CaseService
 from app.services.evidence_service import EvidenceService
@@ -252,6 +255,70 @@ def generate_draft_preview(
     """
     draft_service = DraftService(db)
     return draft_service.generate_draft_preview(case_id, request, user_id)
+
+
+@router.post("/{case_id}/draft-preview-lines", response_model=LineBasedDraftResponse)
+def generate_line_based_draft_preview(
+    case_id: str,
+    request: LineBasedDraftRequest,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    라인 기반 JSON 템플릿을 사용한 초안 생성
+
+    **Path Parameters:**
+    - case_id: 사건 ID
+
+    **Request Body:**
+    - template_type: 템플릿 타입 (기본값: "이혼소장_라인")
+    - case_data: 플레이스홀더에 채울 데이터
+      - 원고이름, 피고이름, 원고주민번호, 피고주민번호 등
+      - has_children: true/false (자녀 관련 섹션 포함 여부)
+      - has_alimony: true/false (위자료 관련 섹션 포함 여부)
+
+    **Response:**
+    - 200: 라인 기반 초안 생성 성공
+    - lines: 각 라인의 텍스트와 포맷 정보
+    - text_preview: 렌더링된 텍스트 미리보기
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case or template not found
+
+    **Features:**
+    - 법원 공식 양식 기반 정확한 레이아웃
+    - 플레이스홀더 자동 치환
+    - 조건부 섹션 (자녀, 위자료 등)
+    - AI 생성 콘텐츠 (청구원인 등)
+
+    **Important:**
+    - 미리보기 전용 - 자동 제출되지 않음
+    - 변호사 검토 필수
+    """
+    from datetime import datetime, timezone
+
+    draft_service = DraftService(db)
+
+    # 라인 기반 초안 생성
+    result = draft_service.generate_line_based_draft(
+        case_id=case_id,
+        user_id=user_id,
+        case_data=request.case_data,
+        template_type=request.template_type
+    )
+
+    # 텍스트 미리보기 렌더링
+    text_preview = draft_service.render_lines_to_text(result.get("lines", []))
+
+    return LineBasedDraftResponse(
+        case_id=case_id,
+        template_type=result.get("template_type", request.template_type),
+        generated_at=datetime.fromisoformat(result.get("generated_at", datetime.now(timezone.utc).isoformat())),
+        lines=result.get("lines", []),
+        text_preview=text_preview
+    )
 
 
 @router.get("/{case_id}/draft-export")

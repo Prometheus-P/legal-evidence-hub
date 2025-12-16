@@ -410,6 +410,43 @@ class DraftExportFormat(str, Enum):
     PDF = "pdf"
 
 
+# ============================================
+# Line-Based Draft Schemas (라인별 JSON 템플릿)
+# ============================================
+class LineBasedDraftRequest(BaseModel):
+    """라인 기반 초안 생성 요청 스키마"""
+    template_type: str = Field(default="이혼소장_라인", description="사용할 템플릿 타입")
+    case_data: dict = Field(default_factory=dict, description="플레이스홀더 채울 데이터 (원고이름, 피고이름 등)")
+
+
+class LineFormatInfo(BaseModel):
+    """라인 포맷 정보"""
+    align: Optional[str] = "left"
+    indent: Optional[int] = 0
+    bold: Optional[bool] = False
+    font_size: Optional[int] = 12
+    spacing_after: Optional[int] = 0
+
+
+class DraftLine(BaseModel):
+    """초안 라인 스키마"""
+    line: int
+    text: str
+    section: Optional[str] = None
+    format: Optional[LineFormatInfo] = None
+    is_placeholder: Optional[bool] = False
+
+
+class LineBasedDraftResponse(BaseModel):
+    """라인 기반 초안 응답 스키마"""
+    case_id: str
+    template_type: str
+    generated_at: datetime
+    lines: list[dict]  # DraftLine 리스트 (유연한 타입)
+    text_preview: str = Field(description="렌더링된 텍스트 미리보기")
+    preview_disclaimer: str = "본 문서는 AI가 생성한 미리보기 초안입니다. 법적 효력이 없으며, 변호사의 검토 및 수정이 필수입니다."
+
+
 class DraftDocumentType(str, Enum):
     """Draft document type options"""
     COMPLAINT = "complaint"      # 소장
