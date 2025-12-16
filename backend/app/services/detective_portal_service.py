@@ -84,7 +84,9 @@ class DetectivePortalService:
         )
 
         if status:
-            query = query.filter(Case.status == status)
+            db_statuses = self._map_api_status_to_db(status)
+            if db_statuses:
+                query = query.filter(Case.status.in_(db_statuses))
 
         total = query.count()
         cases = query.offset((page - 1) * limit).limit(limit).all()
@@ -156,7 +158,7 @@ class DetectivePortalService:
             raise KeyError("Case not found")
 
         # Update case status to active
-        case.status = "active"
+        case.status = CaseStatus.ACTIVE
         self.db.commit()
 
         return AcceptRejectResponse(
@@ -545,6 +547,20 @@ class DetectivePortalService:
             )
             .first()
         )
+
+    def _map_api_status_to_db(self, api_status: str) -> Optional[List[CaseStatus]]:
+        """Map API status filter to database CaseStatus enum values.
+
+        API status values: pending, active, review, completed
+        Maps to DB CaseStatus: active, open, in_progress, review, closed
+        """
+        status_map = {
+            "pending": [CaseStatus.IN_PROGRESS],
+            "active": [CaseStatus.ACTIVE, CaseStatus.OPEN],
+            "review": [CaseStatus.REVIEW],
+            "completed": [CaseStatus.CLOSED],
+        }
+        return status_map.get(api_status.lower())
 
     def _map_case_status(self, status) -> InvestigationStatus:
         """Map CaseStatus enum to InvestigationStatus for UI display.

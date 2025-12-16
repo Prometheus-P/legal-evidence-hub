@@ -26,19 +26,23 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
   const [showNodes, setShowNodes] = useState(true);
   const [showEdges, setShowEdges] = useState(true);
 
+  // Defensive defaults for null/undefined graph props (#306 fix)
+  const nodes = graph?.nodes ?? [];
+  const edges = graph?.edges ?? [];
+
   // Extract unique roles from nodes
   const uniqueRoles = useMemo(() => {
     const roles = new Set<PersonRole>();
-    graph.nodes.forEach((node) => roles.add(node.role));
+    nodes.forEach((node) => roles.add(node.role));
     return Array.from(roles);
-  }, [graph.nodes]);
+  }, [nodes]);
 
   // Extract unique relationship types from edges
   const uniqueRelationships = useMemo(() => {
     const types = new Set<RelationshipType>();
-    graph.edges.forEach((edge) => types.add(edge.relationship));
+    edges.forEach((edge) => types.add(edge.relationship));
     return Array.from(types);
-  }, [graph.edges]);
+  }, [edges]);
 
   return (
     <div className="p-4 space-y-4">
@@ -50,7 +54,7 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
           onClick={() => setShowNodes(!showNodes)}
           className="flex items-center justify-between w-full text-sm font-medium text-neutral-700 hover:text-neutral-900"
         >
-          <span>인물 ({graph.nodes.length}명)</span>
+          <span>인물 ({nodes.length}명)</span>
           {showNodes ? (
             <ChevronUp className="w-4 h-4" />
           ) : (
@@ -70,7 +74,7 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
                   {ROLE_LABELS[role]}
                 </span>
                 <span className="text-xs text-neutral-400">
-                  ({graph.nodes.filter((n) => n.role === role).length})
+                  ({nodes.filter((n) => n.role === role).length})
                 </span>
               </div>
             ))}
@@ -84,7 +88,7 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
           onClick={() => setShowEdges(!showEdges)}
           className="flex items-center justify-between w-full text-sm font-medium text-neutral-700 hover:text-neutral-900"
         >
-          <span>관계 ({graph.edges.length}개)</span>
+          <span>관계 ({edges.length}개)</span>
           {showEdges ? (
             <ChevronUp className="w-4 h-4" />
           ) : (
@@ -104,7 +108,7 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
                   {RELATIONSHIP_LABELS[type]}
                 </span>
                 <span className="text-xs text-neutral-400">
-                  ({graph.edges.filter((e) => e.relationship === type).length})
+                  ({edges.filter((e) => e.relationship === type).length})
                 </span>
               </div>
             ))}
@@ -118,13 +122,13 @@ export default function RelationshipLegend({ graph }: RelationshipLegendProps) {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="bg-neutral-50 rounded p-2 text-center">
             <p className="text-2xl font-bold text-neutral-900">
-              {graph.nodes.length}
+              {nodes.length}
             </p>
             <p className="text-xs text-neutral-500">인물</p>
           </div>
           <div className="bg-neutral-50 rounded p-2 text-center">
             <p className="text-2xl font-bold text-neutral-900">
-              {graph.edges.length}
+              {edges.length}
             </p>
             <p className="text-xs text-neutral-500">관계</p>
           </div>

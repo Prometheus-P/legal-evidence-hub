@@ -87,11 +87,8 @@ export default function SignupPage() {
         return;
       }
 
-      // Store access token for Authorization header (cross-origin support)
-      // This matches the login flow in AuthContext
-      if (response.data.access_token) {
-        localStorage.setItem('accessToken', response.data.access_token);
-      }
+      // Note: Access token is stored in HTTP-only cookie by backend (XSS protection)
+      // No localStorage token storage - matches login flow in AuthContext (#309 fix)
 
       // Cache user info for display purposes
       const userRole = response.data.user?.role || role;
