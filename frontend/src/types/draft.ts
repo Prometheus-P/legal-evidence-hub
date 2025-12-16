@@ -28,3 +28,38 @@ export interface DraftTemplate {
     name: string;
     updatedAt: string;
 }
+
+/**
+ * 라인 기반 초안 템플릿 (line-based draft)
+ */
+export interface LineFormatInfo {
+    align?: 'left' | 'center' | 'right';
+    indent?: number;
+    bold?: boolean;
+    font_size?: number;
+    spacing_before?: number;
+    spacing_after?: number;
+}
+
+export interface DraftLine {
+    line: number;
+    text: string;
+    section?: string;
+    format?: LineFormatInfo;
+    is_placeholder?: boolean;
+    placeholder_key?: string;
+}
+
+export interface LineBasedDraftRequest {
+    template_type?: string;  // default: "이혼소장_라인"
+    case_data?: Record<string, string | number | boolean>;
+}
+
+export interface LineBasedDraftResponse {
+    case_id: string;
+    template_type: string;
+    generated_at: string;
+    lines: DraftLine[];
+    text_preview: string;
+    preview_disclaimer: string;
+}
