@@ -148,10 +148,23 @@ jobs:
             --include "_next/data/*"
 
       - name: Invalidate CloudFront Cache
+        id: invalidate
         run: |
-          aws cloudfront create-invalidation \
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ steps.env.outputs.CF_DIST }} \
-            --paths "/*"
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "INVALIDATION_ID=$INVALIDATION_ID" >> $GITHUB_OUTPUT
+          echo "Created invalidation: $INVALIDATION_ID"
+
+      - name: Wait for CloudFront Invalidation
+        run: |
+          echo "Waiting for CloudFront invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ steps.env.outputs.CF_DIST }} \
+            --id ${{ steps.invalidate.outputs.INVALIDATION_ID }}
+          echo "Invalidation completed!"
 
       - name: Deployment Summary
         run: |
