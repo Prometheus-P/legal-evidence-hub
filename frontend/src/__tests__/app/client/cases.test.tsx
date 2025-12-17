@@ -160,9 +160,9 @@ describe('Client Cases Page', () => {
     test('should render case cards as links', async () => {
       render(<ClientCasesPage />);
 
-      // Query parameter pattern: /client/cases/detail?caseId=xxx
+      // Query parameter pattern with trailing slash: /client/cases/detail/?caseId=xxx
       await waitFor(() => {
-        const links = document.querySelectorAll('a[href^="/client/cases/detail?caseId="]');
+        const links = document.querySelectorAll('a[href^="/client/cases/detail/?caseId="]');
         expect(links.length).toBe(3);
       });
     });

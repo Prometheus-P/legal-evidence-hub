@@ -59,7 +59,9 @@ function buildCasePath(
     }
   });
 
-  return `${basePath}?${params.toString()}`;
+  // Add trailing slash before query params to prevent S3 301 redirect
+  // which would strip query parameters (trailingSlash: true in next.config.js)
+  return `${basePath}/?${params.toString()}`;
 }
 
 /**
