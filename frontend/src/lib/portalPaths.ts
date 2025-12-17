@@ -1,6 +1,9 @@
 /**
  * Portal path helpers
- * Generates role-aware URLs for case detail pages that work with static hosting.
+ * Generates role-aware URLs for case detail pages using path parameters.
+ *
+ * Uses dynamic routes: /{role}/cases/{caseId}/ instead of query params
+ * to avoid S3 redirect issues that strip query parameters.
  */
 
 export type PortalRole = 'lawyer' | 'client' | 'detective';
@@ -13,59 +16,51 @@ interface CasePathOptions {
 }
 
 /**
- * Base paths for case pages using query parameters.
- * Static hosting (CloudFront + S3) requires pre-built pages,
- * so we use /cases/detail?caseId=xxx format instead of /cases/{id}
+ * Build a path-based case URL using dynamic route segments.
+ * Format: /{role}/cases/{caseId}/{section?}/
+ *
+ * This avoids S3 302 redirects that strip query parameters.
  */
-const SECTION_BASE_PATH: Record<PortalRole, Partial<Record<CaseSection, string>>> = {
-  lawyer: {
-    detail: '/lawyer/cases/detail',
-    procedure: '/lawyer/cases/procedure',
-    assets: '/lawyer/cases/assets',
-    relations: '/lawyer/cases/relations',
-    relationship: '/lawyer/cases/relationship',
-  },
-  client: {
-    detail: '/client/cases/detail',
-  },
-  detective: {
-    detail: '/detective/cases/detail',
-  },
-};
-
 function buildCasePath(
   role: PortalRole,
   section: CaseSection,
   caseId: string,
   options: CasePathOptions = {}
 ): string {
-  const basePath =
-    SECTION_BASE_PATH[role][section] ?? SECTION_BASE_PATH[role].detail ?? '/lawyer/cases/detail';
-
   // Validate caseId to prevent invalid URLs
   if (!caseId || caseId === 'undefined' || caseId === 'null') {
     console.error('[portalPaths] Invalid caseId:', caseId);
-    // Return base path without query params to trigger the error state in detail page
-    return basePath;
+    // Return cases list to trigger navigation to list page
+    return `/${role}/cases/`;
   }
 
-  const params = new URLSearchParams();
-  params.set('caseId', caseId);
+  // Build base path with caseId in path segment
+  let path = `/${role}/cases/${caseId}`;
 
-  // Preserve optional params (e.g., tab, returnUrl, view mode)
-  Object.entries(options).forEach(([key, value]) => {
-    if (value) {
-      params.set(key, value);
-    }
-  });
+  // Add section if not 'detail' (detail is the default at /{role}/cases/{id}/)
+  if (section !== 'detail') {
+    path += `/${section}`;
+  }
 
-  // Add trailing slash before query params to prevent S3 301 redirect
-  // which would strip query parameters (trailingSlash: true in next.config.js)
-  return `${basePath}/?${params.toString()}`;
+  // Always add trailing slash for S3 compatibility
+  path += '/';
+
+  // Add optional query params if provided (e.g., tab, returnUrl)
+  const queryParams = Object.entries(options)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value!)}`)
+    .join('&');
+
+  if (queryParams) {
+    path += `?${queryParams}`;
+  }
+
+  return path;
 }
 
 /**
- * Build a query-based case detail path for static hosting.
+ * Build a case detail path using path parameters.
+ * Example: /lawyer/cases/case_abc123/
  */
 export function getCaseDetailPath(
   role: PortalRole,
@@ -77,6 +72,7 @@ export function getCaseDetailPath(
 
 /**
  * Convenience helper for lawyer-only sub pages (procedure/assets/relations/etc.)
+ * Example: /lawyer/cases/case_abc123/procedure/
  */
 export function getLawyerCasePath(
   section: Exclude<CaseSection, 'detail'> | 'detail',

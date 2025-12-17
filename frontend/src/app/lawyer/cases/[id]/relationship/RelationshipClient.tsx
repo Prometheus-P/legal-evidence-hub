@@ -15,12 +15,15 @@ import RelationshipLegend from '@/components/relationship/RelationshipLegend';
 import { getCaseRelationships, getMockRelationshipGraph } from '@/lib/api/relationship';
 import { RelationshipGraph } from '@/types/relationship';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 interface RelationshipClientProps {
   caseId: string;
 }
 
-export default function RelationshipClient({ caseId }: RelationshipClientProps) {
+export default function RelationshipClient({ caseId: paramCaseId }: RelationshipClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const router = useRouter();
   const [graph, setGraph] = useState<RelationshipGraph | null>(null);
   const [isLoading, setIsLoading] = useState(true);

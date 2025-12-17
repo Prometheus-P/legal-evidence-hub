@@ -226,23 +226,23 @@ export async function clearAuth(page: Page): Promise<void> {
 
 /**
  * 특정 케이스 페이지로 이동 (인증 필요)
- * Uses query parameter format with trailing slash for static hosting compatibility
+ * Uses path-based route format for S3 static hosting compatibility
  * @param page Playwright Page 객체
  * @param caseId 케이스 ID
  */
 export async function navigateToCaseDetail(page: Page, caseId: string): Promise<void> {
-  await page.goto(`/lawyer/cases/detail/?caseId=${caseId}`);
+  await page.goto(`/lawyer/cases/${caseId}/`);
   await page.waitForLoadState('domcontentloaded');
 }
 
 /**
  * 관계도 페이지로 이동 (인증 필요)
- * Uses query parameter format with trailing slash for static hosting compatibility
+ * Uses path-based route format for S3 static hosting compatibility
  * @param page Playwright Page 객체
  * @param caseId 케이스 ID
  */
 export async function navigateToRelationshipPage(page: Page, caseId: string): Promise<void> {
-  await page.goto(`/lawyer/cases/relationship/?caseId=${caseId}`);
+  await page.goto(`/lawyer/cases/${caseId}/relationship/`);
   await page.waitForLoadState('domcontentloaded');
 }
 

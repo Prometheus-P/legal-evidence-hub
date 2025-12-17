@@ -6,6 +6,7 @@
 'use client';
 
 import { useProcedure } from '@/hooks/useProcedure';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 import { ProcedureTimeline } from '@/components/procedure';
 import Link from 'next/link';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
@@ -14,7 +15,9 @@ interface ProcedureClientProps {
   caseId: string;
 }
 
-export default function ProcedureClient({ caseId }: ProcedureClientProps) {
+export default function ProcedureClient({ caseId: paramCaseId }: ProcedureClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const {
     stages,
     currentStage,

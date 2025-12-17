@@ -17,12 +17,15 @@ import {
   type CaseDetailData,
   type FieldRecord,
 } from '@/lib/api/detective-portal';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 interface DetectiveCaseDetailClientProps {
   caseId: string;
 }
 
-export default function DetectiveCaseDetailClient({ caseId }: DetectiveCaseDetailClientProps) {
+export default function DetectiveCaseDetailClient({ caseId: paramCaseId }: DetectiveCaseDetailClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const router = useRouter();
 
   const [caseDetail, setCaseDetail] = useState<CaseDetailData | null>(null);

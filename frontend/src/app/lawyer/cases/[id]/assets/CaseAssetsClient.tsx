@@ -10,12 +10,15 @@
 import Link from 'next/link';
 import { AssetDivisionForm } from '@/components/case/AssetDivisionForm';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 interface CaseAssetsClientProps {
   caseId: string;
 }
 
-export default function CaseAssetsClient({ caseId }: CaseAssetsClientProps) {
+export default function CaseAssetsClient({ caseId: paramCaseId }: CaseAssetsClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const assetsPath = getLawyerCasePath('assets', caseId);
   const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: assetsPath });
   const evidenceTabPath = getCaseDetailPath('lawyer', caseId, {

@@ -1,13 +1,14 @@
 'use client';
 import { logger } from '@/lib/logger';
 
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
-import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
+import { Evidence } from '@/types/evidence';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import { DraftCitation } from '@/types/draft';
@@ -25,7 +26,6 @@ import { generateDraftPreview, generateLineBasedDraftPreview, DraftCitation as A
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
 import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
 import { ErrorState } from '@/components/shared/EmptyState';
-import { DraftsEmptyState } from '@/components/draft/DraftsEmptyState';
 
 /**
  * Convert API draft citation to component DraftCitation type
@@ -61,10 +61,13 @@ function isValidCaseDetailTab(value: string): value is CaseDetailTab {
   return value === 'evidence' || value === 'opponent' || value === 'timeline' || value === 'draft';
 }
 
-export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases', apiBasePath = '/lawyer' }: CaseDetailClientProps) {
+export default function CaseDetailClient({ id: paramId, defaultReturnUrl = '/lawyer/cases', apiBasePath = '/lawyer' }: CaseDetailClientProps) {
     // Issue #290: Support returnUrl for proper back navigation
     const searchParams = useSearchParams();
     const returnUrl = searchParams.get('returnUrl') || defaultReturnUrl;
+
+    // Use URL path for case ID (handles static export fallback)
+    const effectiveId = useCaseIdFromUrl(paramId);
 
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [isLoadingCase, setIsLoadingCase] = useState(true);
@@ -98,10 +101,11 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
     }, [searchParams, activeTab]);
 
     // caseId 설정 - 빈 값이면 빈 문자열 유지 (API 레벨에서 방어됨)
-    const caseId = id || '';
+    // Use effectiveId which prefers URL path over build-time params
+    const caseId = effectiveId || '';
 
     // Race condition 방어: ID가 없으면 로딩 스피너 표시 (hooks 이후에 위치해야 함)
-    const isIdMissing = !id || id.trim() === '';
+    const isIdMissing = !effectiveId || effectiveId.trim() === '';
 
     // 무한 스피너 방지: 2초 후에도 ID가 없으면 에러 상태로 전환
     useEffect(() => {
@@ -378,10 +382,10 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
     }, [caseId, isGeneratingDraft, evidenceList]);
 
     const handleDownload = async (content: string, format: DraftDownloadFormat = 'docx'): Promise<DownloadResult> => {
-        if (!id) {
+        if (!caseId) {
             return { success: false, error: '케이스 ID가 없습니다.' };
         }
-        return downloadDraftAsDocx(content, id, format);
+        return downloadDraftAsDocx(content, caseId, format);
     };
 
     const tabItems: { id: CaseDetailTab; label: string; description: string }[] = useMemo(
@@ -436,7 +440,7 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
                             <h1 className="text-xl font-bold text-secondary dark:text-gray-100">
                                 {isLoadingCase ? '로딩 중...' : caseData?.title || '사건 정보 없음'}
                             </h1>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Case ID: {id}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Case ID: {caseId}</p>
                         </div>
                     </div>
                     {caseData && (

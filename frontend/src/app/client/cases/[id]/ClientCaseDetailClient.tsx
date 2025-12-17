@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { getClientCaseDetail } from '@/lib/api/client-portal';
 import ProgressTracker from '@/components/client/ProgressTracker';
 import type { ClientCaseDetailResponse, RecentActivity } from '@/types/client-portal';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 // Activity Item Component
 function ActivityItem({
@@ -134,7 +135,9 @@ interface ClientCaseDetailClientProps {
   caseId: string;
 }
 
-export default function ClientCaseDetailClient({ caseId }: ClientCaseDetailClientProps) {
+export default function ClientCaseDetailClient({ caseId: paramCaseId }: ClientCaseDetailClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const [caseData, setCaseData] = useState<ClientCaseDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

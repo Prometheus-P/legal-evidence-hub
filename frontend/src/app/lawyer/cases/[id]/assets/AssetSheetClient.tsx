@@ -16,6 +16,7 @@ import { AssetForm, AssetTable, DivisionSummary } from '@/components/lawyer/asse
 import type { Asset as ComponentAsset, DivisionSummary as ComponentDivisionSummary } from '@/types/asset';
 import type { LegacyAsset as Asset, CreateAssetRequest } from '@/types/asset';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 type ViewMode = 'table' | 'form';
 
@@ -23,7 +24,9 @@ interface AssetSheetClientProps {
   caseId: string;
 }
 
-export default function AssetSheetClient({ caseId }: AssetSheetClientProps) {
+export default function AssetSheetClient({ caseId: paramCaseId }: AssetSheetClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const router = useRouter();
   const assetsPath = getLawyerCasePath('assets', caseId);
   const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: assetsPath });

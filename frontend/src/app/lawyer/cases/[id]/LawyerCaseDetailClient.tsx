@@ -7,7 +7,7 @@
  * Client-side component for case detail view with evidence list and AI summary.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api/client';
@@ -18,6 +18,7 @@ import { ApiCase } from '@/lib/api/cases';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PrecedentPanel } from '@/components/precedent';
 import { PartyGraph } from '@/components/party/PartyGraph';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 interface CaseDetail {
   id: string;
@@ -75,8 +76,11 @@ interface LawyerCaseDetailClientProps {
   id: string;
 }
 
-export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientProps) {
+export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetailClientProps) {
   const router = useRouter();
+
+  // Use URL path for case ID (handles static export fallback)
+  const id = useCaseIdFromUrl(paramId);
 
   // caseId 설정 - 빈 값이면 빈 문자열 유지 (API 레벨에서 방어됨)
   const caseId = id || '';

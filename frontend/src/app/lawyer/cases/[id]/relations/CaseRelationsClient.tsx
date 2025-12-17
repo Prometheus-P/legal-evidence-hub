@@ -10,12 +10,15 @@
 import Link from 'next/link';
 import { CaseRelationsGraph } from '@/components/case/CaseRelationsGraph';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
+import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 
 interface CaseRelationsClientProps {
   caseId: string;
 }
 
-export default function CaseRelationsClient({ caseId }: CaseRelationsClientProps) {
+export default function CaseRelationsClient({ caseId: paramCaseId }: CaseRelationsClientProps) {
+  // Use URL path for case ID (handles static export fallback)
+  const caseId = useCaseIdFromUrl(paramCaseId);
   const relationsPath = getLawyerCasePath('relations', caseId);
   const detailPath = getCaseDetailPath('lawyer', caseId, { returnUrl: relationsPath });
   const evidenceTabPath = getCaseDetailPath('lawyer', caseId, {
