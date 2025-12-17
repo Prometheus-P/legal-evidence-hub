@@ -152,11 +152,11 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         tracker.set_file_info(file_type=file_extension.lstrip('.'))
 
         tracker.log(f"Processing file: {object_key}", extension=file_extension)
-        print(f"DEBUG: Processing file {object_key}, ext={file_extension}")
+        logger.debug(f"Processing file {object_key}, ext={file_extension}")
 
         # 적절한 파서 선택
         parser = route_parser(file_extension)
-        print(f"DEBUG: Parser selected: {parser}")
+        logger.debug(f"Parser selected: {parser}")
         if not parser:
             tracker.record_error(
                 ErrorType.VALIDATION_ERROR,
@@ -189,9 +189,9 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
 
         try:
             # Validate file size
-            print("DEBUG: Validating file size...")
+            logger.debug("Validating file size...")
             is_valid, file_details = cost_guard.validate_file(local_path, file_type_str)
-            print(f"DEBUG: File valid: {is_valid}, details: {file_details}")
+            logger.debug(f"File valid: {is_valid}, details: {file_details}")
             tracker.log(
                 f"File validated: {file_details['file_size_mb']:.2f}MB ({file_type_str})",
                 file_size_mb=file_details['file_size_mb'],
@@ -218,9 +218,9 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # Idempotency Check - Calculate hash and check duplicates
         # ============================================
         with tracker.stage(ProcessingStage.HASH) as stage:
-            print("DEBUG: Calculating hash...")
+            logger.debug("Calculating hash...")
             file_hash = calculate_file_hash(local_path)
-            print(f"DEBUG: Hash: {file_hash}")
+            logger.debug(f"Hash: {file_hash}")
         # Initialize metadata store for idempotency checks
         metadata_store = MetadataStore()
 

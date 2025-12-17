@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, require_role
+from app.core.error_messages import ErrorMessages
 from app.services.client_portal_service import ClientPortalService
 from app.schemas.client_portal import (
     ClientDashboardResponse,
@@ -52,7 +53,7 @@ async def get_client_dashboard(
         logger.warning(f"Client dashboard not found for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="의뢰인 대시보드를 찾을 수 없습니다"
+            detail=ErrorMessages.CLIENT_DASHBOARD_NOT_FOUND
         )
 
 
@@ -106,7 +107,7 @@ async def get_client_case_detail(
         logger.warning(f"Case detail not found for user {user_id}, case {case_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 
@@ -206,7 +207,7 @@ async def confirm_evidence_upload(
             logger.warning(f"Evidence not found for confirmation: {evidence_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="증거를 찾을 수 없습니다"
+                detail=ErrorMessages.EVIDENCE_NOT_FOUND
             )
         logger.warning(f"Evidence confirmation failed: {evidence_id}: {e}")
         raise HTTPException(

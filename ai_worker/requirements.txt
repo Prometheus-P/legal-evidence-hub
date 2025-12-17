@@ -4,14 +4,13 @@
 # Core Dependencies
 python-dotenv>=1.0.0
 pydantic>=2.5.0
+requests>=2.31.0               # HTTP client for Backend API
 
 # AWS SDKs
 boto3>=1.34                    # S3, DynamoDB, Lambda
 qdrant-client>=1.7.0           # Qdrant vector database for RAG
-redis>=5.0                     # Cache/Session management
 
 # AI & LLM
-langchain>=0.1.0               # LLM orchestration
 openai>=1.14.0                 # GPT-4o, Whisper, Vision, Embedding
 
 # PDF Parsing

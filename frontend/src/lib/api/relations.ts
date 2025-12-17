@@ -42,14 +42,15 @@ export async function deleteParty(caseId: string, partyId: string): Promise<void
 }
 
 // ============ Relations API ============
+// NOTE: Backend uses /relationships endpoint (not /relations)
 
 export async function getRelations(caseId: string): Promise<Relation[]> {
-  const response = await apiClient.get<Relation[]>(`/cases/${caseId}/relations`);
+  const response = await apiClient.get<Relation[]>(`/cases/${caseId}/relationships`);
   return response.data ?? [];
 }
 
 export async function createRelation(caseId: string, data: CreateRelationRequest): Promise<Relation> {
-  const response = await apiClient.post<Relation>(`/cases/${caseId}/relations`, data);
+  const response = await apiClient.post<Relation>(`/cases/${caseId}/relationships`, data);
   if (!response.data) throw new Error('Failed to create relation');
   return response.data;
 }
@@ -59,13 +60,13 @@ export async function updateRelation(
   relationId: string,
   data: Partial<CreateRelationRequest>
 ): Promise<Relation> {
-  const response = await apiClient.put<Relation>(`/cases/${caseId}/relations/${relationId}`, data);
+  const response = await apiClient.put<Relation>(`/cases/${caseId}/relationships/${relationId}`, data);
   if (!response.data) throw new Error('Failed to update relation');
   return response.data;
 }
 
 export async function deleteRelation(caseId: string, relationId: string): Promise<void> {
-  await apiClient.delete(`/cases/${caseId}/relations/${relationId}`);
+  await apiClient.delete(`/cases/${caseId}/relationships/${relationId}`);
 }
 
 // ============ Combined Graph Data ============

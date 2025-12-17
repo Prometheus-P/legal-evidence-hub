@@ -72,6 +72,18 @@ const RELATIONSHIP_STYLES: Record<RelationshipType, {
     strokeWidth: 2,
     label: '🏠',
   },
+  relative: {
+    stroke: '#94A3B8', // slate-400
+    strokeDasharray: '2,2',
+    strokeWidth: 1,
+    label: '👨‍👩‍👦',
+  },
+  other: {
+    stroke: '#CBD5E1', // slate-300
+    strokeDasharray: '4,4',
+    strokeWidth: 1,
+    label: '🔗',
+  },
 };
 
 function PartyEdgeComponent({

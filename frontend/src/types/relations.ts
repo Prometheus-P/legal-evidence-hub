@@ -1,6 +1,12 @@
 /**
  * Types for Case Relations Graph
  * 009-calm-control-design-system - React Flow Integration
+ *
+ * NOTE: This file is maintained separately from @/types/party.ts due to
+ * structural differences (position_x/y vs position object, relation_type vs type).
+ * For new components, prefer using @/types/party.ts with PartyNode/PartyRelationship.
+ *
+ * @see @/types/party.ts - Primary party/relationship types (007-lawyer-portal-v1)
  */
 
 // Party (Node) Types

@@ -16,7 +16,9 @@ export type RelationshipType =
   | 'parent_child'
   | 'sibling'
   | 'in_law'
-  | 'cohabit';
+  | 'cohabit'
+  | 'relative'
+  | 'other';
 
 export type LinkType = 'mentions' | 'proves' | 'involves' | 'contradicts';
 
@@ -137,6 +139,8 @@ export const RELATIONSHIP_TYPE_LABELS: Record<RelationshipType, string> = {
   sibling: '형제자매',
   in_law: '인척',
   cohabit: '동거',
+  relative: '친척',
+  other: '기타',
 };
 
 export const LINK_TYPE_LABELS: Record<LinkType, string> = {

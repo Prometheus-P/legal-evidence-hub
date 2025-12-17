@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, require_role
+from app.core.error_messages import ErrorMessages
 from app.services.detective_portal_service import DetectivePortalService
 from app.services.audit_service import AuditLogService
 from app.schemas.detective_portal import (
@@ -57,7 +58,7 @@ async def get_detective_dashboard(
         logger.warning(f"Dashboard not found for user {user_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="탐정 대시보드를 찾을 수 없습니다"
+            detail=ErrorMessages.DETECTIVE_DASHBOARD_NOT_FOUND
         )
 
 
@@ -115,7 +116,7 @@ async def get_detective_case_detail(
         logger.warning(f"Case not found: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 
@@ -156,7 +157,7 @@ async def accept_case(
         logger.warning(f"Case accept failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 
@@ -197,7 +198,7 @@ async def reject_case(
         logger.warning(f"Case reject failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 
@@ -253,7 +254,7 @@ async def create_field_record(
         logger.warning(f"Field record create failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 
@@ -306,7 +307,7 @@ async def submit_report(
         logger.warning(f"Report submit failed: {case_id}, error: {e}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="사건을 찾을 수 없습니다"
+            detail=ErrorMessages.CASE_NOT_FOUND
         )
 
 

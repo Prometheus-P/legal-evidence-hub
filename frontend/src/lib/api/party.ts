@@ -183,3 +183,29 @@ export async function getPartyGraph(caseId: string): Promise<PartyGraphData> {
   }
   return response.data;
 }
+
+// ============================================================
+// Batch Position Update
+// ============================================================
+
+interface PositionUpdate {
+  id: string;
+  position: { x: number; y: number };
+}
+
+/**
+ * Update multiple party positions in a single request
+ * Used for persisting React Flow node positions
+ */
+export async function updatePartyPositions(
+  caseId: string,
+  positions: PositionUpdate[]
+): Promise<void> {
+  const response = await apiClient.put(
+    `/cases/${caseId}/parties/positions`,
+    { positions }
+  );
+  if (response.error) {
+    throw new Error(response.error || '위치 저장에 실패했습니다.');
+  }
+}

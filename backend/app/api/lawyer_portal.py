@@ -16,6 +16,7 @@ from typing import List, Optional
 from app.db.session import get_db
 from app.db.models import User
 from app.core.dependencies import require_internal_user
+from app.core.error_messages import ErrorMessages
 from app.services.lawyer_dashboard_service import LawyerDashboardService
 from app.services.case_list_service import CaseListService
 from app.schemas.lawyer_dashboard import (
@@ -164,7 +165,7 @@ def get_case_detail(
     if not result:
         raise HTTPException(
             status_code=404,
-            detail="케이스를 찾을 수 없거나 접근 권한이 없습니다."
+            detail=ErrorMessages.CASE_NOT_FOUND_OR_NO_ACCESS
         )
 
     return result

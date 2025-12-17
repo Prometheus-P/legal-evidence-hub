@@ -10,6 +10,7 @@ from typing import Optional
 
 from app.db.session import get_db
 from app.core.dependencies import get_current_user_id
+from app.core.error_messages import ErrorMessages
 from app.services.search_service import SearchService
 from app.utils.qdrant import search_evidence_by_semantic
 from app.repositories.case_repository import CaseRepository
@@ -142,7 +143,7 @@ async def semantic_search(
     if not case_repo.is_user_member_of_case(user_id, case_id):
         raise HTTPException(
             status_code=403,
-            detail="이 케이스에 접근 권한이 없습니다."
+            detail=ErrorMessages.CASE_PERMISSION_DENIED
         )
 
     # Build filters if labels provided

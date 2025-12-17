@@ -26,6 +26,7 @@ from app.db.schemas import (
 )
 from app.services.evidence_service import EvidenceService
 from app.core.dependencies import get_current_user_id
+from app.core.error_messages import ErrorMessages
 from app.middleware import NotFoundError, PermissionError
 
 logger = logging.getLogger(__name__)
@@ -203,7 +204,7 @@ def get_evidence_status(
         return EvidenceStatusResponse(**result)
     except NotFoundError as e:
         logger.warning(f"Evidence not found: {evidence_id}: {e}")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="증거를 찾을 수 없습니다")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ErrorMessages.EVIDENCE_NOT_FOUND)
     except PermissionError as e:
         logger.warning(f"Permission denied for evidence {evidence_id}: {e}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="증거에 접근할 권한이 없습니다")
@@ -250,7 +251,7 @@ def retry_evidence_processing(
         return RetryResponse(**result)
     except NotFoundError as e:
         logger.warning(f"Evidence not found for retry: {evidence_id}: {e}")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="증거를 찾을 수 없습니다")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ErrorMessages.EVIDENCE_NOT_FOUND)
     except PermissionError as e:
         logger.warning(f"Permission denied for evidence retry {evidence_id}: {e}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="증거에 접근할 권한이 없습니다")
