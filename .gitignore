@@ -1,169 +1,168 @@
-# ================================
-#   🚨 Paralegal (LEH) – SECURITY FIRST
-#   GitHub 업로드 금지 파일 총정리
-# ================================
+# ==============================================================================
+# LEH Project - HYBRID .gitignore
+# Security First + Project Specific + Optimized Defaults
+# ==============================================================================
 
-###################################
-# 1. Python (Backend – FastAPI)
-###################################
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-*.spec
-
-# 가상환경
-venv/
-env/
-.venv/
-.python-version
-
-# 로컬 실행 로그
-*.log
-logs/
-tmp/
-temp/
-
-# 모델 캐시, 임시 파일
-*.pickle
-*.pkl
-*.pt
-*.bin
-*.cache/
-
-
-###################################
-# 2. AI Worker / LLM 파이프라인
-###################################
-ai_worker/storage/
-ai_worker/.cache/
-ai_worker/workflows/local_debug/
-ai_worker/workflows/*.tmp
-workspace/
-rag_cache/
-vector_index/
-
-# OpenAI / Anthropic 임시 키
-*.api_key
-*.token
-
-
-###################################
-# 3. 환경 변수 파일 – 민감 정보 보호
-###################################
-# 템플릿은 허용(.env.example)
+# ==============================================================================
+# 1. SECURITY & CREDENTIALS (ABSOLUTE BLOCK)
+# ==============================================================================
 .env
 .env.*
 !.env.example
-
-*.secrets
-secrets.json
-secret.yaml
-secret.key
-credentials/
-config/secret/
+!.env.production
+!frontend/.env.production
 *.pem
 *.key
+*.cert
 *.crt
+*.p12
+secrets.json
+credentials.json
+*.api_key
+*.token
 
-
-###################################
-# 4. Frontend (Next.js / Node)
-###################################
-node_modules/
-.next/
-dist/
-build/
-out/
-.npm
-.pnpm-store/
-yarn-error.log
-npm-debug.log
-*.lock
-
-
-###################################
-# 5. OS & IDE 설정 – 개발자 환경 파일
-###################################
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-.fleet/
-*.swp
-*.swo
-*.orig
-
-
-###################################
-# 6. AWS / Terraform / Infra 보안
-###################################
-# AWS credential files
+# AWS / Cloud Configs
 .aws/
 ~/.aws/
-
-# Terraform sensitive
 *.tfvars
-*.tfstate
-*.tfstate.*
-crash.log
-terraform.tfstate
-terraform.tfstate.backup
 
-# CDK
-cdk.out/
+# ==============================================================================
+# 2. PYTHON (Backend & AI Worker)
+# ==============================================================================
+# Byte-compiled / Optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
 
-# CloudFormation temp
-*.template.json
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+.python-version
 
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
 
-###################################
-# 7. Docker
-###################################
-docker-compose.override.yml
+# Unit Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+coverage/
+
+# Linter / Type Checker Cache
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ==============================================================================
+# 3. NODE.JS & NEXT.JS (Frontend)
+# ==============================================================================
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js Build Output
+.next/
+out/
+
+# Playwright Test Output
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Debug Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================================================================
+# 4. IDE & EDITOR (Collaboration Friendly)
+# ==============================================================================
+# VS Code - Ignore personal settings, allow shared configs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains (IntelliJ, PyCharm)
+.idea/
+
+# Fleet
+.fleet/
+
+# Vim / Emacs / OS
+*~
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==============================================================================
+# 5. PROJECT SPECIFIC (LEH)
+# ==============================================================================
+# AI Worker Data & Temp
+ai_worker/data/
+ai_worker/temp/
+ai_worker/.cache/
+ai_worker/**/storage/*.db
+ai_worker/**/storage/*.sqlite3
+ai_worker/**/storage/data/
+ai_worker/workflows/local_debug/
+
+# Evidence Files (Raw uploads)
+evidence_raw/
+uploads/
+
+# Docker
 docker-data/
 *.pid
 *.sock
 
-
-###################################
-# 8. Database / Storage / Evidence Files
-###################################
-# 법률 증거 파일 무조건 제외
-evidence/
-evidence_raw/
-uploads/
-storage/
-documents_tmp/
-pdf_tmp/
-tmp_exports/
-*.pdf
-*.docx
-*.xlsx
-*.pptx
-*.zip
-
-# SQLite (local test)
-*.db
-*.sqlite3
-
-
-###################################
-# 9. Logs, Reports, Debug Dumps
-###################################
+# Logs & Temp Files
 *.log
-debug.log
-error.log
-*.dump
-*.bak
-
-
-###################################
-# 10. Misc – 민감한 개발 산출물
-###################################
-*.bak
+logs/
+tmp/
+temp/
 *.tmp
-*.old
-*.backup
+
+# ==============================================================================
+# 6. DATABASE & BINARY FILES
+# ==============================================================================
+# Databases
+*.sqlite3
+*.db
+*.dump
+
+# PDF (exclude from repo, docs should use markdown)
+*.pdf
+
+# ==============================================================================
+# 7. PERSONAL & LOCAL FILES
+# ==============================================================================
+# Personal CLAUDE.md (prevent accidental commits)
+/CLAUDE.md
+/claude.md
+AGENTS.md
+docs/guides/CLAUDE.md
+docs/guides/claude.md
+
+# Personal configuration directories
+.claude/*
+!.claude/commands/
+.specify/
+.agent/
+.local/

@@ -1,0 +1,553 @@
+"""
+Cases API endpoints
+POST /cases - Create new case
+GET /cases - List cases for current user
+GET /cases/{id} - Get case detail
+PATCH /cases/{id} - Update case
+DELETE /cases/{id} - Soft delete case
+GET /cases/{id}/evidence - List evidence for a case
+POST /cases/{id}/draft-preview - Generate draft preview (hierarchical)
+POST /cases/{id}/draft-preview-lines - Generate line-based draft preview
+GET /cases/{id}/draft-export - Export draft as DOCX/PDF
+PATCH /cases/{id}/evidence/{eid}/review - Review client-uploaded evidence
+"""
+
+from fastapi import APIRouter, Depends, status, Query
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+from typing import List, Optional
+
+from app.db.session import get_db
+from app.db.schemas import (
+    CaseCreate,
+    CaseUpdate,
+    CaseOut,
+    EvidenceSummary,  # noqa: F401 - used internally by EvidenceListResponse
+    EvidenceListResponse,
+    DraftPreviewRequest,
+    DraftPreviewResponse,
+    DraftExportFormat,
+    Article840Category,
+    AddCaseMembersRequest,
+    CaseMembersListResponse,
+    EvidenceReviewRequest,
+    EvidenceReviewResponse,
+    LineBasedDraftRequest,
+    LineBasedDraftResponse
+)
+from app.services.case_service import CaseService
+from app.services.evidence_service import EvidenceService
+from app.services.draft_service import DraftService
+from app.core.dependencies import (
+    require_internal_user,
+    require_lawyer_or_admin,
+    verify_case_read_access,
+    verify_case_write_access
+)
+from app.db.models import User
+
+
+router = APIRouter()
+
+
+@router.post("", response_model=CaseOut, status_code=status.HTTP_201_CREATED)
+def create_case(
+    case_data: CaseCreate,
+    current_user: User = Depends(require_internal_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new case
+
+    **Request Body:**
+    - title: Case title (required)
+    - description: Case description (optional)
+
+    **Response:**
+    - 201: Case created successfully
+    - id, title, description, status, created_by, created_at
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only internal users (lawyer, staff, admin) can create cases
+    - Creator is automatically added as case owner
+
+    **Role Restrictions:**
+    - LAWYER, STAFF, ADMIN: Can create cases
+    - CLIENT, DETECTIVE: Cannot create cases (403 Forbidden)
+    """
+    case_service = CaseService(db)
+    return case_service.create_case(case_data, current_user.id)
+
+
+@router.get("", response_model=List[CaseOut])
+def list_cases(
+    current_user: User = Depends(require_internal_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List all cases accessible by current user
+
+    **Response:**
+    - 200: List of cases (may be empty)
+    - Only returns cases where user is a member (owner, member, or viewer)
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only internal users (lawyer, staff, admin) can access this endpoint
+
+    **Role Restrictions:**
+    - LAWYER, STAFF, ADMIN: Can list cases
+    - CLIENT, DETECTIVE: Must use their portal-specific endpoints (403 Forbidden)
+    """
+    case_service = CaseService(db)
+    return case_service.get_cases_for_user(current_user.id)
+
+
+@router.get("/{case_id}", response_model=CaseOut)
+def get_case(
+    case_id: str,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Get case detail by ID
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Response:**
+    - 200: Case detail
+    - 403: User does not have access to this case
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+    """
+    case_service = CaseService(db)
+    return case_service.get_case_by_id(case_id, user_id)
+
+
+@router.patch("/{case_id}", response_model=CaseOut)
+def update_case(
+    case_id: str,
+    update_data: CaseUpdate,
+    user_id: str = Depends(verify_case_write_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Update case title and/or description
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Request Body:**
+    - title: New case title (optional)
+    - description: New case description (optional)
+
+    **Response:**
+    - 200: Updated case data
+    - 403: User does not have write permission
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be case owner or member with read_write permission
+    """
+    case_service = CaseService(db)
+    return case_service.update_case(case_id, update_data, user_id)
+
+
+@router.get("/{case_id}/evidence", response_model=EvidenceListResponse)
+def list_case_evidence(
+    case_id: str,
+    categories: Optional[List[Article840Category]] = Query(None, description="Filter by Article 840 categories"),
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Get list of all evidence for a case
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Query Parameters:**
+    - categories: Filter by Article 840 categories (optional, multiple allowed)
+      - adultery: 배우자의 부정행위
+      - desertion: 악의의 유기
+      - mistreatment_by_inlaws: 배우자 직계존속의 부당대우
+      - harm_to_own_parents: 자기 직계존속 피해
+      - unknown_whereabouts: 생사불명 3년
+      - irreconcilable_differences: 혼인 지속 곤란사유
+      - general: 일반 증거
+
+    **Response:**
+    - 200: Evidence list with total count
+    - evidence: List of evidence summary
+    - total: Total number of evidence items
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+
+    **Notes:**
+    - Returns evidence in reverse chronological order (newest first)
+    - Only returns metadata, not full file content
+    - AI analysis results (including article_840_tags) available when status="done"
+    - Filtering by categories returns only evidence tagged with at least one of the specified categories
+    """
+    evidence_service = EvidenceService(db)
+    evidence_list = evidence_service.get_evidence_list(case_id, user_id, categories=categories)
+    return EvidenceListResponse(evidence=evidence_list, total=len(evidence_list))
+
+
+@router.post("/{case_id}/draft-preview", response_model=DraftPreviewResponse)
+def generate_draft_preview(
+    case_id: str,
+    request: DraftPreviewRequest,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate draft preview using RAG + GPT-4o
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Request Body:**
+    - sections: List of sections to generate (default: ["청구취지", "청구원인"])
+    - language: Language code (default: "ko")
+    - style: Writing style (default: "법원 제출용_표준")
+
+    **Response:**
+    - 200: Draft preview generated successfully
+    - draft_text: Generated draft text
+    - citations: List of evidence citations used
+    - generated_at: Timestamp of generation
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+
+    **Process:**
+    1. Retrieve evidence metadata from DynamoDB
+    2. Perform semantic search in Qdrant (RAG)
+    3. Build GPT-4o prompt with RAG context
+    4. Generate draft text
+    5. Extract citations
+
+    **Important:**
+    - This is a PREVIEW ONLY - not auto-submitted
+    - Requires lawyer review and approval
+    - Based on AI analysis of evidence
+    - May require manual editing
+    """
+    draft_service = DraftService(db)
+    return draft_service.generate_draft_preview(case_id, request, user_id)
+
+
+@router.post("/{case_id}/draft-preview-lines", response_model=LineBasedDraftResponse)
+def generate_line_based_draft_preview(
+    case_id: str,
+    request: LineBasedDraftRequest,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    라인 기반 JSON 템플릿을 사용한 초안 생성
+
+    **Path Parameters:**
+    - case_id: 사건 ID
+
+    **Request Body:**
+    - template_type: 템플릿 타입 (기본값: "이혼소장_라인")
+    - case_data: 플레이스홀더에 채울 데이터
+      - 원고이름, 피고이름, 원고주민번호, 피고주민번호 등
+      - has_children: true/false (자녀 관련 섹션 포함 여부)
+      - has_alimony: true/false (위자료 관련 섹션 포함 여부)
+
+    **Response:**
+    - 200: 라인 기반 초안 생성 성공
+    - lines: 각 라인의 텍스트와 포맷 정보
+    - text_preview: 렌더링된 텍스트 미리보기
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case or template not found
+
+    **Features:**
+    - 법원 공식 양식 기반 정확한 레이아웃
+    - 플레이스홀더 자동 치환
+    - 조건부 섹션 (자녀, 위자료 등)
+    - AI 생성 콘텐츠 (청구원인 등)
+
+    **Important:**
+    - 미리보기 전용 - 자동 제출되지 않음
+    - 변호사 검토 필수
+    """
+    from datetime import datetime, timezone
+
+    draft_service = DraftService(db)
+
+    # 라인 기반 초안 생성
+    result = draft_service.generate_line_based_draft(
+        case_id=case_id,
+        user_id=user_id,
+        case_data=request.case_data,
+        template_type=request.template_type
+    )
+
+    # 텍스트 미리보기 렌더링
+    text_preview = draft_service.render_lines_to_text(result.get("lines", []))
+
+    return LineBasedDraftResponse(
+        case_id=case_id,
+        template_type=result.get("template_type", request.template_type),
+        generated_at=datetime.fromisoformat(result.get("generated_at", datetime.now(timezone.utc).isoformat())),
+        lines=result.get("lines", []),
+        text_preview=text_preview
+    )
+
+
+@router.get("/{case_id}/draft-export")
+def export_draft(
+    case_id: str,
+    format: DraftExportFormat = Query(DraftExportFormat.DOCX, description="Export format (docx or pdf)"),
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Export draft as DOCX or PDF file
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Query Parameters:**
+    - format: Export format - "docx" (default) or "pdf"
+
+    **Response:**
+    - 200: File download (StreamingResponse)
+    - Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document (DOCX)
+                   or application/pdf (PDF)
+    - Content-Disposition: attachment; filename="draft_*.docx"
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+    - 422: Missing dependencies (python-docx or reportlab)
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+
+    **Process:**
+    1. Generate draft preview using RAG + GPT-4o
+    2. Convert to requested format (DOCX or PDF)
+    3. Return as downloadable file
+
+    **Dependencies:**
+    - DOCX export requires: pip install python-docx
+    - PDF export requires: pip install reportlab
+
+    **Important:**
+    - This generates a fresh draft at export time
+    - For consistent exports, use the same case evidence
+    - Large cases may take longer to generate
+    """
+    draft_service = DraftService(db)
+    file_buffer, filename, content_type = draft_service.export_draft(
+        case_id=case_id,
+        user_id=user_id,
+        export_format=format
+    )
+
+    return StreamingResponse(
+        file_buffer,
+        media_type=content_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
+
+@router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_case(
+    case_id: str,
+    permanent: bool = Query(False, description="Permanently delete (hard delete)"),
+    user_id: str = Depends(verify_case_write_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a case (soft or hard delete)
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Query Parameters:**
+    - permanent: If true, permanently delete (hard delete). Default: false (soft delete)
+
+    **Response:**
+    - 204: Case deleted successfully (no content)
+    - 403: User is not the case owner
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only case owner can delete the case
+
+    **Note:**
+    - Soft delete (default): Case status is set to "closed"
+    - Hard delete (permanent=true): Case is permanently removed from database
+    - Both options delete Qdrant collection and DynamoDB evidence
+    """
+    case_service = CaseService(db)
+    if permanent:
+        case_service.hard_delete_case(case_id, user_id)
+    else:
+        case_service.delete_case(case_id, user_id)
+    return None
+
+
+@router.post("/{case_id}/members", response_model=CaseMembersListResponse, status_code=status.HTTP_201_CREATED)
+def add_case_members(
+    case_id: str,
+    request: AddCaseMembersRequest,
+    user_id: str = Depends(verify_case_write_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Add members to a case
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Request Body:**
+    - members: List of members to add
+      - user_id: User ID to add
+      - permission: Permission level (read or read_write)
+
+    **Response:**
+    - 201: Members added successfully
+    - Returns updated list of all case members
+    - Each member includes: user_id, name, email, permission, role
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User is not case owner or admin
+    - 404: Case not found or user not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only case owner or admin can add members
+
+    **Permission Mapping:**
+    - read: Viewer role (can only view)
+    - read_write: Member role (can view and edit)
+
+    **Notes:**
+    - Multiple members can be added in a single request
+    - If member already exists, their permission will be updated
+    - Case owner always has read_write permission
+    """
+    case_service = CaseService(db)
+    return case_service.add_case_members(case_id, request.members, user_id)
+
+
+@router.get("/{case_id}/members", response_model=CaseMembersListResponse, status_code=status.HTTP_200_OK)
+def get_case_members(
+    case_id: str,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all members of a case
+
+    **Path Parameters:**
+    - case_id: Case ID
+
+    **Response:**
+    - 200: List of case members
+    - Each member includes: user_id, name, email, permission, role
+    - total: Total number of members
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Case not found
+
+    **Authentication:**
+    - Requires valid JWT token
+    - User must be a member of the case
+
+    **Permission Levels:**
+    - read: Viewer role (can only view)
+    - read_write: Member/Owner role (can view and edit)
+
+    **Notes:**
+    - Returns all members including owner
+    - Owner's permission is always read_write
+    """
+    case_service = CaseService(db)
+    return case_service.get_case_members(case_id, user_id)
+
+
+@router.patch("/{case_id}/evidence/{evidence_id}/review", response_model=EvidenceReviewResponse, status_code=status.HTTP_200_OK)
+def review_evidence(
+    case_id: str,
+    evidence_id: str,
+    request: EvidenceReviewRequest,
+    _: str = Depends(verify_case_write_access),  # Case permission check
+    current_user: User = Depends(require_lawyer_or_admin),
+    db: Session = Depends(get_db)
+):
+    """
+    Review client-uploaded evidence (approve or reject)
+
+    **Path Parameters:**
+    - case_id: Case ID
+    - evidence_id: Evidence ID to review
+
+    **Request Body:**
+    - action: "approve" or "reject"
+    - comment: Optional review comment
+
+    **Response:**
+    - 200: Evidence reviewed successfully
+    - evidence_id, case_id, review_status, reviewed_by, reviewed_at, comment
+
+    **Errors:**
+    - 401: Not authenticated
+    - 403: User is not lawyer/admin or doesn't have case access
+    - 404: Case or evidence not found
+    - 400: Evidence is not in pending_review state
+
+    **Authentication:**
+    - Requires valid JWT token
+    - Only lawyer or admin can review evidence
+
+    **Notes:**
+    - Only evidence with review_status='pending_review' can be reviewed
+    - Approved evidence will be processed by AI Worker
+    - Rejected evidence will be marked but not processed
+    """
+    evidence_service = EvidenceService(db)
+    return evidence_service.review_evidence(
+        case_id=case_id,
+        evidence_id=evidence_id,
+        reviewer_id=current_user.id,
+        action=request.action,
+        comment=request.comment
+    )

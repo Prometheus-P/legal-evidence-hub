@@ -1,0 +1,418 @@
+openapi: 3.0.3
+info:
+  title: Staff Progress API
+  description: API for paralegal progress dashboard - case throughput monitoring and mid-demo feedback tracking
+  version: 1.0.0
+  contact:
+    name: LEH Team
+
+servers:
+  - url: /api/v1
+    description: Backend API
+
+tags:
+  - name: Staff Progress
+    description: Progress dashboard endpoints for paralegals and lawyers
+
+paths:
+  /staff/progress:
+    get:
+      operationId: getStaffProgress
+      summary: Get case progress summaries for staff dashboard
+      description: |
+        Returns aggregated case progress data for the authenticated user.
+        - Paralegals see only their assigned cases
+        - Lawyers see all cases they have access to
+        - Supports filtering by blocked status, assignee, and case status
+      tags:
+        - Staff Progress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: blocked
+          in: query
+          description: Filter to show only blocked cases
+          schema:
+            type: boolean
+        - name: assignee_id
+          in: query
+          description: Filter by assigned paralegal user ID
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by case status
+          schema:
+            $ref: '#/components/schemas/CaseStatus'
+        - name: search
+          in: query
+          description: Search by case title or client name
+          schema:
+            type: string
+            maxLength: 100
+        - name: limit
+          in: query
+          description: Number of results per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Pagination offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /staff/progress/{case_id}/feedback:
+    get:
+      operationId: getCaseFeedback
+      summary: Get feedback checklist for a specific case
+      description: Returns the 16 mid-demo feedback items with completion status for the specified case
+      tags:
+        - Staff Progress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          description: Case UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      operationId: updateCaseFeedback
+      summary: Update feedback item status
+      description: Mark a feedback item as complete or reopen it
+      tags:
+        - Staff Progress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackUpdateRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackChecklistItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CaseStatus:
+      type: string
+      enum:
+        - OPEN
+        - IN_PROGRESS
+        - REVIEW
+        - CLOSED
+
+    AIStatus:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - DRAFT_READY
+        - FAILED
+
+    BlockedReason:
+      type: string
+      enum:
+        - MISSING_EVIDENCE
+        - AI_FAILURE
+        - PENDING_FEEDBACK
+        - CLIENT_WAITING
+
+    ChecklistStatus:
+      type: string
+      enum:
+        - pending
+        - done
+
+    EvidenceCounts:
+      type: object
+      required:
+        - uploaded
+        - in_processing
+        - ai_ready
+      properties:
+        uploaded:
+          type: integer
+          minimum: 0
+          description: Total uploaded evidence files
+        in_processing:
+          type: integer
+          minimum: 0
+          description: Files currently being processed by AI Worker
+        ai_ready:
+          type: integer
+          minimum: 0
+          description: Files with completed AI analysis
+
+    CaseProgressSummary:
+      type: object
+      required:
+        - case_id
+        - title
+        - client_name
+        - status
+        - assigned_paralegal_id
+        - assigned_paralegal_name
+        - evidence_counts
+        - ai_status
+        - is_blocked
+        - outstanding_feedback_count
+        - last_updated_at
+      properties:
+        case_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 200
+        client_name:
+          type: string
+          maxLength: 100
+        status:
+          $ref: '#/components/schemas/CaseStatus'
+        assigned_paralegal_id:
+          type: string
+          format: uuid
+        assigned_paralegal_name:
+          type: string
+          maxLength: 100
+        evidence_counts:
+          $ref: '#/components/schemas/EvidenceCounts'
+        ai_status:
+          $ref: '#/components/schemas/AIStatus'
+        is_blocked:
+          type: boolean
+        blocked_reason:
+          $ref: '#/components/schemas/BlockedReason'
+        outstanding_feedback_count:
+          type: integer
+          minimum: 0
+          maximum: 16
+        feedback_last_updated:
+          type: string
+          format: date-time
+          nullable: true
+        last_updated_at:
+          type: string
+          format: date-time
+
+    FeedbackChecklistItem:
+      type: object
+      required:
+        - item_id
+        - case_id
+        - title
+        - description
+        - status
+        - owner
+      properties:
+        item_id:
+          type: string
+          pattern: '^fbk-\d+$'
+          example: 'fbk-1'
+        case_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 200
+        status:
+          $ref: '#/components/schemas/ChecklistStatus'
+        owner:
+          type: string
+          description: Team responsible (Eng, AI, Ops, CS, Product, Research)
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+        notes:
+          type: string
+          maxLength: 500
+          nullable: true
+
+    ProgressListResponse:
+      type: object
+      required:
+        - items
+        - total_count
+        - limit
+        - offset
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseProgressSummary'
+        total_count:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    FeedbackListResponse:
+      type: object
+      required:
+        - case_id
+        - items
+        - completed_count
+        - pending_count
+      properties:
+        case_id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeedbackChecklistItem'
+          maxItems: 16
+        completed_count:
+          type: integer
+          minimum: 0
+          maximum: 16
+        pending_count:
+          type: integer
+          minimum: 0
+          maximum: 16
+
+    FeedbackUpdateRequest:
+      type: object
+      required:
+        - item_id
+        - status
+      properties:
+        item_id:
+          type: string
+          pattern: '^fbk-\d+$'
+        status:
+          $ref: '#/components/schemas/ChecklistStatus'
+        notes:
+          type: string
+          maxLength: 500
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - status_code
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Not authenticated"
+            status_code: 401
+
+    Forbidden:
+      description: Access denied - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Not authorized to access this case"
+            status_code: 403
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Case not found"
+            status_code: 404
+
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Invalid item_id format"
+            status_code: 400
+
+    InternalError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            detail: "Internal server error"
+            status_code: 500

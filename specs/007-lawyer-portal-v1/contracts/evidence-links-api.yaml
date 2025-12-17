@@ -1,0 +1,334 @@
+openapi: 3.1.0
+info:
+  title: LEH Evidence-Party Links API
+  description: API for linking evidence to parties, relationships, and assets
+  version: 1.0.0
+  contact:
+    name: LEH Development Team
+
+servers:
+  - url: /api/v1
+    description: API base path
+
+paths:
+  /evidence/{evidence_id}/links:
+    get:
+      summary: Get all links for an evidence
+      description: Retrieve all party/relationship/asset links for a specific evidence
+      operationId: getEvidenceLinks
+      tags:
+        - Evidence Links
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Evidence identifier (DynamoDB evidence_id)
+      responses:
+        '200':
+          description: List of evidence links
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EvidenceLink'
+                  total:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create an evidence link
+      description: Link evidence to a party, relationship, or asset
+      operationId: createEvidenceLink
+      tags:
+        - Evidence Links
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceLinkCreate'
+      responses:
+        '201':
+          description: Evidence link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceLink'
+        '400':
+          description: Invalid request (e.g., no target specified)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /evidence/{evidence_id}/links/{link_id}:
+    delete:
+      summary: Delete an evidence link
+      operationId: deleteEvidenceLink
+      tags:
+        - Evidence Links
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: link_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Evidence link deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/parties/{party_id}/evidence:
+    get:
+      summary: Get evidence linked to a party
+      description: Retrieve all evidence linked to a specific party
+      operationId: getPartyEvidence
+      tags:
+        - Evidence Links
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: party_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: link_type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/LinkType'
+      responses:
+        '200':
+          description: List of linked evidence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkedEvidence'
+                  total:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/relationships/{relationship_id}/evidence:
+    get:
+      summary: Get evidence linked to a relationship
+      description: Retrieve all evidence that proves or mentions a relationship
+      operationId: getRelationshipEvidence
+      tags:
+        - Evidence Links
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: relationship_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of linked evidence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LinkedEvidence'
+                  total:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    LinkType:
+      type: string
+      enum:
+        - mentions
+        - proves
+        - involves
+        - contradicts
+      description: |
+        - mentions: 언급 (약한 연결)
+        - proves: 증명 (강한 연결, 법적 증거력)
+        - involves: 관련 (일반적 연결)
+        - contradicts: 반박 (상반되는 증거)
+
+    EvidenceLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        evidence_id:
+          type: string
+          description: DynamoDB evidence_id
+        party_id:
+          type: string
+          format: uuid
+          nullable: true
+        relationship_id:
+          type: string
+          format: uuid
+          nullable: true
+        asset_id:
+          type: string
+          format: uuid
+          nullable: true
+        link_type:
+          $ref: '#/components/schemas/LinkType'
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - case_id
+        - evidence_id
+        - link_type
+        - created_at
+
+    EvidenceLinkCreate:
+      type: object
+      properties:
+        case_id:
+          type: string
+          format: uuid
+          description: Case identifier (required)
+        party_id:
+          type: string
+          format: uuid
+          description: Target party ID (at least one target required)
+        relationship_id:
+          type: string
+          format: uuid
+          description: Target relationship ID
+        asset_id:
+          type: string
+          format: uuid
+          description: Target asset ID
+        link_type:
+          $ref: '#/components/schemas/LinkType'
+      required:
+        - case_id
+        - link_type
+
+    LinkedEvidence:
+      type: object
+      description: Evidence with link metadata
+      properties:
+        evidence_id:
+          type: string
+        link_id:
+          type: string
+          format: uuid
+        link_type:
+          $ref: '#/components/schemas/LinkType'
+        type:
+          type: string
+          description: Evidence type (image, audio, text, pdf)
+        summary:
+          type: string
+          description: AI-generated summary
+        labels:
+          type: array
+          items:
+            type: string
+          description: Labels (유책사유 등)
+        timestamp:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+          description: Link creation time
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+      required:
+        - detail
+        - status_code
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

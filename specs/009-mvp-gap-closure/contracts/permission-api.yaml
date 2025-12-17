@@ -1,0 +1,417 @@
+openapi: 3.0.3
+info:
+  title: LEH Permission API
+  description: Case-level permission management for Legal Evidence Hub
+  version: 1.0.0
+
+servers:
+  - url: https://api.legalevidence.hub/v1
+    description: Production API
+  - url: http://localhost:8000/v1
+    description: Local development
+
+paths:
+  /cases/{case_id}/members:
+    get:
+      summary: List case members
+      description: Returns all users with access to this case
+      operationId: listCaseMembers
+      tags:
+        - Permissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of case members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseMemberListResponse'
+        '403':
+          description: No access to this case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Add member to case
+      description: |
+        Adds a user to the case with specified role.
+        Requires OWNER role on the case.
+      operationId: addCaseMember
+      tags:
+        - Permissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberRequest'
+      responses:
+        '201':
+          description: Member added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseMember'
+        '400':
+          description: Invalid request (user already member)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: OWNER role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Case or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cases/{case_id}/members/{user_id}:
+    patch:
+      summary: Update member role
+      description: |
+        Changes a member's role on the case.
+        Requires OWNER role. Cannot demote the last OWNER.
+      operationId: updateCaseMemberRole
+      tags:
+        - Permissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseMember'
+        '400':
+          description: Cannot demote last OWNER
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: OWNER role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Remove member from case
+      description: |
+        Removes a user from the case.
+        Requires OWNER role. Cannot remove the last OWNER.
+      operationId: removeCaseMember
+      tags:
+        - Permissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Member removed successfully
+        '400':
+          description: Cannot remove last OWNER
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: OWNER role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /audit-logs:
+    get:
+      summary: Query audit logs
+      description: |
+        Returns audit log entries filtered by various criteria.
+        Admin role required for cross-case queries.
+        Case members can view their own case's logs.
+      operationId: queryAuditLogs
+      tags:
+        - Audit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: case_id
+          in: query
+          required: false
+          description: Filter by case
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: query
+          required: false
+          description: Filter by user
+          schema:
+            type: string
+            format: uuid
+        - name: action
+          in: query
+          required: false
+          description: Filter by action type
+          schema:
+            type: string
+            enum: [CREATE, READ, UPDATE, DELETE, ACCESS_DENIED]
+        - name: resource_type
+          in: query
+          required: false
+          description: Filter by resource type
+          schema:
+            type: string
+            enum: [case, evidence, draft, user, case_member]
+        - name: from_date
+          in: query
+          required: false
+          description: Start date (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: to_date
+          in: query
+          required: false
+          description: End date (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CaseRole:
+      type: string
+      enum: [OWNER, MEMBER, VIEWER]
+      description: |
+        - OWNER: Full access, can manage members
+        - MEMBER: Read/write access to case data
+        - VIEWER: Read-only access
+
+    CaseMember:
+      type: object
+      required:
+        - id
+        - case_id
+        - user_id
+        - role
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_email:
+          type: string
+          format: email
+          description: User's email (for display)
+        user_name:
+          type: string
+          description: User's display name
+        role:
+          $ref: '#/components/schemas/CaseRole'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CaseMemberListResponse:
+      type: object
+      required:
+        - members
+        - total
+      properties:
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseMember'
+        total:
+          type: integer
+
+    AddMemberRequest:
+      type: object
+      required:
+        - user_id
+        - role
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: User to add
+        role:
+          $ref: '#/components/schemas/CaseRole'
+
+    UpdateRoleRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          $ref: '#/components/schemas/CaseRole'
+
+    AuditLogEntry:
+      type: object
+      required:
+        - id
+        - user_id
+        - action
+        - resource_type
+        - resource_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        user_email:
+          type: string
+          format: email
+        action:
+          type: string
+          enum: [CREATE, READ, UPDATE, DELETE, ACCESS_DENIED]
+        resource_type:
+          type: string
+          enum: [case, evidence, draft, user, case_member]
+        resource_id:
+          type: string
+          format: uuid
+        ip_address:
+          type: string
+        user_agent:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+
+    AuditLogResponse:
+      type: object
+      required:
+        - entries
+        - total
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogEntry'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - status_code
+      properties:
+        detail:
+          type: string
+          example: "사건 접근 권한이 없습니다"
+        status_code:
+          type: integer
+          example: 403

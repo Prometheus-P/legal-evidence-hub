@@ -1,0 +1,26 @@
+# CODEOWNERS - 코드 변경 시 자동 리뷰어 할당
+
+# 기본 리뷰어 (모든 파일)
+* @Prometheus-P
+
+# Backend (FastAPI)
+backend/** @Prometheus-P
+
+# Frontend (Next.js)
+frontend/** @Prometheus-P
+
+# AI Worker (Lambda)
+ai_worker/** @Prometheus-P
+
+# Infrastructure & CI/CD
+.github/** @Prometheus-P
+infra/** @Prometheus-P
+docker-compose*.yml @Prometheus-P
+Makefile @Prometheus-P
+
+# Documentation
+docs/** @Prometheus-P
+*.md @Prometheus-P
+
+# Specifications
+specs/** @Prometheus-P

@@ -1,0 +1,289 @@
+openapi: 3.0.3
+info:
+  title: LEH Precedent API
+  description: 판례 검색 및 인물 자동 추출 API
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: Backend API
+
+paths:
+  /cases/{case_id}/similar-precedents:
+    get:
+      summary: 유사 판례 검색
+      description: 케이스의 증거 및 유책사유를 기반으로 유사한 판례를 검색합니다.
+      operationId: searchSimilarPrecedents
+      tags:
+        - Precedent
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 케이스 ID
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+          description: 반환할 최대 판례 수
+        - name: min_score
+          in: query
+          schema:
+            type: number
+            format: float
+            default: 0.5
+            minimum: 0.0
+            maximum: 1.0
+          description: 최소 유사도 점수
+      responses:
+        '200':
+          description: 유사 판례 목록
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrecedentSearchResponse'
+        '401':
+          description: 인증 필요
+        '404':
+          description: 케이스를 찾을 수 없음
+
+  /cases/{case_id}/parties/auto-extract:
+    post:
+      summary: 인물 자동 추출 저장
+      description: AI Worker가 추출한 인물을 저장합니다.
+      operationId: autoExtractParties
+      tags:
+        - Party
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoExtractedPartyRequest'
+      responses:
+        '201':
+          description: 인물 저장 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoExtractedPartyResponse'
+        '400':
+          description: 잘못된 요청
+        '409':
+          description: 중복 인물 감지
+
+  /cases/{case_id}/relationships/auto-extract:
+    post:
+      summary: 관계 자동 추출 저장
+      description: AI Worker가 추론한 관계를 저장합니다.
+      operationId: autoExtractRelationships
+      tags:
+        - Relationship
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoExtractedRelationshipRequest'
+      responses:
+        '201':
+          description: 관계 저장 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoExtractedRelationshipResponse'
+        '400':
+          description: 잘못된 요청 또는 신뢰도 부족
+
+components:
+  schemas:
+    PrecedentCase:
+      type: object
+      required:
+        - case_ref
+        - court
+        - decision_date
+        - summary
+        - key_factors
+        - similarity_score
+      properties:
+        case_ref:
+          type: string
+          example: "2020다12345"
+        court:
+          type: string
+          example: "대법원"
+        decision_date:
+          type: string
+          format: date
+          example: "2020-03-15"
+        summary:
+          type: string
+          example: "혼인파탄의 주된 책임이 남편에게 있으므로..."
+        key_factors:
+          type: array
+          items:
+            type: string
+          example: ["외도", "가정폭력"]
+        division_ratio:
+          $ref: '#/components/schemas/DivisionRatio'
+        similarity_score:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.85
+        source_url:
+          type: string
+          format: uri
+          description: 국가법령정보센터 판례 원문 링크
+          example: "https://www.law.go.kr/판례/(2020다12345,20200315)"
+
+    DivisionRatio:
+      type: object
+      properties:
+        plaintiff:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 60
+        defendant:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 40
+
+    PrecedentSearchResponse:
+      type: object
+      required:
+        - precedents
+        - query_context
+      properties:
+        precedents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrecedentCase'
+        query_context:
+          $ref: '#/components/schemas/QueryContext'
+
+    QueryContext:
+      type: object
+      properties:
+        case_id:
+          type: string
+        fault_types:
+          type: array
+          items:
+            type: string
+          example: ["외도", "폭언"]
+        total_found:
+          type: integer
+          example: 15
+        search_time_ms:
+          type: integer
+          example: 120
+
+    AutoExtractedPartyRequest:
+      type: object
+      required:
+        - name
+        - role
+        - extraction_confidence
+        - source_evidence_id
+      properties:
+        name:
+          type: string
+          example: "김영희"
+        role:
+          type: string
+          enum: [plaintiff, defendant, witness, other]
+        side:
+          type: string
+          enum: [plaintiff_side, defendant_side, neutral]
+          default: neutral
+        extraction_confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.85
+        source_url:
+          type: string
+          format: uri
+          description: 국가법령정보센터 판례 원문 링크
+          example: "https://www.law.go.kr/판례/(2020다12345,20200315)"
+        source_evidence_id:
+          type: string
+          example: "ev-123"
+
+    AutoExtractedPartyResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        is_duplicate:
+          type: boolean
+        matched_party_id:
+          type: string
+          description: 중복 감지 시 기존 인물 ID
+
+    AutoExtractedRelationshipRequest:
+      type: object
+      required:
+        - from_party_id
+        - to_party_id
+        - relationship_type
+        - extraction_confidence
+      properties:
+        from_party_id:
+          type: string
+        to_party_id:
+          type: string
+        relationship_type:
+          type: string
+          example: "spouse"
+        extraction_confidence:
+          type: number
+          format: float
+          minimum: 0.7
+          maximum: 1.0
+        evidence_text:
+          type: string
+          maxLength: 500
+          example: "대화 내용에서 '남편'이라고 지칭함"
+
+    AutoExtractedRelationshipResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        created:
+          type: boolean
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

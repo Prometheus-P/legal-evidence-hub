@@ -1,0 +1,384 @@
+openapi: 3.1.0
+info:
+  title: LEH Party API
+  description: API for managing party nodes in divorce case relationship graphs
+  version: 1.0.0
+  contact:
+    name: LEH Development Team
+
+servers:
+  - url: /api/v1
+    description: API base path
+
+paths:
+  /cases/{case_id}/parties:
+    get:
+      summary: Get all parties for a case
+      description: Retrieve all party nodes associated with a specific case
+      operationId: getParties
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Case identifier
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PartyType'
+          description: Filter by party type
+      responses:
+        '200':
+          description: List of parties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PartyNode'
+                  total:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create a new party
+      description: Add a new party node to a case's relationship graph
+      operationId: createParty
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyNodeCreate'
+      responses:
+        '201':
+          description: Party created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyNode'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cases/{case_id}/parties/{party_id}:
+    get:
+      summary: Get a specific party
+      operationId: getParty
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: party_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Party details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyNode'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update a party
+      operationId: updateParty
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: party_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartyNodeUpdate'
+      responses:
+        '200':
+          description: Party updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyNode'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a party
+      description: Remove a party node (cascades to relationships)
+      operationId: deleteParty
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: party_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Party deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/parties/bulk:
+    patch:
+      summary: Bulk update party positions
+      description: Update multiple party positions in a single request (for auto-save)
+      operationId: bulkUpdatePartyPositions
+      tags:
+        - Parties
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updates:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      position:
+                        $ref: '#/components/schemas/Position'
+                    required:
+                      - id
+                      - position
+              required:
+                - updates
+      responses:
+        '200':
+          description: Positions updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated_count:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  schemas:
+    PartyType:
+      type: string
+      enum:
+        - plaintiff
+        - defendant
+        - third_party
+        - child
+        - family
+      description: |
+        - plaintiff: 원고 (의뢰인)
+        - defendant: 피고 (상대방)
+        - third_party: 제3자 (불륜상대, 증인 등)
+        - child: 자녀
+        - family: 친족
+
+    Position:
+      type: object
+      properties:
+        x:
+          type: number
+          default: 0
+        y:
+          type: number
+          default: 0
+      required:
+        - x
+        - y
+
+    PartyNode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/PartyType'
+        name:
+          type: string
+          maxLength: 100
+        alias:
+          type: string
+          maxLength: 50
+          description: 소장용 가명 (김○○)
+        birth_year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        occupation:
+          type: string
+          maxLength: 100
+        position:
+          $ref: '#/components/schemas/Position'
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - case_id
+        - type
+        - name
+        - position
+        - created_at
+        - updated_at
+
+    PartyNodeCreate:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PartyType'
+        name:
+          type: string
+          maxLength: 100
+        alias:
+          type: string
+          maxLength: 50
+        birth_year:
+          type: integer
+        occupation:
+          type: string
+          maxLength: 100
+        position:
+          $ref: '#/components/schemas/Position'
+        metadata:
+          type: object
+          additionalProperties: true
+      required:
+        - type
+        - name
+
+    PartyNodeUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        alias:
+          type: string
+          maxLength: 50
+        birth_year:
+          type: integer
+        occupation:
+          type: string
+          maxLength: 100
+        position:
+          $ref: '#/components/schemas/Position'
+        metadata:
+          type: object
+          additionalProperties: true
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+      required:
+        - detail
+        - status_code
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

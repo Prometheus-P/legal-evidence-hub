@@ -1,0 +1,300 @@
+/**
+ * Design Tokens - Legal Evidence Hub
+ *
+ * This file defines all design tokens as CSS custom properties.
+ * These values are referenced by Tailwind CSS via tailwind.config.js.
+ *
+ * Organization:
+ * 1. Primitive Colors (raw values)
+ * 2. Semantic Colors (purpose-based)
+ * 3. Typography
+ * 4. Spacing
+ * 5. Border Radius
+ * 6. Shadows
+ * 7. Z-Index
+ * 8. Transitions
+ */
+
+:root {
+  /* ========================================
+   * 1. PRIMITIVE COLORS
+   * Raw color values - do not use directly in components
+   * ======================================== */
+
+  /* Teal scale (Primary brand color - clarity-teal) */
+  --color-teal-50: #f0fdfa;
+  --color-teal-100: #ccfbf1;
+  --color-teal-200: #99f6e4;
+  --color-teal-300: #5eead4;
+  --color-teal-400: #2dd4bf;
+  --color-teal-500: #14b8a6;
+  --color-teal-600: #0d9488;
+  --color-teal-700: #0f766e;
+  --color-teal-800: #115e59;
+  --color-teal-900: #134e4a;
+
+  /* Slate scale (Secondary brand color - deep-trust-blue/navy) */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Blue scale (for info/links) */
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+
+  /* Neutral scale */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Red scale (for error/destructive) */
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+
+  /* Green scale (for success) */
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+
+  /* Amber scale (for warning) */
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+
+  /* Sky scale (for info) */
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+
+  /* ========================================
+   * 2. SEMANTIC COLORS - LIGHT THEME
+   * Use these in components via Tailwind classes
+   * ======================================== */
+
+  /* Primary - Main action color (clarity-teal) */
+  /* Using teal-600 for WCAG 2.1 AA compliant contrast with white text (4.5:1+) */
+  --color-primary: var(--color-teal-600);
+  --color-primary-hover: var(--color-teal-700);
+  --color-primary-active: var(--color-teal-800);
+  --color-primary-light: var(--color-teal-100);
+  --color-primary-contrast: #ffffff;
+
+  /* Secondary - Trust/Brand color (deep-trust-blue/navy) */
+  --color-secondary: var(--color-slate-900);
+  --color-secondary-hover: var(--color-slate-800);
+  --color-secondary-active: var(--color-slate-700);
+  --color-secondary-light: var(--color-slate-100);
+  --color-secondary-contrast: #ffffff;
+
+  /* Success */
+  --color-success: var(--color-green-500);
+  --color-success-hover: var(--color-green-600);
+  --color-success-light: var(--color-green-100);
+  --color-success-contrast: #ffffff;
+
+  /* Warning */
+  --color-warning: var(--color-amber-500);
+  --color-warning-hover: var(--color-amber-600);
+  --color-warning-light: var(--color-amber-100);
+  --color-warning-contrast: #000000;
+
+  /* Error */
+  --color-error: var(--color-red-500);
+  --color-error-hover: var(--color-red-600);
+  --color-error-active: var(--color-red-700);
+  --color-error-light: var(--color-red-100);
+  --color-error-contrast: #ffffff;
+
+  /* Info */
+  --color-info: var(--color-sky-500);
+  --color-info-hover: var(--color-sky-600);
+  --color-info-light: var(--color-sky-100);
+  --color-info-contrast: #ffffff;
+
+  /* Text colors */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: #ffffff;
+
+  /* Surface colors */
+  --color-surface-default: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+  --color-surface-muted: var(--color-neutral-50);
+
+  /* Border colors */
+  --color-border-default: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+  --color-border-focus: var(--color-primary);
+
+  /* ========================================
+   * 3. TYPOGRAPHY
+   * ======================================== */
+
+  /* Font sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========================================
+   * 4. SPACING
+   * Base unit: 4px
+   * ======================================== */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;   /* 4px */
+  --spacing-2: 0.5rem;    /* 8px */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  --spacing-16: 4rem;     /* 64px */
+  --spacing-20: 5rem;     /* 80px */
+
+  /* ========================================
+   * 5. BORDER RADIUS
+   * ======================================== */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.375rem;  /* 6px */
+  --radius-lg: 0.5rem;    /* 8px */
+  --radius-xl: 0.75rem;   /* 12px */
+  --radius-2xl: 1rem;     /* 16px */
+  --radius-full: 9999px;
+
+  /* ========================================
+   * 6. SHADOWS
+   * ======================================== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* ========================================
+   * 7. Z-INDEX
+   * ======================================== */
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-modal: 200;
+  --z-tooltip: 300;
+  --z-toast: 400;
+
+  /* ========================================
+   * 8. TRANSITIONS
+   * ======================================== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ========================================
+ * DARK THEME OVERRIDES
+ * ======================================== */
+.dark {
+  /* Primary - Teal (lighter for dark mode) */
+  --color-primary: var(--color-teal-400);
+  --color-primary-hover: var(--color-teal-300);
+  --color-primary-active: var(--color-teal-200);
+  --color-primary-light: var(--color-teal-900);
+  --color-primary-contrast: var(--color-neutral-900);
+
+  /* Secondary - Slate (lighter for dark mode) */
+  --color-secondary: var(--color-slate-300);
+  --color-secondary-hover: var(--color-slate-200);
+  --color-secondary-active: var(--color-slate-100);
+  --color-secondary-light: var(--color-slate-800);
+  --color-secondary-contrast: var(--color-neutral-900);
+
+  /* Status colors - slightly brighter for dark mode */
+  --color-success: var(--color-green-400);
+  --color-success-hover: var(--color-green-300);
+  --color-success-light: rgba(34, 197, 94, 0.2);
+
+  --color-warning: var(--color-amber-400);
+  --color-warning-hover: var(--color-amber-300);
+  --color-warning-light: rgba(245, 158, 11, 0.2);
+
+  --color-error: var(--color-red-400);
+  --color-error-hover: var(--color-red-300);
+  --color-error-active: var(--color-red-200);
+  --color-error-light: rgba(239, 68, 68, 0.2);
+
+  --color-info: var(--color-sky-400);
+  --color-info-hover: var(--color-sky-300);
+  --color-info-light: rgba(14, 165, 233, 0.2);
+
+  /* Text colors - inverted */
+  --color-text-primary: var(--color-neutral-50);
+  --color-text-secondary: var(--color-neutral-300);
+  --color-text-tertiary: var(--color-neutral-400);
+  --color-text-disabled: var(--color-neutral-500);
+  --color-text-inverse: var(--color-neutral-900);
+
+  /* Surface colors */
+  --color-surface-default: var(--color-neutral-900);
+  --color-surface-elevated: var(--color-neutral-800);
+  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+  --color-surface-muted: var(--color-neutral-800);
+
+  /* Border colors */
+  --color-border-default: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-600);
+
+  /* Shadows - more subtle in dark mode */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}

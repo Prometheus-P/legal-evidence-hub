@@ -1,0 +1,102 @@
+[
+  {
+    "case_ref": "2020므12345",
+    "court": "서울가정법원",
+    "decision_date": "2020-05-15",
+    "summary": "배우자의 부정행위와 장기간 별거로 인한 혼인관계 파탄. 재산분할에서 기여도를 인정하여 원고에게 60% 배분. 위자료 3천만원 인정.",
+    "division_ratio": {"plaintiff": 60, "defendant": 40},
+    "key_factors": ["부정행위", "별거", "기여도", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2020므12345"
+  },
+  {
+    "case_ref": "2019므98765",
+    "court": "서울가정법원",
+    "decision_date": "2019-11-20",
+    "summary": "가정폭력으로 인한 혼인관계 파탄. 피고의 유책사유 인정, 위자료 3천만원 판결. 자녀 양육권은 원고에게 인정.",
+    "division_ratio": {"plaintiff": 55, "defendant": 45},
+    "key_factors": ["가정폭력", "위자료", "양육권"],
+    "doc_type": "case_law",
+    "case_number": "2019므98765"
+  },
+  {
+    "case_ref": "2021므54321",
+    "court": "인천가정법원",
+    "decision_date": "2021-03-10",
+    "summary": "성격차이 및 경제적 갈등으로 인한 이혼. 양 당사자 과실 인정, 재산분할 5:5.",
+    "division_ratio": {"plaintiff": 50, "defendant": 50},
+    "key_factors": ["성격차이", "경제적 갈등"],
+    "doc_type": "case_law",
+    "case_number": "2021므54321"
+  },
+  {
+    "case_ref": "2018므11111",
+    "court": "대전가정법원",
+    "decision_date": "2018-07-25",
+    "summary": "배우자의 도박 중독으로 인한 경제적 파탄. 원고에게 재산분할 70% 인정. 위자료 2천만원.",
+    "division_ratio": {"plaintiff": 70, "defendant": 30},
+    "key_factors": ["도박", "경제적 파탄", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2018므11111"
+  },
+  {
+    "case_ref": "2022므22222",
+    "court": "부산가정법원",
+    "decision_date": "2022-01-15",
+    "summary": "불륜으로 인한 혼인 파탄. 유책배우자인 피고에게 위자료 5천만원 지급 명령. 재산분할 4:6.",
+    "division_ratio": {"plaintiff": 60, "defendant": 40},
+    "key_factors": ["불륜", "유책배우자", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2022므22222"
+  },
+  {
+    "case_ref": "2020므33333",
+    "court": "광주가정법원",
+    "decision_date": "2020-09-08",
+    "summary": "시댁과의 갈등 및 배우자의 방임으로 인한 혼인파탄. 재산분할 5:5, 위자료 1천만원.",
+    "division_ratio": {"plaintiff": 50, "defendant": 50},
+    "key_factors": ["시댁갈등", "방임", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2020므33333"
+  },
+  {
+    "case_ref": "2019므44444",
+    "court": "수원가정법원",
+    "decision_date": "2019-04-20",
+    "summary": "장기간 별거 후 협의이혼 불성립으로 재판이혼. 혼인파탄 사유 양측 인정, 재산분할만 진행.",
+    "division_ratio": {"plaintiff": 50, "defendant": 50},
+    "key_factors": ["별거", "협의이혼 불성립"],
+    "doc_type": "case_law",
+    "case_number": "2019므44444"
+  },
+  {
+    "case_ref": "2021므55555",
+    "court": "대구가정법원",
+    "decision_date": "2021-06-30",
+    "summary": "배우자의 알코올 중독 및 폭언으로 인한 혼인파탄. 원고 청구 인용, 위자료 2천5백만원.",
+    "division_ratio": {"plaintiff": 55, "defendant": 45},
+    "key_factors": ["알코올중독", "폭언", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2021므55555"
+  },
+  {
+    "case_ref": "2018므66666",
+    "court": "울산가정법원",
+    "decision_date": "2018-12-10",
+    "summary": "경제적 무능력 및 가정 방치로 인한 이혼. 원고 단독 양육권 인정, 양육비 월 150만원.",
+    "division_ratio": {"plaintiff": 65, "defendant": 35},
+    "key_factors": ["경제적 무능력", "양육권", "양육비"],
+    "doc_type": "case_law",
+    "case_number": "2018므66666"
+  },
+  {
+    "case_ref": "2022므77777",
+    "court": "창원가정법원",
+    "decision_date": "2022-03-25",
+    "summary": "배우자의 부정행위 발각 후 이혼 소송. 유책배우자 항변 인정되지 않음, 위자료 4천만원.",
+    "division_ratio": {"plaintiff": 60, "defendant": 40},
+    "key_factors": ["부정행위", "유책배우자 항변", "위자료"],
+    "doc_type": "case_law",
+    "case_number": "2022므77777"
+  }
+]

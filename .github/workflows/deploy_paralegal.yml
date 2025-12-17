@@ -4,40 +4,90 @@ name: Deploy LEH to AWS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev, 011-production-bug-fixes, 012-* ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
 
 permissions:
   id-token: write
   contents: read
 
+env:
+  # Set environment based on branch
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "ENV=production" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+          else
+            echo "ENV=staging" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING || secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING || secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-northeast-2
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 1. Backend 배포 (ECR Push Only - 추후 App Runner/ECS 연동 필요)
+      # Setup Docker Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Setup QEMU for ARM64 emulation
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 1. Backend 배포 (ECR Push + Lambda Update)
       - name: Build & Push Backend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: leh-backend
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./backend
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # Lambda용 Dockerfile로 x86_64 이미지 빌드 (Lambda가 x86_64로 설정됨)
+          # --provenance=false --sbom=false: Lambda에서 지원하지 않는 OCI manifest 비활성화
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --sbom=false \
+            -f ./backend/Dockerfile.lambda \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            ./backend
+
+          # Lambda 함수 코드를 새 이미지로 교체
+          aws lambda update-function-code \
+            --function-name leh-backend \
+            --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       # 2. AI Worker 배포 (ECR Push + Lambda Update)
       - name: Build & Push AI Worker
@@ -46,23 +96,81 @@ jobs:
           ECR_REPOSITORY: leh-ai-worker
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Docker 빌드 및 푸시
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./ai_worker
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          
-          # [핵심] Lambda 함수 코드를 새 이미지로 교체
+          # Lambda용 Dockerfile로 ARM64 이미지 빌드
+          # --provenance=false --sbom=false: Lambda에서 지원하지 않는 OCI manifest 비활성화
+          docker buildx build \
+            --platform linux/arm64 \
+            --provenance=false \
+            --sbom=false \
+            -f ./ai_worker/Dockerfile.lambda \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --push \
+            ./ai_worker
+
+          # Lambda 함수 코드를 새 이미지로 교체
           aws lambda update-function-code \
             --function-name leh-ai-worker \
             --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       # 3. Frontend 배포 (S3 Sync + CloudFront Invalidation)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build Frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.BACKEND_API_URL }}
+          NEXT_PUBLIC_APP_ENV: ${{ steps.env.outputs.ENV }}
+          NEXT_PUBLIC_APP_VERSION: ${{ github.sha }}
+          NEXT_OUTPUT_EXPORT: 'true'
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
       - name: Deploy Frontend to S3
         run: |
           cd frontend
-          npm install && npm run build
-          # S3 업로드
-          aws s3 sync ./dist s3://${{ secrets.S3_FRONTEND_BUCKET }} --delete
-          # (선택) CloudFront 캐시 무효화 (배포 즉시 반영)
-          # aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"
+          # Next.js static export outputs to 'out' directory
+          aws s3 sync ./out s3://${{ steps.env.outputs.S3_BUCKET }} --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "*.html" \
+            --exclude "_next/data/*"
+
+          # HTML files with shorter cache for updates
+          aws s3 sync ./out s3://${{ steps.env.outputs.S3_BUCKET }} --delete \
+            --cache-control "public, max-age=0, must-revalidate" \
+            --include "*.html" \
+            --include "_next/data/*"
+
+      - name: Invalidate CloudFront Cache
+        id: invalidate
+        run: |
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.env.outputs.CF_DIST }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "INVALIDATION_ID=$INVALIDATION_ID" >> $GITHUB_OUTPUT
+          echo "Created invalidation: $INVALIDATION_ID"
+
+      - name: Wait for CloudFront Invalidation
+        run: |
+          echo "Waiting for CloudFront invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ steps.env.outputs.CF_DIST }} \
+            --id ${{ steps.invalidate.outputs.INVALIDATION_ID }}
+          echo "Invalidation completed!"
+
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ steps.env.outputs.ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **S3 Bucket:** ${{ steps.env.outputs.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY

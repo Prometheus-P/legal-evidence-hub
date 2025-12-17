@@ -1,0 +1,169 @@
+openapi: 3.0.3
+info:
+  title: Evidence Review API
+  description: |
+    API for evidence review workflow (US10).
+    Handles client-uploaded evidence pending lawyer review.
+  version: 1.0.0
+
+paths:
+  /cases/{case_id}/evidence:
+    post:
+      summary: Upload evidence with review status
+      description: |
+        Upload evidence file. Status depends on uploader role:
+        - Client upload: pending_review
+        - Lawyer upload: approved
+      operationId: uploadEvidence
+      tags:
+        - Evidence
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Evidence uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '403':
+          description: Not a case member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /cases/{case_id}/evidence/{evidence_id}/review:
+    patch:
+      summary: Review client-uploaded evidence
+      description: |
+        Approve or reject client-uploaded evidence.
+        Only case OWNER or MEMBER can review.
+      operationId: reviewEvidence
+      tags:
+        - Evidence
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+      responses:
+        '200':
+          description: Review recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Evidence'
+        '403':
+          description: Not authorized to review
+        '404':
+          description: Evidence not found
+
+  /cases/{case_id}/evidence/pending:
+    get:
+      summary: List pending review evidence
+      description: Get all evidence awaiting lawyer review
+      operationId: listPendingEvidence
+      tags:
+        - Evidence
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of pending evidence
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evidence'
+
+components:
+  schemas:
+    Evidence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        file_name:
+          type: string
+        type:
+          type: string
+          enum: [image, audio, video, text, pdf]
+        review_status:
+          type: string
+          enum: [pending_review, approved, rejected]
+        uploaded_by:
+          type: string
+          format: uuid
+        reviewed_by:
+          type: string
+          format: uuid
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ReviewRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        comment:
+          type: string
+          description: Optional review comment
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer

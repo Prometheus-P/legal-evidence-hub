@@ -1,0 +1,63 @@
+{
+  "endpoint": "GET /lawyer/investigators",
+  "description": "List all investigators/detectives assigned to the lawyer's cases",
+  "authentication": "Bearer JWT (lawyer, staff, admin)",
+  "request": {
+    "query_params": {
+      "page": {
+        "type": "integer",
+        "default": 1
+      },
+      "page_size": {
+        "type": "integer",
+        "default": 20,
+        "max": 100
+      },
+      "search": {
+        "type": "string",
+        "optional": true,
+        "description": "Search by name or email"
+      },
+      "availability": {
+        "type": "string",
+        "enum": ["available", "busy", "unavailable", "all"],
+        "default": "all"
+      },
+      "sort_by": {
+        "type": "string",
+        "enum": ["name", "active_assignments", "completed_assignments", "last_activity"],
+        "default": "name"
+      },
+      "sort_order": {
+        "type": "string",
+        "enum": ["asc", "desc"],
+        "default": "asc"
+      }
+    }
+  },
+  "response": {
+    "200": {
+      "items": [
+        {
+          "id": "uuid-detective-1",
+          "name": "박정훈",
+          "email": "detective1@example.com",
+          "phone": "010-9876-5432",
+          "specialization": "디지털 포렌식",
+          "active_assignments": 3,
+          "completed_assignments": 12,
+          "availability": "busy",
+          "last_activity": "2025-12-08T09:15:00Z",
+          "rating": 4.8
+        }
+      ],
+      "total": 8,
+      "page": 1,
+      "page_size": 20,
+      "total_pages": 1
+    },
+    "401": {
+      "detail": "인증이 필요합니다."
+    }
+  }
+}

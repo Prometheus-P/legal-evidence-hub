@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: LEH Search API
+  description: RAG-based evidence search for Legal Evidence Hub
+  version: 1.0.0
+
+servers:
+  - url: https://api.legalevidence.hub/v1
+    description: Production API
+  - url: http://localhost:8000/v1
+    description: Local development
+
+paths:
+  /search:
+    get:
+      summary: Search evidence within a case
+      description: |
+        Performs semantic search using Qdrant vector database.
+        Returns evidence ranked by relevance to the query.
+        Requires case membership (VIEWER role minimum).
+      operationId: searchEvidence
+      tags:
+        - Search
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (natural language)
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 500
+          example: "폭언 증거"
+        - name: case_id
+          in: query
+          required: true
+          description: Case identifier
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of results
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: include_url
+          in: query
+          required: false
+          description: Include presigned S3 URLs in response
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No access to this case
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Case not found or no evidence indexed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - results
+        - total
+        - query
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceSearchResult'
+        total:
+          type: integer
+          description: Total number of matches found
+          example: 15
+        query:
+          type: string
+          description: Original query string
+          example: "폭언 증거"
+        search_time_ms:
+          type: integer
+          description: Search execution time in milliseconds
+          example: 234
+
+    EvidenceSearchResult:
+      type: object
+      required:
+        - evidence_id
+        - score
+        - content_preview
+        - timestamp
+        - speaker
+        - labels
+      properties:
+        evidence_id:
+          type: string
+          pattern: '^EV-[a-f0-9]{8}$'
+          example: "EV-1a2b3c4d"
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Relevance score (0-1)
+          example: 0.89
+        content_preview:
+          type: string
+          maxLength: 200
+          description: First 200 chars of matching content
+          example: "2024년 3월 15일, 피고가 원고에게..."
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-03-15T14:30:00Z"
+        speaker:
+          type: string
+          enum: [원고, 피고, 제3자, 불명]
+          example: "피고"
+        labels:
+          type: array
+          items:
+            type: string
+          example: ["폭언", "유책사유"]
+        s3_url:
+          type: string
+          format: uri
+          description: Presigned S3 URL (only if include_url=true)
+          example: "https://leh-evidence-dev.s3.ap-northeast-2.amazonaws.com/..."
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+        - status_code
+      properties:
+        detail:
+          type: string
+          example: "사건 접근 권한이 없습니다"
+        status_code:
+          type: integer
+          example: 403

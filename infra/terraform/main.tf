@@ -57,6 +57,105 @@ resource "aws_s3_bucket" "evidence_bucket" {
   bucket = "leh-evidence-prod-v2" # 유니크한 이름으로 변경 필요
 }
 
+# 정적 프론트엔드 호스팅 버킷 (CloudFront 배포 대상)
+resource "aws_s3_bucket" "frontend_site" {
+  bucket = "leh-frontend-static-prod"
+
+  tags = {
+    Purpose = "nextjs-static-site"
+  }
+}
+
+# SPA fallback을 위해 index.html을 인덱스/에러 문서로 지정
+resource "aws_s3_bucket_website_configuration" "frontend_site" {
+  bucket = aws_s3_bucket.frontend_site.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+# CloudFront에서만 읽을 수 있도록 퍼블릭 정책을 적용 (정적 사이트)
+resource "aws_s3_bucket_policy" "frontend_site" {
+  bucket = aws_s3_bucket.frontend_site.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontAccess"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = ["s3:GetObject"]
+        Resource  = ["${aws_s3_bucket.frontend_site.arn}/*"]
+      }
+    ]
+  })
+}
+
+# CloudFront 배포 (SPA fallback용 커스텀 에러 응답 포함)
+resource "aws_cloudfront_distribution" "frontend" {
+  enabled             = true
+  default_root_object = "index.html"
+
+  origins {
+    domain_name = aws_s3_bucket_website_configuration.frontend_site.website_endpoint
+    origin_id   = "s3-frontend-site"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "s3-frontend-site"
+    viewer_protocol_policy = "redirect-to-https"
+    compress = true
+
+    forwarded_values {
+      query_string = true
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  price_class = "PriceClass_100"
+
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
 # DynamoDB (증거 메타데이터)
 resource "aws_dynamodb_table" "evidence_meta" {
   name         = "leh-evidence-prod"

@@ -1,0 +1,370 @@
+openapi: 3.1.0
+info:
+  title: LEH Relationships API
+  description: API for managing party relationships in divorce case relationship graphs
+  version: 1.0.0
+  contact:
+    name: LEH Development Team
+
+servers:
+  - url: /api/v1
+    description: API base path
+
+paths:
+  /cases/{case_id}/relationships:
+    get:
+      summary: Get all relationships for a case
+      description: Retrieve all party relationships associated with a specific case
+      operationId: getRelationships
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Case identifier
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/RelationshipType'
+          description: Filter by relationship type
+        - name: party_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter by party involved (source or target)
+      responses:
+        '200':
+          description: List of relationships
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Relationship'
+                  total:
+                    type: integer
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      summary: Create a new relationship
+      description: Add a new relationship between two parties
+      operationId: createRelationship
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelationshipCreate'
+      responses:
+        '201':
+          description: Relationship created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relationship'
+        '400':
+          description: Invalid request (e.g., self-reference, duplicate)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cases/{case_id}/relationships/{relationship_id}:
+    get:
+      summary: Get a specific relationship
+      operationId: getRelationship
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: relationship_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Relationship details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relationship'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Update a relationship
+      operationId: updateRelationship
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: relationship_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelationshipUpdate'
+      responses:
+        '200':
+          description: Relationship updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relationship'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a relationship
+      operationId: deleteRelationship
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: relationship_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Relationship deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cases/{case_id}/graph:
+    get:
+      summary: Get complete party graph
+      description: Retrieve all parties and relationships for a case in a single request (optimized for React Flow)
+      operationId: getPartyGraph
+      tags:
+        - Relationships
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Complete party graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartyGraph'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    RelationshipType:
+      type: string
+      enum:
+        - marriage
+        - affair
+        - parent_child
+        - sibling
+        - in_law
+        - cohabit
+      description: |
+        - marriage: 혼인 (실선)
+        - affair: 불륜관계 (점선, 빨강) - 민법 제840조 1호
+        - parent_child: 부모-자녀 (실선, 세로)
+        - sibling: 형제자매 (점선, 회색)
+        - in_law: 인척 (점선, 파랑)
+        - cohabit: 동거 (파선)
+
+    Relationship:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        case_id:
+          type: string
+          format: uuid
+        source_party_id:
+          type: string
+          format: uuid
+        target_party_id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/RelationshipType'
+        start_date:
+          type: string
+          format: date
+          description: 관계 시작일
+        end_date:
+          type: string
+          format: date
+          description: 관계 종료일
+        notes:
+          type: string
+          description: 메모
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - case_id
+        - source_party_id
+        - target_party_id
+        - type
+        - created_at
+        - updated_at
+
+    RelationshipCreate:
+      type: object
+      properties:
+        source_party_id:
+          type: string
+          format: uuid
+          description: 출발 당사자 ID
+        target_party_id:
+          type: string
+          format: uuid
+          description: 도착 당사자 ID
+        type:
+          $ref: '#/components/schemas/RelationshipType'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        notes:
+          type: string
+      required:
+        - source_party_id
+        - target_party_id
+        - type
+
+    RelationshipUpdate:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/RelationshipType'
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    PartyGraph:
+      type: object
+      description: Complete party graph data for React Flow rendering
+      properties:
+        nodes:
+          type: array
+          items:
+            type: object
+            description: PartyNode from parties-api.yaml
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relationship'
+      required:
+        - nodes
+        - relationships
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+        status_code:
+          type: integer
+      required:
+        - detail
+        - status_code
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
