@@ -60,7 +60,7 @@ class MessageRepository:
             .options(joinedload(Message.sender))
             .filter(
                 Message.recipient_id == user_id,
-                Message.is_deleted_by_recipient == False,  # noqa: E712
+                Message.is_deleted_by_recipient.is_(False),
             )
             .order_by(Message.created_at.desc())
         )
@@ -81,7 +81,7 @@ class MessageRepository:
             .options(joinedload(Message.recipient))
             .filter(
                 Message.sender_id == user_id,
-                Message.is_deleted_by_sender == False,  # noqa: E712
+                Message.is_deleted_by_sender.is_(False),
             )
             .order_by(Message.created_at.desc())
         )
@@ -123,8 +123,8 @@ class MessageRepository:
             self.db.query(Message)
             .filter(
                 Message.recipient_id == user_id,
-                Message.is_read == False,  # noqa: E712
-                Message.is_deleted_by_recipient == False,  # noqa: E712
+                Message.is_read.is_(False),
+                Message.is_deleted_by_recipient.is_(False),
             )
             .count()
         )

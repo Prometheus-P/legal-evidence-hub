@@ -6,7 +6,7 @@ TDD - Improving test coverage for audit_log_service.py
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from app.services.audit_log_service import AuditLogService
+from app.services.audit_service import AuditLogService
 from app.db.schemas import AuditLogListRequest, AuditAction
 
 

@@ -52,7 +52,7 @@ class NotificationRepository:
         query = self.db.query(Notification).filter(Notification.user_id == user_id)
 
         if unread_only:
-            query = query.filter(Notification.is_read == False)  # noqa: E712
+            query = query.filter(Notification.is_read.is_(False))
 
         return query.order_by(Notification.created_at.desc()).limit(limit).all()
 
@@ -62,7 +62,7 @@ class NotificationRepository:
             self.db.query(Notification)
             .filter(
                 Notification.user_id == user_id,
-                Notification.is_read == False,  # noqa: E712
+                Notification.is_read.is_(False),
             )
             .count()
         )
@@ -82,7 +82,7 @@ class NotificationRepository:
             self.db.query(Notification)
             .filter(
                 Notification.user_id == user_id,
-                Notification.is_read == False,  # noqa: E712
+                Notification.is_read.is_(False),
             )
             .update({"is_read": True})
         )

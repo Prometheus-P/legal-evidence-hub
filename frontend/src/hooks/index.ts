@@ -4,14 +4,16 @@
  * Reusable React hooks for common functionality
  */
 
-// Authentication
+// Authentication & Role
 export { useAuth } from './useAuth';
-
-// Role-based access
 export { useRole } from './useRole';
 
-// Data fetching
+// Data fetching - Lists
 export { useCaseList } from './useCaseList';
+export { useClients } from './useClients';
+export { useInvestigators } from './useInvestigators';
+
+// Dashboard
 export { useLawyerDashboard } from './useLawyerDashboard';
 
 // Evidence management
@@ -20,6 +22,42 @@ export {
   useEvidencePolling,
   useSingleEvidencePolling,
 } from './useEvidencePolling';
+export { useEvidenceLinks } from './useEvidenceLinks';
+
+// Case features
+export { useCaseRelations } from './useCaseRelations';
+export { usePartyGraph } from './usePartyGraph';
+export { useProcedure } from './useProcedure';
+export { useAssets } from './useAssets';
+
+// Calendar & scheduling
+export { useCalendar } from './useCalendar';
+export { useTodayView } from './useTodayView';
+
+// Messaging & notifications
+export { useMessages } from './useMessages';
+export { useDirectMessages } from './useDirectMessages';
+export { useNotifications } from './useNotifications';
+
+// AI features
+export { useAIRecommendations } from './useAIRecommendations';
+export { useRiskFlags } from './useRiskFlags';
+
+// Contacts
+export { useClientContacts } from './useClientContacts';
+export { useDetectiveContacts } from './useDetectiveContacts';
+
+// Settings & billing
+export { useSettings } from './useSettings';
+export { useBilling } from './useBilling';
+
+// Search
+export { useGlobalSearch } from './useGlobalSearch';
+
+// UI utilities
+export { useModalState } from './useModalState';
+export { useBeforeUnload } from './useBeforeUnload';
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 // Error handling & retry
 export { useRetry, retryOperation } from './useRetry';

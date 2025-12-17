@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db, require_role
 from app.services.detective_portal_service import DetectivePortalService
-from app.services.audit_log_service import AuditLogService
+from app.services.audit_service import AuditLogService
 from app.schemas.detective_portal import (
     DetectiveDashboardResponse,
     CaseListResponse,

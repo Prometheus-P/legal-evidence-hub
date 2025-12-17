@@ -25,7 +25,7 @@ from app.db.schemas import (
 )
 from app.services.user_management_service import UserManagementService
 from app.services.role_management_service import RoleManagementService
-from app.services.audit_log_service import AuditLogService
+from app.services.audit_service import AuditLogService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

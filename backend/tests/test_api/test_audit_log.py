@@ -97,8 +97,8 @@ class TestAuditLogAPI:
         When: GET /admin/audit?page=1&page_size=10
         Then: Returns logs with pagination metadata
         """
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository") as mock_user_repo:
 
             # Mock repository
             mock_repo_instance = mock_repo.return_value
@@ -159,8 +159,8 @@ class TestAuditLogAPI:
         start_date = (now - timedelta(days=7)).isoformat()
         end_date = now.isoformat()
 
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository"):
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_with_pagination.return_value = ([], 0)
@@ -198,8 +198,8 @@ class TestAuditLogAPI:
         # Filter to only user_lawyer1's logs
         filtered_logs = [log for log in sample_audit_logs if log.user_id == "user_lawyer1"]
 
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository") as mock_user_repo:
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_with_pagination.return_value = (filtered_logs, len(filtered_logs))
@@ -244,8 +244,8 @@ class TestAuditLogAPI:
             if log.action in [AuditAction.LOGIN.value, AuditAction.CREATE_CASE.value]
         ]
 
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository") as mock_user_repo:
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_with_pagination.return_value = (filtered_logs, len(filtered_logs))
@@ -311,8 +311,8 @@ class TestAuditLogAPI:
         When: GET /admin/audit/export
         Then: Returns CSV file with correct headers and data
         """
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository") as mock_user_repo:
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository") as mock_user_repo:
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_for_export.return_value = sample_audit_logs
@@ -359,8 +359,8 @@ class TestAuditLogAPI:
         now = datetime.utcnow()
         start_date = (now - timedelta(days=7)).isoformat()
 
-        with patch("app.services.audit_log_service.AuditLogRepository") as mock_repo, \
-             patch("app.services.audit_log_service.UserRepository"):
+        with patch("app.services.audit_service.AuditLogRepository") as mock_repo, \
+             patch("app.services.audit_service.UserRepository"):
 
             mock_repo_instance = mock_repo.return_value
             mock_repo_instance.get_logs_for_export.return_value = []
