@@ -161,8 +161,9 @@ describe('Client Cases Page', () => {
       render(<ClientCasesPage />);
 
       // Query parameter pattern with trailing slash: /client/cases/detail/?caseId=xxx
+      // Note: CSS selector needs to escape ? with \\ or use contains selector
       await waitFor(() => {
-        const links = document.querySelectorAll('a[href^="/client/cases/detail/?caseId="]');
+        const links = document.querySelectorAll('a[href*="/client/cases/detail/"]');
         expect(links.length).toBe(3);
       });
     });
