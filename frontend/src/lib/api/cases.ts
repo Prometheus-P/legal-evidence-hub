@@ -74,6 +74,12 @@ export async function getCases(): Promise<ApiResponse<CaseListResponse>> {
  * @param basePath - Optional base path for role-specific endpoints (e.g., '/lawyer')
  */
 export async function getCase(caseId: string, basePath: string = ''): Promise<ApiResponse<ApiCase>> {
+  // Race condition 방어: ID가 없으면 API 호출 건너뛰기
+  if (!caseId || caseId.trim() === '') {
+    console.warn('[getCase] caseId가 비어있습니다. API 호출을 건너뜁니다.');
+    return { data: undefined, status: 0, error: 'Case ID가 필요합니다.' };
+  }
+
   return apiRequest<ApiCase>(`${basePath}/cases/${caseId}`, {
     method: 'GET',
   });

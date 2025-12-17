@@ -288,12 +288,6 @@ app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications
 # Client/Detective Contact 라우터 (Issue #297, #298 - FR-009~012, FR-015~016)
 app.include_router(clients.router, prefix=API_PREFIX, tags=["Client Contacts"])
 app.include_router(detectives.router, prefix=API_PREFIX, tags=["Detective Contacts"])
-# L-work Demo API (테스트 후 제거 가능)
-try:
-    from app.api.l_demo import router as l_demo_router
-    app.include_router(l_demo_router)
-except ImportError:
-    pass  # l_demo 모듈 없으면 무시
 
 
 # ============================================

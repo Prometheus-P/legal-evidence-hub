@@ -1,7 +1,7 @@
 'use client';
 import { logger } from '@/lib/logger';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { ArrowLeft, CheckCircle2, Filter, Shield, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -87,6 +87,8 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
         total: 0,
     });
     const [showEditModal, setShowEditModal] = useState(false);
+    // 무한 스피너 방지: ID 대기 타임아웃 상태
+    const [idWaitTimedOut, setIdWaitTimedOut] = useState(false);
 
     useEffect(() => {
       const tabParam = searchParams.get('tab');
@@ -95,7 +97,27 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
       }
     }, [searchParams, activeTab]);
 
+    // caseId 설정 - 빈 값이면 빈 문자열 유지 (API 레벨에서 방어됨)
     const caseId = id || '';
+
+    // Race condition 방어: ID가 없으면 로딩 스피너 표시 (hooks 이후에 위치해야 함)
+    const isIdMissing = !id || id.trim() === '';
+
+    // 무한 스피너 방지: 2초 후에도 ID가 없으면 에러 상태로 전환
+    useEffect(() => {
+        if (!isIdMissing) {
+            setIdWaitTimedOut(false);
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            if (isIdMissing) {
+                setIdWaitTimedOut(true);
+            }
+        }, 2000);
+
+        return () => clearTimeout(timeout);
+    }, [isIdMissing]);
 
     // Fetch evidence list from API
     const fetchEvidence = useCallback(async () => {
@@ -127,13 +149,18 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
         fetchEvidence();
     }, [fetchEvidence]);
 
-    // Fetch case data
+    // Fetch case data with AbortController to prevent race conditions
     useEffect(() => {
         if (!caseId) return;
+
+        // 이전 요청 무시 플래그
+        let isCancelled = false;
 
         const fetchCaseData = async () => {
             setIsLoadingCase(true);
             const response = await getCase(caseId, apiBasePath);
+            // caseId가 변경되어 이 요청이 무효화된 경우 무시
+            if (isCancelled) return;
             if (response.data) {
                 setCaseData(response.data);
             }
@@ -141,6 +168,11 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
         };
 
         fetchCaseData();
+
+        // cleanup: caseId 변경 또는 언마운트 시 이전 요청 무시
+        return () => {
+            isCancelled = true;
+        };
     }, [caseId, apiBasePath]);
 
     // Auto-polling: silently check for status updates without full re-render
@@ -361,6 +393,35 @@ export default function CaseDetailClient({ id, defaultReturnUrl = '/lawyer/cases
         ],
         [],
     );
+
+    // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
+    if (isIdMissing) {
+        // 2초 후에도 ID가 없으면 에러 UI 표시
+        if (idWaitTimedOut) {
+            return (
+                <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+                    <div className="text-center">
+                        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <h2 className="text-lg font-semibold text-gray-900 mb-2">잘못된 접근입니다</h2>
+                        <p className="text-sm text-gray-500 mb-4">사건 ID가 올바르지 않거나 전달되지 않았습니다.</p>
+                        <Link
+                            href={defaultReturnUrl}
+                            className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            목록으로 돌아가기
+                        </Link>
+                    </div>
+                </div>
+            );
+        }
+        // 타임아웃 전에는 로딩 스피너 표시
+        return (
+            <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-neutral-50">

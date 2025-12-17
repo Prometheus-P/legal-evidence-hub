@@ -7,7 +7,7 @@
  * Hook for managing case list state, filtering, and bulk actions.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { apiClient } from '@/lib/api/client';
 
 interface CaseListApiResponse {
@@ -143,6 +143,9 @@ const defaultSort: SortState = {
   sortOrder: 'desc',
 };
 
+// StaleTime: 30초 이내 재방문 시 fetch 스킵
+const STALE_TIME = 30000;
+
 export function useCaseList(): UseCaseListReturn {
   const [cases, setCases] = useState<CaseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -154,6 +157,11 @@ export function useCaseList(): UseCaseListReturn {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
   const [showClosed, setShowClosedState] = useState(false);
+
+  // 마운트 추적 - 페이지 진입마다 데이터 새로고침 보장
+  const hasMountedRef = useRef(false);
+  // StaleTime 추적 - 마지막 fetch 시간 (ref 사용으로 리렌더링 방지)
+  const lastFetchTimeRef = useRef<number>(0);
 
   const fetchCases = useCallback(async () => {
     setIsLoading(true);
@@ -217,6 +225,8 @@ export function useCaseList(): UseCaseListReturn {
         totalPages: data.total_pages,
       }));
       setStatusCounts(data.status_counts || {});
+      // 성공 시 fetch 시간 기록 (staleTime 체크용)
+      lastFetchTimeRef.current = Date.now();
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
       setCases([]);
@@ -225,9 +235,26 @@ export function useCaseList(): UseCaseListReturn {
     }
   }, [pagination.page, pagination.pageSize, sort.sortBy, sort.sortOrder, filters, showClosed]);
 
+  // 필터/정렬/페이지 변경 시 fetch
   useEffect(() => {
-    fetchCases();
+    // 첫 마운트가 아닐 때만 실행 (마운트 시에는 아래 useEffect에서 처리)
+    if (hasMountedRef.current) {
+      fetchCases();
+    }
   }, [fetchCases]);
+
+  // 마운트 시 staleTime 체크 후 조건부 fetch (페이지 진입마다)
+  // - 첫 진입: lastFetchTimeRef = 0 → 항상 fetch
+  // - 30초 이내 재진입: fetch 스킵 (불필요한 요청 방지)
+  // - 30초 이후 재진입: fetch 실행 (데이터 신선도 보장)
+  useEffect(() => {
+    hasMountedRef.current = true;
+    const isStale = Date.now() - lastFetchTimeRef.current > STALE_TIME;
+    if (isStale) {
+      fetchCases();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 의도적으로 빈 배열 - 마운트 시 1회만
 
   const setPage = useCallback((page: number) => {
     setPagination((prev) => ({ ...prev, page }));

@@ -7,7 +7,7 @@
  * Client-side component for case detail view with evidence list and AI summary.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api/client';
@@ -77,7 +77,9 @@ interface LawyerCaseDetailClientProps {
 
 export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientProps) {
   const router = useRouter();
-  const caseId = id;
+
+  // caseId 설정 - 빈 값이면 빈 문자열 유지 (API 레벨에서 방어됨)
+  const caseId = id || '';
   const detailPath = caseId ? getCaseDetailPath('lawyer', caseId) : '/lawyer/cases/detail';
   const procedurePath = caseId ? getLawyerCasePath('procedure', caseId) : '/lawyer/cases/procedure';
   const assetsPath = caseId ? getLawyerCasePath('assets', caseId) : '/lawyer/cases/assets';
@@ -89,14 +91,48 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  // 무한 스피너 방지: ID 대기 타임아웃 상태
+  const [idWaitTimedOut, setIdWaitTimedOut] = useState(false);
 
+  // Race condition 방어를 위한 ID 검증 플래그 (hooks 이후에 위치해야 함)
+  const isIdMissing = !id || id.trim() === '';
+
+  // 무한 스피너 방지: 2초 후에도 ID가 없으면 에러 상태로 전환
   useEffect(() => {
+    if (!isIdMissing) {
+      setIdWaitTimedOut(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (isIdMissing) {
+        setIdWaitTimedOut(true);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
+  }, [isIdMissing]);
+
+  // Fetch case data with race condition prevention
+  useEffect(() => {
+    // ID가 없으면 fetch 건너뛰기
+    if (!caseId) {
+      setIsLoading(false);
+      return;
+    }
+
+    // 이전 요청 무시 플래그
+    let isCancelled = false;
+
     const fetchCaseDetail = async () => {
       setIsLoading(true);
       setError(null);
 
       try {
         const response = await apiClient.get<CaseDetailResponse>(`/lawyer/cases/${caseId}`);
+
+        // caseId가 변경되어 이 요청이 무효화된 경우 무시
+        if (isCancelled) return;
 
         if (response.error || !response.data) {
           throw new Error(response.error || '케이스 정보를 불러오는데 실패했습니다.');
@@ -122,16 +158,55 @@ export default function LawyerCaseDetailClient({ id }: LawyerCaseDetailClientPro
           members: data.members || [],
         });
       } catch (err) {
+        if (isCancelled) return;
         setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
-    if (caseId) {
-      fetchCaseDetail();
-    }
+    fetchCaseDetail();
+
+    // cleanup: caseId 변경 또는 언마운트 시 이전 요청 무시
+    return () => {
+      isCancelled = true;
+    };
   }, [caseId, router]);
+
+  // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
+  if (isIdMissing) {
+    // 2초 후에도 ID가 없으면 에러 UI 표시
+    if (idWaitTimedOut) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <svg className="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">잘못된 접근입니다</h2>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-4">사건 ID가 올바르지 않거나 전달되지 않았습니다.</p>
+            <Link
+              href="/lawyer/cases"
+              className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              목록으로 돌아가기
+            </Link>
+          </div>
+        </div>
+      );
+    }
+    // 타임아웃 전에는 로딩 스피너 표시
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
