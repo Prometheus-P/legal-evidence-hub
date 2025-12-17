@@ -12,19 +12,24 @@ interface CasePathOptions {
   [key: string]: string | undefined;
 }
 
-const SECTION_BASE_PATH: Record<PortalRole, Partial<Record<CaseSection, string>>> = {
+/**
+ * Dynamic route patterns for case pages.
+ * Uses /cases/{id} format instead of /cases/detail?caseId=xxx
+ * to work properly with CloudFront static hosting.
+ */
+const SECTION_PATTERNS: Record<PortalRole, Partial<Record<CaseSection, string>>> = {
   lawyer: {
-    detail: '/lawyer/cases/detail',
-    procedure: '/lawyer/cases/procedure',
-    assets: '/lawyer/cases/assets',
-    relations: '/lawyer/cases/relations',
-    relationship: '/lawyer/cases/relationship',
+    detail: '/lawyer/cases/:id',
+    procedure: '/lawyer/cases/:id/procedure',
+    assets: '/lawyer/cases/:id/assets',
+    relations: '/lawyer/cases/:id/relations',
+    relationship: '/lawyer/cases/:id/relationship',
   },
   client: {
-    detail: '/client/cases/detail',
+    detail: '/client/cases/:id',
   },
   detective: {
-    detail: '/detective/cases/detail',
+    detail: '/detective/cases/:id',
   },
 };
 
@@ -34,20 +39,21 @@ function buildCasePath(
   caseId: string,
   options: CasePathOptions = {}
 ): string {
-  const basePath =
-    SECTION_BASE_PATH[role][section] ?? SECTION_BASE_PATH[role].detail ?? '/lawyer/cases/detail';
+  const pattern =
+    SECTION_PATTERNS[role][section] ?? SECTION_PATTERNS[role].detail ?? '/lawyer/cases/:id';
 
   // Validate caseId to prevent invalid URLs
   if (!caseId || caseId === 'undefined' || caseId === 'null') {
     console.error('[portalPaths] Invalid caseId:', caseId);
-    // Return base path without query params to trigger the error state in detail page
-    return basePath;
+    // Return fallback path
+    return `/${role}/cases`;
   }
 
-  const params = new URLSearchParams();
-  params.set('caseId', caseId);
+  // Replace :id placeholder with actual caseId
+  const basePath = pattern.replace(':id', caseId);
 
-  // Preserve optional params (e.g., tab, returnUrl, view mode)
+  // Build query string for optional params (tab, returnUrl, etc.)
+  const params = new URLSearchParams();
   Object.entries(options).forEach(([key, value]) => {
     if (value) {
       params.set(key, value);

@@ -45,6 +45,12 @@ These rules must NEVER be violated under any circumstances:
      - Backend: `--assignee leaf446`
      - Frontend: `--assignee Prometheus-P`
 
+6. **테스트 환경 (Testing Environment)**
+   - 사용자가 "테스트"를 요청하면 **항상 Staging 서버**에서 테스트
+   - **Staging URL**: `https://dpbf86zqulqfy.cloudfront.net/`
+   - 로컬 서버 실행하지 말 것 (uvicorn, npm run dev 등)
+   - API 테스트 시 staging API 엔드포인트 사용
+
 ## Common Development Commands
 
 ### Backend (FastAPI)
