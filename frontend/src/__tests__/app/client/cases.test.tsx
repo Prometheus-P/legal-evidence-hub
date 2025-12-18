@@ -160,10 +160,9 @@ describe('Client Cases Page', () => {
       render(<ClientCasesPage />);
 
       // Case cards should be rendered as links to detail pages
-      // Note: Next.js Link normalizes URLs differently in test environment
-      // so we check for links containing the case detail path pattern
+      // URL format: /client/cases/{caseId}/ (path-based routing)
       await waitFor(() => {
-        const links = document.querySelectorAll('a[href*="/client/cases/detail"]');
+        const links = document.querySelectorAll('a[href*="/client/cases/case-"]');
         expect(links.length).toBe(3);
       });
     });
@@ -171,17 +170,17 @@ describe('Client Cases Page', () => {
     test('should link to correct case detail pages', async () => {
       render(<ClientCasesPage />);
 
-      // Verify each case has a link with correct caseId query parameter
-      // Note: Next.js Link component may normalize trailing slashes in test env
+      // Verify each case has a link with correct caseId in path
+      // URL format: /client/cases/{caseId}/ (path-based routing)
       await waitFor(() => {
         expect(
-          document.querySelector('a[href*="caseId=case-1"]')
+          document.querySelector('a[href*="/client/cases/case-1"]')
         ).toBeInTheDocument();
         expect(
-          document.querySelector('a[href*="caseId=case-2"]')
+          document.querySelector('a[href*="/client/cases/case-2"]')
         ).toBeInTheDocument();
         expect(
-          document.querySelector('a[href*="caseId=case-3"]')
+          document.querySelector('a[href*="/client/cases/case-3"]')
         ).toBeInTheDocument();
       });
     });
