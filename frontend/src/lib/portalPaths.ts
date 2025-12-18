@@ -1,9 +1,12 @@
 /**
  * Portal path helpers
- * Generates role-aware URLs for case detail pages using path parameters.
+ * Generates role-aware URLs for case detail pages.
  *
- * Uses dynamic routes: /{role}/cases/{caseId}/ instead of query params
- * to avoid S3 redirect issues that strip query parameters.
+ * IMPORTANT: Uses query parameters for case detail pages to support
+ * Next.js static export. Dynamic route segments (/{role}/cases/{caseId}/)
+ * don't work in static export because those HTML files don't exist in S3.
+ *
+ * Solution: Use /{role}/cases/detail/?caseId=xxx which always exists.
  */
 
 export type PortalRole = 'lawyer' | 'client' | 'detective';
@@ -16,10 +19,10 @@ interface CasePathOptions {
 }
 
 /**
- * Build a path-based case URL using dynamic route segments.
- * Format: /{role}/cases/{caseId}/{section?}/
+ * Build a query-parameter-based case URL for static export compatibility.
+ * Format: /{role}/cases/{section}/?caseId={caseId}&...
  *
- * This avoids S3 302 redirects that strip query parameters.
+ * This ensures the URL always points to a pre-rendered HTML file.
  */
 function buildCasePath(
   role: PortalRole,
@@ -30,37 +33,30 @@ function buildCasePath(
   // Validate caseId to prevent invalid URLs
   if (!caseId || caseId === 'undefined' || caseId === 'null') {
     console.error('[portalPaths] Invalid caseId:', caseId);
-    // Return cases list to trigger navigation to list page
     return `/${role}/cases/`;
   }
 
-  // Build base path with caseId in path segment
-  let path = `/${role}/cases/${caseId}`;
+  // Build base path - always use static section paths
+  let path = `/${role}/cases/${section}/`;
 
-  // Add section if not 'detail' (detail is the default at /{role}/cases/{id}/)
-  if (section !== 'detail') {
-    path += `/${section}`;
-  }
+  // Build query params with caseId first
+  const queryParams: string[] = [`caseId=${encodeURIComponent(caseId)}`];
 
-  // Always add trailing slash for S3 compatibility
-  path += '/';
-
-  // Add optional query params if provided (e.g., tab, returnUrl)
-  const queryParams = Object.entries(options)
+  // Add optional query params
+  Object.entries(options)
     .filter(([, value]) => value !== undefined && value !== null)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value!)}`)
-    .join('&');
+    .forEach(([key, value]) => {
+      queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(value!)}`);
+    });
 
-  if (queryParams) {
-    path += `?${queryParams}`;
-  }
+  path += `?${queryParams.join('&')}`;
 
   return path;
 }
 
 /**
- * Build a case detail path using path parameters.
- * Example: /lawyer/cases/case_abc123/
+ * Build a case detail path using query parameters.
+ * Example: /lawyer/cases/detail/?caseId=case_abc123
  */
 export function getCaseDetailPath(
   role: PortalRole,
@@ -72,7 +68,7 @@ export function getCaseDetailPath(
 
 /**
  * Convenience helper for lawyer-only sub pages (procedure/assets/relations/etc.)
- * Example: /lawyer/cases/case_abc123/procedure/
+ * Example: /lawyer/cases/procedure/?caseId=case_abc123
  */
 export function getLawyerCasePath(
   section: Exclude<CaseSection, 'detail'> | 'detail',
