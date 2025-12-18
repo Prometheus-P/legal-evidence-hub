@@ -1,4 +1,4 @@
-import CaseDetailClient from '@/components/case/CaseDetailClient';
+import LawyerCaseDetailClient from './LawyerCaseDetailClient';
 
 // Allow dynamic routes not listed in generateStaticParams
 export const dynamicParams = true;
@@ -20,11 +20,5 @@ interface PageProps {
 }
 
 export default function LawyerCaseDetailPage({ params }: PageProps) {
-  return (
-    <CaseDetailClient
-      id={params.id}
-      apiBasePath="/lawyer"
-      defaultReturnUrl="/lawyer/cases"
-    />
-  );
+  return <LawyerCaseDetailClient id={params.id} />;
 }

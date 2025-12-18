@@ -16,12 +16,11 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
-import CaseDetailClient from '@/components/case/CaseDetailClient';
+import LawyerCaseDetailClient from '../[id]/LawyerCaseDetailClient';
 
 function LawyerCaseDetailContent() {
   const searchParams = useSearchParams();
   const caseId = searchParams.get('caseId');
-  const returnUrl = searchParams.get('returnUrl') || '/lawyer/cases/';
 
   // No caseId provided - show error state
   if (!caseId) {
@@ -41,13 +40,7 @@ function LawyerCaseDetailContent() {
   }
 
   // Render case detail with the caseId from query param
-  return (
-    <CaseDetailClient
-      id={caseId}
-      apiBasePath="/lawyer"
-      defaultReturnUrl={returnUrl}
-    />
-  );
+  return <LawyerCaseDetailClient id={caseId} />;
 }
 
 export default function LawyerCaseDetailByQuery() {
