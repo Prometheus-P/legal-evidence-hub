@@ -17,6 +17,7 @@ import { LINK_TYPE_LABELS } from '@/types/party';
 interface EvidenceItem {
   id: string;
   summary?: string;
+  filename?: string;
   type: string;
   timestamp: string;
   labels?: string[];
@@ -99,12 +100,16 @@ export function EvidenceLinkModal({
     }
   };
 
-  // Filter evidence by search query
-  const filteredEvidence = evidenceList.filter((e) =>
-    e.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.labels?.some((label) => label.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Filter evidence by search query (searches summary, filename, type, labels)
+  const filteredEvidence = evidenceList.filter((e) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      e.summary?.toLowerCase().includes(query) ||
+      e.filename?.toLowerCase().includes(query) ||
+      e.type.toLowerCase().includes(query) ||
+      e.labels?.some((label) => label.toLowerCase().includes(query))
+    );
+  });
 
   const getPartyName = (partyId: string) => {
     return parties.find((p) => p.id === partyId)?.name || partyId;
@@ -184,10 +189,13 @@ export function EvidenceLinkModal({
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {evidence.summary || `증거 #${evidence.id.slice(0, 8)}`}
+                          {evidence.summary || evidence.filename || `증거 #${evidence.id.slice(0, 8)}`}
                         </p>
                         <p className="text-xs text-gray-500">
                           {evidence.type} · {new Date(evidence.timestamp).toLocaleDateString()}
+                          {evidence.filename && evidence.summary && (
+                            <span className="ml-1 text-gray-400">({evidence.filename})</span>
+                          )}
                         </p>
                         {evidence.labels && evidence.labels.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">

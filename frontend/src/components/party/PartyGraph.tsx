@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -23,6 +23,7 @@ import {
 import '@xyflow/react/dist/style.css';
 
 import { usePartyGraph, type SaveStatus } from '@/hooks/usePartyGraph';
+import { getEvidence, type Evidence } from '@/lib/api/evidence';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useEvidenceLinks } from '@/hooks/useEvidenceLinks';
 import type {
@@ -171,13 +172,26 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
   );
 }
 
-// Mock evidence list for linking - in production, this would come from a prop or context
+// Evidence item interface for EvidenceLinkModal
 interface EvidenceItem {
   id: string;
   summary?: string;
+  filename?: string;
   type: string;
   timestamp: string;
   labels?: string[];
+}
+
+// Convert backend Evidence to modal EvidenceItem
+function toEvidenceItem(evidence: Evidence): EvidenceItem {
+  return {
+    id: evidence.id,
+    summary: evidence.ai_summary,
+    filename: evidence.filename,
+    type: evidence.type,
+    timestamp: evidence.timestamp || evidence.created_at,
+    labels: evidence.labels,
+  };
 }
 
 export function PartyGraph({ caseId }: PartyGraphProps) {
@@ -240,8 +254,28 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   const [popoverParty, setPopoverParty] = useState<PartyNodeData | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // Mock evidence list - in production, this would come from props or a context
-  const [evidenceList] = useState<EvidenceItem[]>([]);
+  // Evidence list state for EvidenceLinkModal
+  const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>([]);
+  const [isLoadingEvidence, setIsLoadingEvidence] = useState(false);
+
+  // Fetch evidence when modal opens
+  useEffect(() => {
+    if (evidenceLinkModalOpen && caseId) {
+      setIsLoadingEvidence(true);
+      getEvidence(caseId)
+        .then((res) => {
+          if (res.data?.evidence) {
+            setEvidenceList(res.data.evidence.map(toEvidenceItem));
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to fetch evidence:', err);
+        })
+        .finally(() => {
+          setIsLoadingEvidence(false);
+        });
+    }
+  }, [evidenceLinkModalOpen, caseId]);
 
   // Handle node position change (drag)
   const handleNodesChange: OnNodesChange<PartyNodeType> = useCallback(
@@ -538,7 +572,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         parties={partyNodes}
         relationships={relationships}
         evidenceList={evidenceList}
-        isLoadingEvidence={false}
+        isLoadingEvidence={isLoadingEvidence}
         preSelectedPartyId={popoverParty?.id}
       />
 
