@@ -21,7 +21,6 @@ import json
 import os
 import platform
 import socket
-import time
 import uuid
 from datetime import datetime, timezone
 from functools import lru_cache
