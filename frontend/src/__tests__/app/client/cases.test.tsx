@@ -160,9 +160,9 @@ describe('Client Cases Page', () => {
       render(<ClientCasesPage />);
 
       // Case cards should be rendered as links to detail pages
-      // URL format: /client/cases/{caseId}/ (path-based routing)
+      // URL format: /client/cases/detail/?caseId=xxx (query param for static export)
       await waitFor(() => {
-        const links = document.querySelectorAll('a[href*="/client/cases/case-"]');
+        const links = document.querySelectorAll('a[href*="/client/cases/detail"]');
         expect(links.length).toBe(3);
       });
     });
@@ -170,17 +170,17 @@ describe('Client Cases Page', () => {
     test('should link to correct case detail pages', async () => {
       render(<ClientCasesPage />);
 
-      // Verify each case has a link with correct caseId in path
-      // URL format: /client/cases/{caseId}/ (path-based routing)
+      // Verify each case has a link with correct caseId query parameter
+      // URL format: /client/cases/detail/?caseId=xxx (query param for static export)
       await waitFor(() => {
         expect(
-          document.querySelector('a[href*="/client/cases/case-1"]')
+          document.querySelector('a[href*="caseId=case-1"]')
         ).toBeInTheDocument();
         expect(
-          document.querySelector('a[href*="/client/cases/case-2"]')
+          document.querySelector('a[href*="caseId=case-2"]')
         ).toBeInTheDocument();
         expect(
-          document.querySelector('a[href*="/client/cases/case-3"]')
+          document.querySelector('a[href*="caseId=case-3"]')
         ).toBeInTheDocument();
       });
     });
