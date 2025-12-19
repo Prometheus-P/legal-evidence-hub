@@ -210,8 +210,8 @@ async def root():
         "version": "0.2.0",
         "environment": settings.APP_ENV,
         "docs": "/docs" if settings.APP_DEBUG else "disabled",
-        "health": "/health",
-        "health_ready": "/health/ready",
+        "health": "/api/health",
+        "health_ready": "/api/health/ready",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -219,7 +219,9 @@ async def root():
 # ============================================
 # Health Check Router (Liveness + Readiness probes)
 # ============================================
-app.include_router(health.router)
+# Note: Health endpoints use /api prefix for CloudFront routing compatibility
+# CloudFront routes /api/* to API Gateway, so health checks must be at /api/health/*
+app.include_router(health.router, prefix="/api")
 
 
 # ============================================
