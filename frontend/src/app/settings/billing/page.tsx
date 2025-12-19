@@ -133,13 +133,13 @@ export default function BillingPage() {
               <div className="text-right">
                 <p className="text-sm text-neutral-600">다음 결제일</p>
                 <div className="flex items-center mt-1">
-                  <Calendar className="w-4 h-4 text-accent mr-1" />
+                  <Calendar className="w-4 h-4 text-primary mr-1" />
                   <p className="text-sm font-medium text-secondary">{currentPlan.nextBillingDate}</p>
                 </div>
               </div>
             </div>
             <div className="flex space-x-3 pt-4 border-t border-gray-200">
-              <button onClick={() => handlePlanChange('upgrade')} className="flex-1 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors" aria-label="Upgrade plan">업그레이드</button>
+              <button onClick={() => handlePlanChange('upgrade')} className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors" aria-label="Upgrade plan">업그레이드</button>
               <button onClick={() => handlePlanChange('downgrade')} className="flex-1 px-4 py-2 bg-gray-200 text-neutral-700 rounded-md hover:bg-gray-300 transition-colors" aria-label="Downgrade plan">다운그레이드</button>
             </div>
           </div>
@@ -149,7 +149,7 @@ export default function BillingPage() {
           <h2 id="payment-method-title" className="text-xl font-semibold text-secondary mb-4">결제 수단</h2>
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-deep-trust-blue rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
                 <CreditCard className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
@@ -172,11 +172,11 @@ export default function BillingPage() {
           <div aria-labelledby="ai-token-usage-label">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
-                <TrendingUp className="w-5 h-5 text-accent mr-2" />
+                <TrendingUp className="w-5 h-5 text-primary mr-2" />
                 <h3 id="ai-token-usage-label" className="text-lg font-semibold text-secondary">AI 토큰 사용량</h3>
               </div>
               {isAiTokenWarning && (
-                <div className="flex items-center text-semantic-error">
+                <div className="flex items-center text-error">
                   <AlertCircle className="w-4 h-4 mr-1" />
                   <span className="text-sm font-medium">한도 임박</span>
                 </div>
@@ -188,7 +188,7 @@ export default function BillingPage() {
                 <span className="font-semibold text-secondary">{aiTokenPercentage.toFixed(1)}%</span>
               </div>
               <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden" role="progressbar" aria-valuenow={aiTokenPercentage} aria-valuemin={0} aria-valuemax={100} aria-label={`AI token usage: ${aiTokenPercentage.toFixed(1)}%`}>
-                <div className={`h-full transition-all duration-300 ${isAiTokenWarning ? 'bg-semantic-error' : 'bg-success-green'}`} style={{ width: `${aiTokenPercentage}%` }} />
+                <div className={`h-full transition-all duration-300 ${isAiTokenWarning ? 'bg-error' : 'bg-success'}`} style={{ width: `${aiTokenPercentage}%` }} />
               </div>
             </div>
           </div>
@@ -196,11 +196,11 @@ export default function BillingPage() {
           <div aria-labelledby="storage-usage-label">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
-                <Database className="w-5 h-5 text-accent mr-2" />
+                <Database className="w-5 h-5 text-primary mr-2" />
                 <h3 id="storage-usage-label" className="text-lg font-semibold text-secondary">스토리지 사용량</h3>
               </div>
               {isStorageWarning && (
-                <div className="flex items-center text-semantic-error">
+                <div className="flex items-center text-error">
                   <AlertCircle className="w-4 h-4 mr-1" />
                   <span className="text-sm font-medium">한도 임박</span>
                 </div>
@@ -212,7 +212,7 @@ export default function BillingPage() {
                 <span className="font-semibold text-secondary">{storagePercentage.toFixed(1)}%</span>
               </div>
               <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden" role="progressbar" aria-valuenow={storagePercentage} aria-valuemin={0} aria-valuemax={100} aria-label={`Storage usage: ${storagePercentage.toFixed(1)}%`}>
-                <div className={`h-full transition-all duration-300 ${isStorageWarning ? 'bg-semantic-error' : 'bg-success-green'}`} style={{ width: `${storagePercentage}%` }} />
+                <div className={`h-full transition-all duration-300 ${isStorageWarning ? 'bg-error' : 'bg-success'}`} style={{ width: `${storagePercentage}%` }} />
               </div>
             </div>
           </div>
@@ -240,17 +240,17 @@ export default function BillingPage() {
                   <td className="py-3 px-4 text-sm font-medium text-secondary">₩{invoice.amount.toLocaleString()}</td>
                   <td className="py-3 px-4">
                     {invoice.status === 'paid' ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-success-green">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-success">
                         <CheckCircle2 className="w-3 h-3 mr-1" />결제 완료
                       </span>
                     ) : invoice.status === 'pending' ? (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">대기 중</span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-semantic-error">실패</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-error">실패</span>
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <button onClick={() => handleDownloadInvoice(invoice.invoiceUrl)} className="inline-flex items-center text-sm text-accent hover:text-accent-dark transition-colors" aria-label={`Download invoice ${invoice.id}`}>
+                    <button onClick={() => handleDownloadInvoice(invoice.invoiceUrl)} className="inline-flex items-center text-sm text-primary hover:text-primary-dark transition-colors" aria-label={`Download invoice ${invoice.id}`}>
                       <Download className="w-4 h-4 mr-1" />다운로드
                     </button>
                   </td>
@@ -283,7 +283,7 @@ export default function BillingPage() {
             </div>
             <div className="flex space-x-3">
               <button onClick={handleCloseModal} className="flex-1 px-4 py-2 bg-gray-200 text-neutral-700 rounded-md hover:bg-gray-300 transition-colors">취소</button>
-              <button onClick={handleConfirmPlanChange} className="flex-1 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors" aria-label="Confirm plan change">확인</button>
+              <button onClick={handleConfirmPlanChange} className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors" aria-label="Confirm plan change">확인</button>
             </div>
           </div>
         </div>

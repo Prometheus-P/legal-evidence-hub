@@ -26,11 +26,9 @@
       BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
       'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 
-    /* Legacy color aliases (for backward compatibility) */
-    --deep-trust-blue: var(--color-secondary);
-    --clarity-teal: var(--color-primary);
-    --calm-grey: var(--color-neutral-50);
-    --accent: var(--color-primary);
+    /* Legacy color aliases - REMOVED (2025-12-19)
+       All components migrated to semantic tokens.
+       See tailwind.config.js for migration notes. */
   }
 
   /* Base body styles */
@@ -109,35 +107,16 @@
            hover:shadow-md transition-shadow duration-200;
   }
 
-  /* Legacy text color classes */
-  .text-deep-trust-blue {
-    color: var(--color-secondary);
-  }
-
-  .text-clarity-teal {
-    color: var(--color-primary);
-  }
-
-  .text-accent {
-    color: var(--color-primary);
-  }
-
-  /* Legacy background color classes */
-  .bg-deep-trust-blue {
-    background-color: var(--color-secondary);
-  }
-
-  .bg-clarity-teal {
-    background-color: var(--color-primary);
-  }
-
-  .bg-calm-grey {
-    background-color: var(--color-neutral-50);
-  }
-
-  .bg-accent {
-    background-color: var(--color-primary);
-  }
+  /* Legacy color classes - REMOVED (2025-12-19)
+     Migrated to semantic tokens:
+     - text-deep-trust-blue → text-secondary
+     - text-clarity-teal → text-primary
+     - text-accent → text-primary
+     - bg-deep-trust-blue → bg-secondary
+     - bg-clarity-teal → bg-primary
+     - bg-calm-grey → bg-neutral-50
+     - bg-accent → bg-primary
+  */
 
   /*
    * React Flow dark mode styles

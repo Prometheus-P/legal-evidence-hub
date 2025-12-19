@@ -128,7 +128,7 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-deep-trust-blue mb-2">
+          <h1 className="text-3xl font-bold text-secondary mb-2">
             무료로 시작하기
           </h1>
           <p className="text-neutral-600">14일 무료 체험, 신용카드 필요 없음</p>

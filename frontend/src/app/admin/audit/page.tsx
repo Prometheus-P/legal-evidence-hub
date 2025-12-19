@@ -63,7 +63,7 @@ export default function AuditLogPage() {
   };
 
   const getActionColor = (action: AuditLogEntry['action']) => {
-    const colors = { DELETE: 'text-semantic-error bg-red-50', CREATE: 'text-success-green bg-green-50', UPDATE: 'text-yellow-600 bg-yellow-50', VIEW: 'text-blue-600 bg-blue-50', LOGIN: 'text-neutral-600 bg-gray-50' };
+    const colors = { DELETE: 'text-error bg-red-50', CREATE: 'text-success bg-green-50', UPDATE: 'text-yellow-600 bg-yellow-50', VIEW: 'text-blue-600 bg-blue-50', LOGIN: 'text-neutral-600 bg-gray-50' };
     return colors[action];
   };
 
@@ -100,11 +100,11 @@ export default function AuditLogPage() {
         <h2 className="text-xl font-semibold text-secondary mb-6">보안 상태</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-success-green bg-opacity-10 rounded-lg flex items-center justify-center"><Lock className="w-6 h-6 text-success-green" /></div>
+            <div className="w-12 h-12 bg-success bg-opacity-10 rounded-lg flex items-center justify-center"><Lock className="w-6 h-6 text-success" /></div>
             <div><p className="text-sm text-neutral-600">암호화 상태</p><p className="text-lg font-semibold text-secondary mt-1">암호화 활성</p><p className="text-xs text-gray-500 mt-1">{securityStatus.encryption.type}</p></div>
           </div>
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-success-green bg-opacity-10 rounded-lg flex items-center justify-center"><Shield className="w-6 h-6 text-success-green" /></div>
+            <div className="w-12 h-12 bg-success bg-opacity-10 rounded-lg flex items-center justify-center"><Shield className="w-6 h-6 text-success" /></div>
             <div><p className="text-sm text-neutral-600">PIPA 준수</p><p className="text-lg font-semibold text-secondary mt-1">{securityStatus.pipa.compliant ? 'PIPA Compliant' : 'Non-Compliant'}</p><p className="text-xs text-gray-500 mt-1">개인정보보호법 준수</p></div>
           </div>
           <div className="flex items-start space-x-4">
@@ -127,7 +127,7 @@ export default function AuditLogPage() {
           <div className="flex flex-wrap gap-3">
             {(['LOGIN', 'VIEW', 'CREATE', 'UPDATE', 'DELETE'] as const).map((action) => (
               <label key={action} className="flex items-center space-x-2 cursor-pointer">
-                <input type="checkbox" aria-label={action} checked={selectedActions.includes(action)} onChange={() => toggleActionFilter(action)} className="w-4 h-4 text-accent border-gray-300 rounded" />
+                <input type="checkbox" aria-label={action} checked={selectedActions.includes(action)} onChange={() => toggleActionFilter(action)} className="w-4 h-4 text-primary border-gray-300 rounded" />
                 <span className="text-sm text-neutral-700">{action}</span>
               </label>
             ))}
@@ -138,7 +138,7 @@ export default function AuditLogPage() {
       <section className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div><h2 className="text-xl font-semibold text-secondary">활동 로그</h2><p className="text-sm text-neutral-600 mt-1">총 {filteredLogs.length} 개의 로그</p></div>
-          <button onClick={handleExportCSV} aria-label="CSV 다운로드" className="inline-flex items-center px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark"><FileDown className="w-4 h-4 mr-2" />CSV 다운로드</button>
+          <button onClick={handleExportCSV} aria-label="CSV 다운로드" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover"><FileDown className="w-4 h-4 mr-2" />CSV 다운로드</button>
         </div>
         {filteredLogs.length === 0 ? (
           <div className="text-center py-12"><AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" /><p className="text-neutral-600">로그가 없습니다</p></div>

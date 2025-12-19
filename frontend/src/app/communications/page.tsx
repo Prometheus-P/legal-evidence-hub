@@ -60,7 +60,7 @@ function CommunicationsContent() {
           <button
             role="tab"
             aria-selected={activeTab === 'info'}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'info' ? 'bg-white text-secondary border-deep-trust-blue' : 'bg-gray-100 text-neutral-600 border-transparent'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'info' ? 'bg-white text-secondary border-secondary' : 'bg-gray-100 text-neutral-600 border-transparent'}`}
             onClick={() => setActiveTab('info')}
           >
             의뢰인 정보
@@ -68,7 +68,7 @@ function CommunicationsContent() {
           <button
             role="tab"
             aria-selected={activeTab === 'share'}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'share' ? 'bg-white text-secondary border-deep-trust-blue' : 'bg-gray-100 text-neutral-600 border-transparent'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium border ${activeTab === 'share' ? 'bg-white text-secondary border-secondary' : 'bg-gray-100 text-neutral-600 border-transparent'}`}
             onClick={() => setActiveTab('share')}
           >
             증거 공유

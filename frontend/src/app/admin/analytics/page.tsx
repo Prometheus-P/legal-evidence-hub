@@ -81,7 +81,7 @@ export default function AnalyticsDashboard() {
 
   const getActivityLevelColor = (level: string) => {
     switch (level) {
-      case 'high': return 'text-success-green bg-green-50';
+      case 'high': return 'text-success bg-green-50';
       case 'medium': return 'text-yellow-600 bg-yellow-50';
       default: return 'text-neutral-600 bg-gray-50';
     }
@@ -118,7 +118,7 @@ export default function AnalyticsDashboard() {
           <button onClick={handleRefresh} aria-label="새로고침" className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-neutral-700 rounded-md hover:bg-gray-50">
             <RefreshCw className="w-4 h-4 mr-2" />새로고침
           </button>
-          <button onClick={handleExportPDF} aria-label="PDF 다운로드" className="inline-flex items-center px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark">
+          <button onClick={handleExportPDF} aria-label="PDF 다운로드" className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover">
             <Download className="w-4 h-4 mr-2" />PDF 다운로드
           </button>
         </div>
@@ -135,13 +135,13 @@ export default function AnalyticsDashboard() {
                   <span className="text-xl text-neutral-600 ml-2">{metric.unit}</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-success-green bg-opacity-10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-success-green" />
+              <div className="w-12 h-12 bg-success bg-opacity-10 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-success" />
               </div>
             </div>
             <div className="flex items-center">
-              {metric.trend === 'up' ? <ArrowUp className="w-4 h-4 text-success-green mr-1" /> : <ArrowDown className="w-4 h-4 text-semantic-error mr-1" />}
-              <span className="text-sm font-medium text-success-green">+{metric.change}%</span>
+              {metric.trend === 'up' ? <ArrowUp className="w-4 h-4 text-success mr-1" /> : <ArrowDown className="w-4 h-4 text-error mr-1" />}
+              <span className="text-sm font-medium text-success">+{metric.change}%</span>
               <span className="text-sm text-neutral-600 ml-2">지난 달 대비</span>
             </div>
           </div>

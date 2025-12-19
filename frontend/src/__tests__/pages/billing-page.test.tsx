@@ -99,7 +99,7 @@ describe('Plan 3.16 - Billing Page (구독 현황 페이지)', () => {
       // 업그레이드/다운그레이드 버튼이 표시되어야 함
       const upgradeButton = screen.getByLabelText(/Upgrade plan/i);
       expect(upgradeButton).toBeInTheDocument();
-      expect(upgradeButton).toHaveClass('bg-accent');
+      expect(upgradeButton).toHaveClass('bg-primary');
     });
   });
 
@@ -167,7 +167,7 @@ describe('Plan 3.16 - Billing Page (구독 현황 페이지)', () => {
       expect(screen.getByText(/플랜 다운그레이드/i)).toBeInTheDocument();
     });
 
-    it('should apply semantic-error color to downgrade button', () => {
+    it('should apply gray color to downgrade button', () => {
       render(<BillingPage />);
 
       // 다운그레이드 버튼은 회색 배경
@@ -253,7 +253,7 @@ describe('Plan 3.16 - Billing Page (구독 현황 페이지)', () => {
       // "결제 완료" 상태가 Success Green으로 표시되어야 함
       const paidBadges = screen.getAllByText(/결제 완료/i);
       expect(paidBadges.length).toBeGreaterThan(0);
-      expect(paidBadges[0]).toHaveClass('text-success-green');
+      expect(paidBadges[0]).toHaveClass('text-success');
     });
 
     it('should format currency values in Korean Won', () => {

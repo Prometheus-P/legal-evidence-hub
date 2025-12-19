@@ -40,7 +40,7 @@ describe('Plan 3.7 - Client Evidence Submission Portal', () => {
 
         await waitFor(() => {
             const successMessage = screen.getByText(/파일 2개가 안전하게 전송되었습니다\./);
-            expect(successMessage).toHaveClass('text-success-green');
+            expect(successMessage).toHaveClass('text-success');
         });
     });
 

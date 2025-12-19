@@ -83,7 +83,7 @@ export default function RelationshipClient({ caseId: paramCaseId }: Relationship
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-deep-trust-blue" />
+            <Users className="w-5 h-5 text-secondary" />
             <h1 className="text-xl font-bold text-neutral-900">인물 관계도</h1>
           </div>
           {useMockData && (
@@ -111,7 +111,7 @@ export default function RelationshipClient({ caseId: paramCaseId }: Relationship
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-white">
               <div className="text-center">
-                <Loader2 className="w-8 h-8 animate-spin text-deep-trust-blue mx-auto mb-2" />
+                <Loader2 className="w-8 h-8 animate-spin text-secondary mx-auto mb-2" />
                 <p className="text-neutral-600">관계도를 불러오는 중...</p>
               </div>
             </div>

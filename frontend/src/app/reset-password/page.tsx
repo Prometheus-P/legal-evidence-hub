@@ -106,7 +106,7 @@ function ResetPasswordForm() {
             </div>
             <Link
               href="/login"
-              className="text-deep-trust-blue hover:underline text-sm"
+              className="text-secondary hover:underline text-sm"
             >
               로그인 페이지로 이동
             </Link>
@@ -148,7 +148,7 @@ function ResetPasswordForm() {
             </div>
             <Link
               href="/forgot-password"
-              className="text-deep-trust-blue hover:underline text-sm"
+              className="text-secondary hover:underline text-sm"
             >
               비밀번호 찾기로 이동
             </Link>
@@ -162,7 +162,7 @@ function ResetPasswordForm() {
     <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-deep-trust-blue mb-2">
+          <h1 className="text-2xl font-bold text-secondary mb-2">
             새 비밀번호 설정
           </h1>
           <p className="text-neutral-600 text-sm">
@@ -212,7 +212,7 @@ function ResetPasswordForm() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="text-deep-trust-blue hover:underline text-sm"
+              className="text-secondary hover:underline text-sm"
             >
               로그인 페이지로 돌아가기
             </Link>

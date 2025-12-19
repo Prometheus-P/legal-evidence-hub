@@ -64,24 +64,15 @@ module.exports = {
         },
 
         // ========================================
-        // LEGACY ALIASES (backward compatibility)
-        // @deprecated These map old color names to new semantic system
-        //
-        // Migration Status (US1 - Design System Consistency):
-        // ✅ Lawyer Portal: Fully migrated (cases, evidence, draft, relationship, shared, auth, primitives)
-        // ❌ Landing Pages: Still using legacy aliases
-        // ❌ Client Portal: Still using legacy aliases
-        //
-        // Remove these aliases after landing/client portal migration is complete
+        // LEGACY ALIASES - REMOVED (2025-12-19)
+        // All components migrated to semantic tokens:
+        // - accent → primary
+        // - accent-dark → primary-hover
+        // - semantic-error → error
+        // - deep-trust-blue → secondary
+        // - calm-grey → neutral-50
+        // - success-green → success
         // ========================================
-        accent: {
-          DEFAULT: 'var(--color-primary)',
-          dark: 'var(--color-primary-hover)',
-        },
-        'semantic-error': 'var(--color-error)',
-        'deep-trust-blue': 'var(--color-secondary)',
-        'calm-grey': 'var(--color-neutral-50)',
-        'success-green': 'var(--color-success)',
       },
 
       // ========================================

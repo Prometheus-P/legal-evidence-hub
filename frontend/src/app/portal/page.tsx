@@ -77,7 +77,7 @@ function PortalContent() {
 
 export default function ClientEvidencePortalPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-calm-grey to-white flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-white flex items-center justify-center px-6 py-12">
       <Suspense fallback={<div className="text-gray-500">로딩 중...</div>}>
         <PortalContent />
       </Suspense>

@@ -105,8 +105,8 @@ describe('Plan 3.17 - Audit Log Page (활동 로그 페이지)', () => {
       const { container } = render(<AuditLogPage />);
 
       // 테이블에서 semantic-error 클래스를 가진 badge 찾기
-      const deleteBadge = container.querySelector('.text-semantic-error');
-      const createBadge = container.querySelector('.text-success-green');
+      const deleteBadge = container.querySelector('.text-error');
+      const createBadge = container.querySelector('.text-success');
 
       expect(deleteBadge).toBeInTheDocument();
       expect(createBadge).toBeInTheDocument();
@@ -283,7 +283,7 @@ describe('Plan 3.17 - Audit Log Page (활동 로그 페이지)', () => {
       const { container } = render(<AuditLogPage />);
 
       // 테이블 내의 DELETE badge 찾기
-      const deleteBadge = container.querySelector('.text-semantic-error');
+      const deleteBadge = container.querySelector('.text-error');
       expect(deleteBadge).toBeInTheDocument();
     });
   });

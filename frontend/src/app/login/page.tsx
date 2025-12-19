@@ -77,7 +77,7 @@ export default function LoginPage() {
       >
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-deep-trust-blue mb-2">
+            <h1 className="text-3xl font-bold text-secondary mb-2">
               Legal Evidence Hub
             </h1>
             <p className="text-neutral-600">로그인하여 시작하세요</p>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 계정이 없으신가요?{' '}
                 <Link
                   href="/signup"
-                  className="text-deep-trust-blue hover:underline font-medium"
+                  className="text-secondary hover:underline font-medium"
                 >
                   회원가입
                 </Link>

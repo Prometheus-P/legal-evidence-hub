@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
             </div>
             <Link
               href="/login"
-              className="text-deep-trust-blue hover:underline text-sm"
+              className="text-secondary hover:underline text-sm"
             >
               로그인 페이지로 돌아가기
             </Link>
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-deep-trust-blue mb-2">
+          <h1 className="text-2xl font-bold text-secondary mb-2">
             비밀번호 찾기
           </h1>
           <p className="text-neutral-600 text-sm">
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="text-deep-trust-blue hover:underline text-sm"
+              className="text-secondary hover:underline text-sm"
             >
               로그인 페이지로 돌아가기
             </Link>
