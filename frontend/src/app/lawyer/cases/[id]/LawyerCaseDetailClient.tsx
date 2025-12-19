@@ -10,7 +10,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, RefreshCw, Filter, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Loader2, RefreshCw, Filter, Sparkles, CheckCircle2, FileText } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
 import ExplainerCard from '@/components/cases/ExplainerCard';
 import ShareSummaryModal from '@/components/cases/ShareSummaryModal';
@@ -36,6 +36,12 @@ import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/ut
 import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
 import { ErrorState } from '@/components/shared/EmptyState';
 import { logger } from '@/lib/logger';
+// Draft imports
+import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
+import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
+import { generateDraftPreview, DraftPreviewResponse } from '@/lib/api/draft';
+import { DraftCitation, PrecedentCitation } from '@/types/draft';
+import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 
 interface CaseDetail {
   id: string;
@@ -118,12 +124,20 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members' | 'relations'>('evidence');
+  const [activeTab, setActiveTab] = useState<'evidence' | 'timeline' | 'members' | 'relations' | 'draft'>('evidence');
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   // 무한 스피너 방지: ID 대기 타임아웃 상태
   const [idWaitTimedOut, setIdWaitTimedOut] = useState(false);
+
+  // Draft state
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const [draftText, setDraftText] = useState('');
+  const [draftCitations, setDraftCitations] = useState<DraftCitation[]>([]);
+  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const [hasExistingDraft, setHasExistingDraft] = useState(false);
 
   // Evidence state
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
@@ -389,6 +403,65 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     setTimeout(() => setUploadFeedback(null), 5000);
   }, [caseId, fetchEvidence]);
 
+  // Draft generation handler
+  const handleGenerateDraft = useCallback(async (selectedEvidenceIds: string[]) => {
+    if (!caseId) return;
+
+    setIsGeneratingDraft(true);
+    setDraftError(null);
+
+    try {
+      const response = await generateDraftPreview(caseId, {
+        sections: ['청구취지', '청구원인'],
+        language: 'ko',
+        style: '법원 제출용_표준',
+      });
+
+      if (response.error || !response.data) {
+        throw new Error(response.error || '초안 생성에 실패했습니다.');
+      }
+
+      const { draft_text, citations } = response.data;
+
+      // Map API citations to component format
+      const mappedCitations: DraftCitation[] = citations.map(c => ({
+        evidenceId: c.evidence_id,
+        title: c.snippet.substring(0, 50) + (c.snippet.length > 50 ? '...' : ''),
+        quote: c.snippet,
+      }));
+
+      setDraftText(draft_text);
+      setDraftCitations(mappedCitations);
+      setHasExistingDraft(true);
+      setShowDraftModal(false);
+      setActiveTab('draft');
+    } catch (err) {
+      logger.error('Draft generation error:', err);
+      setDraftError(err instanceof Error ? err.message : '초안 생성에 실패했습니다.');
+    } finally {
+      setIsGeneratingDraft(false);
+    }
+  }, [caseId]);
+
+  // Draft download handler
+  const handleDraftDownload = useCallback(async (data: { format: DraftDownloadFormat; content: string }): Promise<DownloadResult> => {
+    try {
+      const result = await downloadDraftAsDocx(data.content, caseId, data.format);
+      return result;
+    } catch (err) {
+      logger.error('Draft download error:', err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : '다운로드에 실패했습니다.',
+      };
+    }
+  }, [caseId]);
+
+  // Draft re-generate handler (opens modal)
+  const handleDraftRegenerate = useCallback(() => {
+    setShowDraftModal(true);
+  }, []);
+
   // Race condition 방어: ID가 없으면 로딩 스피너 또는 에러 표시
   if (isIdMissing) {
     // 2초 후에도 ID가 없으면 에러 UI 표시
@@ -608,23 +681,25 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       <div className="border-b border-gray-200 dark:border-neutral-700">
         <nav className="flex gap-6">
           {[
-            { id: 'evidence', label: '증거 자료', count: evidenceList.length },
-            { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length },
-            { id: 'members', label: '팀원', count: caseDetail.members.length },
-            { id: 'relations', label: '관계도', count: null },
+            { id: 'evidence', label: '증거 자료', count: evidenceList.length, icon: null },
+            { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length, icon: null },
+            { id: 'members', label: '팀원', count: caseDetail.members.length, icon: null },
+            { id: 'relations', label: '관계도', count: null, icon: null },
+            { id: 'draft', label: '초안 생성', count: null, icon: <FileText className="w-4 h-4 mr-1" /> },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`
-                pb-3 text-sm font-medium border-b-2 transition-colors
+                pb-3 text-sm font-medium border-b-2 transition-colors flex items-center
                 ${activeTab === tab.id
                   ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                   : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                 }
               `}
             >
+              {tab.icon}
               {tab.label}
               {tab.count != null && tab.count > 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-neutral-700 rounded-full text-xs">
@@ -797,6 +872,78 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
             <PartyGraph caseId={caseId} />
           </div>
         )}
+
+        {activeTab === 'draft' && (
+          <div className="space-y-6">
+            {/* Draft Error State */}
+            {draftError && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-red-800 dark:text-red-300">{draftError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* No Draft Yet - Show Generate Button */}
+            {!hasExistingDraft && !isGeneratingDraft && (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  법률 초안 생성
+                </h3>
+                <p className="text-[var(--color-text-secondary)] mb-6 max-w-md mx-auto">
+                  등록된 증거 자료를 기반으로 AI가 법률 문서 초안을 생성합니다.
+                  생성된 초안은 검토 후 수정할 수 있습니다.
+                </p>
+                <button
+                  onClick={() => setShowDraftModal(true)}
+                  className="inline-flex items-center px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  초안 생성하기
+                </button>
+                {evidenceList.length === 0 && (
+                  <p className="text-sm text-amber-600 dark:text-amber-400 mt-4">
+                    초안 생성을 위해 먼저 증거 자료를 업로드해주세요.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Generating State */}
+            {isGeneratingDraft && (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                  초안 생성 중...
+                </h3>
+                <p className="text-[var(--color-text-secondary)]">
+                  AI가 증거를 분석하고 법률 초안을 작성하고 있습니다.
+                </p>
+              </div>
+            )}
+
+            {/* Draft Preview Panel */}
+            {hasExistingDraft && !isGeneratingDraft && (
+              <DraftPreviewPanel
+                caseId={caseId}
+                draftText={draftText}
+                citations={draftCitations}
+                isGenerating={isGeneratingDraft}
+                hasExistingDraft={hasExistingDraft}
+                onGenerate={handleDraftRegenerate}
+                onDownload={handleDraftDownload}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Summary Card Modal */}
@@ -841,6 +988,14 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               : null
           );
         }}
+      />
+
+      {/* Draft Generation Modal */}
+      <DraftGenerationModal
+        isOpen={showDraftModal}
+        onClose={() => setShowDraftModal(false)}
+        onGenerate={handleGenerateDraft}
+        evidenceList={evidenceList}
       />
     </div>
   );
