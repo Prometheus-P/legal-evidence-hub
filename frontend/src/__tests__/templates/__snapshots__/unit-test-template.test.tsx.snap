@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`SampleComponent Snapshots should match snapshot in default state 1`] = `
+<div>
+  <form
+    aria-label="sample form"
+  >
+    <h1>
+      Test Title
+    </h1>
+    <label
+      for="input-field"
+    >
+      Input Field
+      <input
+        id="input-field"
+        type="text"
+        value=""
+      />
+    </label>
+    <button
+      type="submit"
+    >
+      Submit
+    </button>
+  </form>
+</div>
+`;
+
+exports[`SampleComponent Snapshots should match snapshot in loading state 1`] = `
+<div>
+  <form
+    aria-label="sample form"
+  >
+    <h1>
+      Test Title
+    </h1>
+    <label
+      for="input-field"
+    >
+      Input Field
+      <input
+        disabled=""
+        id="input-field"
+        type="text"
+        value=""
+      />
+    </label>
+    <button
+      disabled=""
+      type="submit"
+    >
+      Loading...
+    </button>
+  </form>
+</div>
+`;
