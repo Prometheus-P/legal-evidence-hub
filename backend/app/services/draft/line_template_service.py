@@ -166,8 +166,8 @@ class LineTemplateService:
                         evidence_context
                     )
 
-                # Generate content
-                ai_content = generate_chat_completion(prompt)
+                # Generate content using gpt-4o-mini for faster response
+                ai_content = generate_chat_completion(prompt, model="gpt-4o-mini")
                 new_line["text"] = ai_content
 
             filled_lines.append(new_line)

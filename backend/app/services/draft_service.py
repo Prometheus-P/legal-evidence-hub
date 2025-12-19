@@ -154,9 +154,10 @@ class DraftService:
             style=request.style
         )
 
-        # 6. Generate draft using GPT-4o
+        # 6. Generate draft using GPT-4o-mini (faster response to avoid CloudFront timeout)
         raw_response = generate_chat_completion(
             messages=prompt_messages,
+            model="gpt-4o-mini",
             temperature=0.3,
             max_tokens=4000
         )
