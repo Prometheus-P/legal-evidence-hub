@@ -475,3 +475,8 @@ def delete_case_index(case_id: str) -> bool:
 def create_case_index(case_id: str) -> bool:
     """Alias for create_case_collection (backward compatibility)"""
     return create_case_collection(case_id)
+
+
+def get_qdrant_client() -> QdrantClient:
+    """Public accessor for Qdrant client (for health checks, etc.)"""
+    return _get_qdrant_client()
