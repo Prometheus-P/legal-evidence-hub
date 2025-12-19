@@ -249,18 +249,19 @@ class MetadataStore:
 
     # ========== Idempotency & Duplicate Check Methods ==========
 
-    def check_hash_exists(self, file_hash: str) -> Optional[Dict[str, Any]]:
+    def check_hash_exists(self, file_hash: str, case_id: str = None) -> Optional[Dict[str, Any]]:
         """
-        Check if a file with the given hash already exists.
+        Check if a file with the given hash already exists within the same case.
 
-        Uses a GSI on file_hash field to efficiently query.
+        Uses a GSI on file_hash field to efficiently query, then filters by case_id.
         Falls back to scan if GSI doesn't exist.
 
         Args:
             file_hash: SHA-256 hash of the file
+            case_id: Case ID to check within (if None, checks globally - legacy behavior)
 
         Returns:
-            Dict with existing evidence info if found, None otherwise
+            Dict with existing evidence info if found in same case, None otherwise
         """
         try:
             # Try GSI first (file_hash-index)
@@ -272,20 +273,27 @@ class MetadataStore:
                     ExpressionAttributeValues={
                         ':hash': {'S': file_hash}
                     },
-                    Limit=1
+                    Limit=10  # Get multiple to filter by case_id
                 )
                 if response.get('Items'):
-                    return self._deserialize_item(response['Items'][0])
+                    for item in response['Items']:
+                        deserialized = self._deserialize_item(item)
+                        # If case_id provided, only match within same case
+                        if case_id is None or deserialized.get('case_id') == case_id:
+                            return deserialized
             except ClientError as e:
                 # GSI might not exist, fall back to scan
                 if e.response['Error']['Code'] == 'ValidationException':
                     logger.warning("file_hash-index GSI not found, using scan fallback")
+                    filter_expr = 'file_hash = :hash'
+                    expr_values = {':hash': {'S': file_hash}}
+                    if case_id:
+                        filter_expr += ' AND case_id = :case_id'
+                        expr_values[':case_id'] = {'S': case_id}
                     response = self.client.scan(
                         TableName=self.table_name,
-                        FilterExpression='file_hash = :hash',
-                        ExpressionAttributeValues={
-                            ':hash': {'S': file_hash}
-                        },
+                        FilterExpression=filter_expr,
+                        ExpressionAttributeValues=expr_values,
                         Limit=1
                     )
                     if response.get('Items'):

@@ -217,6 +217,11 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
         # ============================================
         # Idempotency Check - Calculate hash and check duplicates
         # ============================================
+        # Extract case_id early for case-scoped duplicate checks
+        # Format: cases/{case_id}/raw/ev_xxx_file.txt
+        case_id = _extract_case_id(object_key, bucket_name)
+        tracker.set_case_id(case_id)
+
         with tracker.stage(ProcessingStage.HASH) as stage:
             logger.debug("Calculating hash...")
             file_hash = calculate_file_hash(local_path)
@@ -239,16 +244,17 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                     "job_id": tracker.context.job_id
                 }
 
-        # Check 2: Has this file hash already been completed?
+        # Check 2: Has this file hash already been completed within the SAME case?
         # Calculate hash first
         with tracker.stage(ProcessingStage.HASH) as stage:
             file_hash = calculate_file_hash(local_path)
             stage.log(f"Hash calculated: {file_hash}")
             stage.add_metadata(hash_prefix=file_hash[:16])
 
-        existing_by_hash = metadata_store.check_hash_exists(file_hash)
+        # Pass case_id to check_hash_exists - same file in different case is allowed
+        existing_by_hash = metadata_store.check_hash_exists(file_hash, case_id=case_id)
         if existing_by_hash and existing_by_hash.get('status') == 'completed':
-            tracker.record_error(ErrorType.DUPLICATE, f"Hash already completed: {file_hash}")
+            tracker.record_error(ErrorType.DUPLICATE, f"Hash already completed in case {case_id}: {file_hash}")
             tracker.log_summary()
             return {
                 "status": "skipped",
@@ -283,14 +289,7 @@ def route_and_process(bucket_name: str, object_key: str) -> Dict[str, Any]:
                 message_count=len(parsed_result) if parsed_result else 0
             )
 
-        # case_id 추출 (object_key에서 첫 번째 디렉토리 또는 bucket_name)
-        # 예: cases/{case_id}/raw/ev_xxx_file.txt → case_id 추출
-        case_id = _extract_case_id(object_key, bucket_name)
-        tracker.set_case_id(case_id)
-
-        # evidence_id 추출 (Backend 레코드 업데이트용)
-        # 예: cases/{case_id}/raw/ev_abc123_file.txt → ev_abc123
-        backend_evidence_id = _extract_evidence_id_from_s3_key(object_key)
+        # Note: case_id and backend_evidence_id already extracted above for idempotency checks
 
         # 파일 메타데이터 생성
         file_id = backend_evidence_id or f"file_{uuid.uuid4().hex[:12]}"
