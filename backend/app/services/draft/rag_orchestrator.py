@@ -57,13 +57,12 @@ class RAGOrchestrator:
             evidence_results = search_evidence_by_semantic(
                 case_id=case_id,
                 query=query,
-                top_k=10
+                top_k=5  # Reduced for faster response (30s API Gateway limit)
             )
-            # Search legal knowledge for divorce grounds
+            # Search legal knowledge for divorce grounds (no doc_type filter to avoid index error)
             legal_results = search_legal_knowledge(
                 query="재판상 이혼 사유 민법 제840조",
-                top_k=5,
-                doc_type="statute"
+                top_k=3
             )
         else:
             # General search for all sections
@@ -71,11 +70,11 @@ class RAGOrchestrator:
             evidence_results = search_evidence_by_semantic(
                 case_id=case_id,
                 query=query,
-                top_k=5
+                top_k=3  # Reduced for faster response
             )
             legal_results = search_legal_knowledge(
                 query="이혼 " + query,
-                top_k=3
+                top_k=2
             )
 
         return {

@@ -154,12 +154,12 @@ class DraftService:
             style=request.style
         )
 
-        # 6. Generate draft using GPT-4o-mini (faster response)
+        # 6. Generate draft using GPT-4o-mini (faster response, optimized for 30s API Gateway limit)
         raw_response = generate_chat_completion(
             messages=prompt_messages,
             model="gpt-4o-mini",
             temperature=0.3,
-            max_tokens=4000
+            max_tokens=2000
         )
 
         # 7. Process response based on output mode

@@ -200,7 +200,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL_CHAT: str = Field(default="gpt-4o-mini", env="OPENAI_MODEL_CHAT")
     OPENAI_MODEL_EMBEDDING: str = Field(default="text-embedding-3-small", env="OPENAI_MODEL_EMBEDDING")
 
-    LLM_REQUEST_TIMEOUT_SECONDS: int = Field(default=55, env="LLM_REQUEST_TIMEOUT_SECONDS")  # CloudFront Origin timeout is 60s
+    LLM_REQUEST_TIMEOUT_SECONDS: int = Field(default=25, env="LLM_REQUEST_TIMEOUT_SECONDS")  # API Gateway HTTP limit is 30s
 
     # ============================================
     # Feature Flags
