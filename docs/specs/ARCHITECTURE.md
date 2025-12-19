@@ -262,27 +262,37 @@ s3://leh-evidence/
 **역할**
 
 * 증거 단위 JSON 메타데이터 저장
-* 사건 단위 쿼리에 최적화된 PK/Sort 키 구성
+* 사건 단위 쿼리에 최적화된 GSI 구성
 
-**예시 스키마**
+**테이블: `leh_evidence`**
 
-* Partition key: `case_id`
-* Sort key: `evidence_id`
+| 구성 | 키 | 용도 |
+|------|-----|------|
+| **Partition Key** | `evidence_id` (HASH) | 증거 개별 조회 |
+| **GSI: case_id-index** | `case_id` (Partition) | 사건별 증거 목록 조회 |
+| **GSI: file_hash-index** | `file_hash` (Partition) | 중복 파일 검출 |
+| **GSI: s3_key-index** | `s3_key` (Partition) | S3 키 기반 조회 |
 
 **아이템 예시**
 
 json
 {
+  "evidence_id": "ev_uuid-1",
   "case_id": "case_123",
-  "evidence_id": "uuid-1",
   "type": "image",
+  "file_type": "image",
+  "filename": "screenshot.jpg",
   "timestamp": "2024-12-25T10:20:00Z",
   "speaker": "피고",
+  "sender": "피고",
   "labels": ["폭언"],
-  "s3_key": "cases/123/raw/a.jpg",
+  "s3_key": "cases/case_123/raw/ev_uuid-1_screenshot.jpg",
+  "file_hash": "sha256:abc123...",
   "ai_summary": "피고가 고성으로 폭언하는 장면.",
-  "insights": ["감정적 폭발", "지속적 폭언 패턴"],
-  "qdrant_id": "case_123_ev_1"
+  "article_840_tags": {"categories": ["3호_폭언"], "confidence": 0.85},
+  "status": "analyzed",
+  "created_at": "2024-12-25T10:20:00Z",
+  "updated_at": "2024-12-25T10:25:00Z"
 }
 
 ---
