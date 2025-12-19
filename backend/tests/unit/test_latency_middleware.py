@@ -2,7 +2,6 @@
 Unit tests for Latency Logging Middleware
 """
 
-import pytest
 from unittest.mock import patch
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -168,7 +167,6 @@ class TestLatencyLoggingMiddleware:
         assert middleware_class is LatencyLoggingMiddleware
 
 
-@pytest.mark.integration
 class TestLatencyMiddlewareIntegration:
     """Integration tests with the main app"""
 
