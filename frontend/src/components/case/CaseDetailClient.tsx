@@ -26,6 +26,7 @@ import { generateDraftPreview, generateLineBasedDraftPreview, DraftCitation as A
 import { mapApiEvidenceToEvidence, mapApiEvidenceListToEvidence } from '@/lib/utils/evidenceMapper';
 import { EvidenceEmptyState } from '@/components/evidence/EvidenceEmptyState';
 import { ErrorState } from '@/components/shared/EmptyState';
+import { LSSPPanel } from '@/components/lssp';
 
 /**
  * Convert API draft citation to component DraftCitation type
@@ -39,7 +40,7 @@ function mapApiCitationToCitation(apiCitation: ApiDraftCitation, evidenceList: E
     quote: apiCitation.snippet,
   };
 }
-type CaseDetailTab = 'evidence' | 'opponent' | 'timeline' | 'draft';
+type CaseDetailTab = 'evidence' | 'opponent' | 'timeline' | 'draft' | 'lssp';
 type UploadFeedback = { message: string; tone: 'info' | 'success' | 'error' };
 type UploadStatus = {
   isUploading: boolean;
@@ -58,7 +59,7 @@ interface CaseDetailClientProps {
 }
 
 function isValidCaseDetailTab(value: string): value is CaseDetailTab {
-  return value === 'evidence' || value === 'opponent' || value === 'timeline' || value === 'draft';
+  return value === 'evidence' || value === 'opponent' || value === 'timeline' || value === 'draft' || value === 'lssp';
 }
 
 export default function CaseDetailClient({ id: paramId, defaultReturnUrl = '/lawyer/cases', apiBasePath = '/lawyer' }: CaseDetailClientProps) {
@@ -391,6 +392,7 @@ export default function CaseDetailClient({ id: paramId, defaultReturnUrl = '/law
     const tabItems: { id: CaseDetailTab; label: string; description: string }[] = useMemo(
         () => [
             { id: 'evidence', label: '증거', description: '업로드 · 상태 · 요약' },
+            { id: 'lssp', label: '법률 분석', description: 'LSSP · 쟁점 · 근거' },
             { id: 'opponent', label: '상대방 주장', description: '주장 정리 & AI 추천' },
             { id: 'timeline', label: '타임라인', description: '사건 맥락 · 흐름' },
             { id: 'draft', label: 'Draft', description: 'AI 초안 검토/다운로드' },
@@ -604,6 +606,20 @@ export default function CaseDetailClient({ id: paramId, defaultReturnUrl = '/law
                                 <EvidenceTable items={evidenceList} />
                             )}
                         </section>
+                    </div>
+                )}
+
+                {activeTab === 'lssp' && (
+                    <div role="tabpanel" aria-label="법률 분석 탭">
+                        <LSSPPanel
+                            caseId={caseId}
+                            evidenceCount={evidenceList.length}
+                            onDraftGenerate={(templateId) => {
+                                // Navigate to draft tab with template selection
+                                setActiveTab('draft');
+                                // TODO: Pass templateId to draft generation
+                            }}
+                        />
                     </div>
                 )}
 

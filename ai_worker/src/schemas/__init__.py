@@ -16,6 +16,14 @@ from .ai_classification import (
     classification_to_legal_analysis,
     get_system_prompt_categories,
 )
+from .keypoint import (
+    KeypointSource,
+    EvidenceExtractType,
+    EvidenceExtract,
+    Keypoint,
+    KeypointExtractionResult,
+    LEGAL_GROUND_CODES,
+)
 
 __all__ = [
     # Source Location
@@ -52,4 +60,12 @@ __all__ = [
     # Search Result
     "SearchResult",
     "SearchResultItem",
+
+    # LSSP Keypoint
+    "KeypointSource",
+    "EvidenceExtractType",
+    "EvidenceExtract",
+    "Keypoint",
+    "KeypointExtractionResult",
+    "LEGAL_GROUND_CODES",
 ]

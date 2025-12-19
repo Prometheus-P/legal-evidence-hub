@@ -19,6 +19,7 @@ import { ApiCase } from '@/lib/api/cases';
 import { getCaseDetailPath, getLawyerCasePath } from '@/lib/portalPaths';
 import { PrecedentPanel } from '@/components/precedent';
 import { PartyGraph } from '@/components/party/PartyGraph';
+import { LSSPPanel } from '@/components/lssp';
 import { useCaseIdFromUrl } from '@/hooks/useCaseIdFromUrl';
 // Evidence imports
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
@@ -592,6 +593,16 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
       {/* 012-precedent-integration: T029 - Similar Precedents Panel */}
       <PrecedentPanel caseId={caseId} />
+
+      {/* LSSP: Legal Strategy & Structured Pleading Panel */}
+      <LSSPPanel
+        caseId={caseId}
+        evidenceCount={caseDetail.evidenceCount}
+        onDraftGenerate={(templateId) => {
+          // TODO: Navigate to draft editor or open modal
+          console.log('Generate draft with template:', templateId);
+        }}
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">

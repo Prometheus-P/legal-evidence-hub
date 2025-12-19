@@ -86,6 +86,10 @@ from src.analysis.relationship_inferrer import (
     infer_relationships,
     build_relationship_graph,
 )
+from src.analysis.keypoint_extractor import (
+    KeypointExtractor,
+    extract_keypoints_from_evidence,
+)
 
 __all__ = [
     # Evidence Scorer
@@ -187,4 +191,8 @@ __all__ = [
     "RelationshipGraph",
     "infer_relationships",
     "build_relationship_graph",
+
+    # LSSP Keypoint Extractor (핵심 쟁점 추출)
+    "KeypointExtractor",
+    "extract_keypoints_from_evidence",
 ]

@@ -172,7 +172,7 @@ class TestLatencyMiddlewareIntegration:
 
     def test_middleware_registered_in_app(self, raw_client):
         """Middleware is properly registered in the app"""
-        response = raw_client.get("/health")
+        response = raw_client.get("/api/health")
 
         assert response.status_code == 200
         assert "X-Response-Time" in response.headers
@@ -181,7 +181,7 @@ class TestLatencyMiddlewareIntegration:
         """All endpoints include latency header"""
         endpoints = [
             ("/", "GET"),
-            ("/health", "GET"),
+            ("/api/health", "GET"),
         ]
 
         for path, method in endpoints:

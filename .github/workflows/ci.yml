@@ -1,5 +1,6 @@
 # .github/workflows/ci.yml
 # LEH CI Pipeline - Lint, Test, Build (No AWS required)
+# Optimized: APT caching, artifact reuse
 
 name: CI
 
@@ -63,6 +64,13 @@ jobs:
 
       - name: Build Next.js
         run: npm run build
+
+      - name: Upload build artifact for E2E
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-ci
+          path: frontend/.next/
+          retention-days: 1
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -166,10 +174,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y tesseract-ocr tesseract-ocr-kor ffmpeg
+      # APT 패키지 캐시 (tesseract, ffmpeg)
+      - name: Cache apt packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: tesseract-ocr tesseract-ocr-kor ffmpeg
+          version: 1.0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -211,7 +221,7 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # E2E Tests (Playwright) - Optional
+  # E2E Tests (Playwright) - Uses cached build
   # ============================================
   e2e:
     name: E2E Tests (Playwright)
@@ -236,11 +246,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Frontend 빌드 아티팩트 재사용 (빌드 스킵)
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build-ci
+          path: frontend/.next/
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-
-      - name: Build Next.js
-        run: npm run build
 
       - name: Run Playwright tests
         run: npx playwright test --project=chromium

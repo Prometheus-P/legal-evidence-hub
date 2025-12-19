@@ -49,6 +49,7 @@ from app.api import (  # noqa: E402
     staff_progress,
     summary,
 )
+from app.api.lssp import router as lssp_router  # noqa: E402 - LSSP v2.01-v2.15
 from app.core.dependencies import require_admin  # noqa: E402
 from app.middleware import (  # noqa: E402
     register_exception_handlers,
@@ -314,6 +315,9 @@ app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications
 # Client/Detective Contact 라우터 (Issue #297, #298 - FR-009~012, FR-015~016)
 app.include_router(clients.router, prefix=API_PREFIX, tags=["Client Contacts"])
 app.include_router(detectives.router, prefix=API_PREFIX, tags=["Detective Contacts"])
+
+# LSSP 라우터 (Legal Service Standardization Protocol v2.01-v2.15)
+app.include_router(lssp_router, prefix=API_PREFIX, tags=["LSSP"])
 
 
 # ============================================

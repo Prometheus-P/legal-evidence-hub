@@ -1,9 +1,9 @@
-# Copyright (c) 2024-2025 Legal Evidence Hub. All Rights Reserved.
-# PROPRIETARY AND CONFIDENTIAL - Unauthorized copying prohibited.
-# This file contains trade secrets and is protected by law.
-
 """
 Code Tracking and Fingerprinting System
+
+Copyright (c) 2024-2025 Legal Evidence Hub. All Rights Reserved.
+PROPRIETARY AND CONFIDENTIAL - Unauthorized copying prohibited.
+This file contains trade secrets and is protected by law.
 
 This module provides mechanisms to:
 1. Generate unique build fingerprints
@@ -14,6 +14,8 @@ This module provides mechanisms to:
 WARNING: Tampering with this module is a violation of copyright law
 and will be subject to legal prosecution.
 """
+
+from __future__ import annotations
 
 import hashlib
 import hmac

@@ -19,12 +19,15 @@ from app.middleware import NotFoundError, PermissionError
 
 
 # Common mock targets for evidence service tests
-# Patch at the destination module where the function is used (evidence_service)
+# Patch at the destination module (where the function is used) per Python patching best practices
+# Since evidence_service.py does: from app.utils.dynamo import get_evidence_by_id
+# The function becomes an attribute of app.services.evidence_service module
 MOCK_SAVE_METADATA = 'app.services.evidence_service.save_evidence_metadata'
 MOCK_INVOKE_AI = 'app.services.evidence_service.invoke_ai_worker'
 MOCK_UPDATE_STATUS = 'app.services.evidence_service.update_evidence_status'
 MOCK_GET_EVIDENCE = 'app.services.evidence_service.get_evidence_by_id'
 MOCK_GET_EVIDENCE_BY_CASE = 'app.services.evidence_service.get_evidence_by_case'
+MOCK_PRESIGNED_URL = 'app.services.evidence_service.generate_presigned_upload_url'
 
 
 class TestParseArticle840Tags:
@@ -144,7 +147,7 @@ class TestGenerateUploadPresignedUrl:
             content_type="image/jpeg"
         )
 
-        with patch('app.services.evidence_service.generate_presigned_upload_url') as mock_presign:
+        with patch(MOCK_PRESIGNED_URL) as mock_presign:
             mock_presign.return_value = {
                 "upload_url": "https://s3.amazonaws.com/...",
                 "fields": {"key": "value"}
@@ -303,42 +306,21 @@ class TestHandleUploadComplete:
             note="Test note"
         )
 
-        # Patch at the destination module and force module reload
-        import sys
-        import importlib
-        import app.services.evidence_service as ev_module
+        service = EvidenceService(db)
 
-        # Save original module reference
-        original_module = sys.modules.get('app.services.evidence_service')
+        with patch(MOCK_SAVE_METADATA) as mock_save, \
+             patch(MOCK_INVOKE_AI, return_value={"status": "invoked"}) as mock_invoke, \
+             patch(MOCK_UPDATE_STATUS):
 
-        # Remove the module from cache to force fresh import with mocks
-        if 'app.services.evidence_service' in sys.modules:
-            del sys.modules['app.services.evidence_service']
+            result = service.handle_upload_complete(request, user.id)
 
-        try:
-            with patch(MOCK_SAVE_METADATA) as mock_save, \
-                 patch(MOCK_INVOKE_AI, return_value={"status": "invoked"}) as mock_invoke, \
-                 patch(MOCK_UPDATE_STATUS):
-
-                # Import after mocks are set up
-                from app.services.evidence_service import EvidenceService as FreshService
-                service = FreshService(db)
-                result = service.handle_upload_complete(request, user.id)
-
-                assert result.evidence_id == "test123"
-                assert result.case_id == case.id
-                # Status is "processing" when invoke_ai_worker succeeds (no exception)
-                assert result.status == "processing"
-                # Verify mocks were called
-                assert mock_save.called
-                assert mock_invoke.called
-        finally:
-            # Restore original module
-            if original_module:
-                sys.modules['app.services.evidence_service'] = original_module
-            else:
-                # Re-import to restore clean state
-                importlib.reload(ev_module)
+            assert result.evidence_id == "test123"
+            assert result.case_id == case.id
+            # Status is "processing" when invoke_ai_worker succeeds (no exception)
+            assert result.status == "processing"
+            # Verify mocks were called
+            assert mock_save.called
+            assert mock_invoke.called
 
         # Cleanup
         db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
@@ -389,9 +371,9 @@ class TestHandleUploadComplete:
             file_size=1024
         )
 
-        with patch('app.services.evidence_service.save_evidence_metadata'), \
-             patch('app.services.evidence_service.invoke_ai_worker') as mock_invoke, \
-             patch('app.services.evidence_service.update_evidence_status'):
+        with patch(MOCK_SAVE_METADATA), \
+             patch(MOCK_INVOKE_AI) as mock_invoke, \
+             patch(MOCK_UPDATE_STATUS):
 
             mock_invoke.side_effect = Exception("Lambda invocation failed")
 
@@ -547,7 +529,7 @@ class TestGetEvidenceList:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_case') as mock_get:
+        with patch(MOCK_GET_EVIDENCE_BY_CASE) as mock_get:
             mock_get.return_value = [
                 {
                     "evidence_id": "ev1",
@@ -609,7 +591,7 @@ class TestGetEvidenceList:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_case') as mock_get:
+        with patch(MOCK_GET_EVIDENCE_BY_CASE) as mock_get:
             mock_get.return_value = [
                 {
                     "evidence_id": "ev1",
@@ -695,7 +677,7 @@ class TestGetEvidenceDetail:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -749,7 +731,7 @@ class TestGetEvidenceDetail:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = None
 
             with pytest.raises(NotFoundError):
@@ -797,11 +779,6 @@ class TestRetryProcessing:
         db.add(member)
         db.commit()
 
-        # Patch at the destination module and force module reload
-        import sys
-        import importlib
-        import app.services.evidence_service as ev_module
-
         mock_evidence = {
             "evidence_id": "ev1",
             "case_id": case.id,
@@ -809,35 +786,19 @@ class TestRetryProcessing:
             "s3_key": f"cases/{case.id}/raw/ev1_photo.jpg"
         }
 
-        # Save original module reference
-        original_module = sys.modules.get('app.services.evidence_service')
+        service = EvidenceService(db)
 
-        # Remove the module from cache to force fresh import with mocks
-        if 'app.services.evidence_service' in sys.modules:
-            del sys.modules['app.services.evidence_service']
+        with patch(MOCK_GET_EVIDENCE, return_value=mock_evidence) as mock_get, \
+             patch(MOCK_INVOKE_AI, return_value={"status": "invoked"}) as mock_invoke, \
+             patch(MOCK_UPDATE_STATUS):
 
-        try:
-            with patch(MOCK_GET_EVIDENCE, return_value=mock_evidence) as mock_get, \
-                 patch(MOCK_INVOKE_AI, return_value={"status": "invoked"}) as mock_invoke, \
-                 patch(MOCK_UPDATE_STATUS):
+            result = service.retry_processing("ev1", user.id)
 
-                # Import after mocks are set up
-                from app.services.evidence_service import EvidenceService as FreshService
-                service = FreshService(db)
-                result = service.retry_processing("ev1", user.id)
-
-                assert result["success"] is True
-                assert result["status"] == "processing"
-                # Verify mocks were called
-                assert mock_get.called
-                assert mock_invoke.called
-        finally:
-            # Restore original module
-            if original_module:
-                sys.modules['app.services.evidence_service'] = original_module
-            else:
-                # Re-import to restore clean state
-                importlib.reload(ev_module)
+            assert result["success"] is True
+            assert result["status"] == "processing"
+            # Verify mocks were called
+            assert mock_get.called
+            assert mock_invoke.called
 
         # Cleanup
         db.query(CaseMember).filter(CaseMember.case_id == case.id).delete()
@@ -882,7 +843,7 @@ class TestRetryProcessing:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1039,7 +1000,7 @@ class TestGetEvidenceDetailPermission:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1082,7 +1043,7 @@ class TestRetryProcessingEdgeCases:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = None
 
             with pytest.raises(NotFoundError):
@@ -1138,7 +1099,7 @@ class TestRetryProcessingEdgeCases:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1193,7 +1154,7 @@ class TestRetryProcessingEdgeCases:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1247,9 +1208,9 @@ class TestRetryProcessingEdgeCases:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get, \
-             patch('app.services.evidence_service.update_evidence_status'), \
-             patch('app.services.evidence_service.invoke_ai_worker') as mock_invoke:
+        with patch(MOCK_GET_EVIDENCE) as mock_get, \
+             patch(MOCK_UPDATE_STATUS), \
+             patch(MOCK_INVOKE_AI) as mock_invoke:
 
             mock_get.return_value = {
                 "evidence_id": "ev1",
@@ -1322,7 +1283,7 @@ class TestGetEvidenceStatusPermission:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1380,7 +1341,7 @@ class TestGetEvidenceStatus:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = {
                 "evidence_id": "ev1",
                 "case_id": case.id,
@@ -1422,7 +1383,7 @@ class TestGetEvidenceStatus:
 
         service = EvidenceService(db)
 
-        with patch('app.services.evidence_service.get_evidence_by_id') as mock_get:
+        with patch(MOCK_GET_EVIDENCE) as mock_get:
             mock_get.return_value = None
 
             with pytest.raises(NotFoundError):

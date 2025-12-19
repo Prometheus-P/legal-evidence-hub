@@ -299,31 +299,42 @@ class TestAsyncStreaming:
     """비동기 스트리밍 테스트"""
 
     @pytest.mark.asyncio
-    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key'})
-    @patch('openai.AsyncOpenAI')
-    async def test_analyze_stream_async(self, mock_async_openai_class):
+    async def test_analyze_stream_async(self):
         """비동기 스트리밍 분석 테스트"""
-        # Mock 설정
-        mock_client = AsyncMock()
-        mock_async_openai_class.return_value = mock_client
+        import os
+        original_key = os.environ.get('OPENAI_API_KEY')
 
-        # 비동기 스트리밍 응답 Mock
-        async def mock_stream():
-            mock_chunk = Mock()
-            mock_chunk.choices = [Mock(delta=Mock(content='{"test": "data"}'))]
-            yield mock_chunk
+        try:
+            os.environ['OPENAI_API_KEY'] = 'test-key'
 
-        mock_client.chat.completions.create.return_value = mock_stream()
+            with patch('openai.AsyncOpenAI') as mock_async_openai_class:
+                # Mock 설정
+                mock_client = AsyncMock()
+                mock_async_openai_class.return_value = mock_client
 
-        # 테스트 실행
-        analyzer = StreamingAnalyzer()
-        chunk = make_test_chunk(content="테스트 메시지")
+                # 비동기 스트리밍 응답 Mock
+                async def mock_stream():
+                    mock_chunk = Mock()
+                    mock_chunk.choices = [Mock(delta=Mock(content='{"test": "data"}'))]
+                    yield mock_chunk
 
-        collected = []
-        async for text in analyzer.analyze_stream_async(chunk):
-            collected.append(text)
+                mock_client.chat.completions.create.return_value = mock_stream()
 
-        assert len(collected) > 0
+                # 테스트 실행
+                analyzer = StreamingAnalyzer()
+                chunk = make_test_chunk(content="테스트 메시지")
+
+                collected = []
+                async for text in analyzer.analyze_stream_async(chunk):
+                    collected.append(text)
+
+                assert len(collected) > 0
+        finally:
+            # Restore original key
+            if original_key is not None:
+                os.environ['OPENAI_API_KEY'] = original_key
+            elif 'OPENAI_API_KEY' in os.environ:
+                del os.environ['OPENAI_API_KEY']
 
 
 class TestConvenienceFunctions:

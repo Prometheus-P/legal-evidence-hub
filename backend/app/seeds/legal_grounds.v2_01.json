@@ -1,0 +1,81 @@
+{
+  "version": "2.01",
+  "generated_at": "2025-12-16",
+  "grounds": [
+    {
+      "code": "G1",
+      "name_ko": "부정한 행위(외도)",
+      "elements": [
+        "정조의무 위반에 해당하는 행위",
+        "혼인 파탄과의 관련성(정황)"
+      ],
+      "limitation": {
+        "type": "제척기간(서비스가정)",
+        "known_within_months": 6,
+        "occurred_within_years": 2,
+        "needs_legal_review": true
+      },
+      "notes": "성관계 입증이 필수는 아니며, 정황·교제 사실 입증이 핵심(서비스 가이드)."
+    },
+    {
+      "code": "G2",
+      "name_ko": "악의의 유기",
+      "elements": [
+        "정당한 이유 없는 동거/부양/협조 의무 거부",
+        "지속성"
+      ],
+      "limitation": {
+        "type": "명시적 기간 제한 없음(서비스가정)",
+        "needs_legal_review": true
+      }
+    },
+    {
+      "code": "G3",
+      "name_ko": "배우자/직계존속의 부당 대우",
+      "elements": [
+        "심히 부당한 대우(폭행/학대/모욕 등)",
+        "혼인 유지 곤란"
+      ],
+      "limitation": {
+        "type": "명시적 기간 제한 없음(서비스가정)",
+        "needs_legal_review": true
+      }
+    },
+    {
+      "code": "G4",
+      "name_ko": "자기 직계존속에 대한 부당 대우",
+      "elements": [
+        "자기 직계존속이 배우자로부터 심히 부당한 대우"
+      ],
+      "limitation": {
+        "type": "명시적 기간 제한 없음(서비스가정)",
+        "needs_legal_review": true
+      }
+    },
+    {
+      "code": "G5",
+      "name_ko": "3년 이상 생사 불명",
+      "elements": [
+        "생사 불명 상태 3년 지속"
+      ],
+      "limitation": {
+        "type": "요건 충족 시점(3년) 이후 청구 가능(서비스가정)",
+        "needs_legal_review": true
+      }
+    },
+    {
+      "code": "G6",
+      "name_ko": "기타 중대 사유(혼인 유지 불가)",
+      "elements": [
+        "혼인 관계 회복 불능 상태",
+        "구체 사유(중독/장기별거/반복 갈등 등)"
+      ],
+      "limitation": {
+        "type": "제척기간(서비스가정)",
+        "known_within_months": 6,
+        "occurred_within_years": 2,
+        "needs_legal_review": true
+      }
+    }
+  ]
+}

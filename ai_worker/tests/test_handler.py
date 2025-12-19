@@ -185,6 +185,10 @@ class TestUnsupportedFileTypes:
         assert "unsupported" in result["reason"].lower()
         assert result["file"] == key
 
+    @patch('handler.ImageVisionParser', Mock())
+    @patch('handler.PDFParser', Mock())
+    @patch('handler.AudioParser', Mock())
+    @patch('handler.VideoParser', Mock())
     def test_supported_file_extensions(self):
         """
         Given: 지원되는 확장자들
@@ -251,11 +255,13 @@ class TestFileProcessing:
         # Then: S3 client가 파일을 다운로드했는지 확인
         mock_boto3.client.assert_called_once_with('s3')
         mock_s3_client.download_file.assert_called_once()
-        # 다운로드 위치가 임시 디렉토리인지 확인 (Linux: /tmp, Windows: Temp)
+        # 다운로드 위치가 임시 디렉토리인지 확인 (Linux: /tmp, macOS: /var/folders/..., Windows: Temp)
         call_args = mock_s3_client.download_file.call_args[0]
         assert call_args[0] == bucket
         assert call_args[1] == key
-        assert '/tmp' in call_args[2] or 'temp' in call_args[2].lower()
+        download_path = call_args[2].lower()
+        # Check for various temp directory patterns across different OS
+        assert any(pattern in download_path for pattern in ['/tmp', 'temp', '/var/folders'])
 
     @patch.object(handler, 'boto3')
     @patch.object(handler, 'MetadataStore')

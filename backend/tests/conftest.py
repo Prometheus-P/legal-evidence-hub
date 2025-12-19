@@ -61,6 +61,32 @@ def pytest_configure(config):
 # Auto-use AWS Mocking Fixtures
 # ============================================
 
+@pytest.fixture(scope="function", autouse=True)
+def reset_aws_singletons():
+    """
+    Reset AWS client singletons before each test to ensure proper isolation.
+
+    This prevents the DynamoDB/S3 client singleton from being cached across tests,
+    which can cause mock patches to not work properly when tests share state.
+    """
+    # Reset DynamoDB singleton
+    import app.utils.dynamo as dynamo_module
+    dynamo_module._dynamodb_client = None
+
+    # Reset S3 singleton if exists
+    try:
+        import app.utils.s3 as s3_module
+        if hasattr(s3_module, '_s3_client'):
+            s3_module._s3_client = None
+    except (ImportError, AttributeError):
+        pass
+
+    yield
+
+    # Cleanup after test
+    dynamo_module._dynamodb_client = None
+
+
 @pytest.fixture(scope="session", autouse=True)
 def mock_aws_services():
     """
