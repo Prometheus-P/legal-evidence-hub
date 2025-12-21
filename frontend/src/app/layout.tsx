@@ -88,24 +88,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        {/* Prevent FOUC by setting theme before React hydration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('leh-theme');
-                  var isDark = theme === 'dark' ||
-                    (theme === 'system' || !theme) &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (isDark) {
-                    document.documentElement.classList.add('dark');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
+        {/* Dark mode disabled - ensure light mode only */}
         {/* Structured Data - Organization */}
         <script
           type="application/ld+json"

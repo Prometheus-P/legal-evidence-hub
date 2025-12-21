@@ -2,11 +2,9 @@
  * ThemeContext
  * 007-lawyer-portal-v1 Feature - US5 (Dark Mode)
  *
- * Global theme context for dark/light mode switching.
- * Features:
- * - System preference detection (prefers-color-scheme)
- * - localStorage persistence
- * - Prevents flash on page load
+ * NOTE: Dark mode is currently DISABLED.
+ * This context always returns light mode for consistency.
+ * To re-enable dark mode, restore the original implementation.
  */
 
 'use client';
@@ -14,9 +12,7 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
-  useCallback,
   ReactNode,
 } from 'react';
 
@@ -24,21 +20,19 @@ export type Theme = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
 
 interface ThemeContextType {
-  /** Current theme setting (light, dark, or system) */
+  /** Current theme setting (always 'light' - dark mode disabled) */
   theme: Theme;
-  /** Resolved theme after applying system preference */
+  /** Resolved theme (always 'light' - dark mode disabled) */
   resolvedTheme: ResolvedTheme;
-  /** Whether the theme is dark */
+  /** Whether the theme is dark (always false - dark mode disabled) */
   isDark: boolean;
-  /** Set theme preference */
+  /** Set theme preference (no-op - dark mode disabled) */
   setTheme: (theme: Theme) => void;
-  /** Toggle between light and dark */
+  /** Toggle between light and dark (no-op - dark mode disabled) */
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-const THEME_STORAGE_KEY = 'leh-theme';
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -49,126 +43,28 @@ interface ThemeProviderProps {
 }
 
 /**
- * Get system color scheme preference
+ * Ensure dark class is removed from document
  */
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-/**
- * Get stored theme from localStorage
- */
-function getStoredTheme(): Theme | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      return stored;
-    }
-  } catch {
-    // localStorage not available
-  }
-  return null;
-}
-
-/**
- * Save theme to localStorage
- */
-function storeTheme(theme: Theme): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // localStorage not available
-  }
-}
-
-/**
- * Apply theme class to document
- */
-function applyTheme(resolvedTheme: ResolvedTheme): void {
+function ensureLightMode(): void {
   if (typeof document === 'undefined') return;
-
-  const root = document.documentElement;
-  if (resolvedTheme === 'dark') {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
-}
-
-/**
- * Resolve theme to actual light/dark value
- */
-function resolveTheme(theme: Theme): ResolvedTheme {
-  if (theme === 'system') {
-    return getSystemTheme();
-  }
-  return theme;
+  document.documentElement.classList.remove('dark');
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'system',
-  forcedTheme,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // On server, use default
-    if (typeof window === 'undefined') return defaultTheme;
-    // Check for forced theme
-    if (forcedTheme) return forcedTheme;
-    // Check localStorage
-    return getStoredTheme() || defaultTheme;
-  });
-
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
-    return resolveTheme(forcedTheme || theme);
-  });
-
-  // Apply theme on mount and when theme changes
+  // Always ensure light mode on mount
   useEffect(() => {
-    const effectiveTheme = forcedTheme || theme;
-    const resolved = resolveTheme(effectiveTheme);
-    setResolvedTheme(resolved);
-    applyTheme(resolved);
-  }, [theme, forcedTheme]);
-
-  // Listen for system preference changes
-  useEffect(() => {
-    if (forcedTheme) return;
-    if (theme !== 'system') return;
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      const newResolved = e.matches ? 'dark' : 'light';
-      setResolvedTheme(newResolved);
-      applyTheme(newResolved);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, forcedTheme]);
-
-  const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
-    storeTheme(newTheme);
+    ensureLightMode();
   }, []);
 
-  const toggleTheme = useCallback(() => {
-    // If system, switch to opposite of current resolved
-    // Otherwise, toggle between light and dark
-    const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-  }, [resolvedTheme, setTheme]);
-
+  // Dark mode disabled - always return light theme
   const value: ThemeContextType = {
-    theme: forcedTheme || theme,
-    resolvedTheme,
-    isDark: resolvedTheme === 'dark',
-    setTheme,
-    toggleTheme,
+    theme: 'light',
+    resolvedTheme: 'light',
+    isDark: false,
+    setTheme: () => {}, // no-op
+    toggleTheme: () => {}, // no-op
   };
 
   return (

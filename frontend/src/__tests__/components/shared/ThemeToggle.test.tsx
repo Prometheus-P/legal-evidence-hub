@@ -2,60 +2,25 @@
  * ThemeToggle Component Tests
  * 007-lawyer-portal-v1 Feature - US5 (Dark Mode)
  *
- * TDD tests for ThemeToggle component.
+ * NOTE: Dark mode is currently DISABLED.
+ * These tests verify that the component renders but toggle is a no-op.
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeToggle, ThemeSelector } from '@/components/shared/ThemeToggle';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: jest.fn(() => {
-      store = {};
-    }),
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-
-// Mock matchMedia
-const createMatchMedia = (matches: boolean) => {
-  return jest.fn().mockImplementation((query: string) => ({
-    matches,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  }));
-};
-
-const renderWithTheme = (ui: React.ReactElement, defaultTheme: 'light' | 'dark' | 'system' = 'light') => {
+const renderWithTheme = (ui: React.ReactElement) => {
   return render(
-    <ThemeProvider defaultTheme={defaultTheme}>
+    <ThemeProvider>
       {ui}
     </ThemeProvider>
   );
 };
 
-describe('ThemeToggle', () => {
+describe('ThemeToggle (Dark Mode Disabled)', () => {
   beforeEach(() => {
-    localStorageMock.clear();
-    jest.clearAllMocks();
     document.documentElement.classList.remove('dark');
-    window.matchMedia = createMatchMedia(false);
   });
 
   describe('rendering', () => {
@@ -66,18 +31,11 @@ describe('ThemeToggle', () => {
       expect(button).toBeInTheDocument();
     });
 
-    it('should have correct aria-label for light mode', () => {
-      renderWithTheme(<ThemeToggle />, 'light');
+    it('should always show "switch to dark mode" label since we are always in light mode', () => {
+      renderWithTheme(<ThemeToggle />);
 
       const button = screen.getByRole('button');
       expect(button).toHaveAttribute('aria-label', '다크 모드로 전환');
-    });
-
-    it('should have correct aria-label for dark mode', () => {
-      renderWithTheme(<ThemeToggle />, 'dark');
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', '라이트 모드로 전환');
     });
 
     it('should show label when showLabel is true', () => {
@@ -94,34 +52,15 @@ describe('ThemeToggle', () => {
     });
   });
 
-  describe('interaction', () => {
-    it('should toggle theme when clicked in light mode', () => {
-      renderWithTheme(<ThemeToggle />, 'light');
+  describe('interaction (no-op)', () => {
+    it('should not change theme when clicked (dark mode disabled)', () => {
+      renderWithTheme(<ThemeToggle />);
 
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
-      // After click, should show light mode option (meaning we're now in dark mode)
-      expect(button).toHaveAttribute('aria-label', '라이트 모드로 전환');
-    });
-
-    it('should toggle theme when clicked in dark mode', () => {
-      renderWithTheme(<ThemeToggle />, 'dark');
-
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      // After click, should show dark mode option (meaning we're now in light mode)
+      // Should still show dark mode option since we're always in light mode
       expect(button).toHaveAttribute('aria-label', '다크 모드로 전환');
-    });
-
-    it('should save theme to localStorage when toggled', () => {
-      renderWithTheme(<ThemeToggle />, 'light');
-
-      const button = screen.getByRole('button');
-      fireEvent.click(button);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('leh-theme', 'dark');
     });
   });
 
@@ -160,23 +99,12 @@ describe('ThemeToggle', () => {
 
       expect(document.activeElement).toBe(button);
     });
-
-    it('should meet minimum touch target size (44x44px) for md and lg sizes', () => {
-      renderWithTheme(<ThemeToggle size="md" />);
-
-      const button = screen.getByRole('button');
-      // md size is 40px (w-10), but should still be accessible
-      expect(button).toBeInTheDocument();
-    });
   });
 });
 
-describe('ThemeSelector', () => {
+describe('ThemeSelector (Dark Mode Disabled)', () => {
   beforeEach(() => {
-    localStorageMock.clear();
-    jest.clearAllMocks();
     document.documentElement.classList.remove('dark');
-    window.matchMedia = createMatchMedia(false);
   });
 
   describe('rendering', () => {
@@ -188,52 +116,33 @@ describe('ThemeSelector', () => {
       expect(screen.getByRole('button', { name: /시스템/i })).toBeInTheDocument();
     });
 
-    it('should highlight the active theme', () => {
-      renderWithTheme(<ThemeSelector />, 'dark');
+    it('should always highlight light theme since dark mode is disabled', () => {
+      renderWithTheme(<ThemeSelector />);
 
-      const darkButton = screen.getByRole('button', { name: /다크/i });
-      expect(darkButton.className).toContain('bg-[var(--color-primary)]');
+      const lightButton = screen.getByRole('button', { name: /라이트/i });
+      expect(lightButton.className).toContain('bg-[var(--color-primary)]');
     });
   });
 
-  describe('interaction', () => {
-    it('should change to light theme when light button is clicked', () => {
-      renderWithTheme(<ThemeSelector />, 'dark');
-
-      const lightButton = screen.getByRole('button', { name: /라이트/i });
-      fireEvent.click(lightButton);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('leh-theme', 'light');
-    });
-
-    it('should change to dark theme when dark button is clicked', () => {
-      renderWithTheme(<ThemeSelector />, 'light');
+  describe('interaction (no-op)', () => {
+    it('should not change theme when buttons are clicked (dark mode disabled)', () => {
+      renderWithTheme(<ThemeSelector />);
 
       const darkButton = screen.getByRole('button', { name: /다크/i });
       fireEvent.click(darkButton);
 
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('leh-theme', 'dark');
-    });
-
-    it('should change to system theme when system button is clicked', () => {
-      renderWithTheme(<ThemeSelector />, 'light');
-
-      const systemButton = screen.getByRole('button', { name: /시스템/i });
-      fireEvent.click(systemButton);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('leh-theme', 'system');
+      // Light should still be active
+      const lightButton = screen.getByRole('button', { name: /라이트/i });
+      expect(lightButton.className).toContain('bg-[var(--color-primary)]');
     });
   });
 
   describe('accessibility', () => {
-    it('should have aria-pressed attribute on active button', () => {
-      renderWithTheme(<ThemeSelector />, 'dark');
+    it('should have aria-pressed attribute on light button (always active)', () => {
+      renderWithTheme(<ThemeSelector />);
 
-      const darkButton = screen.getByRole('button', { name: /다크/i });
       const lightButton = screen.getByRole('button', { name: /라이트/i });
-
-      expect(darkButton).toHaveAttribute('aria-pressed', 'true');
-      expect(lightButton).toHaveAttribute('aria-pressed', 'false');
+      expect(lightButton).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('should have role="group" for the button group', () => {

@@ -13,7 +13,7 @@ import { useState } from 'react';
 import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown';
 import RoleGuard from '@/components/auth/RoleGuard';
-import { ThemeToggle } from '@/components/shared/ThemeToggle';
+// ThemeToggle removed - dark mode disabled
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
@@ -141,9 +141,6 @@ export default function LawyerLayout({
             {/* Breadcrumb or page title can go here */}
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* Theme toggle */}
-            <ThemeToggle size="md" />
-
             {/* Notification dropdown */}
             <NotificationDropdown />
 

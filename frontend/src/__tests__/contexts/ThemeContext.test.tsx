@@ -2,101 +2,58 @@
  * ThemeContext Tests
  * 007-lawyer-portal-v1 Feature - US5 (Dark Mode)
  *
- * TDD tests for theme context functionality.
+ * NOTE: Dark mode is currently DISABLED.
+ * These tests verify that the context always returns light mode.
  */
 
-import { renderHook, act } from '@testing-library/react';
-import { ThemeProvider, useTheme, Theme } from '@/contexts/ThemeContext';
+import { renderHook } from '@testing-library/react';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value;
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: jest.fn(() => {
-      store = {};
-    }),
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-
-// Mock matchMedia
-const createMatchMedia = (matches: boolean) => {
-  return jest.fn().mockImplementation((query: string) => ({
-    matches,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  }));
-};
-
-describe('ThemeContext', () => {
+describe('ThemeContext (Dark Mode Disabled)', () => {
   beforeEach(() => {
-    localStorageMock.clear();
-    jest.clearAllMocks();
     document.documentElement.classList.remove('dark');
-    window.matchMedia = createMatchMedia(false);
   });
 
   describe('ThemeProvider', () => {
-    it('should provide default theme as system', () => {
+    it('should always provide light theme', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <ThemeProvider>{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.theme).toBe('system');
-    });
-
-    it('should use defaultTheme prop when provided', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.theme).toBe('dark');
-    });
-
-    it('should use forcedTheme when provided', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider forcedTheme="light">{children}</ThemeProvider>
       );
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
       expect(result.current.theme).toBe('light');
       expect(result.current.resolvedTheme).toBe('light');
+      expect(result.current.isDark).toBe(false);
     });
 
-    it('should restore theme from localStorage', () => {
-      localStorageMock.setItem('leh-theme', 'dark');
-
+    it('should ignore defaultTheme prop and use light', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
       );
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      expect(result.current.theme).toBe('dark');
+      expect(result.current.theme).toBe('light');
+      expect(result.current.resolvedTheme).toBe('light');
+      expect(result.current.isDark).toBe(false);
+    });
+
+    it('should ignore forcedTheme prop and use light', () => {
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <ThemeProvider forcedTheme="dark">{children}</ThemeProvider>
+      );
+
+      const { result } = renderHook(() => useTheme(), { wrapper });
+
+      expect(result.current.theme).toBe('light');
+      expect(result.current.resolvedTheme).toBe('light');
+      expect(result.current.isDark).toBe(false);
     });
   });
 
   describe('useTheme hook', () => {
     it('should throw error when used outside ThemeProvider', () => {
-      // Suppress console.error for this test
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       expect(() => {
@@ -106,19 +63,9 @@ describe('ThemeContext', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should return isDark as true when resolvedTheme is dark', () => {
+    it('should always return isDark as false', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.isDark).toBe(true);
-    });
-
-    it('should return isDark as false when resolvedTheme is light', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       );
 
       const { result } = renderHook(() => useTheme(), { wrapper });
@@ -127,124 +74,33 @@ describe('ThemeContext', () => {
     });
   });
 
-  describe('setTheme', () => {
-    it('should update theme when setTheme is called', () => {
+  describe('setTheme (no-op)', () => {
+    it('should not change theme when setTheme is called', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       );
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      act(() => {
-        result.current.setTheme('dark');
-      });
-
-      expect(result.current.theme).toBe('dark');
-    });
-
-    it('should save theme to localStorage', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      act(() => {
-        result.current.setTheme('dark');
-      });
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('leh-theme', 'dark');
-    });
-
-    it('should apply dark class to document when theme is dark', async () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      act(() => {
-        result.current.setTheme('dark');
-      });
-
-      // Wait for useEffect to run
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-    });
-  });
-
-  describe('toggleTheme', () => {
-    it('should toggle from light to dark', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      act(() => {
-        result.current.toggleTheme();
-      });
-
-      expect(result.current.theme).toBe('dark');
-    });
-
-    it('should toggle from dark to light', () => {
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      act(() => {
-        result.current.toggleTheme();
-      });
+      result.current.setTheme('dark');
 
       expect(result.current.theme).toBe('light');
-    });
-  });
-
-  describe('system theme detection', () => {
-    it('should resolve to dark when system prefers dark', () => {
-      window.matchMedia = createMatchMedia(true);
-
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.theme).toBe('system');
-      expect(result.current.resolvedTheme).toBe('dark');
-      expect(result.current.isDark).toBe(true);
-    });
-
-    it('should resolve to light when system prefers light', () => {
-      window.matchMedia = createMatchMedia(false);
-
-      const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
-      );
-
-      const { result } = renderHook(() => useTheme(), { wrapper });
-
-      expect(result.current.theme).toBe('system');
       expect(result.current.resolvedTheme).toBe('light');
-      expect(result.current.isDark).toBe(false);
     });
   });
 
-  describe('theme values', () => {
-    it.each<Theme>(['light', 'dark', 'system'])('should accept %s as valid theme', (themeValue) => {
+  describe('toggleTheme (no-op)', () => {
+    it('should not change theme when toggleTheme is called', () => {
       const wrapper = ({ children }: { children: React.ReactNode }) => (
-        <ThemeProvider defaultTheme={themeValue}>{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       );
 
       const { result } = renderHook(() => useTheme(), { wrapper });
 
-      expect(result.current.theme).toBe(themeValue);
+      result.current.toggleTheme();
+
+      expect(result.current.theme).toBe('light');
+      expect(result.current.isDark).toBe(false);
     });
   });
 });
