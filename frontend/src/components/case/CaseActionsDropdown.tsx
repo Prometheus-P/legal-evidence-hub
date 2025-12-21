@@ -14,9 +14,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   MoreVertical,
-  DollarSign,
   Edit3,
-  FileText,
   BookOpen,
 } from 'lucide-react';
 
@@ -26,24 +24,9 @@ import {
 
 export interface CaseActionsDropdownProps {
   /**
-   * Path to the assets page
-   */
-  assetsPath: string;
-
-  /**
    * Handler for edit button click
    */
   onEdit: () => void;
-
-  /**
-   * Handler for summary card button click
-   */
-  onSummaryCard: () => void;
-
-  /**
-   * Handler for AI analysis request (optional - can be handled in Analysis tab)
-   */
-  onAIAnalysis?: () => void;
 
   /**
    * Handler for expert insights button click
@@ -54,6 +37,14 @@ export interface CaseActionsDropdownProps {
    * Additional CSS classes
    */
   className?: string;
+
+  // Deprecated - kept for backwards compatibility but no longer used
+  /** @deprecated Assets tab is now inline - this prop is ignored */
+  assetsPath?: string;
+  /** @deprecated Summary tab is now inline - this prop is ignored */
+  onSummaryCard?: () => void;
+  /** @deprecated AI analysis is handled in Analysis tab */
+  onAIAnalysis?: () => void;
 }
 
 interface DropdownItem {
@@ -71,10 +62,7 @@ interface DropdownItem {
 // =============================================================================
 
 export function CaseActionsDropdown({
-  assetsPath,
   onEdit,
-  onSummaryCard,
-  onAIAnalysis,
   onExpertInsights,
   className = '',
 }: CaseActionsDropdownProps) {
@@ -122,16 +110,8 @@ export function CaseActionsDropdown({
     setIsOpen(false);
   };
 
-  // Define dropdown items
+  // Define dropdown items (assets and summary moved to main tabs)
   const items: DropdownItem[] = [
-    {
-      id: 'assets',
-      label: '재산분할',
-      icon: <DollarSign className="w-4 h-4" />,
-      type: 'link',
-      href: assetsPath,
-      colorClass: 'text-green-600 dark:text-green-400',
-    },
     {
       id: 'edit',
       label: '수정',
@@ -139,14 +119,6 @@ export function CaseActionsDropdown({
       type: 'button',
       onClick: onEdit,
       colorClass: 'text-gray-600 dark:text-gray-400',
-    },
-    {
-      id: 'summary',
-      label: '요약 카드',
-      icon: <FileText className="w-4 h-4" />,
-      type: 'button',
-      onClick: onSummaryCard,
-      colorClass: 'text-purple-600 dark:text-purple-400',
     },
   ];
 

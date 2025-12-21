@@ -3,6 +3,9 @@
  * refactor/lawyer-case-detail-ui
  *
  * Basic rendering and interaction tests for the consolidated actions dropdown.
+ *
+ * Note: 재산분할 and 요약 카드 have been moved to main tabs (Calm Control UX).
+ * Dropdown now only contains: 수정, 전문가 인사이트 (optional)
  */
 
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -17,9 +20,7 @@ jest.mock('next/link', () => {
 
 describe('CaseActionsDropdown', () => {
   const defaultProps = {
-    assetsPath: '/lawyer/cases/123/assets',
     onEdit: jest.fn(),
-    onSummaryCard: jest.fn(),
   };
 
   beforeEach(() => {
@@ -51,15 +52,13 @@ describe('CaseActionsDropdown', () => {
       expect(screen.getByRole('menu')).toBeInTheDocument();
     });
 
-    it('should show all menu items when opened', () => {
+    it('should show edit menu item when opened', () => {
       render(<CaseActionsDropdown {...defaultProps} />);
 
       const button = screen.getByRole('button', { name: '더보기' });
       fireEvent.click(button);
 
-      expect(screen.getByText('재산분할')).toBeInTheDocument();
       expect(screen.getByText('수정')).toBeInTheDocument();
-      expect(screen.getByText('요약 카드')).toBeInTheDocument();
     });
 
     it('should close dropdown when clicking toggle again', () => {
@@ -83,22 +82,13 @@ describe('CaseActionsDropdown', () => {
       expect(defaultProps.onEdit).toHaveBeenCalledTimes(1);
     });
 
-    it('should call onSummaryCard when summary card is clicked', () => {
+    it('should close dropdown after clicking menu item', () => {
       render(<CaseActionsDropdown {...defaultProps} />);
 
       fireEvent.click(screen.getByRole('button', { name: '더보기' }));
-      fireEvent.click(screen.getByText('요약 카드'));
+      fireEvent.click(screen.getByText('수정'));
 
-      expect(defaultProps.onSummaryCard).toHaveBeenCalledTimes(1);
-    });
-
-    it('should have correct link for assets', () => {
-      render(<CaseActionsDropdown {...defaultProps} />);
-
-      fireEvent.click(screen.getByRole('button', { name: '더보기' }));
-
-      const assetsLink = screen.getByText('재산분할').closest('a');
-      expect(assetsLink).toHaveAttribute('href', '/lawyer/cases/123/assets');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     });
   });
 
@@ -132,6 +122,30 @@ describe('CaseActionsDropdown', () => {
       fireEvent.click(screen.getByText('전문가 인사이트'));
 
       expect(onExpertInsights).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('deprecated props (backwards compatibility)', () => {
+    it('should accept deprecated assetsPath prop without error', () => {
+      render(
+        <CaseActionsDropdown
+          {...defaultProps}
+          assetsPath="/lawyer/cases/123/assets"
+        />
+      );
+
+      expect(screen.getByRole('button', { name: '더보기' })).toBeInTheDocument();
+    });
+
+    it('should accept deprecated onSummaryCard prop without error', () => {
+      render(
+        <CaseActionsDropdown
+          {...defaultProps}
+          onSummaryCard={jest.fn()}
+        />
+      );
+
+      expect(screen.getByRole('button', { name: '더보기' })).toBeInTheDocument();
     });
   });
 

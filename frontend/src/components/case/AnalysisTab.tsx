@@ -2,26 +2,15 @@
 
 /**
  * AnalysisTab Component
- * Contains LSSP (Legal Strategy) and Precedent panels as sub-tabs.
+ * Contains LSSP (Legal Strategy) panel with expandable card layout.
  *
  * Lazy loads heavy panel components for better initial page load performance.
  *
- * Phase B.3: Added AI analysis status bar with last analyzed timestamp and request button.
- */
-
-'use client';
-
-/**
- * AnalysisTab Component
- * Contains LSSP (Legal Strategy) and Precedent panels as sub-tabs.
- *
- * Lazy loads heavy panel components for better initial page load performance.
- *
- * Phase B.3: Added AI analysis status bar with last analyzed timestamp and request button.
+ * Phase B.3: Added compact AI analysis status bar.
  */
 
 import { Suspense, lazy } from 'react';
-import { Sparkles, Clock, Loader2, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
 
 // Lazy load heavy panels for performance
 const LSSPPanel = lazy(() =>
@@ -68,7 +57,7 @@ function formatRelativeTime(isoDate: string): string {
 }
 
 /**
- * AI Analysis Status Bar Component
+ * AI Analysis Status Bar Component (Compact inline version)
  */
 function AIAnalysisStatusBar({
   lastAnalyzedAt,
@@ -86,44 +75,36 @@ function AIAnalysisStatusBar({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-          <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-        </div>
-        <div>
-          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            AI 분석 상태
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {lastAnalyzedAt ? (
-              <>마지막 분석: {formatRelativeTime(lastAnalyzedAt)}</>
-            ) : (
-              <>아직 분석되지 않음</>
-            )}
-          </p>
-        </div>
+    <div className="flex items-center justify-between py-2 px-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
+      <div className="flex items-center gap-2 text-sm">
+        <Sparkles className="w-4 h-4 text-indigo-500" />
+        <span className="text-neutral-600 dark:text-neutral-400">
+          {lastAnalyzedAt ? (
+            <>분석 완료 · {formatRelativeTime(lastAnalyzedAt)}</>
+          ) : (
+            <>분석 대기 중</>
+          )}
+        </span>
       </div>
       <button
         type="button"
         onClick={handleClick}
         disabled={isAnalyzing}
-        className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
           isAnalyzing
-            ? 'bg-gray-100 dark:bg-neutral-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
+            ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed'
+            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
         }`}
       >
         {isAnalyzing ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            분석 중...
+            <Loader2 className="w-3 h-3 animate-spin" />
+            분석 중
           </>
         ) : (
           <>
-            <RefreshCw className="w-4 h-4" />
-            AI 분석 요청
+            <RefreshCw className="w-3 h-3" />
+            재분석
           </>
         )}
       </button>

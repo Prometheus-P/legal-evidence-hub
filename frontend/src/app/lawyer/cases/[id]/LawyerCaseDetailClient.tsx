@@ -46,6 +46,8 @@ import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/serv
 import { ExpertInsightsPanel } from '@/components/case/ExpertInsightsPanel';
 import { useProcedure } from '@/hooks/useProcedure';
 import { ProcedureTimeline } from '@/components/procedure';
+// New tab components
+import { AssetSummaryTab } from '@/components/case/AssetSummaryTab';
 
 interface CaseDetail {
   id: string;
@@ -489,63 +491,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           </div>
         </div>
 
-        {/* Meta Info */}
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <span className="text-[var(--color-text-secondary)]">담당자</span>
-            <p className="font-medium">{caseDetail.ownerName || '-'}</p>
-          </div>
-          <div>
-            <span className="text-[var(--color-text-secondary)]">생성일</span>
-            <p className="font-medium">
-              {new Date(caseDetail.createdAt).toLocaleDateString('ko-KR')}
-            </p>
-          </div>
-          <div>
-            <span className="text-[var(--color-text-secondary)]">최근 업데이트</span>
-            <p className="font-medium">
-              {new Date(caseDetail.updatedAt).toLocaleDateString('ko-KR')}
-            </p>
-          </div>
-          <div>
-            <span className="text-[var(--color-text-secondary)]">증거 자료</span>
-            <p className="font-medium">{caseDetail.evidenceCount}건</p>
-          </div>
-        </div>
-
-        {/* AI Labels */}
-        {caseDetail.aiLabels.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
-            <span className="text-sm text-[var(--color-text-secondary)]">AI 분석 태그</span>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {caseDetail.aiLabels.map((label, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm rounded-full"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* AI Summary */}
-      {caseDetail.aiSummary && (
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            <h3 className="font-semibold text-purple-800 dark:text-purple-300">AI 분석 요약</h3>
-            <span className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 px-2 py-0.5 rounded-full">
-              Preview Only
-            </span>
-          </div>
-          <p className="text-purple-900 dark:text-purple-200">{caseDetail.aiSummary}</p>
-        </div>
-      )}
 
       {/* Expert Insights Panel */}
       <ExpertInsightsPanel
@@ -763,6 +709,11 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               {!isLoadingEvidence && !evidenceError && filteredEvidenceList.length > 0 && (
                 <EvidenceTable items={filteredEvidenceList} />
               )}
+            </section>
+
+            {/* Asset Division Section - Integrated from assets tab */}
+            <section className="pt-6 border-t border-gray-200 dark:border-neutral-700">
+              <AssetSummaryTab caseId={caseId} />
             </section>
           </div>
         )}
