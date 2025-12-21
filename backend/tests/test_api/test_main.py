@@ -77,24 +77,24 @@ class TestRootEndpoint:
 
 @pytest.mark.integration
 class TestHealthCheckEndpoint:
-    """Test health check endpoint (/health)"""
+    """Test health check endpoint (/api/health)"""
 
     def test_health_check_returns_200(self, raw_client):
-        """Test that health check returns 200 OK"""
-        response = raw_client.get("/health")
+        """Test that liveness probe returns 200 OK"""
+        response = raw_client.get("/api/health")
         assert response.status_code == 200
 
     def test_health_check_returns_ok_status(self, raw_client):
-        """Test that health check returns 'ok' status"""
-        response = raw_client.get("/health")
+        """Test that liveness probe returns 'ok' status"""
+        response = raw_client.get("/api/health")
         data = response.json()
 
         assert "status" in data
         assert data["status"] == "ok"
 
     def test_health_check_includes_service_info(self, raw_client):
-        """Test that health check includes service name and version"""
-        response = raw_client.get("/health")
+        """Test that readiness probe includes service name and version"""
+        response = raw_client.get("/api/health/ready")
         data = response.json()
 
         assert "service" in data
@@ -103,8 +103,8 @@ class TestHealthCheckEndpoint:
         assert data["version"] == "0.2.0"
 
     def test_health_check_includes_timestamp(self, raw_client):
-        """Test that health check includes timestamp"""
-        response = raw_client.get("/health")
+        """Test that readiness probe includes timestamp"""
+        response = raw_client.get("/api/health/ready")
         data = response.json()
 
         assert "timestamp" in data
@@ -113,10 +113,10 @@ class TestHealthCheckEndpoint:
         assert "T" in timestamp
 
     def test_health_check_is_fast(self, raw_client):
-        """Test that health check responds quickly (< 1 second)"""
+        """Test that liveness probe responds quickly (< 1 second)"""
         import time
         start = time.time()
-        response = raw_client.get("/health")
+        response = raw_client.get("/api/health")
         elapsed = time.time() - start
 
         assert response.status_code == 200
@@ -180,7 +180,7 @@ class TestApplicationLifespan:
         # Create and close client multiple times
         for _ in range(3):
             with TestClient(app) as client:
-                response = client.get("/health")
+                response = client.get("/api/health")
                 assert response.status_code == 200
 
 
@@ -190,7 +190,7 @@ class TestInvalidRequests:
 
     def test_invalid_method_returns_405(self, raw_client):
         """Test that invalid HTTP method returns 405"""
-        response = raw_client.post("/health")  # Health check is GET only
+        response = raw_client.post("/api/health")  # Health check is GET only
 
         assert response.status_code == 405
         data = response.json()
@@ -252,7 +252,7 @@ class TestApplicationUnderLoad:
         import concurrent.futures
 
         def make_request():
-            response = raw_client.get("/health")
+            response = raw_client.get("/api/health")
             return response.status_code
 
         # Make 10 concurrent requests
