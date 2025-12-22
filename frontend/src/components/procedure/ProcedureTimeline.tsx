@@ -109,24 +109,24 @@ function ProcedureTimelineComponent({
       )}
 
       {/* Progress Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-gray-900 dark:text-white">
+      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-neutral-700">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-[var(--color-text-primary)]">
             진행 상태
           </h3>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm font-medium text-[var(--color-text-secondary)]">
             {progressPercent}% 완료
           </span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div className="w-full bg-gray-200 dark:bg-neutral-700 rounded-full h-3">
           <div
-            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+            className="bg-[var(--color-primary)] h-3 rounded-full transition-all duration-500"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        {currentStage && (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            현재 단계: <span className="font-medium text-blue-600 dark:text-blue-400">
+        {currentStage && (currentStage.stage_label || STAGE_LABELS[currentStage.stage]) && (
+          <p className="mt-3 text-sm text-[var(--color-text-secondary)]">
+            현재 단계: <span className="font-medium text-[var(--color-primary)]">
               {currentStage.stage_label || STAGE_LABELS[currentStage.stage]}
             </span>
           </p>
@@ -134,13 +134,15 @@ function ProcedureTimelineComponent({
       </div>
 
       {/* Next Stage Transition Buttons */}
-      {validNextStages.length > 0 && currentStage && (
+      {validNextStages.filter(s => s.label && s.label.trim()).length > 0 && currentStage && (
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
           <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
             다음 단계로 이동할 수 있습니다:
           </p>
           <div className="flex flex-wrap gap-2">
-            {validNextStages.map(({ stage, label }) => (
+            {validNextStages
+              .filter(({ label }) => label && label.trim() !== '')
+              .map(({ stage, label }) => (
               <button
                 key={stage}
                 onClick={() => handleTransitionToNext(stage)}
@@ -204,8 +206,8 @@ function ProcedureTimelineComponent({
       {/* Loading Overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-40">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]" />
           </div>
         </div>
       )}
