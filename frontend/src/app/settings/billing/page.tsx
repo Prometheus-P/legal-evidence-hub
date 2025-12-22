@@ -1,13 +1,21 @@
+/**
+ * Billing Settings Page
+ * 014-ui-settings-completion Feature
+ *
+ * Page for managing subscription, payment methods, and usage.
+ * NOTE: This page currently uses mock data. API integration pending.
+ */
+
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   CreditCard,
   Calendar,
   TrendingUp,
   Database,
   Download,
-  ChevronRight,
   AlertCircle,
   CheckCircle2,
   X
@@ -41,6 +49,12 @@ interface BillingHistory {
 }
 
 export default function BillingPage() {
+  // TODO: Replace with API integration when billing backend is ready
+  // Backend endpoints needed:
+  // - GET /billing/subscription
+  // - GET /billing/payment-method
+  // - GET /billing/usage
+  // - GET /billing/history
   const [currentPlan] = useState<SubscriptionPlan>({
     name: 'Professional',
     price: 99000,
@@ -103,18 +117,41 @@ export default function BillingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 p-8">
-      <nav aria-label="Breadcrumb" className="mb-6">
-        <ol className="flex items-center space-x-2 text-sm">
-          <li><a href="/settings" className="text-neutral-600 hover:text-secondary">Settings</a></li>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <li><span className="text-secondary font-semibold">Billing</span></li>
+    <div className="max-w-4xl mx-auto py-6 px-4">
+      {/* Breadcrumb */}
+      <nav className="mb-6">
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <Link
+              href="/settings"
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-primary)]"
+            >
+              설정
+            </Link>
+          </li>
+          <li className="text-[var(--color-text-secondary)]">/</li>
+          <li className="text-[var(--color-text-primary)] font-medium">청구</li>
         </ol>
       </nav>
 
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-secondary">빌링 및 구독 관리</h1>
-        <p className="text-neutral-600 mt-2">구독 플랜, 결제 수단, 사용량을 관리합니다</p>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">빌링 및 구독 관리</h1>
+          <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
+            베타
+          </span>
+        </div>
+        <p className="text-[var(--color-text-secondary)] mt-1">
+          구독 플랜, 결제 수단, 사용량을 관리합니다.
+        </p>
+      </div>
+
+      {/* Beta Notice */}
+      <div className="mb-6 p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
+        <p className="text-sm">
+          빌링 기능은 현재 베타 버전입니다. 실제 결제 연동은 추후 지원될 예정입니다.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

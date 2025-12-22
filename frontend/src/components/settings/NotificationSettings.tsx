@@ -8,6 +8,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import type { NotificationSettings as NotificationSettingsType, NotificationUpdateRequest, NotificationTypes } from '@/types/settings';
 
 type NotificationTypeKey = keyof NotificationTypes;
@@ -51,7 +52,6 @@ export function NotificationSettingsComponent({
       billing_alerts: false,
     },
   });
-  const [success, setSuccess] = useState(false);
 
   // Initialize form data when notifications load
   useEffect(() => {
@@ -67,7 +67,6 @@ export function NotificationSettingsComponent({
 
   const handleToggle = (field: 'email_enabled' | 'push_enabled') => {
     setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
-    setSuccess(false);
   };
 
   const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -75,7 +74,6 @@ export function NotificationSettingsComponent({
       ...prev,
       frequency: e.target.value as 'immediate' | 'daily' | 'weekly',
     }));
-    setSuccess(false);
   };
 
   const handleTypeToggle = (key: NotificationTypeKey) => {
@@ -86,15 +84,15 @@ export function NotificationSettingsComponent({
         [key]: !prev.notification_types?.[key],
       },
     }));
-    setSuccess(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await onSubmit(formData);
     if (result) {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      toast.success('알림 설정이 저장되었습니다.');
+    } else {
+      toast.error('알림 설정 저장에 실패했습니다.');
     }
   };
 
@@ -115,12 +113,6 @@ export function NotificationSettingsComponent({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {success && (
-        <div className="p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
-          알림 설정이 성공적으로 업데이트되었습니다.
-        </div>
-      )}
-
       {/* Main Toggles */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-[var(--color-text-primary)]">

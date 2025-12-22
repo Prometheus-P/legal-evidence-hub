@@ -8,6 +8,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import type { UserProfile, ProfileUpdateRequest } from '@/types/settings';
 
 interface ProfileFormProps {
@@ -37,7 +38,7 @@ export function ProfileForm({ profile, loading, updating, onSubmit }: ProfileFor
     timezone: 'Asia/Seoul',
     language: 'ko',
   });
-  const [success, setSuccess] = useState(false);
+  const [errors, setErrors] = useState<{ phone?: string }>({});
 
   // Initialize form data when profile loads
   useEffect(() => {
@@ -56,15 +57,37 @@ export function ProfileForm({ profile, loading, updating, onSubmit }: ProfileFor
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setSuccess(false);
+    // Clear error when user types
+    if (name === 'phone') {
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: { phone?: string } = {};
+
+    // Phone number validation (Korean format)
+    if (formData.phone && !/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(formData.phone.replace(/-/g, ''))) {
+      newErrors.phone = '올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error('입력 정보를 확인해주세요.');
+      return;
+    }
+
     const result = await onSubmit(formData);
     if (result) {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      toast.success('프로필이 저장되었습니다.');
+    } else {
+      toast.error('프로필 저장에 실패했습니다.');
     }
   };
 
@@ -81,12 +104,6 @@ export function ProfileForm({ profile, loading, updating, onSubmit }: ProfileFor
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {success && (
-        <div className="p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
-          프로필이 성공적으로 업데이트되었습니다.
-        </div>
-      )}
-
       <div className="space-y-4">
         {/* Display Name */}
         <div>
@@ -141,9 +158,16 @@ export function ProfileForm({ profile, loading, updating, onSubmit }: ProfileFor
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-[var(--color-border-default)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+            className={`w-full px-4 py-2 rounded-lg border ${
+              errors.phone
+                ? 'border-red-300 focus:ring-red-500'
+                : 'border-[var(--color-border-default)] focus:ring-[var(--color-primary)]'
+            } focus:outline-none focus:ring-2 focus:border-transparent`}
             placeholder="010-1234-5678"
           />
+          {errors.phone && (
+            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+          )}
         </div>
 
         {/* Timezone */}

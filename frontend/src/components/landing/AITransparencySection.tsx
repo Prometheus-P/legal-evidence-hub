@@ -60,53 +60,61 @@ export default function AITransparencySection() {
             법률 컴플라이언스 준수
           </h2>
 
-          {/* 2-Column Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Left Column: AI Transparency */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-secondary">
-                AI 투명성
-              </h3>
+          {/* 2-Column Grid - centered with max-w-4xl for better visual balance */}
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Left Column: AI Transparency */}
+              <div className="space-y-6 text-center lg:text-left">
+                <h3 className="text-2xl font-bold text-secondary">
+                  AI 투명성
+                </h3>
 
-              <div className="space-y-4">
-                {transparencyFeatures.map((feature) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <div key={feature.id} className="flex items-start space-x-3">
-                      <IconComponent
-                        className="w-6 h-6 text-accent flex-shrink-0 mt-1"
-                        aria-label={feature.ariaLabel}
-                      />
-                      <p className="text-neutral-600 leading-relaxed">
-                        {feature.text}
-                      </p>
-                    </div>
-                  );
-                })}
+                <div className="space-y-4">
+                  {transparencyFeatures.map((feature) => {
+                    const IconComponent = feature.icon;
+                    return (
+                      <div
+                        key={feature.id}
+                        className="flex flex-col lg:flex-row items-center lg:items-start gap-2 lg:gap-3"
+                      >
+                        <IconComponent
+                          className="w-6 h-6 text-accent flex-shrink-0"
+                          aria-label={feature.ariaLabel}
+                        />
+                        <p className="text-neutral-600 leading-relaxed">
+                          {feature.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Right Column: Security & Compliance */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-secondary">
-                보안 및 규정 준수
-              </h3>
+              {/* Right Column: Security & Compliance */}
+              <div className="space-y-6 text-center lg:text-left">
+                <h3 className="text-2xl font-bold text-secondary">
+                  보안 및 규정 준수
+                </h3>
 
-              <div className="space-y-4">
-                {securityFeatures.map((feature) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <div key={feature.id} className="flex items-start space-x-3">
-                      <IconComponent
-                        className="w-6 h-6 text-accent flex-shrink-0 mt-1"
-                        aria-label={feature.ariaLabel}
-                      />
-                      <p className="text-neutral-600 leading-relaxed">
-                        {feature.text}
-                      </p>
-                    </div>
-                  );
-                })}
+                <div className="space-y-4">
+                  {securityFeatures.map((feature) => {
+                    const IconComponent = feature.icon;
+                    return (
+                      <div
+                        key={feature.id}
+                        className="flex flex-col lg:flex-row items-center lg:items-start gap-2 lg:gap-3"
+                      >
+                        <IconComponent
+                          className="w-6 h-6 text-accent flex-shrink-0"
+                          aria-label={feature.ariaLabel}
+                        />
+                        <p className="text-neutral-600 leading-relaxed">
+                          {feature.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

@@ -14,32 +14,31 @@ import { Twitter, Linkedin, Github } from 'lucide-react';
 import { BRAND } from '@/config/brand';
 
 export default function LandingFooter() {
+  // TODO: 실제 회사 정보로 업데이트 필요 (GitHub Issue 참조)
   const companyInfo = {
     name: BRAND.fullName,
     shortName: BRAND.name,
-    address: '서울특별시 강남구 테헤란로 123, 10층',
-    email: 'contact@legalevidence.hub',
-    phone: '02-1234-5678',
+    address: '서울특별시 강남구 테헤란로 123, 10층', // TODO: 실제 주소
+    email: 'contact@legalevidence.hub', // TODO: 실제 이메일
+    phone: '02-1234-5678', // TODO: 실제 전화번호
   };
 
   const productLinks = [
     { name: '제품', href: '#features' },
     { name: '가격', href: '#pricing' },
-    { name: '블로그', href: '/blog' },
     { name: '고객사례', href: '#testimonials' },
-    { name: '채용', href: '/careers' },
   ];
 
   const legalLinks = [
     { name: '이용약관', href: '/terms' },
     { name: '개인정보처리방침', href: '/privacy' },
-    { name: '쿠키정책', href: '/cookies' },
   ];
 
-  const socialLinks = [
-    { name: 'Twitter', href: 'https://twitter.com/legalevhub', icon: Twitter },
-    { name: 'LinkedIn', href: 'https://linkedin.com/company/legalevhub', icon: Linkedin },
-    { name: 'GitHub', href: 'https://github.com/legalevhub', icon: Github },
+  // TODO: 실제 소셜 미디어 URL 확정 시 활성화 (GitHub Issue 참조)
+  const socialLinks: { name: string; href: string; icon: typeof Twitter }[] = [
+    // { name: 'Twitter', href: 'https://twitter.com/legalevhub', icon: Twitter },
+    // { name: 'LinkedIn', href: 'https://linkedin.com/company/legalevhub', icon: Linkedin },
+    // { name: 'GitHub', href: 'https://github.com/legalevhub', icon: Github },
   ];
 
   return (
@@ -101,24 +100,26 @@ export default function LandingFooter() {
               © 2025 {companyInfo.shortName}. All rights reserved.
             </p>
 
-            {/* Social Media Icons */}
-            <div className="flex items-center space-x-4">
-              {socialLinks.map((social) => {
-                const IconComponent = social.icon;
-                return (
-                  <Link
-                    key={social.name}
-                    href={social.href}
-                    aria-label={social.name}
-                    className="hover:text-white transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </Link>
-                );
-              })}
-            </div>
+            {/* Social Media Icons - 실제 URL 확정 시 표시 */}
+            {socialLinks.length > 0 && (
+              <div className="flex items-center space-x-4">
+                {socialLinks.map((social) => {
+                  const IconComponent = social.icon;
+                  return (
+                    <Link
+                      key={social.name}
+                      href={social.href}
+                      aria-label={social.name}
+                      className="hover:text-white transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -5,3 +5,4 @@
 
 export { ProfileForm } from './ProfileForm';
 export { NotificationSettingsComponent } from './NotificationSettings';
+export { SecuritySettingsForm } from './SecuritySettingsForm';
