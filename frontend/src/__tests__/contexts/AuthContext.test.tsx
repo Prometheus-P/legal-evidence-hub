@@ -95,6 +95,14 @@ Object.defineProperty(document, 'cookie', {
 function TestConsumer() {
   const { user, role, isAuthenticated, isLoading, login, logout } = useAuth();
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // Ignore logout errors in test - state should still be cleared
+    }
+  };
+
   return (
     <div>
       <span data-testid="loading">{isLoading ? 'loading' : 'ready'}</span>
@@ -102,7 +110,7 @@ function TestConsumer() {
       <span data-testid="user">{user?.email || 'none'}</span>
       <span data-testid="role">{role || 'none'}</span>
       <button onClick={() => login('test@example.com', 'password')}>Login</button>
-      <button onClick={() => logout()}>Logout</button>
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }
