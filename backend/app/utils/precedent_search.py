@@ -120,14 +120,19 @@ def search_similar_precedents(
         return []
 
 
-def get_fallback_precedents() -> List[Dict]:
+def get_fallback_precedents(fault_types: List[str] = None) -> List[Dict]:
     """
-    Return fallback sample precedents when Qdrant is unavailable.
+    Return fallback sample precedents based on fault types.
+
+    Args:
+        fault_types: 유책사유 목록 (한글). None이면 기본 상위 3개 반환.
 
     Returns:
-        List of sample precedent cases for development/testing
+        해당 유책사유와 관련된 판례 Mock 데이터
     """
-    return [
+    # 유형별 판례 Mock 데이터
+    ALL_FALLBACKS = [
+        # 부정행위 관련
         {
             "case_ref": "2020므12345",
             "court": "서울가정법원",
@@ -138,21 +143,95 @@ def get_fallback_precedents() -> List[Dict]:
             "similarity_score": 0.85
         },
         {
+            "case_ref": "2021므11111",
+            "court": "서울가정법원",
+            "decision_date": "2021-02-20",
+            "summary": "배우자의 외도로 인한 이혼 청구. 위자료 5천만원 인정.",
+            "division_ratio": {"plaintiff": 55, "defendant": 45},
+            "key_factors": ["부정행위", "외도", "위자료"],
+            "similarity_score": 0.82
+        },
+        # 가정폭력 관련
+        {
             "case_ref": "2019므98765",
             "court": "서울가정법원",
             "decision_date": "2019-11-20",
             "summary": "가정폭력으로 인한 혼인관계 파탄. 피고의 유책사유 인정, 위자료 3천만원 판결.",
             "division_ratio": {"plaintiff": 55, "defendant": 45},
-            "key_factors": ["가정폭력", "위자료"],
+            "key_factors": ["가정폭력", "위자료", "유책사유"],
             "similarity_score": 0.78
         },
+        {
+            "case_ref": "2020므22222",
+            "court": "인천가정법원",
+            "decision_date": "2020-08-10",
+            "summary": "상습적 폭력으로 인한 이혼. 양육권은 원고에게, 위자료 4천만원.",
+            "division_ratio": {"plaintiff": 60, "defendant": 40},
+            "key_factors": ["가정폭력", "양육권", "상습폭력"],
+            "similarity_score": 0.75
+        },
+        # 악의의 유기 관련
+        {
+            "case_ref": "2021므33333",
+            "court": "수원가정법원",
+            "decision_date": "2021-06-15",
+            "summary": "배우자가 3년간 가출하여 생활비 미지급. 악의의 유기로 이혼 인정.",
+            "division_ratio": {"plaintiff": 65, "defendant": 35},
+            "key_factors": ["악의의 유기", "생활비", "가출"],
+            "similarity_score": 0.80
+        },
+        # 재정 비행 관련
+        {
+            "case_ref": "2020므44444",
+            "court": "서울가정법원",
+            "decision_date": "2020-12-05",
+            "summary": "도박으로 인한 가정경제 파탄. 재산분할에서 피고 과실 인정.",
+            "division_ratio": {"plaintiff": 70, "defendant": 30},
+            "key_factors": ["재정 비행", "도박", "채무"],
+            "similarity_score": 0.73
+        },
+        # 혼인지속 곤란 관련
         {
             "case_ref": "2021므54321",
             "court": "인천가정법원",
             "decision_date": "2021-03-10",
             "summary": "성격차이 및 경제적 갈등으로 인한 이혼. 양 당사자 과실 인정, 재산분할 5:5.",
             "division_ratio": {"plaintiff": 50, "defendant": 50},
-            "key_factors": ["성격차이", "경제적 갈등"],
+            "key_factors": ["혼인지속 곤란", "성격차이", "경제적 갈등"],
             "similarity_score": 0.72
-        }
+        },
+        {
+            "case_ref": "2019므55555",
+            "court": "대전가정법원",
+            "decision_date": "2019-09-25",
+            "summary": "장기간 별거 후 혼인관계 회복 불가. 재산분할 및 양육비 결정.",
+            "division_ratio": {"plaintiff": 50, "defendant": 50},
+            "key_factors": ["별거", "혼인지속 곤란", "양육비"],
+            "similarity_score": 0.70
+        },
     ]
+
+    # 유책사유가 없으면 상위 3개 반환
+    if not fault_types:
+        logger.info("No fault_types provided, returning default fallback precedents")
+        return ALL_FALLBACKS[:3]
+
+    # 유책사유와 매칭되는 판례 필터링
+    matched = []
+    for precedent in ALL_FALLBACKS:
+        key_factors = precedent.get("key_factors", [])
+        # 유책사유와 key_factors 매칭
+        for ft in fault_types:
+            if ft in key_factors or any(ft in kf for kf in key_factors):
+                matched.append(precedent)
+                break
+
+    # 매칭된 결과가 있으면 반환, 없으면 기본 3개
+    if matched:
+        # 유사도 점수로 정렬
+        matched.sort(key=lambda x: x.get("similarity_score", 0), reverse=True)
+        logger.info(f"Fallback matched {len(matched)} precedents for fault_types={fault_types}")
+        return matched[:5]
+
+    logger.info(f"No matching fallback for fault_types={fault_types}, returning default")
+    return ALL_FALLBACKS[:3]
