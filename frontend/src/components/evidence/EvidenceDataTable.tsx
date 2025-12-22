@@ -11,13 +11,17 @@
 import { useState } from 'react';
 import { logger } from '@/lib/logger';
 import { flexRender } from '@tanstack/react-table';
-import { ArrowUpDown, MoreVertical, Filter, Sparkles, X, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowUpDown, MoreVertical, Filter, Sparkles, X, FileText, Loader2, RefreshCw, Users } from 'lucide-react';
 import { Evidence } from '@/types/evidence';
+import type { PartyNode } from '@/types/party';
 import { useEvidenceTable } from '@/hooks/useEvidenceTable';
 import { EvidenceTypeIcon } from './EvidenceTypeIcon';
 import { EvidenceStatusBadge } from './EvidenceStatusBadge';
+import { SpeakerMappingBadge } from './SpeakerMappingBadge';
+import { SpeakerMappingModal } from './SpeakerMappingModal';
 import { DataTablePagination } from './DataTablePagination';
-import { getEvidenceDetail, retryEvidence } from '@/lib/api/evidence';
+import { getEvidenceDetail, retryEvidence, updateSpeakerMapping } from '@/lib/api/evidence';
+import type { SpeakerMapping } from '@/lib/api/evidence';
 
 /**
  * AI Summary Modal Component
@@ -82,19 +86,26 @@ function AISummaryModal({
 
 /**
  * Evidence Content Modal Component (원문 보기)
+ * T016: 화자 매핑 버튼 추가
  */
 function ContentModal({
   isOpen,
   onClose,
   evidence,
   content,
-  isLoading
+  isLoading,
+  showSpeakerMappingButton,
+  onOpenSpeakerMapping,
 }: {
   isOpen: boolean;
   onClose: () => void;
   evidence: Evidence | null;
   content: string | null;
   isLoading: boolean;
+  /** 015-evidence-speaker-mapping: 화자 매핑 버튼 표시 여부 */
+  showSpeakerMappingButton?: boolean;
+  /** 015-evidence-speaker-mapping: 화자 매핑 버튼 클릭 핸들러 */
+  onOpenSpeakerMapping?: () => void;
 }) {
   if (!isOpen || !evidence) return null;
 
@@ -145,7 +156,19 @@ function ContentModal({
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-100 flex justify-end">
+        <div className="p-4 border-t border-gray-100 flex justify-between">
+          {/* T016: 화자 매핑 버튼 */}
+          <div>
+            {showSpeakerMappingButton && content && (
+              <button
+                onClick={onOpenSpeakerMapping}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                화자 매핑
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
@@ -161,9 +184,13 @@ function ContentModal({
 interface EvidenceDataTableProps {
   items: Evidence[];
   onRetry?: (evidenceId: string) => void;
+  /** 015-evidence-speaker-mapping: 인물관계도의 당사자 목록 */
+  parties?: PartyNode[];
+  /** 015-evidence-speaker-mapping: 화자 매핑 저장 후 콜백 */
+  onSpeakerMappingUpdate?: (evidenceId: string) => void;
 }
 
-export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
+export function EvidenceDataTable({ items, onRetry, parties = [], onSpeakerMappingUpdate }: EvidenceDataTableProps) {
   const [typeFilter, setTypeFilterValue] = useState<string>('all');
   const [dateFilter, setDateFilterValue] = useState<string>('all');
   const [selectedEvidence, setSelectedEvidence] = useState<Evidence | null>(null);
@@ -172,6 +199,10 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
   const [evidenceContent, setEvidenceContent] = useState<string | null>(null);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
+
+  // 015-evidence-speaker-mapping: 화자 매핑 모달 상태
+  const [isSpeakerMappingModalOpen, setIsSpeakerMappingModalOpen] = useState(false);
+  const [speakerMappingEvidence, setSpeakerMappingEvidence] = useState<Evidence | null>(null);
 
   const { table, setTypeFilter, setDateFilter } = useEvidenceTable(items);
 
@@ -223,6 +254,32 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
     setIsContentModalOpen(false);
     setSelectedEvidence(null);
     setEvidenceContent(null);
+  };
+
+  // 015-evidence-speaker-mapping: 화자 매핑 모달 핸들러
+  const handleOpenSpeakerMapping = (evidence: Evidence) => {
+    setSpeakerMappingEvidence(evidence);
+    setIsSpeakerMappingModalOpen(true);
+  };
+
+  const handleCloseSpeakerMapping = () => {
+    setIsSpeakerMappingModalOpen(false);
+    setSpeakerMappingEvidence(null);
+  };
+
+  const handleSaveSpeakerMapping = async (mapping: SpeakerMapping) => {
+    if (!speakerMappingEvidence) return;
+
+    const response = await updateSpeakerMapping(speakerMappingEvidence.id, {
+      speaker_mapping: mapping,
+    });
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    // 매핑 업데이트 콜백 호출 (목록 새로고침용)
+    onSpeakerMappingUpdate?.(speakerMappingEvidence.id);
   };
 
   const handleTypeFilterChange = (value: string) => {
@@ -352,6 +409,15 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                 >
                   상태
                 </th>
+                {/* 015-evidence-speaker-mapping: 화자 매핑 열 */}
+                {parties.length > 0 && (
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    화자
+                  </th>
+                )}
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -434,6 +500,17 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
                       </div>
                     </td>
 
+                    {/* 015-evidence-speaker-mapping: 화자 매핑 뱃지 (T027) */}
+                    {parties.length > 0 && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <SpeakerMappingBadge
+                          hasSpeakerMapping={evidence.hasSpeakerMapping}
+                          speakerMapping={evidence.speakerMapping}
+                          onClick={() => handleOpenSpeakerMapping(evidence)}
+                        />
+                      </td>
+                    )}
+
                     {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -469,7 +546,29 @@ export function EvidenceDataTable({ items, onRetry }: EvidenceDataTableProps) {
         evidence={selectedEvidence}
         content={evidenceContent}
         isLoading={isLoadingContent}
+        showSpeakerMappingButton={parties.length > 0}
+        onOpenSpeakerMapping={() => {
+          if (selectedEvidence) {
+            handleCloseContent();
+            handleOpenSpeakerMapping(selectedEvidence);
+          }
+        }}
       />
+
+      {/* 015-evidence-speaker-mapping: 화자 매핑 모달 */}
+      {speakerMappingEvidence && (
+        <SpeakerMappingModal
+          isOpen={isSpeakerMappingModalOpen}
+          onClose={handleCloseSpeakerMapping}
+          evidence={speakerMappingEvidence}
+          parties={parties}
+          onSave={handleSaveSpeakerMapping}
+          onSaveSuccess={() => {
+            // 목록 새로고침
+            onSpeakerMappingUpdate?.(speakerMappingEvidence.id);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -37,6 +37,36 @@ export interface AIInsight {
     createdAt: string;
 }
 
+/**
+ * 015-evidence-speaker-mapping: 개별 화자 매핑 항목
+ */
+export interface SpeakerMappingItem {
+    party_id: string;
+    party_name: string;
+}
+
+/**
+ * 015-evidence-speaker-mapping: 화자 매핑 객체 (화자명 → 인물 정보)
+ */
+export type SpeakerMapping = Record<string, SpeakerMappingItem>;
+
+/**
+ * 015-evidence-speaker-mapping: 화자 매핑 업데이트 요청
+ */
+export interface SpeakerMappingUpdateRequest {
+    speaker_mapping: SpeakerMapping;
+}
+
+/**
+ * 015-evidence-speaker-mapping: 화자 매핑 업데이트 응답
+ */
+export interface SpeakerMappingUpdateResponse {
+    evidence_id: string;
+    speaker_mapping: SpeakerMapping | null;
+    updated_at: string | null;
+    updated_by: string | null;
+}
+
 export interface Evidence {
     id: string;
     caseId: string;
@@ -59,4 +89,10 @@ export interface Evidence {
     // Article 840 analysis (optional - populated after AI processing)
     article840Tags?: Article840Tags;
     insights?: AIInsight[];
+
+    // 015-evidence-speaker-mapping: 화자 매핑 필드
+    speakerMapping?: SpeakerMapping;
+    speakerMappingUpdatedAt?: string;
+    speakerMappingUpdatedBy?: string;
+    hasSpeakerMapping?: boolean; // 목록에서 매핑 상태 표시용
 }

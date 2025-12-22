@@ -277,8 +277,23 @@ class FactSummaryService:
             labels = evidence.get("labels", [])
             labels_str = ", ".join(labels) if labels else ""
 
+            # 015-evidence-speaker-mapping: Include speaker mapping info
+            speaker_info = ""
+            speaker_mapping = evidence.get("speaker_mapping")
+            if speaker_mapping and isinstance(speaker_mapping, dict):
+                # Format: 나=김동우, 상대방=김도연
+                mapping_parts = []
+                for label, item in speaker_mapping.items():
+                    if isinstance(item, dict):
+                        party_name = item.get("party_name", "")
+                        if party_name:
+                            mapping_parts.append(f"{label}={party_name}")
+                if mapping_parts:
+                    speaker_info = f"[화자 정보: {', '.join(mapping_parts)}]"
+
             evidence_text += f"""
 [증거{i}] ({evidence_type}) {timestamp}
+{speaker_info}
 {summary}
 {f"관련 태그: {labels_str}" if labels_str else ""}
 ---
@@ -293,6 +308,7 @@ class FactSummaryService:
 3. 객관적 사실만 기술, 의견이나 추측 배제
 4. 유책사유(부정행위, 가정폭력, 악의의 유기 등) 명확히 표시
 5. 핵심 사실 위주로 3000자 이내
+6. [화자 정보]가 있는 경우, "나", "상대방" 등의 표현을 실제 인물 이름으로 변환하여 기술
 
 ## 출력 형식:
 ### 사건 개요

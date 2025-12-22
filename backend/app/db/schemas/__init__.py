@@ -54,6 +54,10 @@ from app.db.schemas.evidence import (
     EvidenceReviewRequest,
     EvidenceReviewResponse,
     EvidenceDetail,
+    # Speaker Mapping (015-evidence-speaker-mapping)
+    SpeakerMappingItem,
+    SpeakerMappingUpdateRequest,
+    SpeakerMappingResponse,
 )
 
 # Draft
@@ -259,6 +263,10 @@ __all__ = [
     "EvidenceReviewRequest",
     "EvidenceReviewResponse",
     "EvidenceDetail",
+    # Speaker Mapping
+    "SpeakerMappingItem",
+    "SpeakerMappingUpdateRequest",
+    "SpeakerMappingResponse",
     # Draft
     "DraftPreviewRequest",
     "DraftCitation",

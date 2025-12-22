@@ -22,12 +22,14 @@ from app.db.schemas import (
     PresignedUrlResponse,
     UploadCompleteRequest,
     UploadCompleteResponse,
-    EvidenceDetail
+    EvidenceDetail,
+    SpeakerMappingUpdateRequest,
+    SpeakerMappingResponse
 )
 from app.services.evidence_service import EvidenceService
 from app.core.dependencies import get_current_user_id
 from app.core.error_messages import ErrorMessages
-from app.middleware import NotFoundError, PermissionError
+from app.middleware import NotFoundError, PermissionError, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -258,3 +260,57 @@ def retry_evidence_processing(
     except ValueError as e:
         logger.warning(f"Evidence retry validation error {evidence_id}: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="증거 재처리를 시도할 수 없습니다")
+
+
+@router.patch("/{evidence_id}/speaker-mapping", response_model=SpeakerMappingResponse, status_code=status.HTTP_200_OK)
+def update_speaker_mapping(
+    evidence_id: str,
+    request: SpeakerMappingUpdateRequest,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Update speaker mapping for evidence
+
+    **Path Parameters:**
+    - evidence_id: Evidence ID
+
+    **Request Body:**
+    - speaker_mapping: Dict mapping speaker labels to party info
+      - Key: Speaker label (e.g., "나", "상대방")
+      - Value: Object with party_id and party_name
+      - Empty object {} clears the mapping
+
+    **Response:**
+    - evidence_id: Evidence ID
+    - speaker_mapping: Updated mapping (null if cleared)
+    - updated_at: Last update timestamp
+    - updated_by: User ID who made the update
+
+    **Errors:**
+    - 400: Invalid mapping (party not in case, too many speakers, label too long)
+    - 401: Not authenticated
+    - 403: User does not have access to case
+    - 404: Evidence not found
+
+    **Validation:**
+    - Maximum 10 speakers per mapping
+    - Speaker label max 50 characters
+    - All party_ids must belong to the same case (Case Isolation)
+
+    **Usage:**
+    Maps conversation speakers in evidence (e.g., "나", "상대방" from KakaoTalk)
+    to actual party nodes from the case's relationship graph.
+    """
+    evidence_service = EvidenceService(db)
+    try:
+        return evidence_service.update_speaker_mapping(evidence_id, user_id, request)
+    except NotFoundError as e:
+        logger.warning(f"Evidence not found for speaker mapping: {evidence_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=ErrorMessages.EVIDENCE_NOT_FOUND)
+    except PermissionError as e:
+        logger.warning(f"Permission denied for speaker mapping {evidence_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="증거에 접근할 권한이 없습니다")
+    except ValidationError as e:
+        logger.warning(f"Speaker mapping validation error {evidence_id}: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

@@ -3,7 +3,7 @@ Evidence Schemas - Upload, Analysis, Review
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict
 from datetime import datetime
 from enum import Enum
 
@@ -99,6 +99,8 @@ class EvidenceSummary(BaseModel):
     status: str  # pending, processing, done, error
     ai_summary: Optional[str] = None  # AI-generated summary
     article_840_tags: Optional[Article840Tags] = None  # Article 840 tagging
+    # 015-evidence-speaker-mapping: Speaker mapping status
+    has_speaker_mapping: bool = Field(default=False, description="Whether speaker mapping is configured")
 
 
 class EvidenceListResponse(BaseModel):
@@ -144,3 +146,42 @@ class EvidenceDetail(BaseModel):
     timestamp: Optional[datetime] = None  # Event timestamp in evidence
     qdrant_id: Optional[str] = None  # RAG index reference (Qdrant point ID)
     article_840_tags: Optional[Article840Tags] = None  # Article 840 tagging
+
+    # 015-evidence-speaker-mapping: Speaker mapping fields
+    speaker_mapping: Optional[Dict[str, "SpeakerMappingItem"]] = None
+    speaker_mapping_updated_at: Optional[datetime] = None
+
+
+# ============================================
+# Speaker Mapping Schemas (015-evidence-speaker-mapping)
+# ============================================
+class SpeakerMappingItem(BaseModel):
+    """Individual speaker mapping item"""
+    party_id: str = Field(..., description="PartyNode ID from relationship graph")
+    party_name: str = Field(..., description="Party name for display")
+
+
+class SpeakerMappingUpdateRequest(BaseModel):
+    """Speaker mapping update request"""
+    speaker_mapping: Dict[str, SpeakerMappingItem] = Field(
+        default_factory=dict,
+        description="Speaker label to party mapping. Empty dict clears mapping.",
+        json_schema_extra={
+            "examples": [{
+                "나": {"party_id": "party_001", "party_name": "김동우"},
+                "상대방": {"party_id": "party_002", "party_name": "김도연"}
+            }]
+        }
+    )
+
+
+class SpeakerMappingResponse(BaseModel):
+    """Speaker mapping update response"""
+    evidence_id: str
+    speaker_mapping: Optional[Dict[str, SpeakerMappingItem]] = None
+    updated_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+
+
+# Update forward reference for EvidenceDetail
+EvidenceDetail.model_rebuild()
