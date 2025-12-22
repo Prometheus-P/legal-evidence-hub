@@ -76,6 +76,10 @@ from app.db.schemas.draft import (
     DraftResponse,
     DraftListItem,
     DraftListResponse,
+    # Async Draft Preview
+    DraftJobStatus,
+    DraftJobCreateResponse,
+    DraftJobStatusResponse,
 )
 
 # Audit
@@ -274,6 +278,10 @@ __all__ = [
     "DraftResponse",
     "DraftListItem",
     "DraftListResponse",
+    # Async Draft Preview
+    "DraftJobStatus",
+    "DraftJobCreateResponse",
+    "DraftJobStatusResponse",
     # Audit
     "AuditAction",
     "AuditLogOut",

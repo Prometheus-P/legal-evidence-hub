@@ -24,7 +24,7 @@ router = APIRouter(prefix="/cases", tags=["Precedent"])
 async def search_similar_precedents(
     case_id: str,
     limit: int = Query(default=10, ge=1, le=20, description="최대 반환 개수"),
-    min_score: float = Query(default=0.5, ge=0, le=1, description="최소 유사도 점수"),
+    min_score: float = Query(default=0.3, ge=0, le=1, description="최소 유사도 점수"),
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user_id)
 ):

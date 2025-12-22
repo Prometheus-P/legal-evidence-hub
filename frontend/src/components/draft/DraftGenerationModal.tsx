@@ -12,6 +12,9 @@ interface DraftGenerationModalProps {
   onGenerate: (selectedEvidenceIds: string[]) => void;
   evidenceList: Evidence[];
   templates?: DraftTemplate[];
+  // Async generation progress
+  progress?: number;
+  status?: 'queued' | 'processing' | 'completed' | 'failed' | null;
 }
 
 export default function DraftGenerationModal({
@@ -23,6 +26,8 @@ export default function DraftGenerationModal({
     { id: 'default', name: '기본 양식', updatedAt: '2024-05-01' },
     { id: 'custom-1', name: '이혼 소송 답변서 v1', updatedAt: '2024-05-10' },
   ],
+  progress = 0,
+  status = null,
 }: DraftGenerationModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -94,6 +99,30 @@ export default function DraftGenerationModal({
         </>
       }
     >
+      {/* Progress Bar (visible during generation) */}
+      {isGenerating && status && (
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-blue-700">
+              {status === 'queued' && '초안 생성 대기 중...'}
+              {status === 'processing' && '초안을 생성하고 있습니다...'}
+              {status === 'completed' && '초안 생성 완료!'}
+              {status === 'failed' && '초안 생성 실패'}
+            </span>
+            <span className="text-sm text-blue-600">{progress}%</span>
+          </div>
+          <div className="w-full bg-blue-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-blue-500 mt-2">
+            AI가 증거를 분석하고 법률 문서를 작성 중입니다. 약 30-60초 소요됩니다.
+          </p>
+        </div>
+      )}
+
       {/* Template Selection */}
       <div className="space-y-3 mb-4">
         <label className="flex flex-col text-sm text-neutral-700">
@@ -105,6 +134,7 @@ export default function DraftGenerationModal({
                        bg-white text-sm transition-colors duration-200"
             value={selectedTemplateId}
             onChange={(e) => setSelectedTemplateId(e.target.value)}
+            disabled={isGenerating}
           >
             {templates.map((template) => (
               <option key={template.id} value={template.id}>

@@ -112,16 +112,19 @@ class BackendAPIClient:
         base_url: Optional[str] = None,
         api_key: Optional[str] = None,
         service_token: Optional[str] = None,
+        internal_api_key: Optional[str] = None,
     ):
         """
         Args:
             base_url: Backend API base URL (기본: 환경변수 BACKEND_API_URL)
             api_key: API 키 (기본: 환경변수 BACKEND_API_KEY)
-            service_token: 서비스 간 인증 토큰 (기본: 환경변수 AI_WORKER_SERVICE_TOKEN)
+            service_token: 서비스 간 인증 토큰 (기본: 환경변수 AI_WORKER_SERVICE_TOKEN) - deprecated
+            internal_api_key: 내부 API 키 (기본: 환경변수 INTERNAL_API_KEY)
         """
         self.base_url = base_url or os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
         self.api_key = api_key or os.getenv("BACKEND_API_KEY", "")
         self.service_token = service_token or os.getenv("AI_WORKER_SERVICE_TOKEN", "")
+        self.internal_api_key = internal_api_key or os.getenv("INTERNAL_API_KEY", "")
 
         # Remove trailing slash
         self.base_url = self.base_url.rstrip("/")
@@ -136,8 +139,11 @@ class BackendAPIClient:
             "User-Agent": "LEH-AI-Worker/1.0",
         }
 
-        # 서비스 토큰 우선 (서비스 간 인증)
-        if self.service_token:
+        # 내부 API 키 우선 (서비스 간 인증 - verify_internal_api_key와 호환)
+        if self.internal_api_key:
+            headers["X-Internal-API-Key"] = self.internal_api_key
+        # 레거시: 서비스 토큰 (Authorization Bearer)
+        elif self.service_token:
             headers["Authorization"] = f"Bearer {self.service_token}"
         elif self.api_key:
             headers["X-API-Key"] = self.api_key

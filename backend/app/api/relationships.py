@@ -11,7 +11,8 @@ from app.core.dependencies import (
     get_db,
     get_current_user_id,
     verify_case_read_access,
-    verify_case_write_access
+    verify_case_write_access,
+    verify_internal_api_key
 )
 from app.db.models import RelationshipType
 from app.db.schemas import (
@@ -236,20 +237,19 @@ async def auto_extract_relationship(
     case_id: str,
     data: AutoExtractedRelationshipRequest,
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user_id)
+    _: bool = Depends(verify_internal_api_key)
 ):
     """
     Save a relationship auto-extracted by AI Worker.
 
     - Minimum confidence threshold: 0.7 (enforced in schema)
     - Validates both parties exist
-    - Requires write access to the case.
+    - Requires internal API key (X-Internal-API-Key header)
 
     Returns:
         - id: New relationship ID
         - created: True if newly created
     """
-    verify_case_write_access(case_id, db, user_id)
-
     service = RelationshipService(db)
-    return service.create_auto_extracted_relationship(case_id, data, user_id)
+    # AI Worker에서 호출되므로 user_id 대신 "ai_worker" 사용
+    return service.create_auto_extracted_relationship(case_id, data, "ai_worker")

@@ -172,3 +172,35 @@ class DraftListResponse(BaseModel):
     """Draft list response schema"""
     drafts: List[DraftListItem]
     total: int
+
+
+# ============================================
+# Async Draft Preview Schemas (API Gateway 30s timeout 우회)
+# ============================================
+class DraftJobStatus(str, Enum):
+    """Draft job status enum"""
+    QUEUED = "queued"        # 대기 중
+    PROCESSING = "processing"  # 처리 중
+    COMPLETED = "completed"    # 완료
+    FAILED = "failed"          # 실패
+
+
+class DraftJobCreateResponse(BaseModel):
+    """비동기 초안 생성 시작 응답"""
+    job_id: str
+    case_id: str
+    status: DraftJobStatus = DraftJobStatus.QUEUED
+    message: str = "초안 생성이 시작되었습니다. 잠시 후 결과를 확인해주세요."
+    created_at: datetime
+
+
+class DraftJobStatusResponse(BaseModel):
+    """비동기 초안 생성 상태 조회 응답"""
+    job_id: str
+    case_id: str
+    status: DraftJobStatus
+    progress: int = 0  # 0-100
+    result: Optional[DraftPreviewResponse] = None  # 완료 시 결과
+    error_message: Optional[str] = None  # 실패 시 에러 메시지
+    created_at: datetime
+    completed_at: Optional[datetime] = None

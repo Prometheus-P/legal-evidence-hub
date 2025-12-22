@@ -1,0 +1,214 @@
+openapi: 3.0.3
+info:
+  title: Fact Summary API
+  description: 사건 전체 사실관계 요약 API
+  version: 1.0.0
+
+paths:
+  /cases/{case_id}/fact-summary:
+    get:
+      summary: 사실관계 조회
+      description: 사건의 저장된 사실관계(AI 생성본 또는 변호사 수정본)를 조회합니다.
+      operationId: getFactSummary
+      tags:
+        - Fact Summary
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 사건 ID
+      responses:
+        "200":
+          description: 사실관계 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FactSummaryResponse"
+        "401":
+          description: 인증 필요
+        "403":
+          description: 접근 권한 없음
+        "404":
+          description: 사건 또는 사실관계 없음
+
+    patch:
+      summary: 사실관계 수정
+      description: 변호사가 AI 생성 사실관계를 수정하여 저장합니다.
+      operationId: updateFactSummary
+      tags:
+        - Fact Summary
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FactSummaryUpdateRequest"
+      responses:
+        "200":
+          description: 수정 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FactSummaryUpdateResponse"
+        "400":
+          description: 잘못된 요청 (빈 내용 등)
+        "401":
+          description: 인증 필요
+        "403":
+          description: 접근 권한 없음
+        "404":
+          description: 사건 없음
+
+  /cases/{case_id}/fact-summary/generate:
+    post:
+      summary: 사실관계 생성
+      description: |
+        사건의 증거들을 종합하여 AI 사실관계 요약을 생성합니다.
+        - 기존 사실관계가 있으면 오류 반환 (force_regenerate=false)
+        - force_regenerate=true 시 기존 수정본을 previous_version에 백업 후 재생성
+      operationId: generateFactSummary
+      tags:
+        - Fact Summary
+      parameters:
+        - name: case_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FactSummaryGenerateRequest"
+      responses:
+        "200":
+          description: 생성 성공
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FactSummaryGenerateResponse"
+        "400":
+          description: 증거 없음 또는 이미 존재
+        "401":
+          description: 인증 필요
+        "403":
+          description: 접근 권한 없음
+        "404":
+          description: 사건 없음
+        "504":
+          description: 생성 타임아웃
+
+components:
+  schemas:
+    FactSummaryResponse:
+      type: object
+      required:
+        - case_id
+        - ai_summary
+        - evidence_ids
+        - fault_types
+        - created_at
+        - has_previous_version
+      properties:
+        case_id:
+          type: string
+          description: 사건 ID
+        ai_summary:
+          type: string
+          description: AI 생성 원본 사실관계
+        modified_summary:
+          type: string
+          nullable: true
+          description: 변호사 수정 사실관계
+        evidence_ids:
+          type: array
+          items:
+            type: string
+          description: 사용된 증거 ID 목록
+        fault_types:
+          type: array
+          items:
+            type: string
+          description: 추출된 유책사유 목록
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+          nullable: true
+        modified_by:
+          type: string
+          nullable: true
+        has_previous_version:
+          type: boolean
+          description: 이전 버전 존재 여부
+
+    FactSummaryGenerateRequest:
+      type: object
+      properties:
+        force_regenerate:
+          type: boolean
+          default: false
+          description: 기존 요약 무시하고 재생성
+
+    FactSummaryGenerateResponse:
+      type: object
+      required:
+        - case_id
+        - ai_summary
+        - evidence_count
+        - fault_types
+        - generated_at
+      properties:
+        case_id:
+          type: string
+        ai_summary:
+          type: string
+        evidence_count:
+          type: integer
+          description: 사용된 증거 수
+        fault_types:
+          type: array
+          items:
+            type: string
+        generated_at:
+          type: string
+          format: date-time
+
+    FactSummaryUpdateRequest:
+      type: object
+      required:
+        - modified_summary
+      properties:
+        modified_summary:
+          type: string
+          minLength: 1
+          maxLength: 15000
+
+    FactSummaryUpdateResponse:
+      type: object
+      required:
+        - case_id
+        - modified_summary
+        - modified_at
+        - modified_by
+      properties:
+        case_id:
+          type: string
+        modified_summary:
+          type: string
+        modified_at:
+          type: string
+          format: date-time
+        modified_by:
+          type: string

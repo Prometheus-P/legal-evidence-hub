@@ -16,7 +16,7 @@ export async function searchSimilarPrecedents(
   caseId: string,
   options: PrecedentSearchOptions = {}
 ): Promise<PrecedentSearchResponse> {
-  const { limit = 10, min_score = 0.5 } = options;
+  const { limit = 10, min_score = 0.3 } = options;
 
   const params = new URLSearchParams({
     limit: limit.toString(),

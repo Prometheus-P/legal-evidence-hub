@@ -11,7 +11,8 @@ from app.core.dependencies import (
     get_db,
     get_current_user_id,
     verify_case_read_access,
-    verify_case_write_access
+    verify_case_write_access,
+    verify_internal_api_key
 )
 from app.db.models import PartyType
 from app.db.schemas import (
@@ -196,22 +197,20 @@ async def auto_extract_party(
     case_id: str,
     data: AutoExtractedPartyRequest,
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user_id)
+    _: bool = Depends(verify_internal_api_key)
 ):
     """
     Save a party auto-extracted by AI Worker.
 
     - Checks for duplicate names (similarity threshold 0.8)
     - Minimum confidence threshold: 0.7
-    - Requires write access to the case.
+    - Requires internal API key (X-Internal-API-Key header)
 
     Returns:
         - id: New or existing party ID
         - is_duplicate: True if matched existing party
         - matched_party_id: Existing party ID if duplicate
     """
-    verify_case_write_access(case_id, db, user_id)
-
     # Confidence threshold check
     if data.extraction_confidence < 0.7:
         from fastapi import HTTPException
@@ -221,4 +220,5 @@ async def auto_extract_party(
         )
 
     service = PartyService(db)
-    return service.create_auto_extracted_party(case_id, data, user_id)
+    # AI Worker에서 호출되므로 user_id 대신 "ai_worker" 사용
+    return service.create_auto_extracted_party(case_id, data, "ai_worker")

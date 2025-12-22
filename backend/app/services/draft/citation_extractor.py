@@ -26,10 +26,18 @@ class CitationExtractor:
         """
         citations = []
 
-        for doc in rag_results:
-            evidence_id = doc.get("evidence_id") or doc.get("id")
-            content = doc.get("content", "")
-            labels = doc.get("labels", [])
+        for i, doc in enumerate(rag_results):
+            # AI Worker 필드명 호환: chunk_id, evidence_id, id 순으로 시도
+            evidence_id = (
+                doc.get("chunk_id") or
+                doc.get("evidence_id") or
+                doc.get("id") or
+                f"evidence_{i+1}"
+            )
+            # AI Worker 필드명 호환: document, content 순으로 시도
+            content = doc.get("document") or doc.get("content", "")
+            # AI Worker 필드명 호환: legal_categories, labels 순으로 시도
+            labels = doc.get("legal_categories") or doc.get("labels") or []
 
             # Create snippet (first 200 chars)
             snippet = content[:200] + "..." if len(content) > 200 else content

@@ -29,7 +29,7 @@ export function PrecedentPanel({ caseId, className = '', hideHeader = false }: P
     setError(null);
 
     try {
-      const result = await searchSimilarPrecedents(caseId, { limit: 10, min_score: 0.5 });
+      const result = await searchSimilarPrecedents(caseId, { limit: 10, min_score: 0.3 });
       setData(result);
       setIsSearched(true);
     } catch (err) {

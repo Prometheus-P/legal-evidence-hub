@@ -14,6 +14,11 @@ from sqlalchemy.orm import Session
 from typing import List, Tuple
 from datetime import datetime, timezone
 from io import BytesIO
+import json
+import logging
+import traceback
+
+from fastapi import BackgroundTasks
 
 from app.db.schemas import (
     DraftPreviewRequest,
@@ -22,12 +27,16 @@ from app.db.schemas import (
     DraftCreate,
     DraftUpdate,
     DraftResponse,
-    DraftListItem
+    DraftListItem,
+    # Async Draft Preview
+    DraftJobStatus,
+    DraftJobCreateResponse,
+    DraftJobStatusResponse,
 )
-from app.db.models import DraftDocument, DraftStatus, DocumentType
+from app.db.models import DraftDocument, DraftStatus, DocumentType, Job, JobType, JobStatus
 from app.repositories.case_repository import CaseRepository
 from app.repositories.case_member_repository import CaseMemberRepository
-from app.utils.dynamo import get_evidence_by_case
+from app.utils.dynamo import get_evidence_by_case, get_case_fact_summary
 from app.utils.qdrant import (
     get_template_by_type,
     search_evidence_by_semantic,
@@ -64,6 +73,8 @@ __all__ = [
     'DOCX_AVAILABLE',
     'Document',
 ]
+
+logger = logging.getLogger(__name__)
 
 
 class DraftService:
@@ -139,17 +150,21 @@ class DraftService:
         # 3.5 Search similar precedents
         precedent_results = self.rag_orchestrator.search_precedents(case_id)
 
+        # 3.6 Get fact summary context (014-case-fact-summary T023)
+        fact_summary_context = self._get_fact_summary_context(case_id)
+
         # 4. Check if template exists for JSON output mode
         template = get_template_by_type("이혼소장")
         use_json_output = template is not None
 
-        # 5. Build GPT-4o prompt with RAG context + precedents
+        # 5. Build GPT-4o prompt with RAG context + precedents + fact summary (T024)
         prompt_messages = self.prompt_builder.build_draft_prompt(
             case=case,
             sections=request.sections,
             evidence_context=evidence_results,
             legal_context=legal_results,
             precedent_context=precedent_results,
+            fact_summary_context=fact_summary_context,
             language=request.language,
             style=request.style
         )
@@ -583,10 +598,10 @@ class DraftService:
         """Legacy: delegates to CitationExtractor"""
         return self.citation_extractor.extract_precedent_citations(precedent_results)
 
-    def _build_draft_prompt(self, case, sections, evidence_context, legal_context, precedent_context, language, style) -> List[dict]:
+    def _build_draft_prompt(self, case, sections, evidence_context, legal_context, precedent_context, fact_summary_context="", language="ko", style="formal") -> List[dict]:
         """Legacy: delegates to PromptBuilder"""
         return self.prompt_builder.build_draft_prompt(
-            case, sections, evidence_context, legal_context, precedent_context, language, style
+            case, sections, evidence_context, legal_context, precedent_context, fact_summary_context, language, style
         )
 
     def _build_ai_placeholder_prompt(self, placeholder_key, section, evidence_context) -> List[dict]:
@@ -606,3 +621,254 @@ class DraftService:
     def _register_korean_font(self, pdfmetrics, TTFont) -> bool:
         """Legacy: delegates to DocumentExporter"""
         return self.document_exporter._register_korean_font(pdfmetrics, TTFont)
+
+    def _get_fact_summary_context(self, case_id: str) -> str:
+        """
+        Get fact summary context for draft generation (014-case-fact-summary T023)
+
+        Retrieves stored fact summary (lawyer-modified version preferred, AI-generated as fallback).
+        Returns empty string if no summary exists.
+
+        Args:
+            case_id: Case ID
+
+        Returns:
+            Fact summary text for context injection, empty string if not available
+        """
+        try:
+            summary_data = get_case_fact_summary(case_id)
+            if not summary_data:
+                return ""
+
+            # Prefer lawyer-modified summary over AI-generated
+            fact_summary = summary_data.get("modified_summary") or summary_data.get("ai_summary", "")
+            if not fact_summary:
+                return ""
+
+            return f"""[사건 사실관계 요약]
+{fact_summary}
+---
+위 사실관계는 변호사가 검토/수정한 내용입니다. 초안 작성 시 이 사실관계를 우선적으로 참조하세요."""
+        except Exception:
+            # Silently fail - fact summary is optional context
+            return ""
+
+    # ==========================================================================
+    # Async Draft Preview Methods (API Gateway 30s timeout 우회)
+    # ==========================================================================
+
+    def start_async_draft_preview(
+        self,
+        case_id: str,
+        request: DraftPreviewRequest,
+        user_id: str,
+        background_tasks: BackgroundTasks
+    ) -> DraftJobCreateResponse:
+        """
+        비동기 초안 생성 시작
+
+        1. Job 레코드 생성 (status: QUEUED)
+        2. BackgroundTask로 초안 생성 시작
+        3. 즉시 job_id 반환
+        """
+        # 1. Validate case access
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        case = self.case_repo.get_by_id(case_id)
+        if not case:
+            raise NotFoundError("Case")
+
+        # 2. Create job record
+        job = Job(
+            case_id=case_id,
+            user_id=user_id,
+            job_type=JobType.DRAFT_GENERATION,
+            status=JobStatus.QUEUED,
+            input_data=json.dumps({
+                "sections": request.sections,
+                "language": request.language,
+                "style": request.style
+            })
+        )
+        self.db.add(job)
+        self.db.commit()
+        self.db.refresh(job)
+
+        # 3. Schedule background task
+        # BackgroundTask는 request lifecycle 이후에 실행되므로
+        # 새로운 DB 세션을 생성해야 함
+        background_tasks.add_task(
+            self._execute_draft_generation_task,
+            job.id,
+            case_id,
+            request.sections,
+            request.language,
+            request.style,
+            user_id
+        )
+
+        return DraftJobCreateResponse(
+            job_id=job.id,
+            case_id=case_id,
+            status=DraftJobStatus.QUEUED,
+            created_at=job.created_at
+        )
+
+    def _execute_draft_generation_task(
+        self,
+        job_id: str,
+        case_id: str,
+        sections: List[str],
+        language: str,
+        style: str,
+        user_id: str
+    ):
+        """
+        백그라운드에서 초안 생성 실행
+
+        Note: BackgroundTask에서는 새 DB 세션을 사용해야 함
+        """
+        from app.db.session import SessionLocal
+
+        db = SessionLocal()
+        try:
+            # 1. Update job status to PROCESSING
+            job = db.query(Job).filter(Job.id == job_id).first()
+            if not job:
+                logger.error(f"Job {job_id} not found")
+                return
+
+            job.status = JobStatus.PROCESSING
+            job.started_at = datetime.now(timezone.utc)
+            job.progress = "10"
+            db.commit()
+
+            # 2. Re-initialize service with new DB session
+            draft_service = DraftService(db)
+
+            # 3. Create request object
+            request = DraftPreviewRequest(
+                sections=sections,
+                language=language,
+                style=style
+            )
+
+            # 4. Generate draft (this is the slow part)
+            logger.info(f"Starting draft generation for job {job_id}")
+            job.progress = "30"
+            db.commit()
+
+            draft_response = draft_service.generate_draft_preview(
+                case_id=case_id,
+                request=request,
+                user_id=user_id
+            )
+
+            job.progress = "90"
+            db.commit()
+
+            # 5. Store result
+            job.status = JobStatus.COMPLETED
+            job.progress = "100"
+            job.completed_at = datetime.now(timezone.utc)
+            job.output_data = json.dumps({
+                "case_id": draft_response.case_id,
+                "draft_text": draft_response.draft_text,
+                "citations": [c.model_dump() for c in draft_response.citations],
+                "precedent_citations": [p.model_dump() for p in draft_response.precedent_citations],
+                "generated_at": draft_response.generated_at.isoformat(),
+                "preview_disclaimer": draft_response.preview_disclaimer
+            })
+            db.commit()
+
+            logger.info(f"Draft generation completed for job {job_id}")
+
+        except Exception as e:
+            logger.error(f"Draft generation failed for job {job_id}: {e}")
+            logger.error(traceback.format_exc())
+
+            # Update job with error
+            try:
+                job = db.query(Job).filter(Job.id == job_id).first()
+                if job:
+                    job.status = JobStatus.FAILED
+                    job.completed_at = datetime.now(timezone.utc)
+                    job.error_details = json.dumps({
+                        "error": str(e),
+                        "traceback": traceback.format_exc()
+                    })
+                    db.commit()
+            except Exception as commit_error:
+                logger.error(f"Failed to update job status: {commit_error}")
+        finally:
+            db.close()
+
+    def get_draft_job_status(
+        self,
+        case_id: str,
+        job_id: str,
+        user_id: str
+    ) -> DraftJobStatusResponse:
+        """
+        비동기 초안 생성 작업 상태 조회
+        """
+        # 1. Validate case access
+        if not self.member_repo.has_access(case_id, user_id):
+            raise PermissionError("You do not have access to this case")
+
+        # 2. Get job
+        job = self.db.query(Job).filter(
+            Job.id == job_id,
+            Job.case_id == case_id,
+            Job.job_type == JobType.DRAFT_GENERATION
+        ).first()
+
+        if not job:
+            raise NotFoundError("Draft job")
+
+        # 3. Convert to response
+        status_map = {
+            JobStatus.QUEUED: DraftJobStatus.QUEUED,
+            JobStatus.PROCESSING: DraftJobStatus.PROCESSING,
+            JobStatus.COMPLETED: DraftJobStatus.COMPLETED,
+            JobStatus.FAILED: DraftJobStatus.FAILED,
+            JobStatus.RETRY: DraftJobStatus.QUEUED,
+            JobStatus.CANCELLED: DraftJobStatus.FAILED,
+        }
+
+        # Parse result if completed
+        result = None
+        if job.status == JobStatus.COMPLETED and job.output_data:
+            try:
+                output = json.loads(job.output_data)
+                result = DraftPreviewResponse(
+                    case_id=output["case_id"],
+                    draft_text=output["draft_text"],
+                    citations=output["citations"],
+                    precedent_citations=output.get("precedent_citations", []),
+                    generated_at=datetime.fromisoformat(output["generated_at"]),
+                    preview_disclaimer=output.get("preview_disclaimer", "")
+                )
+            except Exception as e:
+                logger.error(f"Failed to parse job output: {e}")
+
+        # Parse error if failed
+        error_message = None
+        if job.status == JobStatus.FAILED and job.error_details:
+            try:
+                error = json.loads(job.error_details)
+                error_message = error.get("error", "알 수 없는 오류가 발생했습니다.")
+            except Exception:
+                error_message = "알 수 없는 오류가 발생했습니다."
+
+        return DraftJobStatusResponse(
+            job_id=job.id,
+            case_id=job.case_id,
+            status=status_map.get(job.status, DraftJobStatus.QUEUED),
+            progress=int(job.progress) if job.progress else 0,
+            result=result,
+            error_message=error_message,
+            created_at=job.created_at,
+            completed_at=job.completed_at
+        )

@@ -12,7 +12,7 @@ GET /cases/{id}/draft-export - Export draft as DOCX/PDF
 PATCH /cases/{id}/evidence/{eid}/review - Review client-uploaded evidence
 """
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -33,7 +33,10 @@ from app.db.schemas import (
     EvidenceReviewRequest,
     EvidenceReviewResponse,
     LineBasedDraftRequest,
-    LineBasedDraftResponse
+    LineBasedDraftResponse,
+    # Async Draft Preview
+    DraftJobCreateResponse,
+    DraftJobStatusResponse,
 )
 from app.services.case_service import CaseService
 from app.services.evidence_service import EvidenceService
@@ -255,6 +258,81 @@ def generate_draft_preview(
     """
     draft_service = DraftService(db)
     return draft_service.generate_draft_preview(case_id, request, user_id)
+
+
+@router.post("/{case_id}/draft-preview-async", response_model=DraftJobCreateResponse)
+def start_async_draft_preview(
+    case_id: str,
+    request: DraftPreviewRequest,
+    background_tasks: BackgroundTasks,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    비동기 초안 생성 시작 (API Gateway 30초 타임아웃 우회)
+
+    **Path Parameters:**
+    - case_id: 사건 ID
+
+    **Request Body:**
+    - sections: 생성할 섹션 목록 (기본값: ["청구취지", "청구원인"])
+    - language: 언어 코드 (기본값: "ko")
+    - style: 작성 스타일 (기본값: "법원 제출용_표준")
+
+    **Response:**
+    - 202: 초안 생성 작업이 시작됨
+    - job_id: 작업 ID (상태 조회용)
+    - status: "queued"
+    - message: 안내 메시지
+
+    **Process:**
+    1. Job 레코드 생성 (status: queued)
+    2. BackgroundTask로 초안 생성 시작
+    3. 즉시 job_id 반환 (타임아웃 없음)
+    4. 클라이언트는 GET /draft-jobs/{job_id}로 폴링
+
+    **Important:**
+    - 초안 생성은 ~30-60초 소요
+    - 1초 간격으로 폴링 권장
+    - 완료 시 result에 DraftPreviewResponse 포함
+    """
+    draft_service = DraftService(db)
+    return draft_service.start_async_draft_preview(
+        case_id=case_id,
+        request=request,
+        user_id=user_id,
+        background_tasks=background_tasks
+    )
+
+
+@router.get("/{case_id}/draft-jobs/{job_id}", response_model=DraftJobStatusResponse)
+def get_draft_job_status(
+    case_id: str,
+    job_id: str,
+    user_id: str = Depends(verify_case_read_access),
+    db: Session = Depends(get_db)
+):
+    """
+    비동기 초안 생성 작업 상태 조회
+
+    **Path Parameters:**
+    - case_id: 사건 ID
+    - job_id: 작업 ID
+
+    **Response:**
+    - 200: 작업 상태
+    - status: "queued" | "processing" | "completed" | "failed"
+    - progress: 0-100
+    - result: 완료 시 DraftPreviewResponse
+    - error_message: 실패 시 에러 메시지
+
+    **Polling Strategy:**
+    - 1초 간격으로 폴링 권장
+    - status가 "completed" 또는 "failed"이면 폴링 중단
+    - 최대 120초 대기 후 타임아웃 처리
+    """
+    draft_service = DraftService(db)
+    return draft_service.get_draft_job_status(case_id, job_id, user_id)
 
 
 @router.post("/{case_id}/draft-preview-lines", response_model=LineBasedDraftResponse)

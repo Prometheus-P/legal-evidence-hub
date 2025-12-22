@@ -432,6 +432,8 @@ When implementing features, files typically go in:
 - PostgreSQL (RDS), HTTP-only Cookies (JWT) (011-production-bug-fixes)
 - TypeScript 5.x + Next.js 14, React 18, Tailwind CSS, Lucide-React, clsx, tailwind-merge (013-ui-upgrade)
 - N/A (frontend-only, no new data persistence) (013-ui-upgrade)
+- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o-mini), boto3 (014-case-fact-summary)
+- DynamoDB (leh_case_summary 테이블), PostgreSQL (Case 메타데이터 참조) (014-case-fact-summary)
 
 ## Recent Changes
 - 012-precedent-integration: (COMPLETE) Precedent search and auto-extraction integration. Backend: PrecedentService with Qdrant vector search, DraftService precedent citation integration, auto-extract endpoints for parties/relationships. AI Worker: BackendAPIClient with retry logic, PersonExtractor/RelationshipInferrer integration. Frontend: PrecedentPanel with search/modal, PartyNode/PartyEdge auto-extraction badges with confidence indicators. Key features: 유사 판례 검색, 초안 판례 인용, 인물/관계 자동 추출.

@@ -33,6 +33,7 @@ from app.api import (  # noqa: E402
     drafts,
     evidence,
     evidence_links,
+    fact_summary,
     lawyer_portal,
     lawyer_clients,
     lawyer_investigators,
@@ -302,6 +303,9 @@ app.include_router(summary.router, prefix=API_PREFIX, tags=["Summary"])
 
 # 012-precedent-integration: Precedent Search 라우터 (T023)
 app.include_router(precedent.router, prefix=API_PREFIX, tags=["Precedent"])
+
+# 014-case-fact-summary: Fact Summary 라우터 (사건 사실관계 요약)
+app.include_router(fact_summary.router, prefix=API_PREFIX, tags=["Fact Summary"])
 
 # Admin 라우터 (User Management & Audit Log)
 app.include_router(admin.router, prefix=API_PREFIX, tags=["Admin"])

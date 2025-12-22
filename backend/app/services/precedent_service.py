@@ -19,7 +19,7 @@ from app.utils.precedent_search import (
     search_similar_precedents as qdrant_search,
     get_fallback_precedents,
 )
-from app.utils.dynamo import get_evidence_by_case
+from app.utils.dynamo import get_evidence_by_case, get_case_fact_summary
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,41 @@ CATEGORY_KO_MAP = {
     "domestic_violence": "가정폭력",
     "financial_misconduct": "재정 비행",
     "general": "일반",
+}
+
+# AI Worker가 저장하는 한글 풀네임 → 짧은 키워드 매핑
+# (민법 제840조 이혼사유)
+ARTICLE_840_FULLNAME_MAP = {
+    # 1호: 배우자에 부정한 행위가 있었을 때
+    "1호_부정행위": "부정행위",
+    "1호_배우자의 부정행위": "부정행위",
+    # 2호: 배우자가 악의로 다른 일방을 유기한 때
+    "2호_악의의 유기": "악의의 유기",
+    "2호_배우자의 악의적 유기": "악의의 유기",
+    # 3호: 배우자 또는 그 직계존속으로부터 심히 부당한 대우를 받았을 때
+    "3호_배우자 또는 그 직계존속으로부터의 폭언": "가정폭력",
+    "3호_배우자 또는 그 직계존속으로부터 심히 부당한 대우": "가정폭력",
+    "3호_시댁 부당대우": "시댁 부당대우",
+    # 4호: 자기의 직계존속이 배우자로부터 심히 부당한 대우를 받았을 때
+    "4호_친부모에 대한 부당대우": "친부모 해악",
+    "4호_직계존속에 대한 부당대우": "친부모 해악",
+    # 5호: 배우자의 생사가 3년 이상 분명하지 아니한 때
+    "5호_생사불명": "생사불명",
+    "5호_배우자 생사불명 3년 이상": "생사불명",
+    # 6호: 기타 혼인을 계속하기 어려운 중대한 사유가 있을 때
+    "5호_기타 혼인을 계속하기 어려운 중대한 사유": "혼인지속 곤란",
+    "6호_기타 혼인을 계속하기 어려운 중대한 사유": "혼인지속 곤란",
+    "6호_혼인지속 곤란": "혼인지속 곤란",
+    # 기타 자주 나오는 패턴
+    "가정폭력": "가정폭력",
+    "폭언": "가정폭력",
+    "폭행": "가정폭력",
+    "부정행위": "부정행위",
+    "외도": "부정행위",
+    "불륜": "부정행위",
+    "재정 비행": "재정 비행",
+    "도박": "재정 비행",
+    "채무": "재정 비행",
 }
 
 
@@ -62,11 +97,19 @@ class PrecedentService:
         """
         logger.info(f"[PrecedentSearch] Starting search for case_id={case_id}")
 
+        # T026: 사실관계 요약이 있으면 우선 사용 (014-case-fact-summary 연계)
+        fact_summary = self._get_fact_summary_for_search(case_id)
+
         # T021: 사건의 유책사유 추출
         fault_types = self.get_fault_types(case_id)
         logger.info(f"[PrecedentSearch] Extracted fault_types={fault_types}")
 
-        if not fault_types:
+        # T027: 검색 쿼리 구성 (사실관계 우선, 없으면 유책사유)
+        if fact_summary:
+            # 사실관계 요약을 검색 쿼리로 사용 (최대 500자)
+            query = fact_summary[:500]
+            logger.info(f"[PrecedentSearch] Using fact summary as query ({len(fact_summary)} chars)")
+        elif not fault_types:
             # 유책사유가 없으면 기본 검색어 사용
             query = "이혼 판례 재산분할"
         else:
@@ -156,19 +199,55 @@ class PrecedentService:
                         if isinstance(label, str) and label not in ["general", "일반"]:
                             fault_types.add(label)
 
-            # 한글 레이블로 변환
-            korean_labels = []
+            # 한글 레이블로 변환 (풀네임 → 짧은 키워드 → 최종 레이블)
+            korean_labels = set()
             for cat in fault_types:
-                korean_label = CATEGORY_KO_MAP.get(cat, cat)
-                if korean_label and korean_label not in ["일반", "general"]:
-                    korean_labels.append(korean_label)
+                # 1차: AI Worker 풀네임 매핑 시도
+                if cat in ARTICLE_840_FULLNAME_MAP:
+                    korean_labels.add(ARTICLE_840_FULLNAME_MAP[cat])
+                # 2차: 영문 키 → 한글 레이블 매핑 시도
+                elif cat in CATEGORY_KO_MAP:
+                    label = CATEGORY_KO_MAP[cat]
+                    if label not in ["일반", "general"]:
+                        korean_labels.add(label)
+                # 3차: 그대로 사용 (이미 짧은 한글인 경우)
+                elif cat not in ["일반", "general"]:
+                    korean_labels.add(cat)
 
-            logger.info(f"Case {case_id}: extracted fault_types={korean_labels} from {len(evidences)} evidences")
-            return korean_labels if korean_labels else []
+            result = list(korean_labels)
+            logger.info(f"Case {case_id}: extracted fault_types={result} from {len(evidences)} evidences")
+            return result
 
         except Exception as e:
             logger.error(f"Failed to get fault types for case {case_id}: {e}")
             return []
+
+    def _get_fact_summary_for_search(self, case_id: str) -> str:
+        """
+        Get fact summary for precedent search (014-case-fact-summary T026)
+
+        Retrieves lawyer-modified or AI-generated fact summary for semantic search.
+
+        Args:
+            case_id: Case ID
+
+        Returns:
+            Fact summary text, empty string if not available
+        """
+        try:
+            summary_data = get_case_fact_summary(case_id)
+            if not summary_data:
+                return ""
+
+            # Prefer lawyer-modified summary over AI-generated
+            fact_summary = summary_data.get("modified_summary") or summary_data.get("ai_summary", "")
+            if fact_summary:
+                logger.info(f"[PrecedentSearch] Found fact summary for case {case_id}")
+                return fact_summary
+            return ""
+        except Exception as e:
+            logger.warning(f"[PrecedentSearch] Failed to get fact summary for case {case_id}: {e}")
+            return ""
 
     def _get_fallback_response(self, fault_types: List[str]) -> PrecedentSearchResponse:
         """T024: Fallback 응답 생성 (fault_types 기반 필터링)"""

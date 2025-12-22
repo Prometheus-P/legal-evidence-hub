@@ -29,11 +29,12 @@ class PromptBuilder:
         evidence_context: List[dict],
         legal_context: List[dict],
         precedent_context: List[dict],
+        fact_summary_context: str = "",
         language: str = "ko",
         style: str = "formal"
     ) -> List[dict]:
         """
-        Build GPT-4o prompt with evidence, legal, and precedent RAG context
+        Build GPT-4o prompt with evidence, legal, precedent, and fact summary context
 
         Args:
             case: Case object
@@ -41,6 +42,7 @@ class PromptBuilder:
             evidence_context: Evidence RAG search results
             legal_context: Legal knowledge RAG search results
             precedent_context: Similar precedent search results
+            fact_summary_context: Lawyer-edited fact summary (014-case-fact-summary T025)
             language: Language (ko/en)
             style: Writing style
 
@@ -67,16 +69,16 @@ class PromptBuilder:
         else:
             system_message = self._build_text_system_message()
 
-        # User message - include case info, evidence, legal, and precedent context
+        # User message - include case info, evidence, legal, precedent, and fact summary context
         if use_json_output:
             user_message = self._build_json_user_message(
                 case, sections, evidence_context_str, legal_context_str,
-                precedent_context_str, language, style
+                precedent_context_str, fact_summary_context, language, style
             )
         else:
             user_message = self._build_text_user_message(
                 case, sections, evidence_context_str, legal_context_str,
-                precedent_context_str, language, style
+                precedent_context_str, fact_summary_context, language, style
             )
 
         return [system_message, user_message]
@@ -159,9 +161,15 @@ class PromptBuilder:
         }
 
     def _build_json_user_message(
-        self, case, sections, evidence_str, legal_str, precedent_str, language, style
+        self, case, sections, evidence_str, legal_str, precedent_str, fact_summary_str, language, style
     ) -> dict:
         """Build user message for JSON output mode"""
+        # Include fact summary if available (014-case-fact-summary T025)
+        fact_summary_section = f"""
+**사건 사실관계 요약 (변호사 검토/수정본):**
+{fact_summary_str}
+""" if fact_summary_str else ""
+
         return {
             "role": "user",
             "content": f"""다음 정보를 바탕으로 이혼 소송 소장 초안을 JSON 형식으로 작성해 주세요.
@@ -172,7 +180,7 @@ class PromptBuilder:
 
 **생성할 섹션:**
 {", ".join(sections)}
-
+{fact_summary_section}
 **관련 법률 조문:**
 {legal_str}
 
@@ -185,6 +193,7 @@ class PromptBuilder:
 **요청사항:**
 - 언어: {language}
 - 스타일: {style}
+- 사건 사실관계 요약이 제공된 경우, 이를 최우선으로 참조하여 작성하세요
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
 - 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
@@ -195,9 +204,15 @@ class PromptBuilder:
         }
 
     def _build_text_user_message(
-        self, case, sections, evidence_str, legal_str, precedent_str, language, style
+        self, case, sections, evidence_str, legal_str, precedent_str, fact_summary_str, language, style
     ) -> dict:
         """Build user message for text output mode"""
+        # Include fact summary if available (014-case-fact-summary T025)
+        fact_summary_section = f"""
+**사건 사실관계 요약 (변호사 검토/수정본):**
+{fact_summary_str}
+""" if fact_summary_str else ""
+
         return {
             "role": "user",
             "content": f"""다음 정보를 바탕으로 이혼 소송 소장 초안을 작성해 주세요.
@@ -208,7 +223,7 @@ class PromptBuilder:
 
 **생성할 섹션:**
 {", ".join(sections)}
-
+{fact_summary_section}
 **관련 법률 조문:**
 {legal_str}
 
@@ -221,6 +236,7 @@ class PromptBuilder:
 **요청사항:**
 - 언어: {language}
 - 스타일: {style}
+- 사건 사실관계 요약이 제공된 경우, 이를 최우선으로 참조하여 작성하세요
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
 - 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
