@@ -21,7 +21,8 @@ interface NavItem {
 }
 
 // T071 - FR-026: 주요 기능 1-depth 배치
-const navItems: NavItem[] = [
+// 핵심 메뉴 (대시보드, 케이스)
+const coreNavItems: NavItem[] = [
   {
     label: '대시보드',
     href: '/lawyer/dashboard',
@@ -40,6 +41,10 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+];
+
+// 작업 메뉴 (증거 업로드, 초안 생성)
+const workNavItems: NavItem[] = [
   {
     label: '증거 업로드',
     href: '/lawyer/evidence/upload',
@@ -58,12 +63,25 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
+];
+
+// 관리 메뉴 (의뢰인, 탐정, 일정, 메시지, 청구)
+const managementNavItems: NavItem[] = [
   {
     label: '의뢰인',
     href: '/lawyer/clients',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: '탐정',
+    href: '/lawyer/investigators',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     ),
   },
@@ -152,24 +170,81 @@ export function LawyerNav({ collapsed = false, onItemClick }: LawyerNavProps) {
 
       {/* Navigation Items */}
       <div className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                onClick={onItemClick}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive(item.href)
-                    ? 'bg-[var(--color-primary)] text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800'
-                }`}
-              >
-                {item.icon}
-                {!collapsed && <span className="font-medium">{item.label}</span>}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {/* 핵심 메뉴 - 대시보드, 케이스 */}
+        <div className="px-2 mb-4">
+          <ul className="space-y-1">
+            {coreNavItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive(item.href)
+                      ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
+                      : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-neutral-800 bg-gray-50 dark:bg-neutral-800/50'
+                  }`}
+                >
+                  {item.icon}
+                  {!collapsed && <span className="font-semibold">{item.label}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 작업 메뉴 - 증거 업로드, 초안 생성 */}
+        {!collapsed && (
+          <div className="px-4 mb-2">
+            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">작업</p>
+          </div>
+        )}
+        <div className="px-2 mb-4">
+          <ul className="space-y-0.5">
+            {workNavItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {item.icon}
+                  {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 관리 메뉴 - 의뢰인, 탐정, 일정, 메시지, 청구 */}
+        {!collapsed && (
+          <div className="px-4 mb-2">
+            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">관리</p>
+          </div>
+        )}
+        <div className="px-2">
+          <ul className="space-y-0.5">
+            {managementNavItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive(item.href)
+                      ? 'bg-[var(--color-primary)] text-white'
+                      : 'text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  {item.icon}
+                  {!collapsed && <span className="text-sm">{item.label}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* Bottom Actions */}
