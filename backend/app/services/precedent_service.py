@@ -71,6 +71,7 @@ ARTICLE_840_FULLNAME_MAP = {
     "채무": "재정 비행",
 }
 
+
 class PrecedentService:
     """판례 검색 서비스 (T019)"""
 
