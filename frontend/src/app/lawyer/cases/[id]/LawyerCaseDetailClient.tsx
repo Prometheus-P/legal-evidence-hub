@@ -805,19 +805,65 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         )}
 
         {activeTab === 'relations' && (
-          <div className="h-[600px]">
-            <PartyGraph caseId={caseId} />
+          <div className="space-y-6">
+            {/* Relations Header */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-800/50 rounded-lg">
+                  <UserPlus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-purple-800 dark:text-purple-200">인물 관계도</h3>
+                  <p className="text-sm text-purple-600 dark:text-purple-400">사건 관련 인물들의 관계를 시각적으로 파악합니다.</p>
+                </div>
+              </div>
+            </div>
+            {/* Relations Content */}
+            <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
+              <div className="h-[550px]">
+                <PartyGraph caseId={caseId} />
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === 'consultation' && (
-          <ConsultationHistoryTab caseId={caseId} />
+          <div className="space-y-6">
+            {/* Consultation Header */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-800/50 rounded-lg">
+                  <MessageSquare className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-800 dark:text-green-200">상담 관리</h3>
+                  <p className="text-sm text-green-600 dark:text-green-400">의뢰인과의 상담 기록을 체계적으로 관리하세요.</p>
+                </div>
+              </div>
+            </div>
+            {/* Consultation Content */}
+            <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-6">
+              <ConsultationHistoryTab caseId={caseId} />
+            </div>
+          </div>
         )}
 
         {activeTab === 'assets' && (
           <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4">재산분할 현황</h3>
+            {/* Assets Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
+                  <Wallet className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-200">재산분할 현황</h3>
+                  <p className="text-sm text-blue-600 dark:text-blue-400">부동산, 금융자산, 차량 등 재산 목록을 관리합니다.</p>
+                </div>
+              </div>
+            </div>
+            {/* Assets Content */}
+            <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-6">
               <AssetSummaryTab caseId={caseId} />
             </div>
           </div>
