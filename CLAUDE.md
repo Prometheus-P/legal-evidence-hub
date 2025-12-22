@@ -441,3 +441,6 @@ When implementing features, files typically go in:
 - 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist, blocked case filtering. Backend: `ProgressService`, `staff_progress.py` router. Frontend: React dashboard with `ProgressCard`, `FeedbackChecklist` components.
 - 003-role-based-ui: Added react-kakao-maps-sdk, react-big-calendar, Recharts, jwt-decode, WebSocket support for real-time messaging
 - 001-draft-export: Added Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation)
+
+## Future Development (추후 개발)
+- **WCAG 접근성 지원**: Skip-to-content 링크, 키보드 네비게이션, 스크린 리더 지원 (현재 제거됨, 공공기관 납품 시 필요)
