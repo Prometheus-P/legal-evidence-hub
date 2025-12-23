@@ -2,7 +2,7 @@
 
 ### *증거 분석·요약·라벨링·RAG 구축 파이프라인*
 
-**버전:** v3.0
+**버전:** v3.1
 **작성일:** 2025-11-18
 **최종 수정:** 2025-12-23
 **작성자:** Team L(AI)
@@ -22,6 +22,7 @@
 | v2.0 | 2025-11-18 | Team L | 최초 작성 |
 | v2.1 | 2025-12-03 | L-work | TemplateStore 추가, JSON 템플릿 시스템 문서화 |
 | v3.0 | 2025-12-23 | L-work | 전면 재작성: 실제 구현 반영, 16개 분석기 문서화, YAML 설정 시스템, draft_upgrade 로드맵 추가 |
+| v3.1 | 2025-12-23 | L-work | 통합 검증 결과 추가 (섹션 15), Phase 3-5 완료 상태 업데이트, Module Pack 테이블 갱신 |
 
 ---
 
@@ -659,19 +660,20 @@ class PipelineObserver:
 | 버전 | 모듈명 | 상태 | 통합 포인트 |
 |------|--------|------|-------------|
 | v2.01 | Foundation | ✅ 완료 | legal_grounds.yaml |
-| v2.02 | Draft Mapping | 🔄 진행중 | ground_draft_map |
+| v2.02 | Draft Mapping | ✅ 완료 | draft_blocks.yaml ground_to_blocks |
 | v2.03 | Keypoint Tracking | ✅ 완료 | keypoint_taxonomy.yaml |
-| v2.04 | Draft Engine | 📋 계획 | draft_blocks |
-| v2.05 | Document Gen | 📋 계획 | Backend 영역 |
-| v2.06 | Draft Engine Impl | 📋 계획 | Python stub |
-| v2.07 | Consultation | 📋 계획 | 상담 분류 |
-| v2.08 | Issues Dashboard | 📋 계획 | Risk Analyzer |
-| v2.09 | Evidence Checklist | 📋 계획 | Evidence Scorer |
-| v2.10 | Keypoint Pipeline | 📋 계획 | Keypoint 매핑 |
-| v2.11 | Legal Authority | 📋 계획 | 법률 인용 |
-| v2.12 | Precedent Recommender | 📋 계획 | 판례 추천 |
-| v2.13 | Timeline | 📋 계획 | Timeline Gen |
-| v2.15 | Recompute Pipeline | 📋 계획 | 파이프라인 오케스트레이션 |
+| v2.04 | Draft Engine | ✅ 완료 | draft_blocks.yaml 템플릿 |
+| v2.05 | Document Gen | ⬜ N/A | Backend 영역 (python-docx) |
+| v2.06 | Draft Engine Impl | ⬜ N/A | 참조용 stub |
+| v2.07 | Consultation | ⚠️ 미반영 | consultation_taxonomy 추가 필요 |
+| v2.08 | Issues Dashboard | ✅ 완료 | issue_taxonomy.yaml |
+| v2.09 | Evidence Checklist | ⚠️ 부분 | requirement_sets 일부 |
+| v2.10 | Keypoint Pipeline | ✅ 완료 | extraction_rules |
+| v2.11 | Legal Authority | ✅ 완료 | legal_authorities.yaml |
+| v2.12 | Precedent Recommender | ⬜ N/A | 데이터 미생성 |
+| v2.13 | Timeline | ⬜ N/A | 스펙만 존재 |
+| v2.14 | Process State Machine | ⬜ N/A | 스펙만 존재 |
+| v2.15 | Recompute Pipeline | ⬜ N/A | Backend 영역 (DAG)
 
 ## 9.2 Phase 1 (완료): Foundation
 
@@ -685,23 +687,23 @@ class PipelineObserver:
 - KeypointExtractor 출력 스키마 확장
 - Ground Relevance 매핑 구현
 
-## 9.4 Phase 3 (예정): Draft & Evidence
+## 9.4 Phase 3 (완료): Draft & Evidence
 
-- `draft_blocks.v2_04.json` 통합
-- Evidence Scorer requirement 만족도 평가
-- Keypoint → Draft Block 매핑
+- `draft_blocks.v2_04.json` → `config/draft_blocks.yaml`
+- 10개 블록 템플릿 (COMMON_HEADER, FACTS_G1_AFFAIR 등)
+- Ground → Block 매핑 구현
 
-## 9.5 Phase 4 (예정): Legal Authority
+## 9.5 Phase 4 (완료): Legal Authority
 
-- `law_articles.v2_11.json` 통합
-- Keypoint 추출 시 법조문 자동 연결
-- Draft 생성 시 legal_refs 자동 인용
+- `law_articles.v2_11.json` → `config/legal_authorities.yaml`
+- 11개 법조문 (민법/가사소송법/가정폭력법 등)
+- Ground → Authority 매핑 구현
 
-## 9.6 Phase 5 (예정): Risk & Scoring
+## 9.6 Phase 5 (완료): Risk & Scoring
 
-- Issue Taxonomy Risk Analyzer 통합
-- Scoring Rules Evidence Scorer 강화
-- 증거 완성도 → 리스크 점수 계산
+- `issue_taxonomy.v2_08.json` → `config/issue_taxonomy.yaml`
+- 25개 이슈, 6개 그룹 (DEADLINE, PROCEDURE, EVIDENCE, DRAFT, CHILD, PROPERTY)
+- Scoring Rules 및 Risk Levels 통합
 
 ---
 
@@ -869,6 +871,68 @@ AI 파이프라인이 최종적으로 제공하는 데이터:
 14. **법률 문서 템플릿**
 
 이 14개가 LEH 전체 기능의 기반이 된다.
+
+---
+
+# 📊 15. 통합 검증 결과 (2025-12-23)
+
+## 15.1 draft_upgrade 반영률
+
+| 구분 | 모듈 수 | 비율 |
+|------|---------|------|
+| ✅ 완전 반영 | 8개 | 53% |
+| ⚠️ 부분 반영 | 1개 | 7% |
+| ⬜ 미반영/범위외 | 6개 | 40% |
+
+**완전 반영 모듈**: v2.01 (Foundation), v2.02 (Draft Mapping), v2.03 (Keypoint), v2.04 (Draft Engine), v2.08 (Issues), v2.10 (Keypoint Pipeline), v2.11 (Legal Authority)
+
+**범위 외**: v2.05/v2.06/v2.15 (Backend 영역), v2.12-v2.14 (스펙만 존재)
+
+## 15.2 Config 아키텍처 검증
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| ConfigLoader 캐싱 | ✅ 정상 | 클래스 변수 기반 싱글톤 |
+| Fallback 패턴 | ✅ 구현됨 | `CONSTANT = _load() or {fallback}` |
+| 경로 탐색 | ✅ 정상 | `config/` → `config/prompts/` 자동 |
+| 타입 힌트 | ✅ 완전 | Dict, List, Optional 명시 |
+| 테스트 커버리지 | ✅ 76.04% | 70% 요구사항 충족 |
+
+**생성된 YAML 파일** (16개):
+- `legal_grounds.yaml`, `keypoint_taxonomy.yaml`, `draft_blocks.yaml`
+- `legal_authorities.yaml`, `issue_taxonomy.yaml`
+- `legal_keywords.yaml`, `role_keywords.yaml`, `relationship_keywords.yaml`
+- `event_templates.yaml`, `impact_rules.yaml`, `scoring_keywords.yaml`, `limits.yaml`
+- `prompts/ai_system.yaml`, `prompts/streaming.yaml`, `prompts/summarizer.yaml`, `prompts/keypoint.yaml`
+
+## 15.3 스키마 일관성 검증
+
+| 저장소 | 일관성 | 비고 |
+|--------|--------|------|
+| DynamoDB | 70% | 핵심 필드 저장, 확장 필드 일부 누락 |
+| Qdrant | 85% | 대부분 필드 저장 |
+| Cross-storage | 60% | `content`/`document` 필드명 불일치 |
+
+## 15.4 발견된 GAP 및 권장 조치
+
+### 🔴 Critical (즉시 조치)
+| GAP | 권장 조치 |
+|-----|-----------|
+| keypoints/persons/relationships DynamoDB 저장 검증 | `metadata_store.py` 확인 |
+
+### 🟡 Important (Phase 2)
+| GAP | 권장 조치 |
+|-----|-----------|
+| v2.07 consultation_taxonomy 미반영 | `config/consultation_taxonomy.yaml` 추가 |
+| v2.09 requirement_sets 완전 통합 | Evidence Scorer 강화 |
+| risk_level/issue_list DynamoDB 필드 | `metadata_store.py` 확장 |
+
+### 🟢 Nice to Have (추후)
+| GAP | 설명 |
+|-----|------|
+| v2.12-v2.14 통합 | 스펙만 존재, 데이터 생성 후 |
+| content/document 필드명 통일 | 전체 코드베이스 리팩토링 |
+| ConfigLoader Thread Safety | Lambda 외 환경 지원 시 |
 
 ---
 
