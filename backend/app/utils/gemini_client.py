@@ -5,7 +5,7 @@ Gemini 2.0 Flash for fast, reliable legal document generation.
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict
 import requests
 from app.core.config import settings
 
