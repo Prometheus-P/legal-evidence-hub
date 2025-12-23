@@ -59,4 +59,9 @@ export interface Evidence {
     // Article 840 analysis (optional - populated after AI processing)
     article840Tags?: Article840Tags;
     insights?: AIInsight[];
+
+    // 014-ui-settings-completion: Legal evidence numbering
+    legalNumber?: string;  // 갑제1호증, 을제2호증, etc.
+    submittedBy?: 'plaintiff' | 'defendant' | 'third_party';  // 갑/을/병
+    evidenceTimestamp?: string;  // ISO Date - when evidence was created (not uploaded)
 }
