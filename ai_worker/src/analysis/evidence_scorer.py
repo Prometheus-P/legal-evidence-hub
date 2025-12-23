@@ -6,7 +6,7 @@ Note:
     스코어링 키워드는 config/scoring_keywords.yaml에서 관리
 """
 
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple
 from pydantic import BaseModel, Field, field_validator
 from src.parsers.base import Message
 from config import ConfigLoader

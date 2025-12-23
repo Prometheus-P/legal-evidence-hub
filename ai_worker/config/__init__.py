@@ -17,7 +17,6 @@ Usage:
     model_config = ConfigLoader.get_model_config("gpt-4o-mini")
 """
 
-import os
 import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, List
