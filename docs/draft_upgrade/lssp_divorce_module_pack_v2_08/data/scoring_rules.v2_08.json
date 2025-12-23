@@ -1,0 +1,50 @@
+{
+  "deadline_risk": {
+    "weight_by_penalty": {
+      "EFFECT_LOSS": 1.3,
+      "CLAIM_BARRED": 1.2,
+      "ADMIN_FINE": 1.0,
+      "null": 1.0
+    },
+    "breakpoints_days": [
+      {
+        "d": 0,
+        "score": 100
+      },
+      {
+        "d": 1,
+        "score": 98
+      },
+      {
+        "d": 3,
+        "score": 90
+      },
+      {
+        "d": 7,
+        "score": 80
+      },
+      {
+        "d": 14,
+        "score": 60
+      },
+      {
+        "d": 30,
+        "score": 30
+      },
+      {
+        "d": 60,
+        "score": 10
+      }
+    ]
+  },
+  "evidence_completeness": {
+    "evidence_weight": 0.6,
+    "keypoint_weight": 0.4
+  },
+  "draft_completeness": {
+    "todo_block_penalty": 1.0
+  },
+  "procedure_progress": {
+    "step_weight": 1.0
+  }
+}

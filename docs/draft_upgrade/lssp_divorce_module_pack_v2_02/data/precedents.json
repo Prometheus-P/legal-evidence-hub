@@ -1,0 +1,96 @@
+[
+  {
+    "id": "SC-2021M11112-2022-07-28",
+    "court": "대법원 전원합의체",
+    "decision_date": "2022-07-28",
+    "case_no": "2021므11112",
+    "source_url": "https://www.law.go.kr/LSW/precInfoP.do?precSeq=237071",
+    "tags": [
+      "judicial_divorce",
+      "G6",
+      "fault_principle",
+      "guilty_spouse_exception"
+    ],
+    "holding_summary": "유책배우자의 이혼청구는 원칙적으로 배척되나, 유책성이 그 이혼청구를 배척해야 할 정도로 남아 있지 않은 특별한 사정이 있으면 예외적으로 허용 가능. 예외 판단 시 유책태양·정도, 상대방 혼인계속의사(객관 판단), 혼인·별거 기간, 생활관계 변화, 이혼 시 상대방 생활보장, 미성년 자녀 복지 등을 종합 고려(2013므568 전원합의체 등 참조).",
+    "factors": {
+      "default_rule": "유책배우자 청구 원칙적 배척",
+      "exceptions": [
+        "상대방도 혼인 계속 의사가 없어 축출이혼 우려가 없는 경우",
+        "유책성이 상쇄될 정도의 보호·배려(생활보장 등)가 이루어진 경우",
+        "세월 경과로 유책성과 정신적 고통이 약화되어 책임 경중을 따지는 것이 무의미할 정도가 된 경우"
+      ],
+      "considerations": [
+        "유책태양·정도",
+        "상대방의 혼인계속의사 및 감정",
+        "당사자 연령·혼인기간·별거기간",
+        "별거 후 형성된 생활관계, 사정 변경",
+        "이혼 시 상대방 생활보장 정도",
+        "미성년 자녀 양육·복지"
+      ]
+    }
+  },
+  {
+    "id": "SC-2000M1561-2000-12-22",
+    "court": "대법원",
+    "decision_date": "2000-12-22",
+    "case_no": "2000므1561",
+    "source_url": "https://www.law.go.kr/LSW//precInfoP.do?precSeq=80329",
+    "tags": [
+      "G6",
+      "limitation",
+      "continuing_cause"
+    ],
+    "holding_summary": "민법 840조 6호 ‘기타 중대한 사유’가 이혼청구 당시까지 계속 존재하는 경우에는 이혼청구권 제척기간(민법 842조)이 적용되지 않음.",
+    "factors": {
+      "when_applies": "840조 6호 사유가 현재까지 지속되는 유형(예: 폭력/수감 등으로 정상적 혼인 유지 불가 상태 지속)"
+    }
+  },
+  {
+    "id": "SC-92M1054-1993-06-11",
+    "court": "대법원",
+    "decision_date": "1993-06-11",
+    "case_no": "92므1054",
+    "source_url": "https://www.law.go.kr/LSW/precInfoP.do?precSeq=100592",
+    "tags": [
+      "G3",
+      "G4",
+      "limitation",
+      "property_division",
+      "special_property"
+    ],
+    "holding_summary": "민법 842조 제척기간은 840조 3호의 이혼청구권에 유추적용되지 않음. 또한 재산분할에서 상속·증여 등 특유재산도 다른 배우자의 유지·증식 기여가 있으면 분할 대상이 될 수 있음(사안별 판단).",
+    "factors": {
+      "limitation": "3호(부당대우)에는 842조를 유추적용하지 않음",
+      "property_division": "특유재산이라도 유지·증식 기여가 인정되면 분할대상 포함 가능"
+    }
+  },
+  {
+    "id": "SC-97M544-551-1998-08-21",
+    "court": "대법원",
+    "decision_date": "1998-08-21",
+    "case_no": "97므544, 551",
+    "source_url": "https://www.law.go.kr/LSW//precInfoP.do?precSeq=116953",
+    "tags": [
+      "de_facto",
+      "damages"
+    ],
+    "holding_summary": "사실혼 관계에서도 상대방이 부당하게 파기한 경우 손해배상(위자료) 책임이 문제될 수 있고, 위자료 산정은 구체 사정을 종합 고려.",
+    "factors": {
+      "key": "사실혼 성립/파기 경위, 당사자 책임, 동거·생활공동 정도"
+    }
+  },
+  {
+    "id": "SC-83M11-1983-07-12",
+    "court": "대법원",
+    "decision_date": "1983-07-12",
+    "case_no": "83므11",
+    "source_url": "https://bigcase.ai/cases/%EB%8C%80%EB%B2%95%EC%9B%90/83%EB%AF%8011",
+    "tags": [
+      "consensual_divorce",
+      "reporting",
+      "fault_principle"
+    ],
+    "holding_summary": "(2차 요약) 협의이혼 의사확인만으로는 이혼 효력이 발생하지 않고, 신고가 필요. 협의이혼확인 사실 자체가 곧 재판상 이혼사유가 되지 않음. 유책배우자의 이혼청구 배척.",
+    "factors": {}
+  }
+]

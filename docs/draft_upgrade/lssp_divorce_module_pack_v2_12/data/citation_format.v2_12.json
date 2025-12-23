@@ -1,0 +1,56 @@
+{
+  "version": "2.12",
+  "citation_types": [
+    "EVIDENCE",
+    "KEYPOINT",
+    "AUTHORITY",
+    "PRECEDENT"
+  ],
+  "pinpoint": {
+    "AUTHORITY": {
+      "fields": [
+        "article_no",
+        "clause_no",
+        "item_no"
+      ],
+      "optional_fields": [
+        "snippet_id"
+      ]
+    },
+    "PRECEDENT": {
+      "fields": [
+        "case_no"
+      ],
+      "optional_fields": [
+        "court",
+        "date",
+        "snippet_id",
+        "page_or_para"
+      ]
+    },
+    "EVIDENCE": {
+      "fields": [
+        "evidence_id"
+      ],
+      "optional_fields": [
+        "extract_id",
+        "page_or_timecode"
+      ]
+    },
+    "KEYPOINT": {
+      "fields": [
+        "keypoint_id"
+      ],
+      "optional_fields": []
+    }
+  },
+  "rendering": {
+    "default_style": "inline",
+    "examples": {
+      "authority": "민법 제840조 제1호 (부정한 행위)",
+      "precedent": "대법원 20XX므XXXX 판결 요지",
+      "evidence": "갑1 카카오톡 대화(YYYY-MM-DD)",
+      "keypoint": "키포인트#123: 별거 시작일 YYYY-MM-DD"
+    }
+  }
+}

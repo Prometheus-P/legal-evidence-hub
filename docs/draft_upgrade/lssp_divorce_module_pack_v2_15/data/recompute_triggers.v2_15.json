@@ -1,0 +1,85 @@
+{
+  "version": "v2_15",
+  "events": {
+    "evidence_uploaded": {
+      "modules": [
+        "evidence_keypoints",
+        "timeline",
+        "checklists",
+        "legal_recommender",
+        "draft_preview",
+        "warnings"
+      ],
+      "priority": 80
+    },
+    "evidence_deleted": {
+      "modules": [
+        "evidence_keypoints",
+        "timeline",
+        "checklists",
+        "legal_recommender",
+        "draft_preview",
+        "warnings"
+      ],
+      "priority": 80
+    },
+    "evidence_analysis_completed": {
+      "modules": [
+        "evidence_keypoints",
+        "checklists",
+        "legal_recommender",
+        "draft_preview",
+        "warnings"
+      ],
+      "priority": 70
+    },
+    "process_event_added": {
+      "modules": [
+        "process_engine",
+        "timeline",
+        "checklists",
+        "warnings"
+      ],
+      "priority": 60
+    },
+    "court_deadline_updated": {
+      "modules": [
+        "process_engine",
+        "timeline",
+        "warnings"
+      ],
+      "priority": 60
+    },
+    "consultation_note_created": {
+      "modules": [
+        "legal_recommender",
+        "draft_preview"
+      ],
+      "priority": 90
+    },
+    "child_info_updated": {
+      "modules": [
+        "process_engine",
+        "checklists",
+        "warnings",
+        "draft_preview"
+      ],
+      "priority": 60
+    },
+    "asset_liability_updated": {
+      "modules": [
+        "draft_preview"
+      ],
+      "priority": 95
+    },
+    "manual_keypoint_edited": {
+      "modules": [
+        "checklists",
+        "legal_recommender",
+        "draft_preview",
+        "warnings"
+      ],
+      "priority": 75
+    }
+  }
+}

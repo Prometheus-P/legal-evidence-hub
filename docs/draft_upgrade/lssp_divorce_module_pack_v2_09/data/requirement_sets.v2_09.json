@@ -1,0 +1,415 @@
+{
+  "version": "2.09",
+  "note": "Evidence checklist requirement sets per legal grounds G1~G6. Items are evaluated using evidence tags/types, keypoint kinds, and evidence status.",
+  "sets": [
+    {
+      "code": "G1",
+      "title": "부정한 행위(외도) - 민법 840(1)",
+      "priority": 10,
+      "items": [
+        {
+          "item_key": "G1_CHAT_EXPORT",
+          "title": "통신 기록(카톡/문자/메일/DM) 확보",
+          "description": "상대방/제3자와의 관계를 지시하는 대화·연락 기록",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CHAT_EXPORT",
+            "EMAIL_EXPORT",
+            "DM_EXPORT"
+          ],
+          "keypoint_kinds": [
+            "PERSON",
+            "ADMISSION",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G1_CALL_LOG",
+          "title": "통화 기록(통화목록/패턴)",
+          "description": "제3자와의 빈번한 통화·연락 패턴",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CALL_LOG"
+          ],
+          "keypoint_kinds": [
+            "PERSON",
+            "DATE_EVENT"
+          ],
+          "is_required": false,
+          "weight": 10,
+          "ui_group": "ENHANCER"
+        },
+        {
+          "item_key": "G1_FINANCE",
+          "title": "금융 내역(카드/계좌) 정황",
+          "description": "숙박업소/선물 등 지출 정황 또는 송금",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CARD_STATEMENT",
+            "BANK_TX",
+            "RECEIPT"
+          ],
+          "keypoint_kinds": [
+            "SPENDING",
+            "DATE_EVENT",
+            "LOCATION"
+          ],
+          "is_required": true,
+          "weight": 20,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G1_VIDEO_PHOTO",
+          "title": "사진/영상(정황) 자료",
+          "description": "호텔/동행/숙박 정황 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "PHOTO",
+            "VIDEO",
+            "DASHCAM"
+          ],
+          "keypoint_kinds": [
+            "DATE_EVENT",
+            "LOCATION"
+          ],
+          "is_required": false,
+          "weight": 15,
+          "ui_group": "OPTIONAL"
+        },
+        {
+          "item_key": "G1_ADMISSION",
+          "title": "각서/자백/녹취 등 인정 자료",
+          "description": "사실 인정 또는 사과·재발방지 약속 포함",
+          "required_min_count": 1,
+          "evidence_types": [
+            "AUDIO_RECORD",
+            "WRITTEN_STATEMENT",
+            "NOTARIZED_DOC"
+          ],
+          "keypoint_kinds": [
+            "ADMISSION",
+            "DATE_EVENT"
+          ],
+          "is_required": false,
+          "weight": 30,
+          "ui_group": "ENHANCER"
+        },
+        {
+          "item_key": "G1_LIMITATION_DATES",
+          "title": "제척기간 산정용 날짜(인지일/발생일) 확정",
+          "description": "‘안 날 6개월 / 있은 날 2년’ 계산에 필요한 날짜를 케이스에 입력",
+          "required_min_count": 2,
+          "evidence_types": [],
+          "keypoint_kinds": [
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        }
+      ]
+    },
+    {
+      "code": "G2",
+      "title": "악의의 유기 - 민법 840(2)",
+      "priority": 20,
+      "items": [
+        {
+          "item_key": "G2_SEPARATION_PROOF",
+          "title": "배우자 부재/별거 입증(공문서/계약/우편 등)",
+          "description": "이사통지, 임대차계약, 장기 미수령 우편 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CERTIFICATE",
+            "CONTRACT",
+            "OFFICIAL_DOC"
+          ],
+          "keypoint_kinds": [
+            "SEPARATION",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G2_SUPPORT_REFUSAL",
+          "title": "부양/생활비 미지급 입증(계좌·송금·요구 메시지)",
+          "description": "생활비 중단, 요구했음에도 미지급",
+          "required_min_count": 1,
+          "evidence_types": [
+            "BANK_TX",
+            "CHAT_EXPORT"
+          ],
+          "keypoint_kinds": [
+            "SPENDING",
+            "ABANDONMENT",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G2_CONTACT_CUTOFF",
+          "title": "연락 두절/거부 정황(통신 기록)",
+          "description": "연락 시도·거절·차단 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CHAT_EXPORT",
+            "CALL_LOG"
+          ],
+          "keypoint_kinds": [
+            "DATE_EVENT",
+            "ABANDONMENT"
+          ],
+          "is_required": false,
+          "weight": 10,
+          "ui_group": "OPTIONAL"
+        }
+      ]
+    },
+    {
+      "code": "G3",
+      "title": "심히 부당한 대우(폭행·학대·모욕) - 민법 840(3)",
+      "priority": 30,
+      "items": [
+        {
+          "item_key": "G3_MEDICAL",
+          "title": "진단서/치료 기록",
+          "description": "상해·정신과 소견 등(가능하면 폭행 원인 기재)",
+          "required_min_count": 1,
+          "evidence_types": [
+            "MEDICAL_RECORD"
+          ],
+          "keypoint_kinds": [
+            "MEDICAL",
+            "VIOLENCE",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 35,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G3_POLICE",
+          "title": "112 신고/접수/사건번호",
+          "description": "경찰 신고 내역, 출동 기록, 사건번호",
+          "required_min_count": 1,
+          "evidence_types": [
+            "POLICE_RECORD"
+          ],
+          "keypoint_kinds": [
+            "POLICE_CASE",
+            "DATE_EVENT",
+            "THREAT"
+          ],
+          "is_required": false,
+          "weight": 25,
+          "ui_group": "ENHANCER"
+        },
+        {
+          "item_key": "G3_PHOTO",
+          "title": "상처/파손 물건 사진",
+          "description": "상처 부위/파손 기물 사진(날짜 확정 권장)",
+          "required_min_count": 1,
+          "evidence_types": [
+            "PHOTO",
+            "VIDEO"
+          ],
+          "keypoint_kinds": [
+            "VIOLENCE",
+            "DATE_EVENT"
+          ],
+          "is_required": false,
+          "weight": 15,
+          "ui_group": "OPTIONAL"
+        },
+        {
+          "item_key": "G3_RECORDINGS",
+          "title": "폭언/협박/폭행 정황 녹음 또는 메시지",
+          "description": "모욕·위협·폭행 정황을 보여주는 원문",
+          "required_min_count": 1,
+          "evidence_types": [
+            "AUDIO_RECORD",
+            "CHAT_EXPORT"
+          ],
+          "keypoint_kinds": [
+            "THREAT",
+            "INSULT",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 30,
+          "ui_group": "CORE"
+        }
+      ]
+    },
+    {
+      "code": "G4",
+      "title": "직계존속에 대한 부당 대우 - 민법 840(4)",
+      "priority": 40,
+      "items": [
+        {
+          "item_key": "G4_PARENT_STATEMENT",
+          "title": "부모 진술서/목격자 진술",
+          "description": "부모 당사자 또는 요양보호사/목격자 진술",
+          "required_min_count": 1,
+          "evidence_types": [
+            "WRITTEN_STATEMENT",
+            "WITNESS_STATEMENT"
+          ],
+          "keypoint_kinds": [
+            "PERSON",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 30,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G4_MEDICAL",
+          "title": "부모 진료 기록/진단서",
+          "description": "학대/폭행 관련 진료 기록",
+          "required_min_count": 1,
+          "evidence_types": [
+            "MEDICAL_RECORD"
+          ],
+          "keypoint_kinds": [
+            "MEDICAL",
+            "DATE_EVENT"
+          ],
+          "is_required": false,
+          "weight": 20,
+          "ui_group": "OPTIONAL"
+        }
+      ]
+    },
+    {
+      "code": "G5",
+      "title": "3년 이상 생사 불명 - 민법 840(5)",
+      "priority": 50,
+      "items": [
+        {
+          "item_key": "G5_OFFICIAL",
+          "title": "공문서(말소 등본/출입국 사실 등)",
+          "description": "주민등록 말소 등본, 출입국 사실증명 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "CERTIFICATE",
+            "OFFICIAL_DOC"
+          ],
+          "keypoint_kinds": [
+            "MISSING",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 40,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G5_POLICE",
+          "title": "실종 신고 접수증",
+          "description": "경찰 실종 신고 접수 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "POLICE_RECORD"
+          ],
+          "keypoint_kinds": [
+            "POLICE_CASE",
+            "MISSING"
+          ],
+          "is_required": false,
+          "weight": 25,
+          "ui_group": "ENHANCER"
+        },
+        {
+          "item_key": "G5_3Y_DURATION",
+          "title": "3년 경과 산정용 기준일 확정",
+          "description": "최후 연락/최후 주소확인 등 기준일",
+          "required_min_count": 1,
+          "evidence_types": [],
+          "keypoint_kinds": [
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        }
+      ]
+    },
+    {
+      "code": "G6",
+      "title": "기타 혼인을 계속하기 어려운 중대 사유(파탄) - 민법 840(6)",
+      "priority": 60,
+      "items": [
+        {
+          "item_key": "G6_BREAKDOWN_TIMELINE",
+          "title": "파탄 경위 타임라인(별거/갈등) 확정",
+          "description": "별거 시작, 재결합 시도, 파탄 고착 등",
+          "required_min_count": 2,
+          "evidence_types": [],
+          "keypoint_kinds": [
+            "SEPARATION",
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        },
+        {
+          "item_key": "G6_ADDICTION_DEBT",
+          "title": "중독/채무/경제파탄 자료",
+          "description": "도박 빚 독촉장, 알코올 중독 진료 기록 등",
+          "required_min_count": 1,
+          "evidence_types": [
+            "DEBT_NOTICE",
+            "MEDICAL_RECORD",
+            "BANK_TX"
+          ],
+          "keypoint_kinds": [
+            "ADDICTION",
+            "DEBT",
+            "DATE_EVENT"
+          ],
+          "is_required": false,
+          "weight": 20,
+          "ui_group": "OPTIONAL"
+        },
+        {
+          "item_key": "G6_COUNSELING",
+          "title": "상담/중재/가사조사 관련 기록(있으면 강함)",
+          "description": "상담 기록, 조정기록, 중재 시도",
+          "required_min_count": 1,
+          "evidence_types": [
+            "COUNSELING_RECORD",
+            "OFFICIAL_DOC"
+          ],
+          "keypoint_kinds": [
+            "DATE_EVENT",
+            "OTHER"
+          ],
+          "is_required": false,
+          "weight": 10,
+          "ui_group": "ENHANCER"
+        },
+        {
+          "item_key": "G6_LIMITATION_DATES",
+          "title": "제척기간 산정(안 날 6개월/있은 날 2년) 또는 사유 지속성 체크",
+          "description": "사유가 계속되는 경우 기간 적용 예외 판단용",
+          "required_min_count": 1,
+          "evidence_types": [],
+          "keypoint_kinds": [
+            "DATE_EVENT"
+          ],
+          "is_required": true,
+          "weight": 25,
+          "ui_group": "CORE"
+        }
+      ]
+    }
+  ]
+}

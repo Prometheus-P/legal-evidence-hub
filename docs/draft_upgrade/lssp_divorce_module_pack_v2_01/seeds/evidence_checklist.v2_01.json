@@ -1,0 +1,365 @@
+{
+  "version": "2.01",
+  "generated_at": "2025-12-16",
+  "categories": [
+    {
+      "code": "COMM",
+      "name_ko": "통신/대화",
+      "examples": [
+        "카카오톡/문자/메일",
+        "통화목록",
+        "SNS DM"
+      ]
+    },
+    {
+      "code": "MEDIA",
+      "name_ko": "사진/영상/음성",
+      "examples": [
+        "블랙박스",
+        "CCTV",
+        "녹취",
+        "사진"
+      ]
+    },
+    {
+      "code": "FIN",
+      "name_ko": "금융/소득",
+      "examples": [
+        "카드결제내역",
+        "계좌이체",
+        "급여명세",
+        "대출/채무"
+      ]
+    },
+    {
+      "code": "LOC",
+      "name_ko": "거주/이동/위치",
+      "examples": [
+        "주민등록초본",
+        "출입국사실",
+        "구글 타임라인",
+        "동거/별거 입증"
+      ]
+    },
+    {
+      "code": "MED",
+      "name_ko": "의료/심리",
+      "examples": [
+        "상해진단서",
+        "정신과 소견서",
+        "진료기록"
+      ]
+    },
+    {
+      "code": "LAW",
+      "name_ko": "경찰/법원/행정",
+      "examples": [
+        "112 신고내역",
+        "가출신고접수",
+        "임시조치 결정문",
+        "확정증명서"
+      ]
+    },
+    {
+      "code": "WIT",
+      "name_ko": "진술/증인",
+      "examples": [
+        "진술서",
+        "목격자",
+        "요양보호사"
+      ]
+    },
+    {
+      "code": "CHILD",
+      "name_ko": "자녀 관련",
+      "examples": [
+        "양육계획서",
+        "학교/치료비",
+        "면접교섭 일정"
+      ]
+    },
+    {
+      "code": "PROP",
+      "name_ko": "재산/자산",
+      "examples": [
+        "부동산 등기",
+        "차량 등록",
+        "보험 해지환급금",
+        "퇴직금"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "EV-G1-COMM-001",
+      "ground": "G1",
+      "category": "COMM",
+      "title": "대화/통신 내역(연락 지속, 애정표현, 약속)",
+      "priority": "P0",
+      "required": true,
+      "key_points": [
+        "발신/수신자",
+        "일시",
+        "관계성(누구와)",
+        "장소/만남 약속",
+        "결정적 문구(인정/사과/협박)",
+        "캡처 원본 보관 여부"
+      ],
+      "how_to_get": [
+        "기기 백업/내보내기",
+        "통신사·플랫폼 고객센터(가능 범위)",
+        "상대방 동의 없는 불법 접근 금지(가이드)"
+      ],
+      "notes": "대화 캡처는 '원본 파일/백업'과 함께 보관. 메타데이터(시간/기기) 확보가 중요."
+    },
+    {
+      "id": "EV-G1-FIN-001",
+      "ground": "G1",
+      "category": "FIN",
+      "title": "카드 결제/이체 내역(숙박, 선물, 교통 등)",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "상호/가맹점",
+        "결제일시",
+        "금액",
+        "반복성",
+        "동선과의 결합(같은 날짜의 위치/대화)"
+      ],
+      "how_to_get": [
+        "카드사 앱/명세서",
+        "은행 거래내역 다운로드"
+      ],
+      "notes": "단독으로 결정타가 아니라 '동일 날짜/장소' 증거와 결합할수록 강해짐."
+    },
+    {
+      "id": "EV-G1-MEDIA-001",
+      "ground": "G1",
+      "category": "MEDIA",
+      "title": "블랙박스/사진/영상(동행, 숙박 등 정황)",
+      "priority": "P1",
+      "required": false,
+      "key_points": [
+        "촬영일시",
+        "장소",
+        "인물 식별(얼굴/차량번호 등)",
+        "연속성(전후 맥락)"
+      ],
+      "how_to_get": [
+        "블랙박스 SD 추출",
+        "시설 CCTV 확보 신청(가능 범위)"
+      ],
+      "notes": "불법 촬영·침입 등 금지. 합법적 확보 루트만 안내."
+    },
+    {
+      "id": "EV-G2-LOC-001",
+      "ground": "G2",
+      "category": "LOC",
+      "title": "주민등록초본/등본(별거·전출 등 동거 단절)",
+      "priority": "P0",
+      "required": true,
+      "key_points": [
+        "주소 변동 이력",
+        "전입/전출일",
+        "동거 중단 시점 추정"
+      ],
+      "how_to_get": [
+        "정부24/행정복지센터 발급"
+      ],
+      "notes": "기간·시점을 자동 추출해 '유기 시작일' 후보로 사용."
+    },
+    {
+      "id": "EV-G2-FIN-001",
+      "ground": "G2",
+      "category": "FIN",
+      "title": "생활비 미지급 내역(이체·현금흐름)",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "입금 중단일",
+        "월별 편차",
+        "부양비 관련 대화/요구"
+      ],
+      "how_to_get": [
+        "은행 거래내역"
+      ],
+      "notes": "'정당한 이유 없음'을 반박할 자료(상대 사정)도 함께 수집."
+    },
+    {
+      "id": "EV-G2-LAW-001",
+      "ground": "G2",
+      "category": "LAW",
+      "title": "가출신고/경찰 출동 내역",
+      "priority": "P1",
+      "required": false,
+      "key_points": [
+        "신고일",
+        "사건번호",
+        "상황 요약"
+      ],
+      "how_to_get": [
+        "신고 접수증/기록 요청(가능 범위)"
+      ],
+      "notes": "실제 동거 단절과 연결되는지 체크."
+    },
+    {
+      "id": "EV-G3-MED-001",
+      "ground": "G3",
+      "category": "MED",
+      "title": "상해진단서/소견서(폭행 원인 기재)",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "진단명",
+        "상해 원인 기재 여부",
+        "내원일/사건일",
+        "사진/영상과 연결"
+      ],
+      "how_to_get": [
+        "병원 발급"
+      ],
+      "notes": "'원인 기재' 누락은 치명적. 발급 단계에서 체크리스트로 강제."
+    },
+    {
+      "id": "EV-G3-LAW-001",
+      "ground": "G3",
+      "category": "LAW",
+      "title": "112 신고/가정폭력 상담 기록",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "신고일",
+        "출동 여부",
+        "조치 결과",
+        "상담일지 요약"
+      ],
+      "how_to_get": [
+        "경찰/상담소 기록 요청(가능 범위)"
+      ],
+      "notes": "반복성(횟수/기간) 자동 집계."
+    },
+    {
+      "id": "EV-G3-MEDIA-001",
+      "ground": "G3",
+      "category": "MEDIA",
+      "title": "상처 사진/파손 기물 사진·영상",
+      "priority": "P1",
+      "required": false,
+      "key_points": [
+        "촬영일시",
+        "부위/범위",
+        "파손 물건",
+        "동일 사건 관련 대화/신고와 링크"
+      ],
+      "how_to_get": [
+        "촬영 + 원본 보관"
+      ],
+      "notes": "원본(EXIF) 유지. 편집본은 별도로."
+    },
+    {
+      "id": "EV-G4-WIT-001",
+      "ground": "G4",
+      "category": "WIT",
+      "title": "부모 진술서/목격자 진술",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "피해 내용",
+        "일시·장소",
+        "목격/경험 여부(직접/전언)",
+        "연락처(공개 범위는 옵션)"
+      ],
+      "how_to_get": [
+        "템플릿 제공 + 전자서명"
+      ],
+      "notes": "전언은 약해짐. 가능한 '직접 경험' 중심으로."
+    },
+    {
+      "id": "EV-G4-MED-001",
+      "ground": "G4",
+      "category": "MED",
+      "title": "부모 진료 기록/상해진단서",
+      "priority": "P1",
+      "required": false,
+      "key_points": [
+        "내원일",
+        "상해 원인",
+        "진단명"
+      ],
+      "how_to_get": [
+        "병원 발급"
+      ],
+      "notes": "사건과 직접 연결되는지 타임라인 매칭."
+    },
+    {
+      "id": "EV-G5-LAW-001",
+      "ground": "G5",
+      "category": "LAW",
+      "title": "실종 신고 접수증/반송 우편 등",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "3년 지속 입증",
+        "연락 시도 기록",
+        "반송 증빙"
+      ],
+      "how_to_get": [
+        "경찰 신고 접수증",
+        "우편 반송물 보관"
+      ],
+      "notes": "3년 요건 충족 시점 계산 로직에 투입."
+    },
+    {
+      "id": "EV-G5-LOC-001",
+      "ground": "G5",
+      "category": "LOC",
+      "title": "출입국 사실/주민등록 말소 등본",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "출입국 기록",
+        "말소일",
+        "마지막 확인일"
+      ],
+      "how_to_get": [
+        "출입국사실증명/행정 서류"
+      ],
+      "notes": "생존·연락가능성 반박 자료 대비."
+    },
+    {
+      "id": "EV-G6-FIN-001",
+      "ground": "G6",
+      "category": "FIN",
+      "title": "도박/중독 관련 채무·독촉장·지출 패턴",
+      "priority": "P1",
+      "required": false,
+      "key_points": [
+        "채무 발생일",
+        "독촉장/연체",
+        "반복적 지출 패턴"
+      ],
+      "how_to_get": [
+        "서류/거래내역"
+      ],
+      "notes": "사유의 '지속성'과 '회복불능'을 만들기 위한 패턴 증거."
+    },
+    {
+      "id": "EV-G6-LOC-001",
+      "ground": "G6",
+      "category": "LOC",
+      "title": "장기간 별거 입증(주소 이력/동거 단절)",
+      "priority": "P0",
+      "required": false,
+      "key_points": [
+        "별거 시작일",
+        "별거 기간",
+        "재결합 시도/거절"
+      ],
+      "how_to_get": [
+        "초본/등본",
+        "대화 내역"
+      ],
+      "notes": "사실관계(파탄 경위) 서술의 뼈대가 됨."
+    }
+  ]
+}

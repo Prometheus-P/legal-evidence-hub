@@ -1,0 +1,153 @@
+{
+  "version": "2.01",
+  "generated_at": "2025-12-16",
+  "pipelines": [
+    {
+      "type": "CONSENSUAL",
+      "name_ko": "협의이혼",
+      "states": [
+        {
+          "code": "INIT",
+          "name": "신청 준비"
+        },
+        {
+          "code": "APPLY",
+          "name": "법원 신청"
+        },
+        {
+          "code": "COOLING_OFF",
+          "name": "숙려기간"
+        },
+        {
+          "code": "VERIFY",
+          "name": "의사 확인"
+        },
+        {
+          "code": "REPORT",
+          "name": "행정 신고"
+        },
+        {
+          "code": "DONE",
+          "name": "완료"
+        },
+        {
+          "code": "EXPIRED",
+          "name": "확인 효력 상실"
+        }
+      ],
+      "deadline_rules": [
+        {
+          "id": "DL-CONS-REPORT-3M",
+          "trigger": "certificate_received_at",
+          "deadline": "P3M",
+          "severity": "HARD",
+          "effect_on_miss": "EXPIRED",
+          "alerts": [
+            {
+              "offset": "P-10D",
+              "channel": [
+                "push",
+                "email"
+              ]
+            },
+            {
+              "offset": "P-3D",
+              "channel": [
+                "push"
+              ]
+            },
+            {
+              "offset": "P-1D",
+              "channel": [
+                "push",
+                "sms"
+              ]
+            }
+          ],
+          "copy_ko": "확인서 등본 수령 후 3개월 내 신고하지 않으면 확인 효력이 상실됩니다. (다시 처음부터)"
+        },
+        {
+          "id": "DL-CONS-COOLING",
+          "trigger": "guidance_received_at",
+          "calculation": "child_present ? P3M : P1M",
+          "severity": "INFO",
+          "copy_ko": "숙려기간 종료 예상일(법원 지정 기일은 별도)."
+        }
+      ]
+    },
+    {
+      "type": "JUDICIAL",
+      "name_ko": "재판상 이혼(조정/소송)",
+      "states": [
+        {
+          "code": "INTAKE",
+          "name": "사유 진단/자료 수집"
+        },
+        {
+          "code": "MEDIATION",
+          "name": "조정 절차"
+        },
+        {
+          "code": "LITIGATION",
+          "name": "소송 절차"
+        },
+        {
+          "code": "FINAL",
+          "name": "확정(조정성립/판결확정)"
+        },
+        {
+          "code": "REPORT",
+          "name": "행정 신고"
+        },
+        {
+          "code": "DONE",
+          "name": "완료"
+        }
+      ],
+      "deadline_rules": [
+        {
+          "id": "DL-JUD-REPORT-1M",
+          "trigger": "finalized_at",
+          "deadline": "P1M",
+          "severity": "SOFT",
+          "effect_on_miss": "PENALTY_POSSIBLE",
+          "alerts": [
+            {
+              "offset": "P-7D",
+              "channel": [
+                "push",
+                "email"
+              ]
+            },
+            {
+              "offset": "P-1D",
+              "channel": [
+                "push",
+                "sms"
+              ]
+            }
+          ],
+          "copy_ko": "확정일(조정성립/판결확정) 후 1개월 내 이혼신고 권고/의무(과태료 가능)."
+        }
+      ]
+    }
+  ],
+  "claim_time_limits": [
+    {
+      "id": "TL-ALIMONY-3Y",
+      "name_ko": "이혼 위자료 청구",
+      "trigger": "divorce_effective_at",
+      "limit": "P3Y",
+      "notes": "이혼한 날(협의이혼=신고일, 재판상 이혼=확정일) 기준으로 계산.",
+      "source": "생활법령정보 내용 기반"
+    },
+    {
+      "id": "TL-PROP-2Y",
+      "name_ko": "재산분할 청구",
+      "trigger": "divorce_effective_at",
+      "limit": "P2Y",
+      "notes": "이혼한 날 기준 2년.",
+      "source": "생활법령정보 내용 기반"
+    }
+  ]
+}

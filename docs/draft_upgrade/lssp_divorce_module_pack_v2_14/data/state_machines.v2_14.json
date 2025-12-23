@@ -1,0 +1,756 @@
+{
+  "version": "2.14",
+  "generated_at": "2025-12-17",
+  "machines": [
+    {
+      "name": "CONSENSUAL_DIVORCE",
+      "applies_to": {
+        "divorce_type": "CONSENSUAL"
+      },
+      "states": [
+        {
+          "code": "DRAFT",
+          "label": "초기 입력/준비",
+          "terminal": false
+        },
+        {
+          "code": "FILED",
+          "label": "법원 신청 제출(접수)",
+          "terminal": false
+        },
+        {
+          "code": "COOLING_OFF",
+          "label": "숙려기간 진행",
+          "terminal": false
+        },
+        {
+          "code": "CONFIRMATION_SCHEDULED",
+          "label": "확인기일 대기",
+          "terminal": false
+        },
+        {
+          "code": "CONFIRMED",
+          "label": "확인서 등본 교부/송달",
+          "terminal": false
+        },
+        {
+          "code": "REPORTED",
+          "label": "행정청 신고 완료",
+          "terminal": true
+        },
+        {
+          "code": "EXPIRED",
+          "label": "확인 효력 상실(재신청 필요)",
+          "terminal": true
+        },
+        {
+          "code": "WITHDRAWN",
+          "label": "취하",
+          "terminal": true
+        },
+        {
+          "code": "AUTO_WITHDRAWN",
+          "label": "불출석 2회 취하 간주",
+          "terminal": true
+        }
+      ],
+      "events": [
+        {
+          "code": "SUBMIT_APPLICATION",
+          "label": "신청서 제출"
+        },
+        {
+          "code": "SET_CHILD_STATUS",
+          "label": "자녀 유무/임신 포함 설정"
+        },
+        {
+          "code": "SET_COOLING_OFF_START",
+          "label": "이혼 안내일(숙려기간 시작) 설정"
+        },
+        {
+          "code": "COOLING_OFF_WAIVED",
+          "label": "숙려기간 단축/면제 승인"
+        },
+        {
+          "code": "SCHEDULE_CONFIRMATION",
+          "label": "확인기일 지정"
+        },
+        {
+          "code": "NO_SHOW_CONFIRMATION",
+          "label": "확인기일 불출석 기록"
+        },
+        {
+          "code": "ISSUE_CONFIRMATION_CERT",
+          "label": "확인서 등본 교부/송달"
+        },
+        {
+          "code": "REPORT_DIVORCE",
+          "label": "이혼 신고 완료"
+        },
+        {
+          "code": "WITHDRAW",
+          "label": "당사자 취하"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "event": "SUBMIT_APPLICATION",
+          "to": "FILED"
+        },
+        {
+          "from": "FILED",
+          "event": "SET_COOLING_OFF_START",
+          "to": "COOLING_OFF",
+          "guards": [
+            "cooling_off_start_at != null"
+          ]
+        },
+        {
+          "from": "COOLING_OFF",
+          "event": "COOLING_OFF_WAIVED",
+          "to": "CONFIRMATION_SCHEDULED",
+          "guards": [
+            "waiver_approved == true"
+          ],
+          "effects": [
+            "set_cooling_off_end_at=now"
+          ]
+        },
+        {
+          "from": "COOLING_OFF",
+          "event": "SCHEDULE_CONFIRMATION",
+          "to": "CONFIRMATION_SCHEDULED",
+          "guards": [
+            "confirmation_date != null"
+          ]
+        },
+        {
+          "from": "CONFIRMATION_SCHEDULED",
+          "event": "NO_SHOW_CONFIRMATION",
+          "to": "CONFIRMATION_SCHEDULED",
+          "effects": [
+            "increment:no_show_count"
+          ]
+        },
+        {
+          "from": "CONFIRMATION_SCHEDULED",
+          "event": "NO_SHOW_CONFIRMATION",
+          "to": "AUTO_WITHDRAWN",
+          "guards": [
+            "no_show_count_after >= 2"
+          ]
+        },
+        {
+          "from": "CONFIRMATION_SCHEDULED",
+          "event": "ISSUE_CONFIRMATION_CERT",
+          "to": "CONFIRMED",
+          "guards": [
+            "confirmation_issued_at != null"
+          ],
+          "effects": [
+            "create_deadline:CONSENSUAL_REPORT_DUE"
+          ]
+        },
+        {
+          "from": "CONFIRMED",
+          "event": "REPORT_DIVORCE",
+          "to": "REPORTED",
+          "guards": [
+            "reported_at != null"
+          ]
+        },
+        {
+          "from": "CONFIRMED",
+          "event": "TIME_PASSED",
+          "to": "EXPIRED",
+          "guards": [
+            "now > report_due_at"
+          ],
+          "effects": [
+            "close_deadline:CONSENSUAL_REPORT_DUE"
+          ]
+        },
+        {
+          "from": "DRAFT",
+          "event": "WITHDRAW",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "FILED",
+          "event": "WITHDRAW",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "COOLING_OFF",
+          "event": "WITHDRAW",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "CONFIRMATION_SCHEDULED",
+          "event": "WITHDRAW",
+          "to": "WITHDRAWN"
+        }
+      ],
+      "computed_fields": [
+        {
+          "field": "cooling_off_end_at",
+          "logic": [
+            "if waiver_approved: cooling_off_end_at = waiver_effective_at",
+            "else if has_minor_child_or_pregnant: cooling_off_end_at = cooling_off_start_at + 3 months (special rule: if child becomes adult within 1-3 months, end at adulthood date)",
+            "else: cooling_off_end_at = cooling_off_start_at + 1 month"
+          ]
+        },
+        {
+          "field": "report_due_at",
+          "logic": [
+            "report_due_at = confirmation_issued_at + 3 months (strict expiration; after due => EXPIRED)"
+          ]
+        }
+      ],
+      "deadlines": [
+        {
+          "code": "CONSENSUAL_REPORT_DUE",
+          "penalty_type": "EFFECT_LOSS",
+          "due_from": "confirmation_issued_at",
+          "due_offset": "P3M",
+          "notification_offsets": [
+            "P-10D",
+            "P-3D",
+            "P-1D"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JUDICIAL_DIVORCE",
+      "applies_to": {
+        "divorce_type": "JUDICIAL"
+      },
+      "states": [
+        {
+          "code": "DRAFT",
+          "label": "초기 입력/준비",
+          "terminal": false
+        },
+        {
+          "code": "MEDIATION_REQUIRED",
+          "label": "조정전치(조정 먼저)",
+          "terminal": false
+        },
+        {
+          "code": "MEDIATION_FILED",
+          "label": "조정 신청 제출",
+          "terminal": false
+        },
+        {
+          "code": "MEDIATION_IN_PROGRESS",
+          "label": "조정 진행",
+          "terminal": false
+        },
+        {
+          "code": "SETTLED",
+          "label": "조정 성립(확정판결과 동일)",
+          "terminal": false
+        },
+        {
+          "code": "LITIGATION_IN_PROGRESS",
+          "label": "소송 진행",
+          "terminal": false
+        },
+        {
+          "code": "JUDGMENT_PRONOUNCED",
+          "label": "판결 선고",
+          "terminal": false
+        },
+        {
+          "code": "FINALIZED",
+          "label": "확정(조정/판결)",
+          "terminal": false
+        },
+        {
+          "code": "REPORTED",
+          "label": "행정청 신고 완료",
+          "terminal": true
+        },
+        {
+          "code": "REPORT_OVERDUE",
+          "label": "신고 지연(과태료 위험)",
+          "terminal": false
+        }
+      ],
+      "events": [
+        {
+          "code": "START_JUDICIAL_FLOW",
+          "label": "재판상 이혼 선택"
+        },
+        {
+          "code": "FILE_MEDIATION",
+          "label": "조정 신청"
+        },
+        {
+          "code": "MEDIATION_SESSION",
+          "label": "조정기일 기록"
+        },
+        {
+          "code": "MEDIATION_FAILED",
+          "label": "조정 불성립/이의"
+        },
+        {
+          "code": "MEDIATION_SUCCESS",
+          "label": "조정 성립"
+        },
+        {
+          "code": "FILE_LAWSUIT",
+          "label": "소송 제기"
+        },
+        {
+          "code": "JUDGMENT",
+          "label": "판결 선고"
+        },
+        {
+          "code": "MARK_FINAL",
+          "label": "확정일 입력(판결 확정/조정 성립일)"
+        },
+        {
+          "code": "REPORT_DIVORCE",
+          "label": "이혼 신고 완료"
+        },
+        {
+          "code": "RECEIVE_DEMAND",
+          "label": "독촉(최고) 수령"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "event": "START_JUDICIAL_FLOW",
+          "to": "MEDIATION_REQUIRED"
+        },
+        {
+          "from": "MEDIATION_REQUIRED",
+          "event": "FILE_MEDIATION",
+          "to": "MEDIATION_FILED",
+          "guards": [
+            "mediation_filed_at != null"
+          ]
+        },
+        {
+          "from": "MEDIATION_FILED",
+          "event": "MEDIATION_SESSION",
+          "to": "MEDIATION_IN_PROGRESS"
+        },
+        {
+          "from": "MEDIATION_IN_PROGRESS",
+          "event": "MEDIATION_SUCCESS",
+          "to": "SETTLED",
+          "guards": [
+            "settled_at != null"
+          ],
+          "effects": [
+            "set_finalized_at=settled_at",
+            "create_deadline:JUDICIAL_REPORT_DUE"
+          ]
+        },
+        {
+          "from": "MEDIATION_IN_PROGRESS",
+          "event": "MEDIATION_FAILED",
+          "to": "LITIGATION_IN_PROGRESS"
+        },
+        {
+          "from": "MEDIATION_REQUIRED",
+          "event": "FILE_LAWSUIT",
+          "to": "MEDIATION_REQUIRED",
+          "guards": [
+            "false"
+          ],
+          "notes": "조정 전 소송 직접 제기는 금지(안내/차단)"
+        },
+        {
+          "from": "LITIGATION_IN_PROGRESS",
+          "event": "JUDGMENT",
+          "to": "JUDGMENT_PRONOUNCED",
+          "guards": [
+            "judgment_at != null"
+          ]
+        },
+        {
+          "from": "JUDGMENT_PRONOUNCED",
+          "event": "MARK_FINAL",
+          "to": "FINALIZED",
+          "guards": [
+            "finalized_at != null"
+          ],
+          "effects": [
+            "create_deadline:JUDICIAL_REPORT_DUE"
+          ]
+        },
+        {
+          "from": "SETTLED",
+          "event": "MARK_FINAL",
+          "to": "FINALIZED",
+          "guards": [
+            "finalized_at != null"
+          ]
+        },
+        {
+          "from": "FINALIZED",
+          "event": "REPORT_DIVORCE",
+          "to": "REPORTED",
+          "guards": [
+            "reported_at != null"
+          ]
+        },
+        {
+          "from": "FINALIZED",
+          "event": "TIME_PASSED",
+          "to": "REPORT_OVERDUE",
+          "guards": [
+            "now > report_due_at && reported_at == null"
+          ]
+        },
+        {
+          "from": "REPORT_OVERDUE",
+          "event": "REPORT_DIVORCE",
+          "to": "REPORTED",
+          "guards": [
+            "reported_at != null"
+          ]
+        }
+      ],
+      "deadlines": [
+        {
+          "code": "JUDICIAL_REPORT_DUE",
+          "penalty_type": "ADMIN_FINE",
+          "due_from": "finalized_at",
+          "due_offset": "P1M",
+          "notification_offsets": [
+            "P-7D",
+            "P-3D",
+            "P0D",
+            "P+7D"
+          ]
+        }
+      ],
+      "penalties": [
+        {
+          "code": "FINE_BASE",
+          "when": "overdue && !demanded",
+          "amount_max_krw": 50000
+        },
+        {
+          "code": "FINE_AFTER_DEMAND",
+          "when": "overdue && demanded",
+          "amount_max_krw": 100000
+        }
+      ]
+    },
+    {
+      "name": "DE_FACTO_DISSOLUTION",
+      "applies_to": {
+        "divorce_type": "DE_FACTO"
+      },
+      "states": [
+        {
+          "code": "DRAFT",
+          "label": "초기 입력/준비",
+          "terminal": false
+        },
+        {
+          "code": "RELATIONSHIP_ASSERTED",
+          "label": "사실혼 관계 주장/입증 수집",
+          "terminal": false
+        },
+        {
+          "code": "DISSOLVED",
+          "label": "해소(합의/통보 도달)",
+          "terminal": false
+        },
+        {
+          "code": "CLAIMS_PLANNED",
+          "label": "재산분할/위자료 등 청구 준비",
+          "terminal": false
+        },
+        {
+          "code": "CLAIMS_FILED",
+          "label": "청구 진행(소송/조정 등)",
+          "terminal": false
+        },
+        {
+          "code": "CLOSED",
+          "label": "종결",
+          "terminal": true
+        }
+      ],
+      "events": [
+        {
+          "code": "ASSERT_RELATIONSHIP",
+          "label": "사실혼 주장"
+        },
+        {
+          "code": "SET_DISSOLUTION_DATE",
+          "label": "해소일 입력"
+        },
+        {
+          "code": "PLAN_CLAIMS",
+          "label": "청구 계획"
+        },
+        {
+          "code": "FILE_CLAIMS",
+          "label": "청구 진행"
+        },
+        {
+          "code": "CLOSE",
+          "label": "종결"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "event": "ASSERT_RELATIONSHIP",
+          "to": "RELATIONSHIP_ASSERTED"
+        },
+        {
+          "from": "RELATIONSHIP_ASSERTED",
+          "event": "SET_DISSOLUTION_DATE",
+          "to": "DISSOLVED",
+          "guards": [
+            "dissolution_at != null"
+          ]
+        },
+        {
+          "from": "DISSOLVED",
+          "event": "PLAN_CLAIMS",
+          "to": "CLAIMS_PLANNED"
+        },
+        {
+          "from": "CLAIMS_PLANNED",
+          "event": "FILE_CLAIMS",
+          "to": "CLAIMS_FILED"
+        },
+        {
+          "from": "CLAIMS_FILED",
+          "event": "CLOSE",
+          "to": "CLOSED"
+        }
+      ]
+    },
+    {
+      "name": "DOMESTIC_VIOLENCE_MEASURES",
+      "applies_to": {
+        "module": "DV"
+      },
+      "states": [
+        {
+          "code": "NONE",
+          "label": "조치 없음",
+          "terminal": false
+        },
+        {
+          "code": "EMERGENCY_48H",
+          "label": "긴급임시조치(경찰, 48시간)",
+          "terminal": false
+        },
+        {
+          "code": "TEMPORARY_2M",
+          "label": "임시조치(법원, 2개월)",
+          "terminal": false
+        },
+        {
+          "code": "TEMPORARY_EXTENDED",
+          "label": "임시조치 연장",
+          "terminal": false
+        },
+        {
+          "code": "PROTECTION_ORDER",
+          "label": "피해자 보호명령",
+          "terminal": false
+        },
+        {
+          "code": "ENDED",
+          "label": "종료",
+          "terminal": true
+        }
+      ],
+      "events": [
+        {
+          "code": "ISSUE_EMERGENCY",
+          "label": "긴급임시조치 개시"
+        },
+        {
+          "code": "ISSUE_TEMPORARY",
+          "label": "임시조치 결정"
+        },
+        {
+          "code": "EXTEND_TEMPORARY",
+          "label": "임시조치 연장"
+        },
+        {
+          "code": "ISSUE_PROTECTION_ORDER",
+          "label": "보호명령 결정"
+        },
+        {
+          "code": "END_MEASURE",
+          "label": "조치 종료"
+        }
+      ],
+      "deadlines": [
+        {
+          "code": "EMERGENCY_EXPIRES",
+          "penalty_type": "INFO",
+          "due_from": "emergency_issued_at",
+          "due_offset": "PT48H",
+          "notification_offsets": [
+            "PT24H",
+            "PT4H"
+          ]
+        },
+        {
+          "code": "TEMPORARY_EXPIRES",
+          "penalty_type": "INFO",
+          "due_from": "temporary_issued_at",
+          "due_offset": "P2M",
+          "notification_offsets": [
+            "P-7D",
+            "P-1D"
+          ]
+        },
+        {
+          "code": "PROTECTION_EXPIRES",
+          "penalty_type": "INFO",
+          "due_from": "protection_issued_at",
+          "due_offset": "P6M",
+          "notification_offsets": [
+            "P-14D",
+            "P-3D"
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "from": "NONE",
+          "event": "ISSUE_EMERGENCY",
+          "to": "EMERGENCY_48H"
+        },
+        {
+          "from": "EMERGENCY_48H",
+          "event": "ISSUE_TEMPORARY",
+          "to": "TEMPORARY_2M"
+        },
+        {
+          "from": "TEMPORARY_2M",
+          "event": "EXTEND_TEMPORARY",
+          "to": "TEMPORARY_EXTENDED"
+        },
+        {
+          "from": "TEMPORARY_EXTENDED",
+          "event": "EXTEND_TEMPORARY",
+          "to": "TEMPORARY_EXTENDED"
+        },
+        {
+          "from": "NONE",
+          "event": "ISSUE_PROTECTION_ORDER",
+          "to": "PROTECTION_ORDER"
+        },
+        {
+          "from": "TEMPORARY_2M",
+          "event": "ISSUE_PROTECTION_ORDER",
+          "to": "PROTECTION_ORDER"
+        },
+        {
+          "from": "TEMPORARY_EXTENDED",
+          "event": "ISSUE_PROTECTION_ORDER",
+          "to": "PROTECTION_ORDER"
+        },
+        {
+          "from": "EMERGENCY_48H",
+          "event": "END_MEASURE",
+          "to": "ENDED"
+        },
+        {
+          "from": "TEMPORARY_2M",
+          "event": "END_MEASURE",
+          "to": "ENDED"
+        },
+        {
+          "from": "TEMPORARY_EXTENDED",
+          "event": "END_MEASURE",
+          "to": "ENDED"
+        },
+        {
+          "from": "PROTECTION_ORDER",
+          "event": "END_MEASURE",
+          "to": "ENDED"
+        }
+      ]
+    },
+    {
+      "name": "INTERNATIONAL_DIVORCE_ROUTING",
+      "applies_to": {
+        "module": "INTL"
+      },
+      "states": [
+        {
+          "code": "DRAFT",
+          "label": "입력 수집",
+          "terminal": false
+        },
+        {
+          "code": "GOVERNING_LAW_DETERMINED",
+          "label": "준거법 산정 완료",
+          "terminal": false
+        },
+        {
+          "code": "JURISDICTION_DETERMINED",
+          "label": "관할 판단 완료",
+          "terminal": false
+        },
+        {
+          "code": "ROUTED",
+          "label": "절차 라우팅 완료",
+          "terminal": true
+        }
+      ],
+      "events": [
+        {
+          "code": "COLLECT_PARTY_FACTS",
+          "label": "국적/상거소 입력"
+        },
+        {
+          "code": "DETERMINE_GOVERNING_LAW",
+          "label": "준거법 판정"
+        },
+        {
+          "code": "DETERMINE_JURISDICTION",
+          "label": "관할 판정"
+        },
+        {
+          "code": "ROUTE_FLOW",
+          "label": "절차 라우팅"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "event": "COLLECT_PARTY_FACTS",
+          "to": "DRAFT"
+        },
+        {
+          "from": "DRAFT",
+          "event": "DETERMINE_GOVERNING_LAW",
+          "to": "GOVERNING_LAW_DETERMINED"
+        },
+        {
+          "from": "GOVERNING_LAW_DETERMINED",
+          "event": "DETERMINE_JURISDICTION",
+          "to": "JURISDICTION_DETERMINED"
+        },
+        {
+          "from": "JURISDICTION_DETERMINED",
+          "event": "ROUTE_FLOW",
+          "to": "ROUTED"
+        }
+      ]
+    }
+  ]
+}

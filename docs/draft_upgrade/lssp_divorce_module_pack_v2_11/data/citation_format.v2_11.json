@@ -1,0 +1,28 @@
+{
+  "citation_id_format": "CIT-{draftBlockInstanceId}-{seq}",
+  "authority_cite": {
+    "display": "[법] {code} {article}{clause}",
+    "fields": [
+      "authority_id",
+      "code",
+      "article",
+      "clause",
+      "pinpoint"
+    ]
+  },
+  "evidence_cite": {
+    "display": "[증거] {label} ({date})",
+    "fields": [
+      "evidence_id",
+      "label",
+      "captured_at",
+      "occurred_at",
+      "extract_ref"
+    ]
+  },
+  "pinpoint_policy": {
+    "max_quote_words": 25,
+    "store_snippet": true,
+    "require_source_ref": true
+  }
+}

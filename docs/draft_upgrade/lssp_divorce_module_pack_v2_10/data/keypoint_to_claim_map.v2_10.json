@@ -1,0 +1,68 @@
+{
+  "version": "v2.10",
+  "maps": [
+    {
+      "claim": "DIVORCE_G1",
+      "block": "FACT_G1_TIMELINE",
+      "kinds": [
+        "DATE_EVENT",
+        "ADMISSION",
+        "SPENDING",
+        "LOCATION",
+        "PERSON"
+      ],
+      "min_count": 2
+    },
+    {
+      "claim": "ALIMONY",
+      "block": "FACT_FAULT_SEVERITY",
+      "kinds": [
+        "ADMISSION",
+        "VIOLENCE",
+        "THREAT"
+      ],
+      "min_count": 1
+    },
+    {
+      "claim": "DIVORCE_G3",
+      "block": "FACT_G3_INCIDENTS",
+      "kinds": [
+        "VIOLENCE",
+        "MEDICAL",
+        "POLICE_CASE",
+        "THREAT"
+      ],
+      "min_count": 2
+    },
+    {
+      "claim": "DIVORCE_G2",
+      "block": "FACT_G2_SEPARATION",
+      "kinds": [
+        "SEPARATION",
+        "DATE_EVENT"
+      ],
+      "min_count": 1
+    },
+    {
+      "claim": "DIVORCE_G5",
+      "block": "FACT_G5_MISSING",
+      "kinds": [
+        "MISSING",
+        "POLICE_CASE",
+        "DATE_EVENT"
+      ],
+      "min_count": 1
+    },
+    {
+      "claim": "DIVORCE_G6",
+      "block": "FACT_G6_BREAKDOWN",
+      "kinds": [
+        "SEPARATION",
+        "DEBT",
+        "SPENDING",
+        "ADDICTION"
+      ],
+      "min_count": 2
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "version": "2.12",
+  "notes": "Populate with curated precedents. Each entry should include short gist (<=200 chars) and tags for matching.",
+  "precedents": [
+    {
+      "precedent_id": "P_TODO_001",
+      "case_no": "TODO",
+      "court": "TODO",
+      "date": "TODO",
+      "tags": [
+        "G6",
+        "breakdown",
+        "exceptions"
+      ],
+      "gist": "유책주의 예외(파탄주의적 고려) 판단요소를 정리한 판례 요지 (TODO: 실제 판례로 교체).",
+      "factors": [
+        "별거기간",
+        "상대 혼인계속의사",
+        "생활보장",
+        "미성년 자녀 복리"
+      ]
+    },
+    {
+      "precedent_id": "P_TODO_002",
+      "case_no": "TODO",
+      "court": "TODO",
+      "date": "TODO",
+      "tags": [
+        "G3",
+        "dv",
+        "evidence"
+      ],
+      "gist": "폭행/학대에서 진단서·신고기록·반복성 등 입증 포인트를 강조한 판례 요지 (TODO).",
+      "factors": [
+        "반복성",
+        "상해 정도",
+        "공포 유발",
+        "객관자료 존재"
+      ]
+    }
+  ]
+}

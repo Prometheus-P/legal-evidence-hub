@@ -1,0 +1,403 @@
+{
+  "G1": {
+    "title": "부정한 행위(외도 등)",
+    "statutes": [
+      "민법 840조 1호",
+      "민법 841조",
+      "민법 842조"
+    ],
+    "key_points": [
+      {
+        "id": "G1-KP1",
+        "title": "정조의무 위반 정황(친밀·부적절 관계)",
+        "must": true
+      },
+      {
+        "id": "G1-KP2",
+        "title": "상대방(유책) 특정 가능성(인물/연락처/장소)",
+        "must": false
+      },
+      {
+        "id": "G1-KP3",
+        "title": "혼인파탄과의 인과(갈등·별거·신뢰파괴)",
+        "must": true
+      },
+      {
+        "id": "G1-KP4",
+        "title": "제척기간 입력값(인지일/발생일) 및 도과 여부",
+        "must": true
+      },
+      {
+        "id": "G1-KP5",
+        "title": "사후 용서/동의 여부(청구 제한 리스크)",
+        "must": false
+      }
+    ],
+    "evidence_types": [
+      "메신저/문자/통화내역",
+      "블랙박스/CCTV/사진",
+      "카드결제/계좌이체",
+      "각서/녹취",
+      "위치기록(타임라인)"
+    ],
+    "precedents": [
+      "SC-2000M1561-2000-12-22"
+    ],
+    "draft_blocks": [
+      {
+        "id": "DB-G1-FACTS",
+        "title": "부정행위 사실관계(타임라인+정황)",
+        "requires": [
+          "G1-KP1",
+          "G1-KP3"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G1-LIMIT",
+        "title": "제척기간(인지일/발생일) 및 청구가능성",
+        "requires": [
+          "G1-KP4"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G1-LEGAL",
+        "title": "민법 840조 1호 해당 및 혼인파탄",
+        "requires": [
+          "G1-KP1",
+          "G1-KP3"
+        ],
+        "use_precedents": []
+      }
+    ]
+  },
+  "G2": {
+    "title": "악의의 유기",
+    "statutes": [
+      "민법 840조 2호"
+    ],
+    "key_points": [
+      {
+        "id": "G2-KP1",
+        "title": "동거·부양·협조의무 불이행(별거/가출/생활비 중단)",
+        "must": true
+      },
+      {
+        "id": "G2-KP2",
+        "title": "정당한 이유 없음(질병/폭력피해 회피 등 반박 대비)",
+        "must": true
+      },
+      {
+        "id": "G2-KP3",
+        "title": "유기 상태의 지속기간 및 반복",
+        "must": true
+      }
+    ],
+    "evidence_types": [
+      "주민등록초본/등본(별거)",
+      "생활비 미지급 통장",
+      "가출신고/경찰출동",
+      "대화기록(부양거부)"
+    ],
+    "precedents": [],
+    "draft_blocks": [
+      {
+        "id": "DB-G2-FACTS",
+        "title": "유기 경위와 지속성",
+        "requires": [
+          "G2-KP1",
+          "G2-KP3"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G2-LEGAL",
+        "title": "민법 840조 2호 해당",
+        "requires": [
+          "G2-KP1",
+          "G2-KP2"
+        ],
+        "use_precedents": []
+      }
+    ]
+  },
+  "G3": {
+    "title": "배우자 등의 부당대우",
+    "statutes": [
+      "민법 840조 3호",
+      "민법 842조(적용여부 쟁점)"
+    ],
+    "key_points": [
+      {
+        "id": "G3-KP1",
+        "title": "부당대우 행위(폭행/폭언/학대) 존재",
+        "must": true
+      },
+      {
+        "id": "G3-KP2",
+        "title": "행위의 강도·반복·공포(혼인 지속 곤란성)",
+        "must": true
+      },
+      {
+        "id": "G3-KP3",
+        "title": "객관자료(진단서·신고내역 등)",
+        "must": true
+      }
+    ],
+    "evidence_types": [
+      "상해진단서/정신과 소견서",
+      "112 신고/상담기록",
+      "상처/기물파손 사진",
+      "녹취/메시지"
+    ],
+    "precedents": [
+      "SC-92M1054-1993-06-11"
+    ],
+    "draft_blocks": [
+      {
+        "id": "DB-G3-FACTS",
+        "title": "부당대우 사실관계(빈도/강도/피해)",
+        "requires": [
+          "G3-KP1",
+          "G3-KP2",
+          "G3-KP3"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G3-LEGAL",
+        "title": "민법 840조 3호 해당 및 제척기간 쟁점 정리",
+        "requires": [
+          "G3-KP1",
+          "G3-KP2"
+        ],
+        "use_precedents": [
+          "SC-92M1054-1993-06-11"
+        ]
+      }
+    ]
+  },
+  "G4": {
+    "title": "직계존속에 대한 부당대우",
+    "statutes": [
+      "민법 840조 4호"
+    ],
+    "key_points": [
+      {
+        "id": "G4-KP1",
+        "title": "피해자가 원고의 직계존속임",
+        "must": true
+      },
+      {
+        "id": "G4-KP2",
+        "title": "부당대우(학대/폭언/폭행) 존재",
+        "must": true
+      },
+      {
+        "id": "G4-KP3",
+        "title": "혼인파탄에 중대한 영향",
+        "must": true
+      }
+    ],
+    "evidence_types": [
+      "부모 진술서/목격자 진술",
+      "진료기록/진단서",
+      "녹취/메시지",
+      "사진"
+    ],
+    "precedents": [],
+    "draft_blocks": [
+      {
+        "id": "DB-G4-FACTS",
+        "title": "직계존속 부당대우 사실관계",
+        "requires": [
+          "G4-KP1",
+          "G4-KP2",
+          "G4-KP3"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G4-LEGAL",
+        "title": "민법 840조 4호 해당",
+        "requires": [
+          "G4-KP1",
+          "G4-KP2"
+        ],
+        "use_precedents": []
+      }
+    ]
+  },
+  "G5": {
+    "title": "3년 이상 생사불명",
+    "statutes": [
+      "민법 840조 5호"
+    ],
+    "key_points": [
+      {
+        "id": "G5-KP1",
+        "title": "3년 이상 생사·소재가 불명",
+        "must": true
+      },
+      {
+        "id": "G5-KP2",
+        "title": "수색/송달 시도 등 객관적 확인자료",
+        "must": true
+      }
+    ],
+    "evidence_types": [
+      "주민등록 말소 등본",
+      "출입국 사실증명",
+      "경찰 실종신고",
+      "반송우편/송달불능"
+    ],
+    "precedents": [],
+    "draft_blocks": [
+      {
+        "id": "DB-G5-FACTS",
+        "title": "소재불명 기간 및 수색경위",
+        "requires": [
+          "G5-KP1",
+          "G5-KP2"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G5-LEGAL",
+        "title": "민법 840조 5호 해당",
+        "requires": [
+          "G5-KP1"
+        ],
+        "use_precedents": []
+      }
+    ]
+  },
+  "G6": {
+    "title": "기타 혼인을 계속하기 어려운 중대한 사유",
+    "statutes": [
+      "민법 840조 6호",
+      "민법 842조(적용/예외)"
+    ],
+    "key_points": [
+      {
+        "id": "G6-KP1",
+        "title": "회복불능 파탄(종합사정)",
+        "must": true
+      },
+      {
+        "id": "G6-KP2",
+        "title": "파탄 경위(도박/중독/장기별거/성격갈등 등) 타임라인",
+        "must": true
+      },
+      {
+        "id": "G6-KP3",
+        "title": "유책성(상대/본인) 및 유책주의 예외가능성",
+        "must": false
+      },
+      {
+        "id": "G6-KP4",
+        "title": "제척기간(인지/발생) 또는 사유 지속성",
+        "must": true
+      }
+    ],
+    "evidence_types": [
+      "진료기록(중독/정신과)",
+      "도박빚 독촉장",
+      "별거입증(초본/임대차)",
+      "상담기록",
+      "녹취/메시지"
+    ],
+    "precedents": [
+      "SC-2021M11112-2022-07-28",
+      "SC-2000M1561-2000-12-22"
+    ],
+    "draft_blocks": [
+      {
+        "id": "DB-G6-FACTS",
+        "title": "혼인파탄 경위(종합 타임라인)",
+        "requires": [
+          "G6-KP1",
+          "G6-KP2"
+        ],
+        "use_precedents": []
+      },
+      {
+        "id": "DB-G6-FAULT",
+        "title": "유책주의/예외(유책배우자 이혼청구 관련)",
+        "requires": [
+          "G6-KP3"
+        ],
+        "use_precedents": [
+          "SC-2021M11112-2022-07-28"
+        ]
+      },
+      {
+        "id": "DB-G6-LIMIT",
+        "title": "제척기간/사유 지속성 정리",
+        "requires": [
+          "G6-KP4"
+        ],
+        "use_precedents": [
+          "SC-2000M1561-2000-12-22"
+        ]
+      }
+    ]
+  },
+  "COMMON": {
+    "property_division": {
+      "key_points": [
+        {
+          "id": "PD-KP1",
+          "title": "적극재산/소극재산 목록화",
+          "must": true
+        },
+        {
+          "id": "PD-KP2",
+          "title": "특유재산(상속/증여/혼전재산) 여부 및 기여",
+          "must": false
+        },
+        {
+          "id": "PD-KP3",
+          "title": "명의신탁/차명재산 의심 포인트",
+          "must": false
+        },
+        {
+          "id": "PD-KP4",
+          "title": "기여도(혼인기간/가사·육아/맞벌이 등)",
+          "must": true
+        }
+      ],
+      "precedents": [
+        "SC-92M1054-1993-06-11"
+      ],
+      "draft_blocks": [
+        {
+          "id": "DB-PD-FACTS",
+          "title": "재산목록 및 기여도",
+          "requires": [
+            "PD-KP1",
+            "PD-KP4"
+          ],
+          "use_precedents": []
+        },
+        {
+          "id": "DB-PD-SPECIAL",
+          "title": "특유재산 포함여부/명의신탁 주장 구조",
+          "requires": [
+            "PD-KP2",
+            "PD-KP3"
+          ],
+          "use_precedents": [
+            "SC-92M1054-1993-06-11"
+          ]
+        }
+      ]
+    },
+    "de_facto": {
+      "precedents": [
+        "SC-97M544-551-1998-08-21"
+      ]
+    }
+  }
+}

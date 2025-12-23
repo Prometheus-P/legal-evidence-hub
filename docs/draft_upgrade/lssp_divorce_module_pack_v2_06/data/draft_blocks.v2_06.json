@@ -1,0 +1,129 @@
+[
+  {
+    "block_id": "parties",
+    "title": "당사자 표시",
+    "body_template": "<p>원고: {{plaintiff.name}} ({{plaintiff.addr}})</p><p>피고: {{defendant.name}} ({{defendant.addr}})</p>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [
+      "PERSON"
+    ],
+    "required_evidence_tags": [],
+    "min_citations": 0
+  },
+  {
+    "block_id": "jurisdiction_and_process",
+    "title": "절차 및 관할(조정전치 포함)",
+    "body_template": "<p>본 건은 조정절차를 거쳐야 하는 유형에 해당하므로, 관련 절차에 따라 진행합니다.</p>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [],
+    "required_evidence_tags": [],
+    "min_citations": 0
+  },
+  {
+    "block_id": "relief_requested",
+    "title": "청구취지",
+    "body_template": "<ol><li>원고와 피고는 이혼한다.</li>{{#if claims.ALIMONY}}<li>피고는 원고에게 위자료 {{alimony.amount}}원을 지급하라.</li>{{/if}}{{#if claims.PROPERTY_DIVISION}}<li>피고는 원고에게 재산분할금 {{property.amount}}원을 지급하라.</li>{{/if}}</ol>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [],
+    "required_evidence_tags": [],
+    "min_citations": 0
+  },
+  {
+    "block_id": "facts_timeline_summary",
+    "title": "사실관계 요약(타임라인)",
+    "body_template": "<p>혼인 경위 및 주요 사건의 경과는 다음과 같습니다.</p>{{timeline_table_html}}",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [
+      "DATE_EVENT"
+    ],
+    "required_evidence_tags": [],
+    "min_citations": 1
+  },
+  {
+    "block_id": "ground_analysis_G1",
+    "title": "이혼원인: 부정한 행위(G1)",
+    "body_template": "<p>피고는 혼인 중 제3자와 부정한 행위를 하여 부부의 신뢰관계를 중대하게 훼손하였습니다.</p><p>{{g1_supporting_facts}}</p>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [
+      "G1"
+    ],
+    "required_keypoint_kinds": [
+      "PERSON",
+      "DATE_EVENT"
+    ],
+    "required_evidence_tags": [
+      "CHAT_EXPORT",
+      "CALL_LOG",
+      "PHOTO",
+      "VIDEO",
+      "CARD_STATEMENT",
+      "BANK_TX",
+      "ADMISSION_NOTE",
+      "RECORDING"
+    ],
+    "min_citations": 1
+  },
+  {
+    "block_id": "ground_analysis_G3",
+    "title": "이혼원인: 심히 부당한 대우(G3)",
+    "body_template": "<p>피고는 원고(또는 직계존속)에 대하여 폭행·학대·모욕 등 심히 부당한 대우를 하였습니다.</p><p>{{g3_supporting_facts}}</p>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [
+      "G3"
+    ],
+    "required_keypoint_kinds": [
+      "DATE_EVENT"
+    ],
+    "required_evidence_tags": [
+      "MEDICAL_RECORD",
+      "POLICE_RECORD",
+      "PHOTO",
+      "VIDEO",
+      "RECORDING",
+      "CHAT_EXPORT"
+    ],
+    "min_citations": 1
+  },
+  {
+    "block_id": "limitation_check",
+    "title": "제척기간/기간 요건 점검",
+    "body_template": "<ul>{{#each limitation_notes}}<li>{{this}}</li>{{/each}}</ul>",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [
+      "DATE_EVENT"
+    ],
+    "required_evidence_tags": [],
+    "min_citations": 0
+  },
+  {
+    "block_id": "evidence_plan",
+    "title": "입증방법(증거목록)",
+    "body_template": "<p>입증방법은 다음과 같습니다.</p>{{evidence_list_html}}",
+    "required_claims": [
+      "DIVORCE"
+    ],
+    "required_grounds": [],
+    "required_keypoint_kinds": [],
+    "required_evidence_tags": [],
+    "min_citations": 1
+  }
+]

@@ -1,0 +1,64 @@
+{
+  "version": "2.09",
+  "evidence_type_inference": [
+    {
+      "if_filename_regex": "(카톡|kakao|chat|대화|톡|message).*\\.((zip|txt|html|pdf))$",
+      "set_evidence_type": "CHAT_EXPORT"
+    },
+    {
+      "if_filename_regex": "(통화|call|phone).*\\.((csv|xlsx|pdf))$",
+      "set_evidence_type": "CALL_LOG"
+    },
+    {
+      "if_filename_regex": "(카드|card|명세|statement).*\\.((pdf|xlsx|csv))$",
+      "set_evidence_type": "CARD_STATEMENT"
+    },
+    {
+      "if_filename_regex": "(통장|계좌|bank|거래|tx).*\\.((pdf|xlsx|csv))$",
+      "set_evidence_type": "BANK_TX"
+    },
+    {
+      "if_filename_regex": "(진단|소견|medical|병원).*\\.((pdf|jpg|png))$",
+      "set_evidence_type": "MEDICAL_RECORD"
+    },
+    {
+      "if_filename_regex": "(112|경찰|police|사건|접수).*\\.((pdf|jpg|png))$",
+      "set_evidence_type": "POLICE_RECORD"
+    },
+    {
+      "if_mime_prefix": "image/",
+      "set_evidence_type": "PHOTO"
+    },
+    {
+      "if_mime_prefix": "video/",
+      "set_evidence_type": "VIDEO"
+    },
+    {
+      "if_filename_regex": "(녹취|record|audio).*\\.((m4a|mp3|wav))$",
+      "set_evidence_type": "AUDIO_RECORD"
+    },
+    {
+      "if_filename_regex": "(계약|임대차|등기|contract|deed).*\\.((pdf|jpg|png))$",
+      "set_evidence_type": "CONTRACT"
+    },
+    {
+      "if_filename_regex": "(등본|증명|certificate|공문서).*\\.((pdf|jpg|png))$",
+      "set_evidence_type": "CERTIFICATE"
+    },
+    {
+      "fallback": true,
+      "set_evidence_type": "OTHER"
+    }
+  ],
+  "file_status_mapping": {
+    "미검토": "UNREVIEWED",
+    "검토완료": "REVIEWED",
+    "증거적합": "ADMISSIBLE"
+  },
+  "auto_linking": {
+    "strategy": "evidence_type_to_requirement_items",
+    "only_if_case_has_ground_selected": true,
+    "link_as_suggestion": true,
+    "notes": "Upload된 evidence를 해당 evidence_type을 가진 requirement item 후보로 제안 연결. 최종 SATISFIED는 리뷰(검토완료/증거적합) 이후에만."
+  }
+}

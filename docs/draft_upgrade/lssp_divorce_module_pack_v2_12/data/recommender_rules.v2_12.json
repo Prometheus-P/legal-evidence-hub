@@ -1,0 +1,146 @@
+{
+  "version": "2.12",
+  "description": "Rule-based legal authority + precedent recommendation. Populate authorities/precedents with real data; rules are stable.",
+  "signals": {
+    "grounds": {
+      "G1": {
+        "keywords": [
+          "부정행위",
+          "외도",
+          "상간",
+          "정조의무"
+        ],
+        "boost": 30
+      },
+      "G2": {
+        "keywords": [
+          "악의의 유기",
+          "부양거부",
+          "가출",
+          "동거거부"
+        ],
+        "boost": 25
+      },
+      "G3": {
+        "keywords": [
+          "부당한 대우",
+          "폭행",
+          "폭언",
+          "가정폭력",
+          "학대"
+        ],
+        "boost": 35
+      },
+      "G4": {
+        "keywords": [
+          "직계존속",
+          "부당한 대우",
+          "학대"
+        ],
+        "boost": 25
+      },
+      "G5": {
+        "keywords": [
+          "생사불명",
+          "실종",
+          "3년"
+        ],
+        "boost": 40
+      },
+      "G6": {
+        "keywords": [
+          "중대한 사유",
+          "파탄",
+          "중독",
+          "도박",
+          "알코올"
+        ],
+        "boost": 30
+      }
+    },
+    "keypoints": {
+      "POLICE_CASE": {
+        "boost": 25,
+        "adds_tags": [
+          "police",
+          "dv"
+        ]
+      },
+      "MEDICAL": {
+        "boost": 25,
+        "adds_tags": [
+          "medical",
+          "dv"
+        ]
+      },
+      "ADMISSION": {
+        "boost": 20,
+        "adds_tags": [
+          "admission"
+        ]
+      },
+      "SPENDING": {
+        "boost": 15,
+        "adds_tags": [
+          "finance"
+        ]
+      },
+      "SEPARATION": {
+        "boost": 15,
+        "adds_tags": [
+          "separation"
+        ]
+      },
+      "MISSING": {
+        "boost": 30,
+        "adds_tags": [
+          "missing"
+        ]
+      },
+      "ADDICTION": {
+        "boost": 20,
+        "adds_tags": [
+          "addiction"
+        ]
+      }
+    },
+    "process": {
+      "CONSENSUAL": {
+        "required_authorities": [
+          "CIVIL_834",
+          "CIVIL_836_2"
+        ],
+        "boost": 10
+      },
+      "JUDICIAL": {
+        "required_authorities": [
+          "CIVIL_840",
+          "FAMILY_LIT_50"
+        ],
+        "boost": 10
+      },
+      "DE_FACTO": {
+        "required_authorities": [
+          "CIVIL_839_2"
+        ],
+        "boost": 5
+      }
+    }
+  },
+  "ranking": {
+    "base": {
+      "authority": 50,
+      "precedent": 40
+    },
+    "weights": {
+      "tag_match": 8,
+      "keyword_match": 5,
+      "ground_boost": 1.0,
+      "keypoint_boost": 1.0,
+      "recency": 2
+    }
+  },
+  "explain": {
+    "max_reasons": 5
+  }
+}

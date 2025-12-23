@@ -1,0 +1,42 @@
+{
+  "groups": {
+    "DEADLINE": [
+      "DEADLINE_REPORTING",
+      "DEADLINE_CONFIRMATION_EXPIRES",
+      "LIMITATION_EXPIRED"
+    ],
+    "PROCEDURE": [
+      "MEDIATION_REQUIRED",
+      "COOLING_OFF_PENDING",
+      "APPEARANCE_REQUIRED"
+    ],
+    "EVIDENCE": [
+      "EVIDENCE_G1_GAP",
+      "EVIDENCE_G2_GAP",
+      "EVIDENCE_G3_GAP",
+      "EVIDENCE_G4_GAP",
+      "EVIDENCE_G5_GAP",
+      "EVIDENCE_G6_GAP"
+    ],
+    "DRAFT": [
+      "DRAFT_BLOCK_TODO",
+      "DRAFT_CITATION_MISSING"
+    ],
+    "CHILD": [
+      "CHILD_CUSTODY_PENDING",
+      "CHILD_SUPPORT_PENDING",
+      "CHILD_VISITATION_PENDING",
+      "CHILD_DOC_MISSING"
+    ],
+    "PROPERTY": [
+      "PROPERTY_ASSET_LIST_INCOMPLETE",
+      "PROPERTY_DEBT_LIST_INCOMPLETE",
+      "PROPERTY_SPECIAL_ASSET_CLAIM_NEEDS_EVIDENCE"
+    ]
+  },
+  "penalty_labels": {
+    "EFFECT_LOSS": "효력상실",
+    "ADMIN_FINE": "과태료",
+    "CLAIM_BARRED": "청구기각"
+  }
+}

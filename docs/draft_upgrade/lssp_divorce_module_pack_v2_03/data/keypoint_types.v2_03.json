@@ -1,0 +1,82 @@
+{
+  "version": "v2.03",
+  "types": [
+    {
+      "code": "COMMUNICATION_ADMISSION",
+      "label": "자백/인정 발언",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "COMMUNICATION_THREAT",
+      "label": "협박/모욕 발언",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "VIOLENCE_INJURY",
+      "label": "폭행/상해(진단서 기반)",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "FINANCE_SPEND",
+      "label": "카드/계좌 결제 내역(특정 지출)",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "amount",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "SEPARATION_LEAVE_HOME",
+      "label": "가출/별거 시작",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "CHILD_CARE_COST",
+      "label": "양육비/양육 관련 비용",
+      "required": [
+        "statement",
+        "occurred_at",
+        "actors",
+        "amount",
+        "extract_link"
+      ],
+      "auto_timeline_event": true
+    },
+    {
+      "code": "PROCESS_EVENT",
+      "label": "법원/행정 절차 이벤트(조정기일/판결확정 등)",
+      "required": [
+        "statement",
+        "occurred_at"
+      ],
+      "auto_timeline_event": true
+    }
+  ]
+}
