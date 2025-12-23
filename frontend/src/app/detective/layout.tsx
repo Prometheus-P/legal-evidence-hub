@@ -3,51 +3,54 @@
 /**
  * Detective Portal Layout
  * 003-role-based-ui Feature
+ * Updated: navbar-sidebar-refactoring
  *
  * Layout for the detective portal with field investigation tools.
- * Responsive design with mobile drawer.
- * Uses design system tokens.
+ * Uses PortalSidebar with NavGroup for hierarchical navigation.
  */
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import PortalSidebar, { NavIcons, NavItem, HamburgerIcon } from '@/components/shared/PortalSidebar';
+import { PortalSidebar, NavGroup } from '@/components/shared/PortalSidebar';
 import RoleGuard from '@/components/auth/RoleGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UserRole } from '@/types/user';
-import { logger } from '@/lib/logger';
+import {
+  LayoutDashboard,
+  Briefcase,
+  MessageSquare,
+  Wallet,
+} from 'lucide-react';
 
-// Detective navigation items
-const detectiveNavItems: NavItem[] = [
+// Detective navigation groups
+const detectiveNavGroups: NavGroup[] = [
   {
-    id: 'dashboard',
-    label: '대시보드',
-    href: '/detective/dashboard',
-    icon: <NavIcons.Dashboard />,
-  },
-  {
-    id: 'cases',
-    label: '의뢰 관리',
-    href: '/detective/cases',
-    icon: <NavIcons.Cases />,
-  },
-  {
-    id: 'messages',
-    label: '메시지',
-    href: '/detective/messages',
-    icon: <NavIcons.Messages />,
-    badge: 0,
-  },
-  {
-    id: 'earnings',
-    label: '정산/수익',
-    href: '/detective/earnings',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
+    id: 'main',
+    items: [
+      {
+        id: 'dashboard',
+        label: '대시보드',
+        href: '/detective/dashboard',
+        icon: <LayoutDashboard className="w-5 h-5" />,
+      },
+      {
+        id: 'cases',
+        label: '의뢰 관리',
+        href: '/detective/cases',
+        icon: <Briefcase className="w-5 h-5" />,
+      },
+      {
+        id: 'messages',
+        label: '메시지',
+        href: '/detective/messages',
+        icon: <MessageSquare className="w-5 h-5" />,
+      },
+      {
+        id: 'earnings',
+        label: '정산/수익',
+        href: '/detective/earnings',
+        icon: <Wallet className="w-5 h-5" />,
+      },
+    ],
   },
 ];
 
@@ -59,18 +62,8 @@ export default function DetectiveLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { role } = useRole();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      logger.error('Logout failed', error);
-    }
-  };
 
   const renderContent = () => {
     if (!user || !role) {
@@ -83,57 +76,20 @@ export default function DetectiveLayout({
 
     return (
       <div className="flex min-h-screen bg-[var(--color-bg-secondary)]">
-      {/* Sidebar */}
-      <PortalSidebar
-        role={user.role}
-        userName={user.name}
-        userEmail={user.email}
-        navItems={detectiveNavItems}
-        onLogout={handleLogout}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+        {/* Sidebar */}
+        <PortalSidebar groups={detectiveNavGroups} />
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64 min-h-screen">
-        {/* Top Header */}
-        <header className="sticky top-0 z-10 h-16 bg-white border-b border-[var(--color-border-default)] flex items-center px-4 lg:px-6">
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors mr-2"
-            aria-label="메뉴 열기"
-          >
-            <HamburgerIcon />
-          </button>
+        {/* Main Content */}
+        <main className="flex-1 lg:ml-64 min-h-screen">
+          {/* Mobile header spacing */}
+          <div className="h-16 lg:hidden" />
 
-          <div className="flex-1" />
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Notification bell */}
-            <button
-              className="relative p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="알림"
-            >
-              <svg className="w-5 h-5 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-
-            {/* User menu */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-semibold text-sm">
-                {user.name.slice(0, 2).toUpperCase()}
-              </div>
-            </div>
+          {/* Page Content */}
+          <div className="p-4 lg:p-6">
+            {children}
           </div>
-        </header>
-
-        {/* Page Content */}
-        <div className="p-4 lg:p-6">
-          {children}
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
     );
   };
 
