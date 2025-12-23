@@ -531,15 +531,15 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
             const data = node.data as FlowNodeData;
             switch (data.type) {
               case 'plaintiff':
-                return '#3B82F6';
+                return '#10B981'; // emerald-500
               case 'defendant':
-                return '#EF4444';
+                return '#EC4899'; // pink-500
               case 'third_party':
-                return '#F59E0B';
+                return '#10B981'; // emerald-500
               case 'child':
-                return '#22C55E';
+                return '#0EA5E9'; // sky-500
               case 'family':
-                return '#8B5CF6';
+                return '#9CA3AF'; // gray-400
               default:
                 return '#6B7280';
             }
