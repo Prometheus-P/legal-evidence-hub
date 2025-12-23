@@ -22,8 +22,6 @@ import {
   Calendar,
   MessageSquare,
   CreditCard,
-  Upload,
-  FileText,
 } from 'lucide-react';
 
 // Lawyer navigation groups with hierarchical structure
@@ -42,25 +40,6 @@ const lawyerNavGroups: NavGroup[] = [
         label: '케이스',
         href: '/lawyer/cases',
         icon: <Briefcase className="w-5 h-5" />,
-      },
-    ],
-  },
-  {
-    id: 'work',
-    label: '작업',
-    collapsible: true,
-    items: [
-      {
-        id: 'evidence-upload',
-        label: '증거 업로드',
-        href: '/lawyer/evidence/upload',
-        icon: <Upload className="w-5 h-5" />,
-      },
-      {
-        id: 'drafts',
-        label: '초안 생성',
-        href: '/lawyer/drafts',
-        icon: <FileText className="w-5 h-5" />,
       },
     ],
   },
