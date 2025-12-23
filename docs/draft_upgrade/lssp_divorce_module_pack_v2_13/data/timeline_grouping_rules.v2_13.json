@@ -1,0 +1,40 @@
+{
+  "default_group_order": [
+    "DEADLINE",
+    "PROCEDURE",
+    "FACT",
+    "EVIDENCE",
+    "CONSULTATION",
+    "SYSTEM"
+  ],
+  "collapse_window_minutes": 180,
+  "collapse_keys": [
+    {
+      "category": "EVIDENCE",
+      "event_type": "EVIDENCE_UPLOADED",
+      "key": "meta.storage_folder"
+    },
+    {
+      "category": "FACT",
+      "event_type": "KEYPOINT_APPROVED",
+      "key": "meta.kind"
+    },
+    {
+      "category": "DEADLINE",
+      "event_type": "DEADLINE_DUE",
+      "key": "meta.rule_id"
+    }
+  ],
+  "badges": {
+    "DEADLINE": [
+      "penalty_type",
+      "risk_score"
+    ],
+    "FACT": [
+      "tags"
+    ],
+    "EVIDENCE": [
+      "meta.review_status"
+    ]
+  }
+}

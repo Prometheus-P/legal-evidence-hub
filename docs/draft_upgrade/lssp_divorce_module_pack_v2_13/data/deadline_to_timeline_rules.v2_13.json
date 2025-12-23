@@ -1,0 +1,71 @@
+{
+  "rules": [
+    {
+      "rule_id": "CONSENSUAL_CERT_EXPIRES",
+      "event_type_due": "DEADLINE_DUE",
+      "event_type_overdue": "DEADLINE_OVERDUE",
+      "penalty_type": "EFFECT_LOSS",
+      "title_due": "협의이혼 신고 마감",
+      "title_overdue": "협의이혼 신고 기한 경과(효력상실 위험)",
+      "meta_fields": [
+        "confirmation_issued_at",
+        "report_due_at"
+      ]
+    },
+    {
+      "rule_id": "JUDICIAL_REPORT_DUE",
+      "event_type_due": "DEADLINE_DUE",
+      "event_type_overdue": "DEADLINE_OVERDUE",
+      "penalty_type": "ADMIN_FINE",
+      "title_due": "재판/조정 이혼 신고 마감",
+      "title_overdue": "재판/조정 이혼 신고 기한 경과(과태료 위험)",
+      "meta_fields": [
+        "judgment_final_at",
+        "report_due_at"
+      ]
+    },
+    {
+      "rule_id": "LIMITATION_EXPIRES",
+      "event_type_due": "DEADLINE_DUE",
+      "event_type_overdue": "DEADLINE_OVERDUE",
+      "penalty_type": "CLAIM_BARRED",
+      "title_due": "제소기간 마감(청구 불가 위험)",
+      "title_overdue": "제소기간 경과(청구 기각 위험)",
+      "meta_fields": [
+        "limitation_due_at"
+      ]
+    }
+  ],
+  "risk_scoring": {
+    "base": {
+      "EFFECT_LOSS": 75,
+      "CLAIM_BARRED": 70,
+      "ADMIN_FINE": 35,
+      "NONE": 0
+    },
+    "days_to_due": [
+      {
+        "lte": 0,
+        "add": 25
+      },
+      {
+        "lte": 1,
+        "add": 20
+      },
+      {
+        "lte": 3,
+        "add": 15
+      },
+      {
+        "lte": 10,
+        "add": 10
+      },
+      {
+        "lte": 30,
+        "add": 5
+      }
+    ],
+    "unconfirmed_key_date_add": 10,
+    "max": 100
+  }
+}

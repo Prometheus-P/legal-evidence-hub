@@ -1,0 +1,89 @@
+{
+  "version": "v2.03",
+  "rules": [
+    {
+      "evidence_kind": "KAKAO_CHAT",
+      "suggest_types": [
+        "COMMUNICATION_ADMISSION",
+        "COMMUNICATION_THREAT"
+      ],
+      "track_points": [
+        "발언자",
+        "일시",
+        "핵심 문장",
+        "맥락(앞뒤 5줄)"
+      ],
+      "default_ground_candidates": [
+        "G1",
+        "G2",
+        "G3",
+        "G6"
+      ]
+    },
+    {
+      "evidence_kind": "MEDICAL_CERT",
+      "suggest_types": [
+        "VIOLENCE_INJURY"
+      ],
+      "track_points": [
+        "진단일",
+        "상해 부위",
+        "원인 기재 여부",
+        "치료기간"
+      ],
+      "default_ground_candidates": [
+        "G3",
+        "G4"
+      ]
+    },
+    {
+      "evidence_kind": "CARD_STATEMENT",
+      "suggest_types": [
+        "FINANCE_SPEND"
+      ],
+      "track_points": [
+        "거래일",
+        "가맹점명",
+        "금액",
+        "결제수단"
+      ],
+      "default_ground_candidates": [
+        "G1",
+        "G6"
+      ]
+    },
+    {
+      "evidence_kind": "POLICE_REPORT",
+      "suggest_types": [
+        "VIOLENCE_INJURY"
+      ],
+      "track_points": [
+        "신고일",
+        "사건번호",
+        "출동기록",
+        "처분결과"
+      ],
+      "default_ground_candidates": [
+        "G3",
+        "G4",
+        "G5"
+      ]
+    },
+    {
+      "evidence_kind": "RESIDENCE_PROOF",
+      "suggest_types": [
+        "SEPARATION_LEAVE_HOME"
+      ],
+      "track_points": [
+        "별거 시작일",
+        "주소 변경일",
+        "우편 반송",
+        "임대차 계약"
+      ],
+      "default_ground_candidates": [
+        "G2",
+        "G6"
+      ]
+    }
+  ]
+}

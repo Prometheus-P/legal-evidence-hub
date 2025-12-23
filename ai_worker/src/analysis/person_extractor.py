@@ -7,12 +7,18 @@ PersonExtractor - 텍스트에서 인물 정보 추출
 - 관계 추론
 
 LLM 의존 없이 규칙 기반으로 구현
+
+Note:
+    역할 키워드는 config/role_keywords.yaml에서 관리
+    성씨 목록은 config/role_keywords.yaml의 korean_surnames에서 관리
 """
 
 import re
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Set
 from enum import Enum
+
+from config import ConfigLoader
 
 
 # =============================================================================
@@ -42,8 +48,72 @@ class PersonSide(Enum):
     UNKNOWN = "unknown"
 
 
-# 역할 키워드 → PersonRole 매핑
-ROLE_KEYWORDS: Dict[str, Tuple[PersonRole, PersonSide]] = {
+def _load_role_keywords() -> Dict[str, Tuple[PersonRole, PersonSide]]:
+    """YAML 설정에서 역할 키워드 로드"""
+    config = ConfigLoader.load("role_keywords")
+
+    # PersonRole/PersonSide 문자열 → Enum 매핑
+    role_mapping = {
+        "plaintiff": PersonRole.PLAINTIFF,
+        "defendant": PersonRole.DEFENDANT,
+        "child": PersonRole.CHILD,
+        "plaintiff_parent": PersonRole.PLAINTIFF_PARENT,
+        "defendant_parent": PersonRole.DEFENDANT_PARENT,
+        "relative": PersonRole.RELATIVE,
+        "friend": PersonRole.FRIEND,
+        "colleague": PersonRole.COLLEAGUE,
+        "third_party": PersonRole.THIRD_PARTY,
+        "witness": PersonRole.WITNESS,
+        "unknown": PersonRole.UNKNOWN,
+    }
+    side_mapping = {
+        "plaintiff_side": PersonSide.PLAINTIFF_SIDE,
+        "defendant_side": PersonSide.DEFENDANT_SIDE,
+        "neutral": PersonSide.NEUTRAL,
+        "unknown": PersonSide.UNKNOWN,
+    }
+
+    result = {}
+    # 각 카테고리의 키워드 처리
+    for category_key in [
+        "plaintiff_keywords", "defendant_keywords", "child_keywords",
+        "plaintiff_parent_keywords", "defendant_parent_keywords",
+        "relative_keywords", "third_party_keywords", "social_keywords"
+    ]:
+        category_data = config.get(category_key, {})
+        for keyword, mapping in category_data.items():
+            if isinstance(mapping, dict):
+                role_str = mapping.get("role", "unknown")
+                side_str = mapping.get("side", "unknown")
+                role = role_mapping.get(role_str, PersonRole.UNKNOWN)
+                side = side_mapping.get(side_str, PersonSide.UNKNOWN)
+                result[keyword] = (role, side)
+
+    return result
+
+
+def _load_korean_surnames() -> Set[str]:
+    """YAML 설정에서 한국 성씨 목록 로드"""
+    config = ConfigLoader.load("role_keywords")
+    surnames = config.get("korean_surnames", [])
+    return set(surnames)
+
+
+def _load_anonymized_patterns() -> List[str]:
+    """YAML 설정에서 익명화 패턴 로드"""
+    config = ConfigLoader.load("role_keywords")
+    return config.get("anonymized_patterns", [])
+
+
+def _load_common_words() -> Set[str]:
+    """YAML 설정에서 일반 단어 필터링 목록 로드"""
+    config = ConfigLoader.load("role_keywords")
+    words = config.get("common_words", [])
+    return set(words)
+
+
+# 역할 키워드 → PersonRole 매핑 (하위 호환성 유지)
+ROLE_KEYWORDS: Dict[str, Tuple[PersonRole, PersonSide]] = _load_role_keywords() or {
     # 원고 측
     "의뢰인": (PersonRole.PLAINTIFF, PersonSide.PLAINTIFF_SIDE),
     "원고": (PersonRole.PLAINTIFF, PersonSide.PLAINTIFF_SIDE),
@@ -114,8 +184,8 @@ ROLE_KEYWORDS: Dict[str, Tuple[PersonRole, PersonSide]] = {
     "회사동료": (PersonRole.COLLEAGUE, PersonSide.UNKNOWN),
 }
 
-# 한국 성씨 목록 (상위 빈도)
-KOREAN_SURNAMES = {
+# 한국 성씨 목록 (상위 빈도) - YAML 설정에서 로드
+KOREAN_SURNAMES: Set[str] = _load_korean_surnames() or {
     "김", "이", "박", "최", "정", "강", "조", "윤", "장", "임",
     "한", "오", "서", "신", "권", "황", "안", "송", "류", "전",
     "홍", "고", "문", "양", "손", "배", "백", "허", "유", "남",
@@ -123,8 +193,8 @@ KOREAN_SURNAMES = {
     "진", "나", "지", "엄", "변", "채", "원", "천", "방", "공",
 }
 
-# 익명화 패턴 (OO, XX, ○○ 등)
-ANONYMIZED_PATTERNS = [
+# 익명화 패턴 (OO, XX, ○○ 등) - YAML 설정에서 로드
+ANONYMIZED_PATTERNS: List[str] = _load_anonymized_patterns() or [
     r"[가-힣]O{1,2}",      # 김OO, 이O
     r"[가-힣]○{1,2}",     # 김○○
     r"[가-힣]X{1,2}",      # 김XX
@@ -441,9 +511,9 @@ class PersonExtractor:
         return PersonRole.UNKNOWN, PersonSide.UNKNOWN
 
     def _is_common_word(self, name: str) -> bool:
-        """일반 단어인지 확인"""
-        common_words = {
-            # 일반 명사
+        """일반 단어인지 확인 (YAML 설정에서 로드)"""
+        common_words = _load_common_words() or {
+            # 일반 명사 (fallback)
             "김치", "이상", "박수", "최고", "정리", "강조", "조금",
             "윤리", "장소", "임시", "한국", "오늘", "서울", "신청",
             "권리", "황금", "안녕", "송금", "전화", "홍보", "고민",

@@ -5,15 +5,13 @@ Party Extraction Service - Extract parties and relationships from fact summary u
 
 import json
 import logging
-import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import List, Dict, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.models import PartyNode, PartyRelationship, PartyType, RelationshipType
+from app.db.models import PartyType, RelationshipType
 from app.repositories.party_repository import PartyRepository
 from app.repositories.case_member_repository import CaseMemberRepository
 from app.utils.dynamo import get_case_fact_summary

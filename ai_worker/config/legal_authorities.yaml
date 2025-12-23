@@ -1,0 +1,289 @@
+# 법률 조문 참조
+# Legal Authorities Reference for Document Citation
+#
+# Source: lssp_divorce_module_pack_v2_11/data/law_articles.v2_11.json
+# Version: 2.11
+
+version: "2.11"
+
+# =============================================================================
+# 법률 종류
+# =============================================================================
+law_kinds:
+  STATUTE: "법률"
+  PRECEDENT: "판례"
+  GUIDELINE: "지침"
+
+# =============================================================================
+# 민법 (Civil Code)
+# =============================================================================
+civil_code:
+  STAT-CIV-834:
+    id: "STAT-CIV-834"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제834조"
+    title: "협의상 이혼"
+    summary: "부부의 협의로 이혼할 수 있음을 규정."
+    ground_codes: []
+
+  STAT-CIV-836-2:
+    id: "STAT-CIV-836-2"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제836조의2"
+    title: "이혼의 절차 및 숙려기간"
+    summary: "협의이혼 절차와 자녀 유무에 따른 숙려기간 및 단축/면제 가능성을 규정."
+    ground_codes: []
+
+  STAT-CIV-837:
+    id: "STAT-CIV-837"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제837조"
+    title: "이혼과 자녀의 양육"
+    summary: "이혼 시 자녀의 양육·친권 및 양육비 등 사항을 규정."
+    ground_codes: []
+
+  STAT-CIV-839-2:
+    id: "STAT-CIV-839-2"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제839조의2"
+    title: "재산분할청구권"
+    summary: "이혼 시 재산분할청구권의 범위·기준을 규정."
+    ground_codes: []
+
+  STAT-CIV-840:
+    id: "STAT-CIV-840"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제840조"
+    title: "재판상 이혼원인"
+    summary: "G1~G6에 해당하는 재판상 이혼사유를 규정."
+    ground_codes:
+      - "G1"
+      - "G2"
+      - "G3"
+      - "G4"
+      - "G5"
+      - "G6"
+
+  STAT-CIV-841:
+    id: "STAT-CIV-841"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제841조"
+    title: "제소기간 관련"
+    summary: "특정 이혼사유에 대한 제소기간 규정(서비스에서 '제척기간/제소기간' 경고에 연결)."
+    ground_codes:
+      - "G1"
+      - "G6"
+
+  STAT-CIV-842:
+    id: "STAT-CIV-842"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "민법"
+    article: "제842조"
+    title: "제소기간 관련"
+    summary: "특정 이혼사유에 대한 제소기간 규정(인지일/발생일 기준 계산 로직에 연결)."
+    ground_codes:
+      - "G1"
+      - "G6"
+
+# =============================================================================
+# 가사소송법 (Family Litigation Act)
+# =============================================================================
+family_litigation_act:
+  STAT-FAM-50:
+    id: "STAT-FAM-50"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가사소송법"
+    article: "제50조"
+    title: "조정전치"
+    summary: "재판상 이혼 등 가사사건에서 조정이 선행되어야 하는 원칙(조정전치주의)."
+    ground_codes: []
+
+  STAT-FAM-62:
+    id: "STAT-FAM-62"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가사소송법"
+    article: "제62조"
+    title: "이행명령"
+    summary: "양육비 등 의무 이행 확보를 위한 이행명령."
+    ground_codes: []
+
+  STAT-FAM-64:
+    id: "STAT-FAM-64"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가사소송법"
+    article: "제64조"
+    title: "이행명령 불이행 제재"
+    summary: "이행명령 불이행 시 제재 규정."
+    ground_codes: []
+
+# =============================================================================
+# 가족관계등록법 (Family Registration Act)
+# =============================================================================
+family_registration_act:
+  STAT-FRR-75:
+    id: "STAT-FRR-75"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가족관계의 등록 등에 관한 법률"
+    article: "제75조"
+    title: "신고절차(일반)"
+    summary: "가족관계 등록 신고 절차 전반(이혼 신고 포함) 참고."
+    ground_codes: []
+
+  STAT-FRR-78:
+    id: "STAT-FRR-78"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가족관계의 등록 등에 관한 법률"
+    article: "제78조"
+    title: "신고절차(이혼 등)"
+    summary: "이혼 신고 및 첨부서류 등 절차 참고."
+    ground_codes: []
+
+  STAT-FRR-58:
+    id: "STAT-FRR-58"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가족관계의 등록 등에 관한 법률"
+    article: "제58조"
+    title: "신고 관련"
+    summary: "신고 관련 일반 규정(프로세스/서류 체크리스트에 연결)."
+    ground_codes: []
+
+# =============================================================================
+# 가정폭력특례법 (Domestic Violence Act)
+# =============================================================================
+domestic_violence_act:
+  STAT-DV-29:
+    id: "STAT-DV-29"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가정폭력범죄의 처벌 등에 관한 특례법"
+    article: "제29조"
+    title: "임시조치"
+    summary: "가정폭력 사건에서 임시조치 제도 근거."
+    ground_codes:
+      - "G3"
+
+  STAT-DV-55-2:
+    id: "STAT-DV-55-2"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "가정폭력범죄의 처벌 등에 관한 특례법"
+    article: "제55조의2"
+    title: "피해자보호명령"
+    summary: "피해자 보호명령 제도 근거."
+    ground_codes:
+      - "G3"
+
+# =============================================================================
+# 양육비이행확보법 (Child Support Enforcement Act)
+# =============================================================================
+child_support_act:
+  STAT-CS-21:
+    id: "STAT-CS-21"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "양육비 이행확보 및 지원에 관한 법률"
+    article: "제21조"
+    title: "운전면허 정지 등 제재"
+    summary: "양육비 채무 불이행 제재(면허정지·출국금지·명단공개 등) 근거."
+    ground_codes: []
+
+# =============================================================================
+# 국제사법 (Private International Law)
+# =============================================================================
+private_international_law:
+  STAT-IPL-2:
+    id: "STAT-IPL-2"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "국제사법"
+    article: "제2조"
+    title: "국제재판관할(일반)"
+    summary: "국제적 사건에서의 국제재판관할 일반 규정."
+    ground_codes: []
+
+  STAT-IPL-64:
+    id: "STAT-IPL-64"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "국제사법"
+    article: "제64조"
+    title: "이혼의 준거법"
+    summary: "이혼의 준거법 결정 기준."
+    ground_codes: []
+
+  STAT-IPL-66:
+    id: "STAT-IPL-66"
+    kind: "STATUTE"
+    jurisdiction: "KR"
+    code: "국제사법"
+    article: "제66조"
+    title: "이혼 준거법 보충"
+    summary: "준거법 결정의 보충 규정."
+    ground_codes: []
+
+# =============================================================================
+# Ground → Legal Authority 매핑
+# =============================================================================
+ground_to_authorities:
+  G1:
+    primary:
+      - "STAT-CIV-840"
+    related:
+      - "STAT-CIV-841"
+      - "STAT-CIV-842"
+
+  G2:
+    primary:
+      - "STAT-CIV-840"
+    related: []
+
+  G3:
+    primary:
+      - "STAT-CIV-840"
+    related:
+      - "STAT-DV-29"
+      - "STAT-DV-55-2"
+
+  G4:
+    primary:
+      - "STAT-CIV-840"
+    related: []
+
+  G5:
+    primary:
+      - "STAT-CIV-840"
+    related: []
+
+  G6:
+    primary:
+      - "STAT-CIV-840"
+    related:
+      - "STAT-CIV-841"
+      - "STAT-CIV-842"
+
+# =============================================================================
+# 인용 형식
+# =============================================================================
+citation_format:
+  statute: "{code} {article}"
+  precedent: "{court} {date} 선고 {case_number} {type}"
+  short_form: "{article}"

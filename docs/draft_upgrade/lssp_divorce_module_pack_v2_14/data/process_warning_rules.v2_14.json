@@ -1,0 +1,139 @@
+{
+  "version": "2.14",
+  "principles": [
+    "경고는 '단계 누락'과 '기한 임박/초과'를 분리한다.",
+    "경고는 항상 근거 링크(필드/이벤트/증거/키포인트)를 가져야 한다.",
+    "치명 경고는 상단 고정 배너 + Issues로 승격한다."
+  ],
+  "rules": [
+    {
+      "id": "CNSL_MISSING_CHILD_STATUS",
+      "severity": "HIGH",
+      "when": {
+        "machine": "CONSENSUAL_DIVORCE",
+        "state_in": [
+          "FILED",
+          "COOLING_OFF"
+        ],
+        "expr": "has_minor_child_or_pregnant is null"
+      },
+      "issue_code": "MISSING_INPUT",
+      "message": "협의이혼 숙려기간 산정을 위해 '자녀 유무(임신 포함)'가 필요합니다.",
+      "fix_hint": "자녀 유무를 설정하세요."
+    },
+    {
+      "id": "CNSL_COOLING_OFF_START_MISSING",
+      "severity": "HIGH",
+      "when": {
+        "machine": "CONSENSUAL_DIVORCE",
+        "state_in": [
+          "FILED"
+        ],
+        "expr": "cooling_off_start_at is null"
+      },
+      "issue_code": "MISSING_STEP",
+      "message": "법원의 '이혼 안내일(숙려기간 시작일)'이 입력되지 않았습니다.",
+      "fix_hint": "이혼 안내일을 입력하세요."
+    },
+    {
+      "id": "CNSL_CONFIRMATION_DATE_MISSING",
+      "severity": "MEDIUM",
+      "when": {
+        "machine": "CONSENSUAL_DIVORCE",
+        "state_in": [
+          "CONFIRMATION_SCHEDULED"
+        ],
+        "expr": "confirmation_date is null"
+      },
+      "issue_code": "MISSING_INPUT",
+      "message": "확인기일이 지정되지 않았습니다(알림/기일 관리 불가).",
+      "fix_hint": "확인기일을 입력하세요."
+    },
+    {
+      "id": "CNSL_REPORT_DUE_SOON",
+      "severity": "CRITICAL",
+      "when": {
+        "machine": "CONSENSUAL_DIVORCE",
+        "state_in": [
+          "CONFIRMED"
+        ],
+        "expr": "reported_at is null && now >= report_due_at - 10d"
+      },
+      "issue_code": "DEADLINE_RISK",
+      "message": "협의이혼 신고 기한이 임박했습니다. 기한 경과 시 확인 효력이 상실됩니다.",
+      "fix_hint": "행정관청 신고를 완료하고 '신고일'을 입력하세요."
+    },
+    {
+      "id": "JUDICIAL_LAWSUIT_ATTEMPT_BEFORE_MEDIATION",
+      "severity": "HIGH",
+      "when": {
+        "machine": "JUDICIAL_DIVORCE",
+        "state_in": [
+          "MEDIATION_REQUIRED"
+        ],
+        "expr": "attempted_event == 'FILE_LAWSUIT'"
+      },
+      "issue_code": "PROCEDURE_BLOCKED",
+      "message": "재판상 이혼은 원칙적으로 조정 신청이 선행되어야 합니다(조정전치).",
+      "fix_hint": "조정 신청 단계로 진행하세요."
+    },
+    {
+      "id": "JUDICIAL_FINAL_DATE_MISSING",
+      "severity": "HIGH",
+      "when": {
+        "machine": "JUDICIAL_DIVORCE",
+        "state_in": [
+          "SETTLED",
+          "JUDGMENT_PRONOUNCED"
+        ],
+        "expr": "finalized_at is null"
+      },
+      "issue_code": "MISSING_STEP",
+      "message": "확정일이 입력되지 않아 신고기한 산정/알림이 불가합니다.",
+      "fix_hint": "확정일(조정 성립일 또는 판결 확정일)을 입력하세요."
+    },
+    {
+      "id": "JUDICIAL_REPORT_OVERDUE",
+      "severity": "HIGH",
+      "when": {
+        "machine": "JUDICIAL_DIVORCE",
+        "state_in": [
+          "FINALIZED",
+          "REPORT_OVERDUE"
+        ],
+        "expr": "reported_at is null && now > report_due_at"
+      },
+      "issue_code": "DEADLINE_OVERDUE",
+      "message": "재판상 이혼 신고 기한이 지났습니다. 이혼 효력은 유지되지만 과태료 위험이 있습니다.",
+      "fix_hint": "신고 완료 후 신고일을 입력하세요. 독촉(최고) 수령 여부도 체크하세요."
+    },
+    {
+      "id": "DEFACTO_MISSING_DISSOLUTION_DATE",
+      "severity": "MEDIUM",
+      "when": {
+        "machine": "DE_FACTO_DISSOLUTION",
+        "state_in": [
+          "RELATIONSHIP_ASSERTED"
+        ],
+        "expr": "dissolution_at is null"
+      },
+      "issue_code": "MISSING_INPUT",
+      "message": "사실혼 해소일(합의일/통보 도달일)이 필요합니다.",
+      "fix_hint": "해소일을 입력하세요."
+    },
+    {
+      "id": "INTL_MISSING_PARTY_FACTS",
+      "severity": "MEDIUM",
+      "when": {
+        "machine": "INTERNATIONAL_DIVORCE_ROUTING",
+        "state_in": [
+          "DRAFT"
+        ],
+        "expr": "party_facts_complete != true"
+      },
+      "issue_code": "MISSING_INPUT",
+      "message": "국적/상거소 정보가 부족해 준거법/관할 판단이 불가합니다.",
+      "fix_hint": "당사자 국적과 상거소를 입력하세요."
+    }
+  ]
+}

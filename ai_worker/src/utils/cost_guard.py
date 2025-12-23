@@ -21,6 +21,10 @@ Usage:
 
     # Record usage
     guard.record_usage(case_id, tokens_used=1500, model="gpt-4o")
+
+Note:
+    파일/비용 제한은 config/limits.yaml에서 관리
+    모델 비용은 config/models.yaml에서 관리
 """
 
 import os
@@ -29,6 +33,8 @@ from enum import Enum
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, Tuple
 from dataclasses import dataclass
+
+from config import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +57,50 @@ class FileLimits:
     chunk_size_mb: Optional[float] = None  # For chunked processing
 
 
-# Default file limits from Issue #84 spec
-FILE_LIMITS: Dict[FileType, FileLimits] = {
+# =============================================================================
+# 설정 로드 헬퍼 함수
+# =============================================================================
+
+def _load_file_limits() -> Dict["FileType", FileLimits]:
+    """YAML 설정에서 파일 제한 로드"""
+    config = ConfigLoader.load("limits")
+    file_limits_config = config.get("file_limits", {})
+
+    type_mapping = {
+        "image": FileType.IMAGE,
+        "audio": FileType.AUDIO,
+        "video": FileType.VIDEO,
+        "pdf": FileType.PDF,
+        "text": FileType.TEXT,
+    }
+
+    result = {}
+    for type_str, limits_data in file_limits_config.items():
+        if type_str in type_mapping:
+            result[type_mapping[type_str]] = FileLimits(
+                max_size_mb=limits_data.get("max_size_mb", 10.0),
+                max_duration_sec=limits_data.get("max_duration_sec"),
+                max_pages=limits_data.get("max_pages"),
+                chunk_size_mb=limits_data.get("chunk_size_mb"),
+            )
+
+    return result
+
+
+def _load_model_costs() -> Dict[str, Dict[str, float]]:
+    """YAML 설정에서 모델 비용 로드"""
+    config = ConfigLoader.load("models")
+    return config.get("model_costs", {})
+
+
+def _load_cost_limits_config() -> Dict[str, Any]:
+    """YAML 설정에서 비용 제한 로드"""
+    config = ConfigLoader.load("limits")
+    return config.get("cost_limits", {})
+
+
+# Default file limits from Issue #84 spec (YAML 설정에서 로드)
+FILE_LIMITS: Dict[FileType, FileLimits] = _load_file_limits() or {
     FileType.IMAGE: FileLimits(max_size_mb=10.0),
     FileType.AUDIO: FileLimits(max_size_mb=100.0, max_duration_sec=1800, chunk_size_mb=25.0),
     FileType.VIDEO: FileLimits(max_size_mb=500.0, max_duration_sec=3600, chunk_size_mb=50.0),
@@ -61,9 +109,9 @@ FILE_LIMITS: Dict[FileType, FileLimits] = {
 }
 
 
-# Cost estimates per model (USD per 1K tokens)
-MODEL_COSTS = {
-    # OpenAI
+# Cost estimates per model (USD per 1K tokens) - YAML 설정에서 로드
+MODEL_COSTS = _load_model_costs() or {
+    # OpenAI (fallback)
     "gpt-4o": {"input": 0.005, "output": 0.015},
     "gpt-4o-mini": {"input": 0.00015, "output": 0.0006},
     "gpt-4-turbo": {"input": 0.01, "output": 0.03},
@@ -122,21 +170,39 @@ class UsageRecord:
     operation: str  # e.g., "embedding", "summarize", "transcribe"
 
 
+def _get_cost_limits_defaults() -> Dict[str, Any]:
+    """YAML 설정에서 비용 제한 기본값 로드"""
+    config = _load_cost_limits_config()
+    return {
+        "max_daily_tokens_per_case": config.get("max_daily_tokens_per_case", 100_000),
+        "max_daily_api_calls_per_case": config.get("max_daily_api_calls_per_case", 100),
+        "max_monthly_cost_per_case_usd": config.get("max_monthly_cost_per_case_usd", 50.0),
+        "max_monthly_cost_per_tenant_usd": config.get("max_monthly_cost_per_tenant_usd", 500.0),
+        "max_daily_tokens_per_tenant": config.get("max_daily_tokens_per_tenant", 1_000_000),
+        "max_concurrent_jobs": config.get("max_concurrent_jobs", 10),
+        "min_delay_between_api_calls_ms": config.get("min_delay_between_api_calls_ms", 100),
+    }
+
+
+# 설정에서 기본값 로드
+_COST_LIMITS_DEFAULTS = _get_cost_limits_defaults()
+
+
 @dataclass
 class CostLimits:
-    """Cost and rate limits configuration"""
+    """Cost and rate limits configuration (YAML 설정에서 기본값 로드)"""
     # Per-case limits
-    max_daily_tokens_per_case: int = 100_000
-    max_daily_api_calls_per_case: int = 100
-    max_monthly_cost_per_case_usd: float = 50.0
+    max_daily_tokens_per_case: int = _COST_LIMITS_DEFAULTS.get("max_daily_tokens_per_case", 100_000)
+    max_daily_api_calls_per_case: int = _COST_LIMITS_DEFAULTS.get("max_daily_api_calls_per_case", 100)
+    max_monthly_cost_per_case_usd: float = _COST_LIMITS_DEFAULTS.get("max_monthly_cost_per_case_usd", 50.0)
 
     # Per-tenant limits
-    max_monthly_cost_per_tenant_usd: float = 500.0
-    max_daily_tokens_per_tenant: int = 1_000_000
+    max_monthly_cost_per_tenant_usd: float = _COST_LIMITS_DEFAULTS.get("max_monthly_cost_per_tenant_usd", 500.0)
+    max_daily_tokens_per_tenant: int = _COST_LIMITS_DEFAULTS.get("max_daily_tokens_per_tenant", 1_000_000)
 
     # Global rate limits
-    max_concurrent_jobs: int = 10
-    min_delay_between_api_calls_ms: int = 100
+    max_concurrent_jobs: int = _COST_LIMITS_DEFAULTS.get("max_concurrent_jobs", 10)
+    min_delay_between_api_calls_ms: int = _COST_LIMITS_DEFAULTS.get("min_delay_between_api_calls_ms", 100)
 
 
 class CostGuard:

@@ -138,7 +138,7 @@ class TestGetEmbedding:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -170,7 +170,7 @@ class TestGetEmbedding:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -188,7 +188,7 @@ class TestGetEmbedding:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_client.embeddings.create.side_effect = Exception("API Error")
         
         with patch('src.utils.embeddings._get_client', return_value=mock_client):
@@ -203,7 +203,7 @@ class TestGetEmbedding:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 3072)]
         mock_client.embeddings.create.return_value = mock_response
@@ -226,7 +226,7 @@ class TestGetEmbeddingWithFallback:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -245,7 +245,7 @@ class TestGetEmbeddingWithFallback:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_client.embeddings.create.side_effect = Exception("API Error")
         
         with patch('src.utils.embeddings._get_client', return_value=mock_client):
@@ -272,7 +272,7 @@ class TestGetEmbeddingWithFallback:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -290,7 +290,7 @@ class TestGetEmbeddingWithFallback:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_client.embeddings.create.side_effect = RuntimeError("Critical failure")
         
         with patch('src.utils.embeddings._get_client', return_value=mock_client):
@@ -311,7 +311,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [
             MagicMock(index=0, embedding=[0.1] * 1536),
@@ -343,7 +343,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [
             MagicMock(index=0, embedding=[0.1] * 1536),
@@ -364,7 +364,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(index=0, embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -384,7 +384,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         
         # First batch response
         mock_response1 = MagicMock()
@@ -410,7 +410,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         # Return in scrambled order to test sorting
         mock_response.data = [
@@ -436,7 +436,7 @@ class TestGetEmbeddingsBatch:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_client.embeddings.create.side_effect = Exception("API Error")
         
         with patch('src.utils.embeddings._get_client', return_value=mock_client):
@@ -489,7 +489,7 @@ class TestEdgeCases:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
@@ -517,7 +517,7 @@ class TestEdgeCases:
         import src.utils.embeddings as emb_module
         emb_module._client = None
         
-        mock_client = MagicMock(spec=OpenAI)
+        mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.data = [MagicMock(embedding=[0.1] * 1536)]
         mock_client.embeddings.create.return_value = mock_response
