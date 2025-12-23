@@ -3,6 +3,7 @@ Draft Generator Module
 RAG 기반 초안 생성
 """
 
+import logging
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 from datetime import datetime, timezone
@@ -22,6 +23,8 @@ from app.middleware import NotFoundError, PermissionError, ValidationError
 
 from .formatter import build_draft_prompt, extract_citations
 from .exporter import generate_docx, generate_pdf
+
+logger = logging.getLogger(__name__)
 
 
 class DraftGenerator:

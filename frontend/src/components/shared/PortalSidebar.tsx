@@ -13,7 +13,6 @@ import { Logo } from './Logo';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
-import { ROLE_DISPLAY_NAMES } from '@/types/user';
 
 export interface NavItem {
   id: string;
@@ -43,7 +42,7 @@ export function PortalSidebar({
 }: PortalSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { role, displayName } = useRole();
+  const { role, roleDisplayName } = useRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     new Set()
@@ -135,7 +134,9 @@ export function PortalSidebar({
     <>
       {/* Logo */}
       <div className="px-4 py-4 border-b border-gray-100">
-        <Logo href="/dashboard" size="md" />
+        <Link href="/dashboard">
+          <Logo size="md" />
+        </Link>
       </div>
 
       {/* Optional Header Content */}
@@ -161,7 +162,7 @@ export function PortalSidebar({
               {user?.name || '사용자'}
             </p>
             <p className="text-xs text-gray-500 truncate">
-              {role ? ROLE_DISPLAY_NAMES[role] : ''}
+              {roleDisplayName}
             </p>
           </div>
         </div>
@@ -190,7 +191,9 @@ export function PortalSidebar({
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-40 px-4 flex items-center justify-between">
-        <Logo href="/dashboard" size="sm" />
+        <Link href="/dashboard">
+          <Logo size="sm" />
+        </Link>
         <div className="flex items-center gap-2">
           <NotificationDropdown />
           <button
@@ -222,7 +225,9 @@ export function PortalSidebar({
         }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-          <Logo href="/dashboard" size="sm" />
+          <Link href="/dashboard">
+            <Logo size="sm" />
+          </Link>
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="p-2 text-gray-600 hover:text-gray-900"
