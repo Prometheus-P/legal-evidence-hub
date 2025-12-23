@@ -42,6 +42,8 @@ from app.utils.qdrant import (
     search_evidence_by_semantic,
 )
 from app.utils.openai_client import generate_chat_completion
+from app.utils.gemini_client import generate_chat_completion_gemini
+from app.core.config import settings
 from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
 from app.services.precedent_service import PrecedentService
@@ -175,13 +177,23 @@ class DraftService:
             style=request.style
         )
 
-        # 6. Generate draft using GPT-4o-mini (faster response, optimized for 30s API Gateway limit)
-        raw_response = generate_chat_completion(
-            messages=prompt_messages,
-            model="gpt-4o-mini",
-            temperature=0.3,
-            max_tokens=2000
-        )
+        # 6. Generate draft using Gemini (faster) or GPT-4o-mini (fallback)
+        if settings.USE_GEMINI_FOR_DRAFT and settings.GEMINI_API_KEY:
+            logger.info("[DRAFT] Using Gemini 2.0 Flash for draft generation")
+            raw_response = generate_chat_completion_gemini(
+                messages=prompt_messages,
+                model=settings.GEMINI_MODEL_CHAT,
+                temperature=0.3,
+                max_tokens=2000
+            )
+        else:
+            logger.info("[DRAFT] Using OpenAI GPT-4o-mini for draft generation")
+            raw_response = generate_chat_completion(
+                messages=prompt_messages,
+                model="gpt-4o-mini",
+                temperature=0.3,
+                max_tokens=2000
+            )
 
         # 7. Process response based on output mode
         if use_json_output:
