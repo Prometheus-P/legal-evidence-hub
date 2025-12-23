@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  FileText,
-  CheckCircle2,
   AlertCircle,
   RefreshCw,
-  Plus,
-  Sparkles,
-  Scale,
   Loader2,
-  ChevronRight,
-  ChevronDown,
-  GitBranch,
   BookOpen,
   HelpCircle,
+  CheckCircle2,
+  Sparkles,
+  Plus,
+  Scale,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  GitBranch,
 } from 'lucide-react';
 import {
   getKeypoints,
@@ -43,14 +43,16 @@ interface LSSPPanelProps {
 }
 
 export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Data states
   const [keypoints, setKeypoints] = useState<Keypoint[]>([]);
   const [legalGrounds, setLegalGrounds] = useState<LegalGround[]>([]);
   const [templates, setTemplates] = useState<DraftTemplate[]>([]);
   const [pipelineStats, setPipelineStats] = useState<PipelineStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
@@ -163,7 +165,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
       <div className="space-y-4">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          <span className="ml-2 text-gray-500 dark:text-gray-400">LSSP 데이터 로딩 중...</span>
+          <span className="ml-2 text-gray-500 dark:text-gray-400">데이터 로딩 중...</span>
         </div>
       </div>
     );
@@ -171,7 +173,7 @@ export function LSSPPanel({ caseId, evidenceCount, onDraftGenerate }: LSSPPanelP
 
   return (
     <div className="space-y-4">
-      {/* Compact Header with Stats */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">법률 전략 분석</h2>

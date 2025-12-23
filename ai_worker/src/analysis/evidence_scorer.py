@@ -1,11 +1,29 @@
 """
 EvidenceScorer Module
 Analyzes messages and assigns evidence value scores (0-10)
+
+Note:
+    스코어링 키워드는 config/scoring_keywords.yaml에서 관리
 """
 
-from typing import List
+from typing import List, Dict, Tuple
 from pydantic import BaseModel, Field, field_validator
 from src.parsers.base import Message
+from config import ConfigLoader
+
+
+def _load_scoring_keywords() -> Dict[str, Tuple[List[str], float]]:
+    """YAML 설정에서 스코어링 키워드 로드"""
+    config = ConfigLoader.load("scoring_keywords")
+    categories = config.get("categories", {})
+
+    result = {}
+    for category, data in categories.items():
+        keywords = data.get("keywords", [])
+        base_score = data.get("base_score", 0.0)
+        result[category] = (keywords, base_score)
+
+    return result
 
 
 class ScoringResult(BaseModel):
@@ -47,9 +65,9 @@ class EvidenceScorer:
     """
 
     def __init__(self):
-        """초기화 - 키워드 사전 구성"""
-        self.keywords = {
-            # 카테고리: (키워드 리스트, 기본 점수)
+        """초기화 - 키워드 사전 구성 (YAML 설정에서 로드)"""
+        self.keywords = _load_scoring_keywords() or {
+            # 카테고리: (키워드 리스트, 기본 점수) - fallback
             "divorce": (["이혼", "소송", "합의서", "조정", "이혼 소송"], 4.0),
             "violence": (["폭행", "폭력", "상해", "병원", "진단서", "멍", "상처"], 8.0),
             "financial": (["재산", "통장", "계좌", "돈", "금전", "재산 분할", "자산"], 5.0),

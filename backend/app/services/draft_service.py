@@ -42,6 +42,8 @@ from app.utils.qdrant import (
     search_evidence_by_semantic,
 )
 from app.utils.openai_client import generate_chat_completion
+from app.utils.gemini_client import generate_chat_completion_gemini
+from app.core.config import settings
 from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
 from app.services.precedent_service import PrecedentService
@@ -158,11 +160,15 @@ class DraftService:
 
         # fact_summary_context already retrieved and validated above (016-draft-fact-summary)
 
-        # 4. Check if template exists for JSON output mode
-        template = get_template_by_type("이혼소장")
-        use_json_output = template is not None
+        # 4. Check if using Gemini (force text output) or OpenAI (can use JSON)
+        use_gemini = settings.USE_GEMINI_FOR_DRAFT and settings.GEMINI_API_KEY
 
-        # 5. Build GPT-4o prompt with RAG context + precedents + consultations + fact summary (Issue #403)
+        # 5. Check if template exists for JSON output mode (only for OpenAI)
+        template = get_template_by_type("이혼소장")
+        use_json_output = template is not None and not use_gemini
+
+        # 6. Build GPT-4o prompt with RAG context + precedents + consultations + fact summary (Issue #403)
+        # For Gemini: force_text_output=True to get readable legal document (not JSON)
         prompt_messages = self.prompt_builder.build_draft_prompt(
             case=case,
             sections=request.sections,
@@ -172,18 +178,29 @@ class DraftService:
             consultation_context=consultation_results,
             fact_summary_context=fact_summary_context,
             language=request.language,
-            style=request.style
+            style=request.style,
+            force_text_output=use_gemini  # Gemini works better with text output
         )
 
-        # 6. Generate draft using GPT-4o-mini (faster response, optimized for 30s API Gateway limit)
-        raw_response = generate_chat_completion(
-            messages=prompt_messages,
-            model="gpt-4o-mini",
-            temperature=0.3,
-            max_tokens=2000
-        )
+        # 7. Generate draft using Gemini (faster) or GPT-4o-mini (fallback)
+        if use_gemini:
+            logger.info("[DRAFT] Using Gemini 2.0 Flash for draft generation")
+            raw_response = generate_chat_completion_gemini(
+                messages=prompt_messages,
+                model=settings.GEMINI_MODEL_CHAT,
+                temperature=0.3,
+                max_tokens=2000
+            )
+        else:
+            logger.info("[DRAFT] Using OpenAI GPT-4o-mini for draft generation")
+            raw_response = generate_chat_completion(
+                messages=prompt_messages,
+                model="gpt-4o-mini",
+                temperature=0.3,
+                max_tokens=2000
+            )
 
-        # 7. Process response based on output mode
+        # 8. Process response based on output mode
         if use_json_output:
             renderer = DocumentRenderer()
             json_doc = renderer.parse_json_response(raw_response)
@@ -195,10 +212,10 @@ class DraftService:
         else:
             draft_text = raw_response
 
-        # 8. Extract citations from RAG results
+        # 9. Extract citations from RAG results
         citations = self.citation_extractor.extract_evidence_citations(evidence_results)
 
-        # 8.5 Extract precedent citations
+        # 9.5 Extract precedent citations
         precedent_citations = self.citation_extractor.extract_precedent_citations(precedent_results)
 
         return DraftPreviewResponse(

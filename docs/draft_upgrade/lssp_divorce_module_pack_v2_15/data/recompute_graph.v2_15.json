@@ -1,0 +1,125 @@
+{
+  "version": "v2_15",
+  "modules": [
+    {
+      "name": "process_engine",
+      "module_version": "v2_14",
+      "depends_on": [],
+      "inputs": [
+        "process_events",
+        "case_dates",
+        "child_info",
+        "now"
+      ],
+      "outputs": [
+        "case_process_state",
+        "deadlines",
+        "process_warnings_seed"
+      ]
+    },
+    {
+      "name": "timeline",
+      "module_version": "v2_13",
+      "depends_on": [
+        "process_engine"
+      ],
+      "inputs": [
+        "case_process_state",
+        "deadlines",
+        "evidence_events"
+      ],
+      "outputs": [
+        "case_timeline_events"
+      ]
+    },
+    {
+      "name": "evidence_keypoints",
+      "module_version": "v2_10",
+      "depends_on": [],
+      "inputs": [
+        "evidence_analysis_results",
+        "manual_tags"
+      ],
+      "outputs": [
+        "case_keypoints",
+        "evidence_tags"
+      ]
+    },
+    {
+      "name": "checklists",
+      "module_version": "v2_09",
+      "depends_on": [
+        "process_engine",
+        "evidence_keypoints"
+      ],
+      "inputs": [
+        "legal_ground",
+        "case_keypoints",
+        "case_process_state"
+      ],
+      "outputs": [
+        "case_checklists"
+      ]
+    },
+    {
+      "name": "legal_recommender",
+      "module_version": "v2_12",
+      "depends_on": [
+        "timeline",
+        "checklists",
+        "evidence_keypoints"
+      ],
+      "inputs": [
+        "case_timeline_events",
+        "case_checklists",
+        "case_keypoints"
+      ],
+      "outputs": [
+        "case_legal_recommendations"
+      ]
+    },
+    {
+      "name": "draft_preview",
+      "module_version": "v2_11",
+      "depends_on": [
+        "legal_recommender"
+      ],
+      "inputs": [
+        "case_legal_recommendations",
+        "case_facts",
+        "user_preferences"
+      ],
+      "outputs": [
+        "draft_sections"
+      ]
+    },
+    {
+      "name": "warnings",
+      "module_version": "v2_14",
+      "depends_on": [
+        "process_engine",
+        "timeline",
+        "checklists"
+      ],
+      "inputs": [
+        "deadlines",
+        "case_timeline_events",
+        "case_checklists",
+        "now"
+      ],
+      "outputs": [
+        "case_warnings",
+        "notifications_plan"
+      ]
+    }
+  ],
+  "topological_order": [
+    "process_engine",
+    "timeline",
+    "evidence_keypoints",
+    "checklists",
+    "legal_recommender",
+    "draft_preview",
+    "warnings"
+  ]
+}

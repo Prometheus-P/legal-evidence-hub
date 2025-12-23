@@ -1,0 +1,73 @@
+{
+  "categories": [
+    "PROCEDURE",
+    "EVIDENCE",
+    "FACT",
+    "DEADLINE",
+    "CONSULTATION",
+    "SYSTEM"
+  ],
+  "event_types": [
+    {
+      "category": "PROCEDURE",
+      "event_type": "STAGE_CHANGED",
+      "severity": 1
+    },
+    {
+      "category": "PROCEDURE",
+      "event_type": "COURT_DATE_SCHEDULED",
+      "severity": 2
+    },
+    {
+      "category": "PROCEDURE",
+      "event_type": "COURT_DATE_MISSED",
+      "severity": 4
+    },
+    {
+      "category": "EVIDENCE",
+      "event_type": "EVIDENCE_UPLOADED",
+      "severity": 1
+    },
+    {
+      "category": "EVIDENCE",
+      "event_type": "EVIDENCE_REVIEWED",
+      "severity": 1
+    },
+    {
+      "category": "EVIDENCE",
+      "event_type": "EVIDENCE_FLAGGED",
+      "severity": 3
+    },
+    {
+      "category": "FACT",
+      "event_type": "KEYPOINT_APPROVED",
+      "severity": 1
+    },
+    {
+      "category": "DEADLINE",
+      "event_type": "DEADLINE_DUE",
+      "severity": 4
+    },
+    {
+      "category": "DEADLINE",
+      "event_type": "DEADLINE_OVERDUE",
+      "severity": 5
+    },
+    {
+      "category": "CONSULTATION",
+      "event_type": "CONSULTATION_SUMMARY",
+      "severity": 1
+    },
+    {
+      "category": "SYSTEM",
+      "event_type": "SYSTEM_NOTE",
+      "severity": 0
+    }
+  ],
+  "penalty_types": [
+    "EFFECT_LOSS",
+    "ADMIN_FINE",
+    "CLAIM_BARRED",
+    "NONE"
+  ]
+}

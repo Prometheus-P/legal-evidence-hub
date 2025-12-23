@@ -488,6 +488,13 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         >
           📎 증거 연결
         </button>
+        {/* 017-party-graph-improvement: AI 자동 추출 상태 표시 */}
+        {partyNodes.some(p => p.is_auto_extracted) && (
+          <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg shadow dark:shadow-neutral-900/50 text-sm font-medium flex items-center gap-1.5">
+            <span>🤖</span>
+            <span>AI 추출 {partyNodes.filter(p => p.is_auto_extracted).length}명</span>
+          </div>
+        )}
       </div>
 
       {/* Save status */}
@@ -524,15 +531,15 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
             const data = node.data as FlowNodeData;
             switch (data.type) {
               case 'plaintiff':
-                return '#3B82F6';
+                return '#10B981'; // emerald-500
               case 'defendant':
-                return '#EF4444';
+                return '#EC4899'; // pink-500
               case 'third_party':
-                return '#F59E0B';
+                return '#10B981'; // emerald-500
               case 'child':
-                return '#22C55E';
+                return '#0EA5E9'; // sky-500
               case 'family':
-                return '#8B5CF6';
+                return '#9CA3AF'; // gray-400
               default:
                 return '#6B7280';
             }

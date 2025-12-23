@@ -4,8 +4,9 @@ Implements Repository pattern per BACKEND_SERVICE_REPOSITORY_GUIDE.md
 """
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List, Optional
-from app.db.models import PartyNode, PartyType
+from app.db.models import PartyNode, PartyRelationship, PartyType, RelationshipType
 from datetime import datetime, timezone
 import uuid
 
@@ -129,3 +130,112 @@ class PartyRepository:
             .filter(PartyNode.case_id == case_id)
             .count()
         )
+
+    # ============================================
+    # 017-party-graph-improvement: Extended methods for party extraction
+    # ============================================
+
+    def get_parties_by_case(self, case_id: str) -> List[PartyNode]:
+        """Alias for get_all_for_case - used by extraction service"""
+        return self.get_all_for_case(case_id)
+
+    def create_party(
+        self,
+        case_id: str,
+        party_type: PartyType,
+        name: str,
+        alias: Optional[str] = None,
+        birth_year: Optional[int] = None,
+        occupation: Optional[str] = None,
+        position_x: int = 0,
+        position_y: int = 0,
+        is_auto_extracted: bool = False,
+        extraction_confidence: Optional[float] = None,
+        source_evidence_id: Optional[str] = None,
+        extra_data: Optional[dict] = None
+    ) -> PartyNode:
+        """
+        Create a new party node with auto-extraction fields
+        """
+        party = PartyNode(
+            id=f"party_{uuid.uuid4().hex[:12]}",
+            case_id=case_id,
+            type=party_type,
+            name=name,
+            alias=alias,
+            birth_year=birth_year,
+            occupation=occupation,
+            position_x=position_x,
+            position_y=position_y,
+            is_auto_extracted=is_auto_extracted,
+            extraction_confidence=extraction_confidence,
+            source_evidence_id=source_evidence_id,
+            extra_data=extra_data or {},
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+
+        self.session.add(party)
+        self.session.flush()
+
+        return party
+
+    def get_relationship_by_parties(
+        self,
+        case_id: str,
+        source_party_id: str,
+        target_party_id: str
+    ) -> Optional[PartyRelationship]:
+        """
+        Get relationship between two parties (in either direction)
+        """
+        return (
+            self.session.query(PartyRelationship)
+            .filter(
+                PartyRelationship.case_id == case_id,
+                or_(
+                    (PartyRelationship.source_party_id == source_party_id) &
+                    (PartyRelationship.target_party_id == target_party_id),
+                    (PartyRelationship.source_party_id == target_party_id) &
+                    (PartyRelationship.target_party_id == source_party_id)
+                )
+            )
+            .first()
+        )
+
+    def create_relationship(
+        self,
+        case_id: str,
+        source_party_id: str,
+        target_party_id: str,
+        relationship_type: RelationshipType,
+        is_auto_extracted: bool = False,
+        extraction_confidence: Optional[float] = None,
+        evidence_text: Optional[str] = None,
+        notes: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> PartyRelationship:
+        """
+        Create a new relationship between parties
+        """
+        relationship = PartyRelationship(
+            id=f"rel_{uuid.uuid4().hex[:12]}",
+            case_id=case_id,
+            source_party_id=source_party_id,
+            target_party_id=target_party_id,
+            type=relationship_type,
+            start_date=start_date,
+            end_date=end_date,
+            notes=notes,
+            is_auto_extracted=is_auto_extracted,
+            extraction_confidence=extraction_confidence,
+            evidence_text=evidence_text,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
+        )
+
+        self.session.add(relationship)
+        self.session.flush()
+
+        return relationship

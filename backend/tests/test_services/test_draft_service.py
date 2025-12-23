@@ -90,8 +90,10 @@ class TestDraftServicePreview:
     @patch("app.services.draft_service.generate_chat_completion")
     @patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic")
     @patch("app.services.draft_service.get_evidence_by_case")
+    @patch("app.services.draft_service.get_case_fact_summary")
     def test_generate_draft_preview_success(
         self,
+        mock_get_fact_summary,
         mock_get_evidence,
         mock_rag_search,
         mock_gpt,
@@ -100,7 +102,7 @@ class TestDraftServicePreview:
         sample_evidence_list,
         sample_rag_results
     ):
-        """Test successful draft preview generation"""
+        """Test successful draft preview generation (016-draft-fact-summary)"""
         # Arrange
         case_id = "case_123abc"
         user_id = "user_456"
@@ -112,6 +114,7 @@ class TestDraftServicePreview:
 
         draft_service.case_repo.get_by_id.return_value = sample_case
         draft_service.member_repo.has_access.return_value = True
+        mock_get_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약입니다."}
         mock_get_evidence.return_value = sample_evidence_list
         mock_rag_search.return_value = sample_rag_results
         mock_gpt.return_value = "생성된 초안 내용입니다."
@@ -122,7 +125,8 @@ class TestDraftServicePreview:
         # Assert
         assert result.case_id == case_id
         assert result.draft_text == "생성된 초안 내용입니다."
-        assert len(result.citations) > 0
+        # Citations may be empty per 016-draft-fact-summary (uses fact summary instead of evidence RAG)
+        assert isinstance(result.citations, list)
         mock_gpt.assert_called_once()
 
     @patch("app.services.draft_service.get_evidence_by_case")
@@ -158,11 +162,11 @@ class TestDraftServicePreview:
         with pytest.raises(PermissionError):
             draft_service.generate_draft_preview(case_id, request, user_id)
 
-    @patch("app.services.draft_service.get_evidence_by_case")
-    def test_generate_draft_preview_no_evidence(
-        self, mock_get_evidence, draft_service, sample_case
+    @patch("app.services.draft_service.get_case_fact_summary")
+    def test_generate_draft_preview_no_fact_summary(
+        self, mock_get_fact_summary, draft_service, sample_case
     ):
-        """Test draft preview when case has no evidence"""
+        """Test draft preview when case has no fact summary (016-draft-fact-summary)"""
         # Arrange
         case_id = "case_123abc"
         user_id = "user_456"
@@ -170,13 +174,13 @@ class TestDraftServicePreview:
 
         draft_service.case_repo.get_by_id.return_value = sample_case
         draft_service.member_repo.has_access.return_value = True
-        mock_get_evidence.return_value = []
+        mock_get_fact_summary.return_value = None
 
         # Act & Assert
         with pytest.raises(ValidationError) as exc_info:
             draft_service.generate_draft_preview(case_id, request, user_id)
 
-        assert "증거가 하나도 없습니다" in str(exc_info.value)
+        assert "사실관계 요약" in str(exc_info.value)
 
 
 class TestDraftServiceRagSearch:

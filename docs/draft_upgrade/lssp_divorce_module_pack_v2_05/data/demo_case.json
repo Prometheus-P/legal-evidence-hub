@@ -1,0 +1,122 @@
+{
+  "case": {
+    "case_id": "00000000-0000-0000-0000-000000000001",
+    "title": "데모 케이스",
+    "created_at": "2025-12-16"
+  },
+  "parties": {
+    "petitioner": {
+      "name": "홍길동",
+      "rrn_masked": "990120-1******",
+      "address": "서울특별시 ...",
+      "phone": "010-0000-0000"
+    },
+    "respondent": {
+      "name": "김철수",
+      "rrn_masked": "990101-1******",
+      "address": "서울특별시 ...",
+      "phone": "010-1111-2222"
+    },
+    "witnesses": [
+      {
+        "name": "증인1",
+        "rrn_masked": "800101-1******",
+        "phone": "010-2222-3333",
+        "address": "서울..."
+      },
+      {
+        "name": "증인2",
+        "rrn_masked": "820202-2******",
+        "phone": "010-4444-5555",
+        "address": "경기..."
+      }
+    ]
+  },
+  "children": [
+    {
+      "name": "자녀1",
+      "birth": "2018-05-01",
+      "custody_parent": "petitioner",
+      "notes": "초등 입학 전"
+    }
+  ],
+  "custody_terms": {
+    "custody": "petitioner",
+    "visitation": "매주 토 14:00~18:00 / 방학 중 1주",
+    "child_support_monthly": 1200000,
+    "payment_day": "매월 25일",
+    "special_costs": "치료비/교육비는 별도 합의"
+  },
+  "assets": [
+    {
+      "type": "부동산",
+      "name": "아파트",
+      "value": 700000000,
+      "owner": "공동",
+      "notes": "전세"
+    },
+    {
+      "type": "예금",
+      "name": "은행예금",
+      "value": 50000000,
+      "owner": "petitioner",
+      "notes": ""
+    }
+  ],
+  "debts": [
+    {
+      "type": "대출",
+      "name": "주택담보대출",
+      "value": 200000000,
+      "debtor": "공동",
+      "notes": ""
+    }
+  ],
+  "evidences": [
+    {
+      "no": "갑1",
+      "type": "CHAT_EXPORT",
+      "summary": "상대방 외도 관련 메시지 발췌",
+      "occurred_at": "2025-09-01",
+      "grounds": [
+        "G1"
+      ],
+      "file": "chat1.txt",
+      "status": "검토완료"
+    },
+    {
+      "no": "갑2",
+      "type": "CARD_STATEMENT",
+      "summary": "숙박업소 결제 내역",
+      "occurred_at": "2025-09-02",
+      "grounds": [
+        "G1"
+      ],
+      "file": "card.pdf",
+      "status": "미검토"
+    },
+    {
+      "no": "갑3",
+      "type": "POLICE_RECORD",
+      "summary": "112 신고 접수증",
+      "occurred_at": "2025-10-12",
+      "grounds": [
+        "G3"
+      ],
+      "file": "112.pdf",
+      "status": "증거적합"
+    }
+  ],
+  "timeline": [
+    {
+      "date": "2025-09-01",
+      "event": "외도 의심 메시지 확인",
+      "type": "ALLEGED_EVENT"
+    },
+    {
+      "date": "2025-10-12",
+      "event": "가정폭력 112 신고",
+      "type": "POLICE_REPORT"
+    }
+  ]
+}

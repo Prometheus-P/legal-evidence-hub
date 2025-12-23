@@ -1,0 +1,304 @@
+# Keypoint 분류 체계
+# Keypoint Taxonomy for Legal Fact Extraction
+#
+# Source: lssp_divorce_module_pack_v2_03/data/keypoint_types.v2_03.json
+# Version: 2.03
+
+version: "2.03"
+
+# =============================================================================
+# Keypoint 타입 정의
+# =============================================================================
+keypoint_types:
+  COMMUNICATION_ADMISSION:
+    code: "COMMUNICATION_ADMISSION"
+    label: "자백/인정 발언"
+    description: "상대방이 특정 행위나 사실을 인정하는 발언"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G1"  # 외도 인정
+      - "G3"  # 부당 대우 인정
+      - "G6"  # 기타 사유 인정
+    evidence_weight: 1.8
+
+  COMMUNICATION_THREAT:
+    code: "COMMUNICATION_THREAT"
+    label: "협박/모욕 발언"
+    description: "협박, 모욕, 욕설 등의 발언"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G3"  # 부당 대우
+      - "G6"  # 기타 사유
+    evidence_weight: 1.5
+
+  VIOLENCE_INJURY:
+    code: "VIOLENCE_INJURY"
+    label: "폭행/상해(진단서 기반)"
+    description: "신체적 폭력으로 인한 상해 사실"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G3"  # 부당 대우 (폭행)
+    evidence_weight: 2.0
+
+  FINANCE_SPEND:
+    code: "FINANCE_SPEND"
+    label: "카드/계좌 결제 내역(특정 지출)"
+    description: "의심스러운 금융 거래 내역"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - amount
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G1"  # 외도 관련 지출
+      - "G6"  # 재정 비행
+    evidence_weight: 1.3
+
+  SEPARATION_LEAVE_HOME:
+    code: "SEPARATION_LEAVE_HOME"
+    label: "가출/별거 시작"
+    description: "배우자가 가정을 떠난 사실"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G2"  # 악의의 유기
+      - "G6"  # 기타 사유 (장기 별거)
+    evidence_weight: 1.5
+
+  CHILD_CARE_COST:
+    code: "CHILD_CARE_COST"
+    label: "양육비/양육 관련 비용"
+    description: "자녀 양육 관련 비용 내역"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - amount
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G2"  # 부양 의무 관련
+      - "G6"  # 양육 분쟁
+    evidence_weight: 1.2
+
+  PROCESS_EVENT:
+    code: "PROCESS_EVENT"
+    label: "법원/행정 절차 이벤트"
+    description: "조정기일, 판결확정 등 법적 절차 이벤트"
+    required_fields:
+      - statement
+      - occurred_at
+    auto_timeline_event: true
+    ground_relevance: []  # 특정 사유와 무관
+    evidence_weight: 1.0
+
+# =============================================================================
+# 추가 Keypoint 타입 (확장)
+# =============================================================================
+  AFFAIR_EVIDENCE:
+    code: "AFFAIR_EVIDENCE"
+    label: "외도 관련 증거"
+    description: "부정행위 정황을 보여주는 증거"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G1"
+    evidence_weight: 1.8
+
+  ECONOMIC_ABUSE:
+    code: "ECONOMIC_ABUSE"
+    label: "경제적 학대"
+    description: "생활비 미지급, 재산 은닉 등"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G2"
+      - "G6"
+    evidence_weight: 1.4
+
+  VERBAL_ABUSE:
+    code: "VERBAL_ABUSE"
+    label: "정서적 학대/폭언"
+    description: "지속적인 폭언, 정서적 학대"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+      - extract_link
+    auto_timeline_event: true
+    ground_relevance:
+      - "G3"
+      - "G6"
+    evidence_weight: 1.3
+
+  RECONCILIATION_ATTEMPT:
+    code: "RECONCILIATION_ATTEMPT"
+    label: "화해 시도"
+    description: "혼인 관계 회복을 위한 시도"
+    required_fields:
+      - statement
+      - occurred_at
+      - actors
+    auto_timeline_event: false
+    ground_relevance: []
+    evidence_weight: 0.5  # 낮은 가중치 (회복 시도는 반대 증거)
+
+# =============================================================================
+# Keypoint → Ground 매핑 규칙
+# =============================================================================
+keypoint_to_ground_rules:
+  # 외도 관련
+  adultery_keywords:
+    - "외도"
+    - "바람"
+    - "불륜"
+    - "상간"
+    ground: "G1"
+
+  # 유기 관련
+  desertion_keywords:
+    - "가출"
+    - "별거"
+    - "연락 두절"
+    - "생활비 미지급"
+    ground: "G2"
+
+  # 폭력/학대 관련
+  violence_keywords:
+    - "폭행"
+    - "폭력"
+    - "상해"
+    - "학대"
+    ground: "G3"
+
+  # 기타 사유 관련
+  irreconcilable_keywords:
+    - "갈등"
+    - "성격 차이"
+    - "소통 부재"
+    ground: "G6"
+
+# =============================================================================
+# 신뢰도 레벨 정의
+# =============================================================================
+confidence_levels:
+  very_high:
+    min_score: 0.9
+    label: "매우 높음"
+    description: "직접 증거, 자백/인정 발언"
+
+  high:
+    min_score: 0.7
+    label: "높음"
+    description: "문서 증거, 복수 정황 증거"
+
+  medium:
+    min_score: 0.5
+    label: "중간"
+    description: "단일 정황 증거"
+
+  low:
+    min_score: 0.3
+    label: "낮음"
+    description: "간접 증거, 추정"
+
+  very_low:
+    min_score: 0.0
+    label: "매우 낮음"
+    description: "불확실한 정보"
+
+# =============================================================================
+# 카테고리별 Keypoint 타입 그룹
+# =============================================================================
+categories:
+  communication:
+    - "COMMUNICATION_ADMISSION"
+    - "COMMUNICATION_THREAT"
+    - "VERBAL_ABUSE"
+    description: "대화/커뮤니케이션 관련"
+
+  violence:
+    - "VIOLENCE_INJURY"
+    description: "폭력/상해 관련"
+
+  finance:
+    - "FINANCE_SPEND"
+    - "CHILD_CARE_COST"
+    - "ECONOMIC_ABUSE"
+    description: "금융/경제 관련"
+
+  separation:
+    - "SEPARATION_LEAVE_HOME"
+    description: "별거/유기 관련"
+
+  affair:
+    - "AFFAIR_EVIDENCE"
+    description: "외도 관련"
+
+  process:
+    - "PROCESS_EVENT"
+    - "RECONCILIATION_ATTEMPT"
+    description: "법적 절차/화해 시도"
+
+# =============================================================================
+# 추출 규칙 설정
+# =============================================================================
+extraction_rules:
+  # 신뢰도 임계값
+  confidence_thresholds:
+    min_extraction: 0.3        # 최소 추출 임계값
+    auto_timeline: 0.5         # 자동 타임라인 추가 임계값
+    high_confidence: 0.7       # 높은 신뢰도 임계값
+
+  # 자동 타임라인 이벤트 대상 타입
+  auto_timeline_events:
+    - "COMMUNICATION_ADMISSION"
+    - "COMMUNICATION_THREAT"
+    - "VIOLENCE_INJURY"
+    - "FINANCE_SPEND"
+    - "SEPARATION_LEAVE_HOME"
+    - "CHILD_CARE_COST"
+    - "PROCESS_EVENT"
+    - "AFFAIR_EVIDENCE"
+    - "ECONOMIC_ABUSE"
+    - "VERBAL_ABUSE"
+
+  # 필수 필드 검증
+  validation:
+    require_occurred_at: true
+    require_statement: true
+    allow_empty_actors: false
+
+  # 추출 한도
+  limits:
+    max_keypoints_per_evidence: 20
+    max_statement_length: 500

@@ -1,0 +1,141 @@
+{
+  "issue_codes": [
+    {
+      "code": "CUSTODY",
+      "label_ko": "친권/양육자",
+      "label_en": "Custody"
+    },
+    {
+      "code": "CHILD_SUPPORT",
+      "label_ko": "양육비",
+      "label_en": "Child Support"
+    },
+    {
+      "code": "PROPERTY",
+      "label_ko": "재산분할",
+      "label_en": "Property Division"
+    },
+    {
+      "code": "ALIMONY",
+      "label_ko": "위자료",
+      "label_en": "Alimony"
+    },
+    {
+      "code": "DV",
+      "label_ko": "가정폭력",
+      "label_en": "Domestic Violence"
+    },
+    {
+      "code": "ADULTERY",
+      "label_ko": "부정행위",
+      "label_en": "Adultery"
+    },
+    {
+      "code": "ABANDONMENT",
+      "label_ko": "악의적 유기",
+      "label_en": "Abandonment"
+    },
+    {
+      "code": "VISITATION",
+      "label_ko": "면접교섭",
+      "label_en": "Visitation"
+    },
+    {
+      "code": "INTERNATIONAL",
+      "label_ko": "국제이혼",
+      "label_en": "International"
+    },
+    {
+      "code": "DOCUMENTS",
+      "label_ko": "서류/행정",
+      "label_en": "Documents"
+    },
+    {
+      "code": "ETC",
+      "label_ko": "기타",
+      "label_en": "Other"
+    }
+  ],
+  "fact_kinds": [
+    "DATE_EVENT",
+    "LOCATION",
+    "PERSON",
+    "RELATION",
+    "ADMISSION",
+    "THREAT",
+    "INSULT",
+    "VIOLENCE",
+    "ABANDONMENT",
+    "SPENDING",
+    "DEBT",
+    "MEDICAL",
+    "POLICE_CASE",
+    "SEPARATION",
+    "MISSING",
+    "ADDICTION",
+    "OTHER"
+  ],
+  "evidence_type_keywords": {
+    "CHAT_EXPORT": [
+      "카톡",
+      "문자",
+      "대화",
+      "메시지"
+    ],
+    "CALL_LOG": [
+      "통화기록",
+      "전화",
+      "발신",
+      "수신"
+    ],
+    "CARD_STATEMENT": [
+      "카드",
+      "결제",
+      "명세",
+      "가맹점"
+    ],
+    "BANK_TX": [
+      "통장",
+      "이체",
+      "송금",
+      "계좌"
+    ],
+    "MEDICAL_RECORD": [
+      "진단서",
+      "병원",
+      "치료",
+      "소견서"
+    ],
+    "POLICE_RECORD": [
+      "112",
+      "경찰",
+      "신고",
+      "접수",
+      "사건번호"
+    ],
+    "CERTIFICATE": [
+      "등본",
+      "증명서",
+      "가족관계",
+      "혼인관계"
+    ],
+    "CONTRACT": [
+      "계약서",
+      "임대차",
+      "합의서",
+      "각서"
+    ],
+    "PHOTO": [
+      "사진",
+      "촬영"
+    ],
+    "VIDEO": [
+      "영상",
+      "동영상"
+    ],
+    "AUDIO": [
+      "녹음",
+      "녹취"
+    ]
+  }
+}

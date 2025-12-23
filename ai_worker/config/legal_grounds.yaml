@@ -1,0 +1,185 @@
+# 민법 840조 이혼 사유 법률 근거
+# Legal Grounds for Divorce (Korean Civil Code Article 840)
+#
+# Source: lssp_divorce_module_pack_v2_01/seeds/legal_grounds.v2_01.json
+# Version: 2.01
+
+version: "2.01"
+
+# =============================================================================
+# 민법 840조 이혼 사유 (G1-G6)
+# =============================================================================
+grounds:
+  G1:
+    code: "G1"
+    name_ko: "부정한 행위(외도)"
+    civil_code_ref: "민법 제840조 제1호"
+    elements:
+      - "정조의무 위반에 해당하는 행위"
+      - "혼인 파탄과의 관련성(정황)"
+    typical_evidence_types:
+      - "문자메시지/카카오톡"
+      - "녹음파일"
+      - "사진/동영상"
+      - "신용카드 내역"
+      - "GPS/위치기록"
+    limitation:
+      type: "제척기간(서비스가정)"
+      known_within_months: 6
+      occurred_within_years: 2
+      needs_legal_review: true
+    notes: "성관계 입증이 필수는 아니며, 정황·교제 사실 입증이 핵심(서비스 가이드)."
+    # LegalCategory 매핑
+    legal_category: "adultery"
+    # Article 840 Tagger 연동용
+    article_840_code: "840-1"
+
+  G2:
+    code: "G2"
+    name_ko: "악의의 유기"
+    civil_code_ref: "민법 제840조 제2호"
+    elements:
+      - "정당한 이유 없는 동거/부양/협조 의무 거부"
+      - "지속성"
+    typical_evidence_types:
+      - "주거지 이탈 증거"
+      - "생활비 미지급 증빙"
+      - "통장 내역"
+      - "문자메시지/카카오톡"
+      - "증인 진술서"
+    limitation:
+      type: "명시적 기간 제한 없음(서비스가정)"
+      needs_legal_review: true
+    legal_category: "desertion"
+    article_840_code: "840-2"
+
+  G3:
+    code: "G3"
+    name_ko: "배우자/직계존속의 부당 대우"
+    civil_code_ref: "민법 제840조 제3호"
+    elements:
+      - "심히 부당한 대우(폭행/학대/모욕 등)"
+      - "혼인 유지 곤란"
+    typical_evidence_types:
+      - "진단서/상해사진"
+      - "녹음파일"
+      - "112 신고기록"
+      - "문자메시지/카카오톡"
+      - "CCTV 영상"
+    limitation:
+      type: "명시적 기간 제한 없음(서비스가정)"
+      needs_legal_review: true
+    legal_category: "mistreatment_by_inlaws"
+    article_840_code: "840-3"
+
+  G4:
+    code: "G4"
+    name_ko: "자기 직계존속에 대한 부당 대우"
+    civil_code_ref: "민법 제840조 제4호"
+    elements:
+      - "자기 직계존속이 배우자로부터 심히 부당한 대우"
+    typical_evidence_types:
+      - "진단서/상해사진"
+      - "녹음파일"
+      - "증인 진술서"
+      - "문자메시지/카카오톡"
+    limitation:
+      type: "명시적 기간 제한 없음(서비스가정)"
+      needs_legal_review: true
+    legal_category: "harm_to_own_parents"
+    article_840_code: "840-4"
+
+  G5:
+    code: "G5"
+    name_ko: "3년 이상 생사 불명"
+    civil_code_ref: "민법 제840조 제5호"
+    elements:
+      - "생사 불명 상태 3년 지속"
+    typical_evidence_types:
+      - "실종신고서"
+      - "경찰 수사기록"
+      - "주민등록 말소 증명"
+      - "가족관계증명서"
+    limitation:
+      type: "요건 충족 시점(3년) 이후 청구 가능(서비스가정)"
+      needs_legal_review: true
+    legal_category: "unknown_whereabouts"
+    article_840_code: "840-5"
+
+  G6:
+    code: "G6"
+    name_ko: "기타 중대 사유(혼인 유지 불가)"
+    civil_code_ref: "민법 제840조 제6호"
+    elements:
+      - "혼인 관계 회복 불능 상태"
+      - "구체 사유(중독/장기별거/반복 갈등 등)"
+    typical_evidence_types:
+      - "녹음파일"
+      - "문자메시지/카카오톡"
+      - "진단서(정신과 등)"
+      - "통장 내역"
+      - "증인 진술서"
+    limitation:
+      type: "제척기간(서비스가정)"
+      known_within_months: 6
+      occurred_within_years: 2
+      needs_legal_review: true
+    legal_category: "irreconcilable_differences"
+    article_840_code: "840-6"
+
+# =============================================================================
+# 코드 매핑 (기존 코드 체계와 호환용)
+# =============================================================================
+code_mappings:
+  # Article 840 Code → Ground Code
+  article_840_to_ground:
+    "840-1": "G1"
+    "840-2": "G2"
+    "840-3": "G3"
+    "840-4": "G4"
+    "840-5": "G5"
+    "840-6": "G6"
+    "DOMESTIC_VIOLENCE": "G3"  # 가정폭력은 G3에 해당
+    "FINANCIAL": "G6"          # 재정 비행은 G6에 해당
+
+  # LegalCategory → Ground Code
+  legal_category_to_ground:
+    "adultery": "G1"
+    "desertion": "G2"
+    "mistreatment_by_inlaws": "G3"
+    "harm_to_own_parents": "G4"
+    "unknown_whereabouts": "G5"
+    "irreconcilable_differences": "G6"
+    "domestic_violence": "G3"
+    "financial_misconduct": "G6"
+    "general": "G6"
+
+# =============================================================================
+# 증거 유형별 증명력 등급
+# =============================================================================
+evidence_strength:
+  direct_evidence:
+    description: "직접 증거 (높은 증명력)"
+    types:
+      - "사진/동영상"
+      - "녹음파일"
+      - "CCTV 영상"
+      - "진단서"
+    weight: 2.0
+
+  documentary_evidence:
+    description: "문서 증거 (중간 증명력)"
+    types:
+      - "문자메시지/카카오톡"
+      - "통장 내역"
+      - "신용카드 내역"
+      - "경찰 신고기록"
+    weight: 1.5
+
+  circumstantial_evidence:
+    description: "정황 증거 (보조적 증명력)"
+    types:
+      - "증인 진술서"
+      - "GPS/위치기록"
+      - "일반 문서"
+    weight: 1.0

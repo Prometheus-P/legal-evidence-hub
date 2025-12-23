@@ -1,0 +1,223 @@
+# 초안 블록 템플릿
+# Draft Block Templates for Document Generation
+#
+# Source: lssp_divorce_module_pack_v2_04/data/draft_blocks.v2_04.json
+# Version: 2.04
+
+version: "2.04"
+
+# =============================================================================
+# 블록 태그 정의
+# =============================================================================
+block_tags:
+  HEADER: "표지/당사자 표시"
+  RELIEF: "청구취지"
+  FACTS: "사실관계"
+  PROCEDURE: "절차 관련"
+  ATTACHMENTS: "첨부서류"
+
+# =============================================================================
+# 초안 블록 정의
+# =============================================================================
+blocks:
+  COMMON_HEADER:
+    id: "COMMON_HEADER"
+    label: "표지/당사자 표시(공통)"
+    block_tag: "HEADER"
+    template: |
+      [사건] {case_title}
+      [원고] {plaintiff_name}  (주소: {plaintiff_addr})
+      [피고] {defendant_name}  (주소: {defendant_addr})
+    required_keypoint_types: []
+    required_evidence_tags: []
+    conditions: null
+    legal_refs: []
+
+  PETITION_INTRO:
+    id: "PETITION_INTRO"
+    label: "청구취지(공통)"
+    block_tag: "RELIEF"
+    template: |
+      1. 원고와 피고는 이혼한다.
+      2. (자녀가 있는 경우) 친권자 및 양육비는 아래 기재와 같이 정한다.
+      3. 소송비용은 피고의 부담으로 한다.
+      라는 판결을 구합니다.
+    required_keypoint_types: []
+    required_evidence_tags: []
+    conditions: null
+    legal_refs:
+      - code: "CIVIL_840"
+        label: "민법 제840조"
+
+  FACTS_G1_AFFAIR:
+    id: "FACTS_G1_AFFAIR"
+    label: "사실관계 — 부정행위(G1) 핵심 서술"
+    block_tag: "FACTS"
+    template: |
+      피고는 {occurred_at}경 제3자와의 부정한 행위를 통해 혼인관계를 파탄시켰습니다.
+      - 구체적 정황: {statement}
+    required_keypoint_types:
+      - "COMMUNICATION_ADMISSION"
+      - "COHABITATION_EVIDENCE"
+      - "FINANCIAL_SPEND_PATTERN"
+    required_evidence_tags:
+      - "카톡/문자"
+      - "통화기록"
+      - "카드내역"
+      - "사진/영상"
+    conditions: "ground_codes contains 'G1'"
+    legal_refs:
+      - code: "CIVIL_840_G1"
+        label: "민법 제840조 제1호(부정행위)"
+
+  LIMITATION_G1:
+    id: "LIMITATION_G1"
+    label: "제척기간 주장/정리(G1/G6)"
+    block_tag: "PROCEDURE"
+    template: |
+      본 사유는 원고가 이를 안 날({known_date})로부터 6개월 및 사유가 있은 날({occurred_at})로부터 2년 이내 제기된 청구입니다.
+    required_keypoint_types:
+      - "DATE_KNOWN"
+      - "DATE_OCCURRED"
+    required_evidence_tags: []
+    conditions: "ground_codes overlaps ['G1','G6']"
+    legal_refs:
+      - code: "CIVIL_841_842"
+        label: "민법 제841~842조(제소기간)"
+
+  FACTS_G3_VIOLENCE:
+    id: "FACTS_G3_VIOLENCE"
+    label: "사실관계 — 폭행/부당대우(G3)"
+    block_tag: "FACTS"
+    template: |
+      피고는 원고에게 반복적인 폭언·폭행 등 심히 부당한 대우를 하였습니다.
+      - 진단/신고 등: {statement}
+    required_keypoint_types:
+      - "MEDICAL_DIAGNOSIS"
+      - "POLICE_REPORT"
+      - "PHYSICAL_INJURY_PHOTO"
+    required_evidence_tags:
+      - "진단서"
+      - "112/경찰"
+      - "사진/영상"
+    conditions: "ground_codes contains 'G3'"
+    legal_refs:
+      - code: "CIVIL_840_G3"
+        label: "민법 제840조 제3호(부당대우)"
+
+  FACTS_G2_DESERTION:
+    id: "FACTS_G2_DESERTION"
+    label: "사실관계 — 악의의 유기(G2)"
+    block_tag: "FACTS"
+    template: |
+      피고는 {occurred_at}경부터 정당한 이유 없이 가정을 이탈하여 동거·부양·협조 의무를 거부하고 있습니다.
+      - 구체적 상황: {statement}
+    required_keypoint_types:
+      - "SEPARATION_LEAVE_HOME"
+      - "ECONOMIC_ABUSE"
+    required_evidence_tags:
+      - "주거지 이탈 증거"
+      - "생활비 미지급 증빙"
+    conditions: "ground_codes contains 'G2'"
+    legal_refs:
+      - code: "CIVIL_840_G2"
+        label: "민법 제840조 제2호(악의의 유기)"
+
+  FACTS_G6_IRRECONCILABLE:
+    id: "FACTS_G6_IRRECONCILABLE"
+    label: "사실관계 — 기타 중대사유(G6)"
+    block_tag: "FACTS"
+    template: |
+      원고와 피고 사이에는 다음과 같은 사정으로 혼인관계가 회복할 수 없을 정도로 파탄되었습니다.
+      - 구체적 사유: {statement}
+    required_keypoint_types:
+      - "COMMUNICATION_ADMISSION"
+      - "RECONCILIATION_ATTEMPT"
+    required_evidence_tags:
+      - "카톡/문자"
+      - "녹음파일"
+    conditions: "ground_codes contains 'G6'"
+    legal_refs:
+      - code: "CIVIL_840_G6"
+        label: "민법 제840조 제6호(기타 중대사유)"
+
+  RELIEF_CHILD_SUPPORT:
+    id: "RELIEF_CHILD_SUPPORT"
+    label: "양육비 산정 및 청구"
+    block_tag: "RELIEF"
+    template: |
+      미성년 자녀 {child_count}명에 대한 양육비는 표준양육비 및 가산·감산 요소를 반영하여 월 {support_amount}원을 {pay_day}일 지급하도록 구합니다.
+    required_keypoint_types:
+      - "CHILD_INFO"
+      - "INCOME_SUMMARY"
+    required_evidence_tags:
+      - "소득증빙"
+    conditions: "has_children == true"
+    legal_refs:
+      - code: "CIVIL_837"
+        label: "민법 제837조(양육비)"
+
+  RELIEF_PROPERTY_DIVISION:
+    id: "RELIEF_PROPERTY_DIVISION"
+    label: "재산분할 청구"
+    block_tag: "RELIEF"
+    template: |
+      원고와 피고의 혼인 중 형성된 공동재산에 대하여 다음과 같이 분할을 청구합니다.
+      - 분할 대상 재산: {property_list}
+      - 청구 비율: 원고 {plaintiff_ratio}%, 피고 {defendant_ratio}%
+    required_keypoint_types:
+      - "PROPERTY_LIST"
+      - "INCOME_SUMMARY"
+    required_evidence_tags:
+      - "부동산등기부등본"
+      - "통장내역"
+      - "재산세과세증명"
+    conditions: "has_property_claim == true"
+    legal_refs:
+      - code: "CIVIL_839_2"
+        label: "민법 제839조의2(재산분할청구권)"
+
+  ATTACHMENTS_EVIDENCE_LIST:
+    id: "ATTACHMENTS_EVIDENCE_LIST"
+    label: "첨부서류/증거목록 안내"
+    block_tag: "ATTACHMENTS"
+    template: |
+      [첨부]
+      1. 증거목록 1부
+      2. 가족관계증명서/혼인관계증명서 각 1부
+      3. 기타 증거자료(상세는 증거목록 참조)
+    required_keypoint_types: []
+    required_evidence_tags: []
+    conditions: null
+    legal_refs: []
+
+# =============================================================================
+# Ground → Block 매핑
+# =============================================================================
+ground_to_blocks:
+  G1:
+    - "FACTS_G1_AFFAIR"
+    - "LIMITATION_G1"
+  G2:
+    - "FACTS_G2_DESERTION"
+  G3:
+    - "FACTS_G3_VIOLENCE"
+  G4:
+    - "FACTS_G4_INLAW"  # 필요시 추가
+  G5:
+    - "FACTS_G5_MISSING"  # 필요시 추가
+  G6:
+    - "FACTS_G6_IRRECONCILABLE"
+    - "LIMITATION_G1"
+
+# =============================================================================
+# 블록 순서 정의
+# =============================================================================
+block_order:
+  - "COMMON_HEADER"
+  - "PETITION_INTRO"
+  - "FACTS_*"  # G1~G6 사실관계 블록들
+  - "LIMITATION_*"
+  - "RELIEF_CHILD_SUPPORT"
+  - "RELIEF_PROPERTY_DIVISION"
+  - "ATTACHMENTS_EVIDENCE_LIST"

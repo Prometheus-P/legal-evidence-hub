@@ -64,13 +64,34 @@ describe('DraftGenerationModal Accessibility', () => {
     it('should not render when isOpen is false', () => {
       render(<DraftGenerationModal {...defaultProps} isOpen={false} />);
 
-      expect(screen.queryByText('초안 생성')).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('should render modal title when isOpen is true', () => {
+    it('should render modal when isOpen is true', () => {
       render(<DraftGenerationModal {...defaultProps} />);
 
-      expect(screen.getByRole('heading', { name: '초안 생성' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  describe('Fact summary status', () => {
+    it('should show warning when hasFactSummary is false', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={false} />);
+
+      expect(screen.getByText('사실관계 요약이 필요합니다')).toBeInTheDocument();
+    });
+
+    it('should show ready message when hasFactSummary is true', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={true} />);
+
+      expect(screen.getByText('사실관계 요약이 준비되었습니다')).toBeInTheDocument();
+    });
+
+    it('should disable generate button when hasFactSummary is false', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={false} />);
+
+      const generateButton = screen.getByRole('button', { name: /초안 생성/i });
+      expect(generateButton).toBeDisabled();
     });
   });
 });
