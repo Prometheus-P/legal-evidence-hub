@@ -1,0 +1,103 @@
+[
+  {
+    "id": "PETITION_DIVORCE",
+    "label": "이혼소장(재판상)",
+    "version": "v2.04",
+    "sections": [
+      {
+        "key": "header",
+        "label": "표지",
+        "blocks": [
+          "COMMON_HEADER"
+        ]
+      },
+      {
+        "key": "relief",
+        "label": "청구취지",
+        "blocks": [
+          "PETITION_INTRO",
+          "RELIEF_CHILD_SUPPORT"
+        ]
+      },
+      {
+        "key": "facts",
+        "label": "사실관계",
+        "blocks": [
+          "FACTS_G1_AFFAIR",
+          "FACTS_G3_VIOLENCE"
+        ]
+      },
+      {
+        "key": "procedure",
+        "label": "절차/기간",
+        "blocks": [
+          "LIMITATION_G1"
+        ]
+      },
+      {
+        "key": "attachments",
+        "label": "첨부",
+        "blocks": [
+          "ATTACHMENTS_EVIDENCE_LIST"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "MEDIATION_APP",
+    "label": "이혼조정신청서(조정전치)",
+    "version": "v2.04",
+    "sections": [
+      {
+        "key": "header",
+        "label": "표지",
+        "blocks": [
+          "COMMON_HEADER"
+        ]
+      },
+      {
+        "key": "relief",
+        "label": "조정취지",
+        "blocks": [
+          "PETITION_INTRO"
+        ]
+      },
+      {
+        "key": "facts",
+        "label": "사실관계",
+        "blocks": [
+          "FACTS_G1_AFFAIR",
+          "FACTS_G3_VIOLENCE"
+        ]
+      },
+      {
+        "key": "attachments",
+        "label": "첨부",
+        "blocks": [
+          "ATTACHMENTS_EVIDENCE_LIST"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EVIDENCE_LIST",
+    "label": "증거목록(자동 생성)",
+    "version": "v2.04",
+    "sections": [
+      {
+        "key": "header",
+        "label": "헤더",
+        "blocks": [
+          "COMMON_HEADER"
+        ]
+      },
+      {
+        "key": "body",
+        "label": "증거목록",
+        "blocks": [
+          "ATTACHMENTS_EVIDENCE_LIST"
+        ]
+      }
+    ]
+  }
+]

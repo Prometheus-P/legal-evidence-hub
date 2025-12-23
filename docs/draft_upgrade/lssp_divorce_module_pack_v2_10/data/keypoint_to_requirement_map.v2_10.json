@@ -1,0 +1,53 @@
+{
+  "version": "v2.10",
+  "maps": [
+    {
+      "ground": "G1",
+      "requirement_item_code": "G1_CHAT_OR_CALL",
+      "accept_if_kinds": [
+        "ADMISSION"
+      ],
+      "min_materiality": 70
+    },
+    {
+      "ground": "G1",
+      "requirement_item_code": "G1_SPENDING",
+      "accept_if_kinds": [
+        "SPENDING"
+      ],
+      "min_materiality": 55
+    },
+    {
+      "ground": "G3",
+      "requirement_item_code": "G3_MEDICAL",
+      "accept_if_kinds": [
+        "MEDICAL"
+      ],
+      "min_materiality": 70
+    },
+    {
+      "ground": "G3",
+      "requirement_item_code": "G3_POLICE",
+      "accept_if_kinds": [
+        "POLICE_CASE"
+      ],
+      "min_materiality": 70
+    },
+    {
+      "ground": "G2",
+      "requirement_item_code": "G2_SEPARATION",
+      "accept_if_kinds": [
+        "SEPARATION"
+      ],
+      "min_materiality": 60
+    },
+    {
+      "ground": "G5",
+      "requirement_item_code": "G5_MISSING_REPORT",
+      "accept_if_kinds": [
+        "POLICE_CASE"
+      ],
+      "min_materiality": 70
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "CONSENSUAL_DIVORCE": [
+    "STAT-CIV-834",
+    "STAT-CIV-836-2",
+    "STAT-FRR-75",
+    "STAT-FRR-78"
+  ],
+  "JUDICIAL_DIVORCE": [
+    "STAT-CIV-840",
+    "STAT-FAM-50",
+    "STAT-FRR-75",
+    "STAT-FRR-78"
+  ],
+  "DOMESTIC_VIOLENCE": [
+    "STAT-DV-29",
+    "STAT-DV-55-2"
+  ],
+  "CHILD_SUPPORT": [
+    "STAT-CIV-837",
+    "STAT-FAM-62",
+    "STAT-FAM-64",
+    "STAT-CS-21"
+  ],
+  "PROPERTY_DIVISION": [
+    "STAT-CIV-839-2"
+  ],
+  "INTERNATIONAL_DIVORCE": [
+    "STAT-IPL-2",
+    "STAT-IPL-64",
+    "STAT-IPL-66"
+  ]
+}

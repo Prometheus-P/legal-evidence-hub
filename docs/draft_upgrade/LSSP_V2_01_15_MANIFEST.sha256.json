@@ -1,0 +1,775 @@
+{
+  "generated_at": "2025-12-17",
+  "packs": [
+    {
+      "zip": "lssp_divorce_module_pack_v2_01.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_01/README.md",
+          "bytes": 1315,
+          "sha256": "e9e9f1093c9fc6c774b094820d83538c1f20dc8b9639230a0b819416faa1de24"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_01/SPEC_DB_SCHEMA_v2_01.md",
+          "bytes": 2901,
+          "sha256": "6711c4a962a4ecf42dd46f513ae9fb12bcb2e9303ba2df6d1f5cf06568337518"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_01/seeds/documents_required.v2_01.json",
+          "bytes": 1578,
+          "sha256": "194324bf715155b69cc2b58abe8f66ffc7c6671d8490972a76d884c073c12690"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_01/seeds/evidence_checklist.v2_01.json",
+          "bytes": 9512,
+          "sha256": "5de7618329652e692c1ee35300327666f32333cc829662614ba728ccb51f2fff"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_01/seeds/legal_grounds.v2_01.json",
+          "bytes": 2306,
+          "sha256": "6d6085b7e11174e9da353d4c159535d3bb3e7b510b832a750e33c97ebad8470a"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_01/seeds/process_timeline.v2_01.json",
+          "bytes": 3781,
+          "sha256": "0c1b49d80b3b67e874e69a44ea666048ceb112d362e1b6783144b849661e68b9"
+        }
+      ],
+      "file_count": 6
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_02.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_02/README.md",
+          "bytes": 987,
+          "sha256": "2ec72e0cf45727081036724b5762b470c49375e586b891953f3dad6bfd1c007c"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_02/data/ground_draft_map.json",
+          "bytes": 9454,
+          "sha256": "1ad42c548f08b3eb4b9ef12ab9a0d017b0e7cd5a9d0ee774822714fea4def243"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_02/data/precedents.json",
+          "bytes": 4288,
+          "sha256": "c70bcacb01f32b3c7e627d8e1fb36cb0382246a811b0a76cbf0ef0e59223b891"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_02/docs/DATA_MODEL.md",
+          "bytes": 2176,
+          "sha256": "cc4aa2d1ac513415d2f86e54eb0df1b655e26ce0a2ac324ca64748fd9f8402db"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_02/docs/DRAFT_MAPPING.md",
+          "bytes": 3543,
+          "sha256": "7f53f9b3b87c7c4d924a1a04a868b85bb4d127f512be428f1d389839184ab1ba"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_02/prompts/draft_snippet_rules.md",
+          "bytes": 1089,
+          "sha256": "5ddd12376c0cfc731a67a918610a7c1e470c1c5a26ca22c295002cf2aef842e9"
+        }
+      ],
+      "file_count": 6
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_03.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_03/README.md",
+          "bytes": 1256,
+          "sha256": "0e9a0a3bf4c07151b9f5ed6a61003a375e4bd4d14e86cc0648fc819c4a52aafd"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/data/extraction_rules.v2_03.json",
+          "bytes": 1697,
+          "sha256": "bafeac7552894a75168fe448d397e421cf183f4533bd2747da857ae63b728106"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/data/keypoint_types.v2_03.json",
+          "bytes": 1765,
+          "sha256": "2c910c66df11fe800586bcf9b80b5ba9aca462107c6e53748ee55118ea2e4cc8"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/docs/API_CONTRACT_v2_03.md",
+          "bytes": 2064,
+          "sha256": "7ce0e54b067237a5c355018c2499dc96014e76fbe1eed5c813448c0219939d68"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/docs/DB_SCHEMA_APPENDIX_v2_03.md",
+          "bytes": 4008,
+          "sha256": "114aa565805394d578b86f0dca441d0515ad51b2a76aeb9ea069d0de39209382"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/docs/KEYPOINT_TRACKING.md",
+          "bytes": 3070,
+          "sha256": "14d5a9936488a76b39871fcc816c91692387e54ce5cdb53ab99eb51cdd8fb8a0"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/prompts/keypoint_suggest.v2_03.md",
+          "bytes": 1082,
+          "sha256": "04b0895fb56aaeadb3b17d4efc939b57edd8783c3ce54c1e2ecfb9a9787fe35e"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_03/tasks/IMPLEMENTATION_CHECKLIST.md",
+          "bytes": 1191,
+          "sha256": "54988d8445e9107bc3c36c601e849771633e747fcdaaae296bdbc07f5431a4ce"
+        }
+      ],
+      "file_count": 8
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_04.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_04/README.md",
+          "bytes": 1546,
+          "sha256": "b8ebdaa6b2be660e35b5e9ddd317990a85f62a2abb6cd3c7f4ea027b6c91e51d"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/data/draft_blocks.v2_04.json",
+          "bytes": 3966,
+          "sha256": "072623214ff3a4246f91d8461a22dc66295245d68b6b5344d0526b133cd28c60"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/data/draft_templates.v2_04.json",
+          "bytes": 1949,
+          "sha256": "9d682e41419acee5faee7f77b48a4373cd316cb94b1314e73839e2fc2a6f3099"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/data/precedent_kb_additions.v2_04.json",
+          "bytes": 1761,
+          "sha256": "1bfec6d7d7a60e15a90ba8b439af8752f5d078623c98a19bad431a9999bfd3bd"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/docs/API_CONTRACT_DRAFTS_v2_04.md",
+          "bytes": 1104,
+          "sha256": "408c4b2a40595a0b76ebda80dd510cd92a7d56671f1e2e8f42d3ad9a6294b42f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/docs/DB_DDL_DRAFTS_v2_04.sql",
+          "bytes": 2785,
+          "sha256": "bcb7b27fe34fc34668e63f5a46c485d844ea3c8a5b0846a21c3036a9a776c6c3"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/docs/DRAFT_ENGINE_SPEC_v2_04.md",
+          "bytes": 3776,
+          "sha256": "211611ab8045aa5f1fd50bc4de58a1b910a7071f307587218acf7bc70e582c5a"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/docs/UI_DETAIL_CASE_DRAFTS_v2_04.md",
+          "bytes": 1450,
+          "sha256": "4618d16687a47fec1097002bb55ab0f3d4d7f90f96b25242ef079687e1b7cabf"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/prompts/draft_generator_v2_04.md",
+          "bytes": 818,
+          "sha256": "33c068069827d8f5a40b0bf2e0b3ca03164ecbe884326eec27ba12b554702d39"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_04/tasks/IMPLEMENTATION_CHECKLIST_v2_04.md",
+          "bytes": 962,
+          "sha256": "d7a7046020f34b68f4529589d8ce6e20b3df39581e88c02c6e574245f1fd3de5"
+        }
+      ],
+      "file_count": 10
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_05.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_05/README_v2_05.md",
+          "bytes": 774,
+          "sha256": "d849c3241270880778a3e228888c9a2bb2c21376a45ad308ec2a68838dc303e0"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/data/demo_case.json",
+          "bytes": 2685,
+          "sha256": "7830ebde95ab1f118e671f0ba2a58b19261b356c035584fce94a94e3fac9d0f8"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/docs/API_CONTRACT_DOCS_v2_05.md",
+          "bytes": 921,
+          "sha256": "4f591cac1782a09a82dde359bf5d6853258152732f4b1d88029bce7c59a2c26c"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/docs/DB_SCHEMA_APPENDIX_v2_05.sql",
+          "bytes": 943,
+          "sha256": "70139912b6a1a68b36575972f3fc7b6b0f05a17e51abb7c50f920a61ef722350"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/docs/DOCUMENT_AUTOGEN_SPEC_v2_05.md",
+          "bytes": 1814,
+          "sha256": "760072f6753509beed5f729f8d59355fd42d50d0074ec3517e10946e46e23faa"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/out/demo_ASSET_INVENTORY.docx",
+          "bytes": 37149,
+          "sha256": "3d62904f9dcb61cde8f224f916074f4513d07c7ac6368fff41f7f716a3c7fc75"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/out/demo_CASE_TIMELINE_SUMMARY.docx",
+          "bytes": 37084,
+          "sha256": "18d7c6a0be212043fa38a645df929535dfd9ea9262d4f350478e193e1280522a"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/out/demo_CHILD_CUSTODY_AGREEMENT.docx",
+          "bytes": 37274,
+          "sha256": "6cc3725280cb8a35dc2d0d35bb1b66bb95067d36af5a156c4c3bc6f7d33ddc06"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/out/demo_CONSENSUAL_INTENT_FORM.docx",
+          "bytes": 37274,
+          "sha256": "0ff160a80221097335c83c9043179a59b0784cd4c920b5e3ec0087c16f1547fb"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/out/demo_EVIDENCE_INDEX.docx",
+          "bytes": 37186,
+          "sha256": "9e1e580f5340f92a1561e4c88c14bbe6163d8bfcd0f0d4d52c2c3bec3668c2e8"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/scripts/docgen_demo.py",
+          "bytes": 628,
+          "sha256": "dbb97e7a38086e79dc1c8d4f2f0ef554276567f1cfc4032418c7e1187e8f9558"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/server_python/app/main.py",
+          "bytes": 190,
+          "sha256": "04f10798247d12dbff834998f16442c5fa64269a423d9014e19e64e3e0972f28"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/server_python/app/routers/documents.py",
+          "bytes": 1602,
+          "sha256": "73f52dda2c7fcd71dfb7ea9e5036cf96f4087003475e0facf006c2f108b79cd0"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_05/server_python/app/services/doc_render.py",
+          "bytes": 6528,
+          "sha256": "1aec0f9bafb12f03a3f4eceffbe878bb7fe2d17118e3e3ea3a84013ea19c7e75"
+        }
+      ],
+      "file_count": 14
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_06.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_06/README.md",
+          "bytes": 1848,
+          "sha256": "1c18b739b9315234008432ff9646b16b8fb54b8e9ca545495bb5312cc4d83e81"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/data/claim_templates.v2_06.json",
+          "bytes": 1483,
+          "sha256": "71b8d769bdca288760947e44e5490f42b762dfe6c12e6c6d6748b29c07a9567f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/data/draft_blocks.v2_06.json",
+          "bytes": 3777,
+          "sha256": "b4bdc7a982f16db78e6685600e2e7ed0f1e6679fc758f2e776f7e0a49b2e5c4e"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/data/legal_refs.v2_06.json",
+          "bytes": 1507,
+          "sha256": "3a681466a2f1b7d9ddaed1eae776ad37b2a49afcd331df995553ab832c67ab93"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/data/precedent_summaries.v2_06.json",
+          "bytes": 860,
+          "sha256": "aabcea22bb3360b8092d162fa4718bb81e97d648aa9970d2c59822dfa9bb38d9"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/docs/API_CONTRACT_DRAFT_BUILDER_v2_06.md",
+          "bytes": 1170,
+          "sha256": "222aaaab4160b9a74cd3c4059f516a10a748366dffa855e7af2d3a810f982715"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/docs/DB_DDL_DRAFT_BUILDER_v2_06.sql",
+          "bytes": 1858,
+          "sha256": "30476f5d27f74284cb18960e1424237304b886cdee4b1d86e8756249b3ca5ae2"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/docs/DRAFT_BLOCKS.md",
+          "bytes": 1044,
+          "sha256": "fd49f1559b064843dcf4093c8d7b1b53ecce3f0b941e5b402ca8a20befb2f26f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/docs/DRAFT_BUILDER_SPEC.md",
+          "bytes": 1321,
+          "sha256": "d7c2d312ad8597cbed10cc289f53d7e8cec697df2449c6bf604f95ff51a2c5ef"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/docs/GUARDRAILS.md",
+          "bytes": 753,
+          "sha256": "586ce302679d000f68e0fb831169d0f90d04926ee862a8e7e2a363780c385037"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/scripts/generate_demo.py",
+          "bytes": 516,
+          "sha256": "1d9ea17ae8aef89099403607268a26accca374a7c586bcac05868963df9cc9ed"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/server_python/__init__.py",
+          "bytes": 16,
+          "sha256": "c0bbbb5b6d776bd569a8ce1dde718a322055ae62b1c3b48f26826d6e8acdb651"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/server_python/app.py",
+          "bytes": 1122,
+          "sha256": "4951b8e0642756b8788dbd7930e4f9d9016b45b00fe3e0c23098d6bfa66b0556"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_06/server_python/draft_engine.py",
+          "bytes": 4805,
+          "sha256": "cd283018e832bb6b840214c275fc54c061ec4770321e19d568c12f89b0c805b6"
+        }
+      ],
+      "file_count": 14
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_07.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_07/README.md",
+          "bytes": 521,
+          "sha256": "91fe2bd7c4d6ae388c705730f8d77c7222f2c5fea73876389ee0b7d4928b273e"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/data/consultation_taxonomy.v2_07.json",
+          "bytes": 2450,
+          "sha256": "5fdceee23f0ed1c6a066343224672a784b9f15689a869b32a084189787f89908"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/docs/API_CONTRACT_CONSULTATIONS_v2_07.md",
+          "bytes": 1788,
+          "sha256": "fc1590a1b714a846d6f163d4d036d12cba8cc9de04496ae18b64fb3589d07f49"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/docs/CONSULTATION_MODULE_SPEC_v2_07.md",
+          "bytes": 4047,
+          "sha256": "799e5075651a99f5bab71c54fa9fc470bd69afd2c50a701e50462142385f6c06"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/docs/DB_DDL_CONSULTATIONS_v2_07.sql",
+          "bytes": 3369,
+          "sha256": "2c08158ef5c2b707e6de102976208f7a31627747c486d70c0993bd23e4e5f0f9"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/server_fastapi_stub/consultations.py",
+          "bytes": 2771,
+          "sha256": "4595deba73fdd3536423c6f8c0b1a0f2832de85caa2ad83f6d1def00f1ab800a"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_07/ui/CaseConsultationsTab.spec.md",
+          "bytes": 884,
+          "sha256": "930cfebe7321877e17e7fab8454683330033fa433b5cf50b9581efcf4ed1a5e4"
+        }
+      ],
+      "file_count": 7
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_08.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_08/README.md",
+          "bytes": 569,
+          "sha256": "5d695effc4655d8ac39c1d5e60f637c4c3fdef5eea795e1c9610700e620dbeca"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/data/issue_taxonomy.v2_08.json",
+          "bytes": 931,
+          "sha256": "c43e84f9ef5ae0e1608fc54f9c454eca1de51931ed8d0c31e257a416f546b451"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/data/scoring_rules.v2_08.json",
+          "bytes": 768,
+          "sha256": "afd5b0883a9fafb4f26590f13db399dd115b5ee99721e82cae6f53ee2e872fee"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/docs/API_CONTRACT_ISSUES_DASHBOARD_v2_08.md",
+          "bytes": 2308,
+          "sha256": "24a152b0a04fa72a937de99b2177c4888eb9c0412cdc8b080f7a383ac0c0dd08"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/docs/DB_DDL_ISSUES_DASHBOARD_v2_08.sql",
+          "bytes": 2638,
+          "sha256": "978d9449fe0d18aa573103c371f6b7fae743e016ad8aa14b00d3f54ee8992f67"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/docs/UI_SPEC_KEY_ISSUES_v2_08.md",
+          "bytes": 1488,
+          "sha256": "16497dc6c64ec5d6e0b2cd102c8a1d2186b2df49d7575db7ed7f39e3adc991bd"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_08/server_fastapi_stub/issues_dashboard.py",
+          "bytes": 1669,
+          "sha256": "2f731dbe2a5535466597692a7235863d4a3bb45cc334a2043d553e81dc32efe8"
+        }
+      ],
+      "file_count": 7
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_09.zip",
+      "files": [
+        {
+          "path": "README.md",
+          "bytes": 961,
+          "sha256": "f24d2296c9d5a6dd79e146d7bf5290ec8947420c90696bdd4bdd8a110cdac6c9"
+        },
+        {
+          "path": "data/requirement_item_rules.v2_09.json",
+          "bytes": 1996,
+          "sha256": "40277f6ca8661d96127396885fb9969cc7053c717100016044f043c375fcf11f"
+        },
+        {
+          "path": "data/requirement_sets.v2_09.json",
+          "bytes": 12287,
+          "sha256": "6b22ab3e759bd4b17495d57c050b8572eb757cf41288b6c1fa66e0b2a56ee613"
+        },
+        {
+          "path": "docs/API_CONTRACT_EVIDENCE_CHECKLIST_v2_09.md",
+          "bytes": 2830,
+          "sha256": "ff87226e2e0fc49e661850251770f1ade1769cbbb393d73e9e6238fceaa4560b"
+        },
+        {
+          "path": "docs/DB_DDL_EVIDENCE_CHECKLIST_v2_09.sql",
+          "bytes": 4265,
+          "sha256": "aaef934614a5e6e469a4e3ea400ad245e8b8571cae3679297f6150c7130d2bd9"
+        },
+        {
+          "path": "docs/UI_SPEC_EVIDENCE_CHECKLIST_v2_09.md",
+          "bytes": 1449,
+          "sha256": "33af579d01f790a2aed467b82cf18c890c00049390b6281d9ff1c1a7613d12af"
+        },
+        {
+          "path": "server_fastapi_stub/evidence_checklist.py",
+          "bytes": 2685,
+          "sha256": "72fd3fcce863403c9fde473185d377bd5405a7507f70613fa48f5adce293611f"
+        }
+      ],
+      "file_count": 7
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_10.zip",
+      "files": [
+        {
+          "path": "CHANGELOG.md",
+          "bytes": 178,
+          "sha256": "9fc540dce0b227de7fb44ba77a0de7f984f502f04a75a8ae908e085fd8637eb1"
+        },
+        {
+          "path": "README.md",
+          "bytes": 437,
+          "sha256": "101dcea939dcbea3c5cb14ff44c7ef75a69877bb819c9af64f8a8125e47c129f"
+        },
+        {
+          "path": "data/keypoint_rules.v2_10.json",
+          "bytes": 3515,
+          "sha256": "0861adc6ad14359463cb876e7aa1c61aee15e0bd5f612ab4b9d67de7839dd1f2"
+        },
+        {
+          "path": "data/keypoint_to_claim_map.v2_10.json",
+          "bytes": 1208,
+          "sha256": "b6fb50e2155db33dcf8dc80386787a6d95cbdf671430101a69814ad002e2f174"
+        },
+        {
+          "path": "data/keypoint_to_requirement_map.v2_10.json",
+          "bytes": 1041,
+          "sha256": "4f8dd4c6e3342b6a86bd2e4f3fcb9aeada48d52d34d9d1cdb03e619442eaa286"
+        },
+        {
+          "path": "docs/API_CONTRACT_v2_10.md",
+          "bytes": 497,
+          "sha256": "cc2fe79859a731e1945cff27d6e6b929a997f00ab638bf8b048a0599e562dcee"
+        },
+        {
+          "path": "docs/DB_DDL_KEYPOINT_PIPELINE_v2_10.sql",
+          "bytes": 2635,
+          "sha256": "1a36765dbefa5e6a8fd1333444eeeba293b186ee5b935b30f273265aa43168a2"
+        },
+        {
+          "path": "docs/UI_SPEC_KEYPOINTS_v2_10.md",
+          "bytes": 353,
+          "sha256": "9bb998c7a36bf43e3294d452c2011dc2854ad65e392234e342cc34f0db12ba8d"
+        },
+        {
+          "path": "scripts/keypoint_demo.py",
+          "bytes": 535,
+          "sha256": "a2a058ac11cdda0efe8f906611d13e4c1f20ad98fd11f02406af7112a7ced4d5"
+        },
+        {
+          "path": "server_fastapi_stub/keypoints.py",
+          "bytes": 1193,
+          "sha256": "e30d8f88eb6ebfa6e05312918dd9be481e3df8bddc6817cd9a1a351ab194a50d"
+        },
+        {
+          "path": "server_fastapi_stub/services/keypoint_extractor.py",
+          "bytes": 2169,
+          "sha256": "db3fc343f91da7b826321a1471eb568e3a72132f786aee2104b32f814702c78f"
+        }
+      ],
+      "file_count": 11
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_11.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_11/README.md",
+          "bytes": 748,
+          "sha256": "b0d74d7134298cb571a5a475614ed7ed419aa0ed504cf17653c0a2fabaae426d"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/data/citation_format.v2_11.json",
+          "bytes": 549,
+          "sha256": "158bfe919857c7ad613109c4a768516f3139b29ae3060116c74191de530726ee"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/data/ground_to_authorities_map.v2_11.json",
+          "bytes": 246,
+          "sha256": "48409bf17d45c22e3667dda36ff1f5a46773f72363cb860fc419aa505ae691c2"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/data/law_articles.v2_11.json",
+          "bytes": 5144,
+          "sha256": "82cbd46e1e2e34536937d5570a571bec975b9e0f6fb512211c739fbac7bd0191"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/data/process_to_authorities_map.v2_11.json",
+          "bytes": 525,
+          "sha256": "4cd9577a75ac77b419d742112e204109367bc10dce7036f06893dda7c15e002f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/docs/API_CONTRACT_LEGAL_AUTHORITIES_v2_11.md",
+          "bytes": 839,
+          "sha256": "575ed400577114a7ac86b50bdb5806d1ccefad29ca398726aea16e264b216ddd"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/docs/DB_DDL_LEGAL_AUTHORITIES_v2_11.sql",
+          "bytes": 1694,
+          "sha256": "e8a7890978a0d52970b60d2a8593898c1aa881331b0ae1ab1fd829aaca191517"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/docs/LEGAL_AUTH_LIBRARY.md",
+          "bytes": 1643,
+          "sha256": "6f12ccc0a004b4f5bd0006815f75136b17b04a78c47822bc0bdcc765b2997712"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/server_fastapi_stub/legal_authorities.py",
+          "bytes": 2532,
+          "sha256": "f78a5d7670ac23487fcf934799daa628585ebe6a888507306a5790684f3e1035"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_11/ui/LEGAL_GROUNDS_TAB_SPEC_v2_11.md",
+          "bytes": 1155,
+          "sha256": "3aae202ec321308a6d62de0dcf3942c037fc3731fda8acce3c35407b4f4c3c8e"
+        }
+      ],
+      "file_count": 10
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_12.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_12/README_v2_12.md",
+          "bytes": 534,
+          "sha256": "7b02a9791fa901f06a92d2c0aa380166382f67dc274c5cc190a8503c78a228f5"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/data/citation_format.v2_12.json",
+          "bytes": 1074,
+          "sha256": "01b7017d67c79d27c4c4771804c1a9177ff8b13029ff3a69e1663aee6bc38fb3"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/data/precedent_index.v2_12.json",
+          "bytes": 1094,
+          "sha256": "531b0a67a43f1326ffca53b3facd47bf01a9c51b62dff69746e9df55cd6ef24c"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/data/recommender_rules.v2_12.json",
+          "bytes": 2707,
+          "sha256": "d37962ff512d8e9aa810a2965f6ebde0a456b86ac66c68d350c395d61d1831eb"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/docs/API_CONTRACT_RECOMMENDER_v2_12.md",
+          "bytes": 807,
+          "sha256": "4424f89004a0ef1c4751a9cc9825a2eab8a6bc5df02c5b55a810d005776384ce"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/docs/DB_DDL_PRECEDENTS_v2_12.sql",
+          "bytes": 694,
+          "sha256": "eba2de4c194d56730245a5672cc97d670ad9db2478777495c717c30c8f26703e"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/docs/RECOMMENDER_SPEC_v2_12.md",
+          "bytes": 1537,
+          "sha256": "36b2c2c66809a10f347078e3b4816304cc149dad5ffd430f0159a300841d2f8f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/scripts/recommender_demo.py",
+          "bytes": 3388,
+          "sha256": "24d7f14c8b0a6fd697ca90b703a9e3a30f3bc7ba0cfab50846dbcaa3a374b631"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/server_fastapi_stub/precedents.py",
+          "bytes": 1394,
+          "sha256": "ea38cf743898fa12140b4b951bc5ac3d5ba1b6522f94a94f9433f9b412a131bb"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/server_fastapi_stub/recommender.py",
+          "bytes": 5231,
+          "sha256": "555b5b02bd8b1d37bbfabf9f19157c913299c58320d6cc835fe30521b2c1f9a5"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_12/ui/LEGAL_SEARCH_UI_SPEC_v2_12.md",
+          "bytes": 594,
+          "sha256": "ea635d6f6659c4ac063333f6c5794aa5162acf63ab5971f2cf3035a0b998f919"
+        }
+      ],
+      "file_count": 11
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_13.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_13/README.md",
+          "bytes": 945,
+          "sha256": "651a5c2cf412e9294b221ac0140978c60d21aeb7730a606ee3d83c6018323d87"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/data/deadline_to_timeline_rules.v2_13.json",
+          "bytes": 1674,
+          "sha256": "f489d7ed0800ad67f6ad95d50fb73e2add294911edeba443c1ab16b04699b40c"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/data/timeline_event_types.v2_13.json",
+          "bytes": 1370,
+          "sha256": "974c659b86dbde82b274fb66746883175215865f07cc8fddb168d9357d23df32"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/data/timeline_grouping_rules.v2_13.json",
+          "bytes": 688,
+          "sha256": "cb857fc23239d8b1b9c8b346ac719fbda129225bf184e77a62406b03ce43335c"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/docs/API_CONTRACT_TIMELINE_v2_13.md",
+          "bytes": 1791,
+          "sha256": "6317bb8c9a45c4a93b87271925d61e53e9863d5e4120b45292ce3391535c2b30"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/docs/DB_DDL_TIMELINE_V2_13.sql",
+          "bytes": 3004,
+          "sha256": "6b4b52dab7f329273fc763b273567ef03f61e4e6faca92920fe6564460a78043"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/scripts/demo_timeline_recompute.py",
+          "bytes": 1933,
+          "sha256": "6e904946f3501d458bde0888cb0482fc01f7de026f5d9c7388e818c50e707374"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/server_fastapi_stub/timeline.py",
+          "bytes": 2370,
+          "sha256": "28a8969897df398cc0df3e5204d56f791e0d046b371db69a80a0ec6a57c6463b"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_13/ui/TIMELINE_VIEW_SPEC_v2_13.md",
+          "bytes": 937,
+          "sha256": "5e8fe616519f362802db39d0268960b97b12cad0338c6d477244d6604d1dc27c"
+        }
+      ],
+      "file_count": 9
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_14.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_14/data/process_warning_rules.v2_14.json",
+          "bytes": 4676,
+          "sha256": "684c719e923af3a4d50bd2d59b0b8b6f11a7595c60cdbbef1e526d7053ed719f"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/data/state_machines.v2_14.json",
+          "bytes": 18814,
+          "sha256": "d044ee5ab36e6d74dae953fe024c6c9a0565098785c848b211cb9b2c76d8c78d"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/docs/API_CONTRACT_PROCESS_ENGINE_V2_14.md",
+          "bytes": 980,
+          "sha256": "1754a712b40c1e4271094a52748bc3404fa10857d192fe317ff4a69c98970288"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/docs/DB_DDL_PROCESS_STATE_V2_14.sql",
+          "bytes": 1890,
+          "sha256": "cd703ae2013a3dbc1840f9ab8bef3b4f2b6c7fe4b12513f74d25518d5fb9c6aa"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/docs/PROCESS_STATE_MACHINE_V2_14.md",
+          "bytes": 2228,
+          "sha256": "425f1d74bee976118fd296e6b37bbf686a52f7fdddfd4078e0958ed493b8d5ca"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/server_fastapi_stub/process_engine.py",
+          "bytes": 3492,
+          "sha256": "fb9cf87ef2d6106f23ea68a0ffceedbebdebd90a68c36da3f93ae33d7b99e0bd"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_14/ui/PROCESS_STAGE_WIDGET_SPEC_v2_14.md",
+          "bytes": 561,
+          "sha256": "cc426742b77946e0b317c7f2fce8295256f55e13c240d38c9f6c0416b62d3190"
+        }
+      ],
+      "file_count": 7
+    },
+    {
+      "zip": "lssp_divorce_module_pack_v2_15.zip",
+      "files": [
+        {
+          "path": "lssp_divorce_module_pack_v2_15/README.md",
+          "bytes": 931,
+          "sha256": "0c6fffc4e76b2c0fcb54d200d419a1a47bd4297be502eb9e15030dafd91ae50a"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/data/recompute_graph.v2_15.json",
+          "bytes": 2449,
+          "sha256": "670a609e6ebe5519afd6a48162869e0040b60798cc04c696ead39e152508d6e7"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/data/recompute_triggers.v2_15.json",
+          "bytes": 1656,
+          "sha256": "7e116f998163935b946c9c6310a866a8d15afbb9b8615889520b0e334a1777fa"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/docs/API_CONTRACT_RECOMPUTE_V2_15.md",
+          "bytes": 1554,
+          "sha256": "82c45e315fd0f312aadfc32b10909f95d59441f2c7ef737b29570e005a714ec2"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/docs/DB_DDL_RECOMPUTE_V2_15.sql",
+          "bytes": 2554,
+          "sha256": "0ac2a715b3a769ab5c176b216efb1f833a7ccf86c0d077baa3a33b2e7117a069"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/docs/INTEGRATED_RECOMPUTE_PIPELINE_V2_15.md",
+          "bytes": 4485,
+          "sha256": "17f745369b4ff1e7c4e81b806096707860dbbf8cdad8760ba0d3dcbc497a80ad"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/scripts/demo_recompute.py",
+          "bytes": 918,
+          "sha256": "459541030f9e4392a24304166532becc4bab8c8c408cdd15859f40c6db2006e6"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/server_fastapi_stub/recompute_orchestrator.py",
+          "bytes": 5074,
+          "sha256": "fa1108bd0967bab457922614aa2a4bed1615f8bfa35908785f1ccebd0c3097d4"
+        },
+        {
+          "path": "lssp_divorce_module_pack_v2_15/ui/RECOMPUTE_STATUS_WIDGET_SPEC_v2_15.md",
+          "bytes": 1016,
+          "sha256": "08cb42f044a9d7057204b7a944ae59be4bdd4dbc64e6597a0049aefd8a57610a"
+        }
+      ],
+      "file_count": 9
+    }
+  ]
+}
