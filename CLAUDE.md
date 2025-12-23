@@ -434,8 +434,11 @@ When implementing features, files typically go in:
 - N/A (frontend-only, no new data persistence) (013-ui-upgrade)
 - Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o-mini), boto3 (014-case-fact-summary)
 - DynamoDB (leh_case_summary 테이블), PostgreSQL (Case 메타데이터 참조) (014-case-fact-summary)
+- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, boto3, Tailwind CSS (015-evidence-speaker-mapping)
+- DynamoDB (leh_evidence 테이블 확장 - speaker_mapping 필드), PostgreSQL RDS (Party 참조) (015-evidence-speaker-mapping)
 
 ## Recent Changes
+- 015-evidence-speaker-mapping: (COMPLETE) 증거 화자 매핑 기능. 대화형 증거(카톡, 문자)에서 "나/상대방" 화자를 인물관계도의 실제 인물과 매핑하여 사실관계 생성 정확도 향상. Backend: EvidenceService.update_speaker_mapping, PATCH /evidence/{id}/speaker-mapping API, FactSummaryService 프롬프트에 화자 정보 주입, SPEAKER_MAPPING_UPDATE 감사 로그. Frontend: SpeakerMappingModal, useSpeakerMapping hook, SpeakerMappingBadge, has_speaker_mapping 필드. Key features: 선택적 화자 매핑 (최대 10명), 사실관계 프롬프트에 화자 정보 통합, 증거 목록 매핑 상태 뱃지 표시, Case Isolation 검증.
 - 012-precedent-integration: (COMPLETE) Precedent search and auto-extraction integration. Backend: PrecedentService with Qdrant vector search, DraftService precedent citation integration, auto-extract endpoints for parties/relationships. AI Worker: BackendAPIClient with retry logic, PersonExtractor/RelationshipInferrer integration. Frontend: PrecedentPanel with search/modal, PartyNode/PartyEdge auto-extraction badges with confidence indicators. Key features: 유사 판례 검색, 초안 판례 인용, 인물/관계 자동 추출.
 - 011-production-bug-fixes: (IN PROGRESS) Production bug fixes for US1 & US2. Backend: Cookie authentication fix, security hardening. Frontend: Login redirect fix, middleware improvements.
 - 009-mvp-gap-closure: (PLANNING) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 70% (needs toast + retry). CI coverage at 65% (target 80%). Key tasks: S3 permission setup, enable AI Worker deployment, unify error handling, increase test coverage.

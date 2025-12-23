@@ -29,6 +29,7 @@ export {
   useSingleEvidencePolling,
 } from './useEvidencePolling';
 export { useEvidenceLinks } from './useEvidenceLinks';
+export { useSpeakerMapping, extractSpeakersFromContent } from './useSpeakerMapping';
 
 // Case features
 export { useCaseRelations } from './useCaseRelations';

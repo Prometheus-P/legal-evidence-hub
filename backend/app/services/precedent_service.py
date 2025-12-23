@@ -97,26 +97,13 @@ class PrecedentService:
         """
         logger.info(f"[PrecedentSearch] Starting search for case_id={case_id}")
 
-        # T026: 사실관계 요약이 있으면 우선 사용 (014-case-fact-summary 연계)
-        fact_summary = self._get_fact_summary_for_search(case_id)
-
         # T021: 사건의 유책사유 추출
         fault_types = self.get_fault_types(case_id)
         logger.info(f"[PrecedentSearch] Extracted fault_types={fault_types}")
 
-        # T027: 검색 쿼리 구성 (사실관계 우선, 없으면 유책사유)
-        if fact_summary:
-            # 사실관계 요약을 검색 쿼리로 사용 (최대 500자)
-            query = fact_summary[:500]
-            logger.info(f"[PrecedentSearch] Using fact summary as query ({len(fact_summary)} chars)")
-        elif not fault_types:
-            # 유책사유가 없으면 기본 검색어 사용
-            query = "이혼 판례 재산분할"
-        else:
-            # 유책사유를 검색 쿼리로 변환
-            query = " ".join(fault_types)
-
-        logger.info(f"[PrecedentSearch] Search query: {query}")
+        # T026-T027: 사실관계 기반 검색 쿼리 구성
+        query = self._build_semantic_query(case_id, fault_types)
+        logger.info(f"[PrecedentSearch] Search query ({len(query)} chars): {query[:100]}...")
         using_fallback = False
 
         try:
@@ -221,6 +208,82 @@ class PrecedentService:
         except Exception as e:
             logger.error(f"Failed to get fault types for case {case_id}: {e}")
             return []
+
+    def _build_semantic_query(self, case_id: str, fault_types: List[str]) -> str:
+        """
+        Build semantic search query from fact summary + fault types
+
+        사실관계 요약에서 핵심 내용을 추출하고 유책사유를 결합하여
+        더 정확한 유사 판례 검색 쿼리를 생성합니다.
+
+        Args:
+            case_id: Case ID
+            fault_types: Extracted fault types
+
+        Returns:
+            Optimized search query string
+        """
+        # 1. 사실관계 요약 조회
+        fact_summary = self._get_fact_summary_for_search(case_id)
+
+        # 2. 유책사유 키워드 준비
+        fault_keywords = " ".join(fault_types) if fault_types else ""
+
+        # 3. 쿼리 구성
+        if fact_summary:
+            # 사실관계에서 핵심 섹션 추출 (유책사유 요약 우선)
+            core_facts = self._extract_core_facts(fact_summary)
+
+            # 사실관계 + 유책사유 결합 (최대 800자)
+            if fault_keywords:
+                query = f"유책사유: {fault_keywords}\n\n{core_facts}"
+            else:
+                query = core_facts
+
+            # 최대 800자로 제한 (벡터 검색 최적화)
+            return query[:800]
+
+        elif fault_keywords:
+            # 사실관계가 없으면 유책사유만 사용
+            return f"이혼 판례 {fault_keywords} 재산분할 위자료"
+
+        else:
+            # 둘 다 없으면 기본 쿼리
+            return "이혼 판례 재산분할 위자료"
+
+    def _extract_core_facts(self, fact_summary: str) -> str:
+        """
+        Extract core facts from fact summary for search query
+
+        '유책사유 요약' 섹션을 우선 추출하고, 없으면 '사실관계' 섹션 사용
+
+        Args:
+            fact_summary: Full fact summary text
+
+        Returns:
+            Core facts text (max 600 chars)
+        """
+        # 1. '유책사유 요약' 섹션 추출 시도
+        if "### 유책사유 요약" in fact_summary:
+            parts = fact_summary.split("### 유책사유 요약")
+            if len(parts) > 1:
+                fault_section = parts[1].split("###")[0].strip()
+                if fault_section:
+                    logger.info("[PrecedentSearch] Using '유책사유 요약' section for query")
+                    return fault_section[:600]
+
+        # 2. '사실관계' 섹션 추출 시도
+        if "### 사실관계" in fact_summary:
+            parts = fact_summary.split("### 사실관계")
+            if len(parts) > 1:
+                facts_section = parts[1].split("###")[0].strip()
+                if facts_section:
+                    logger.info("[PrecedentSearch] Using '사실관계' section for query")
+                    return facts_section[:600]
+
+        # 3. 전체 요약 사용 (fallback)
+        logger.info("[PrecedentSearch] Using full fact summary for query")
+        return fact_summary[:600]
 
     def _get_fact_summary_for_search(self, case_id: str) -> str:
         """

@@ -6,6 +6,16 @@
 import { apiRequest, ApiResponse } from './client';
 import { logger } from '@/lib/logger';
 
+// ============================================
+// Speaker Mapping Types (015-evidence-speaker-mapping)
+// ============================================
+export interface SpeakerMappingItem {
+  party_id: string;
+  party_name: string;
+}
+
+export type SpeakerMapping = Record<string, SpeakerMappingItem>;
+
 export interface Evidence {
   id: string;
   case_id: string;
@@ -26,6 +36,10 @@ export interface Evidence {
     matched_keywords: string[];
   };
   created_at: string;
+  // 015-evidence-speaker-mapping
+  speaker_mapping?: SpeakerMapping;
+  speaker_mapping_updated_at?: string;
+  has_speaker_mapping?: boolean;
 }
 
 export interface EvidenceDetail extends Evidence {
@@ -236,4 +250,48 @@ export async function getEvidenceStatus(
   return apiRequest<EvidenceStatusResponse>(`/evidence/${evidenceId}/status`, {
     method: 'GET',
   });
+}
+
+// ============================================
+// Speaker Mapping API (015-evidence-speaker-mapping)
+// ============================================
+
+export interface SpeakerMappingUpdateRequest {
+  speaker_mapping: SpeakerMapping;
+}
+
+export interface SpeakerMappingUpdateResponse {
+  evidence_id: string;
+  speaker_mapping: SpeakerMapping | null;
+  updated_at: string | null;
+  updated_by: string | null;
+}
+
+/**
+ * Update speaker mapping for evidence
+ * Maps conversation speakers (e.g., "나", "상대방") to party nodes from relationship graph
+ */
+export async function updateSpeakerMapping(
+  evidenceId: string,
+  request: SpeakerMappingUpdateRequest
+): Promise<ApiResponse<SpeakerMappingUpdateResponse>> {
+  return apiRequest<SpeakerMappingUpdateResponse>(
+    `/evidence/${evidenceId}/speaker-mapping`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    }
+  );
+}
+
+/**
+ * Clear speaker mapping for evidence (sends empty object)
+ */
+export async function clearSpeakerMapping(
+  evidenceId: string
+): Promise<ApiResponse<SpeakerMappingUpdateResponse>> {
+  return updateSpeakerMapping(evidenceId, { speaker_mapping: {} });
 }

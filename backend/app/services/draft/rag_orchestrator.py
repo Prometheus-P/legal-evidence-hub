@@ -11,6 +11,7 @@ import logging
 from app.utils.qdrant import (
     search_evidence_by_semantic,
     search_legal_knowledge,
+    search_consultations,
 )
 from app.services.precedent_service import PrecedentService
 
@@ -21,6 +22,7 @@ __all__ = [
     'RAGOrchestrator',
     'search_evidence_by_semantic',
     'search_legal_knowledge',
+    'search_consultations',
 ]
 
 
@@ -79,8 +81,32 @@ class RAGOrchestrator:
 
         return {
             "evidence": evidence_results,
-            "legal": legal_results
+            "legal": legal_results,
         }
+
+    def search_case_consultations(self, case_id: str, query: str = "", top_k: int = 5) -> List[dict]:
+        """
+        Search consultation records for a case (Issue #403)
+
+        Args:
+            case_id: Case ID
+            query: Optional search query for semantic search
+            top_k: Number of results to return
+
+        Returns:
+            List of consultation documents
+        """
+        try:
+            # Use query for semantic search if provided, otherwise return recent
+            consultation_results = search_consultations(
+                case_id=case_id,
+                query=query,
+                top_k=top_k
+            )
+            return consultation_results
+        except Exception as e:
+            logger.warning(f"Consultation search failed for case {case_id}: {e}")
+            return []
 
     def search_precedents(self, case_id: str, limit: int = 5, min_score: float = 0.5) -> List[dict]:
         """
@@ -226,6 +252,48 @@ class RAGOrchestrator:
             )
 
         return "\n\n".join(context_parts)
+
+    def format_consultation_context(self, consultation_results: List[dict]) -> str:
+        """
+        Format consultation search results for GPT-4o prompt (Issue #403)
+
+        Args:
+            consultation_results: List of consultation documents from RAG search
+
+        Returns:
+            Formatted consultation context string
+        """
+        if not consultation_results:
+            return "(상담내역 없음)"
+
+        context_parts = []
+        for i, doc in enumerate(consultation_results, start=1):
+            summary = doc.get("summary", "")
+            notes = doc.get("notes", "")
+            consultation_date = doc.get("date", "")
+            consultation_type = doc.get("type", "")
+            participants = doc.get("participants", [])
+
+            # Format type in Korean
+            type_labels = {
+                "phone": "전화",
+                "in_person": "대면",
+                "online": "화상",
+            }
+            type_str = type_labels.get(consultation_type, consultation_type)
+
+            # Truncate summary if too long
+            if len(summary) > 300:
+                summary = summary[:300] + "..."
+
+            context_parts.append(f"""
+[상담 {i}] ({consultation_date}, {type_str} 상담)
+- 참석자: {', '.join(participants) if participants else 'N/A'}
+- 요약: {summary}
+{f'- 메모: {notes[:200]}...' if notes and len(notes) > 200 else f'- 메모: {notes}' if notes else ''}
+""")
+
+        return "\n".join(context_parts)
 
     def format_rag_context(self, rag_results: List[dict]) -> str:
         """

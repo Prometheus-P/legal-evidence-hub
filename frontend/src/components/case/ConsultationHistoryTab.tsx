@@ -2,52 +2,68 @@
  * ConsultationHistoryTab Component
  * Case Detail - Consultation History Tab
  *
+ * Issue #399: 백엔드 API 연동
  * Manages consultation records with clients for a case.
  */
 
 'use client';
 
-import { useState, useCallback } from 'react';
-import { MessageSquare, Phone, Video, Users, Calendar, Clock, Edit2, Trash2, Plus, X } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { MessageSquare, Phone, Video, Users, Calendar, Clock, Edit2, Trash2, Plus, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-interface Consultation {
-  id: string;
-  date: string;
-  time: string;
-  type: 'phone' | 'in_person' | 'online';
-  participants: string[];
-  summary: string;
-  notes?: string;
-  createdBy: string;
-  createdAt: string;
-}
+import type { Consultation, ConsultationType } from '@/types/consultation';
+import {
+  getConsultations,
+  createConsultation,
+  updateConsultation,
+  deleteConsultation,
+} from '@/lib/api/consultation';
 
 interface ConsultationHistoryTabProps {
   caseId: string;
 }
 
-const CONSULTATION_TYPES = {
+const CONSULTATION_TYPES: Record<ConsultationType, { label: string; icon: typeof Phone; color: string }> = {
   phone: { label: '전화 상담', icon: Phone, color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' },
   in_person: { label: '대면 상담', icon: Users, color: 'text-green-600 bg-green-100 dark:bg-green-900/30' },
   online: { label: '화상 상담', icon: Video, color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30' },
 };
 
-// Mock data for initial state
-const MOCK_CONSULTATIONS: Consultation[] = [];
-
 export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) {
-  const [consultations, setConsultations] = useState<Consultation[]>(MOCK_CONSULTATIONS);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingConsultation, setEditingConsultation] = useState<Consultation | null>(null);
   const [formData, setFormData] = useState({
     date: '',
     time: '',
-    type: 'phone' as 'phone' | 'in_person' | 'online',
+    type: 'phone' as ConsultationType,
     participants: '',
     summary: '',
     notes: '',
   });
+
+  // Fetch consultations on mount
+  const fetchConsultations = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await getConsultations(caseId);
+      if (response.data) {
+        setConsultations(response.data.consultations);
+      } else if (response.error) {
+        toast.error(response.error);
+      }
+    } catch {
+      toast.error('상담내역을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [caseId]);
+
+  useEffect(() => {
+    fetchConsultations();
+  }, [fetchConsultations]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -66,7 +82,7 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
       setEditingConsultation(consultation);
       setFormData({
         date: consultation.date,
-        time: consultation.time,
+        time: consultation.time ? consultation.time.substring(0, 5) : '',
         type: consultation.type,
         participants: consultation.participants.join(', '),
         summary: consultation.summary,
@@ -83,7 +99,7 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
     resetForm();
   }, [resetForm]);
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.date || !formData.summary) {
@@ -96,48 +112,83 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
       .map(p => p.trim())
       .filter(p => p.length > 0);
 
-    if (editingConsultation) {
-      // Update existing
-      setConsultations(prev => prev.map(c =>
-        c.id === editingConsultation.id
-          ? {
-              ...c,
-              date: formData.date,
-              time: formData.time,
-              type: formData.type,
-              participants: participantsList,
-              summary: formData.summary,
-              notes: formData.notes,
-            }
-          : c
-      ));
-      toast.success('상담내역이 수정되었습니다.');
-    } else {
-      // Create new
-      const newConsultation: Consultation = {
-        id: `consultation-${Date.now()}`,
-        date: formData.date,
-        time: formData.time,
-        type: formData.type,
-        participants: participantsList,
-        summary: formData.summary,
-        notes: formData.notes,
-        createdBy: '현재 사용자',
-        createdAt: new Date().toISOString(),
-      };
-      setConsultations(prev => [newConsultation, ...prev]);
-      toast.success('상담내역이 추가되었습니다.');
+    setIsSubmitting(true);
+
+    try {
+      if (editingConsultation) {
+        const response = await updateConsultation(caseId, editingConsultation.id, {
+          date: formData.date,
+          time: formData.time || undefined,
+          type: formData.type,
+          participants: participantsList,
+          summary: formData.summary,
+          notes: formData.notes || undefined,
+        });
+
+        if (response.data) {
+          setConsultations(prev => prev.map(c =>
+            c.id === editingConsultation.id ? response.data! : c
+          ));
+          toast.success('상담내역이 수정되었습니다.');
+          handleCloseModal();
+        } else if (response.error) {
+          toast.error(response.error);
+        }
+      } else {
+        const response = await createConsultation(caseId, {
+          date: formData.date,
+          time: formData.time || undefined,
+          type: formData.type,
+          participants: participantsList,
+          summary: formData.summary,
+          notes: formData.notes || undefined,
+        });
+
+        if (response.data) {
+          setConsultations(prev => [response.data!, ...prev]);
+          toast.success('상담내역이 추가되었습니다.');
+          handleCloseModal();
+        } else if (response.error) {
+          toast.error(response.error);
+        }
+      }
+    } catch {
+      toast.error('저장에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [caseId, formData, editingConsultation, handleCloseModal]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm('이 상담내역을 삭제하시겠습니까?')) {
+      return;
     }
 
-    handleCloseModal();
-  }, [formData, editingConsultation, handleCloseModal]);
-
-  const handleDelete = useCallback((id: string) => {
-    if (confirm('이 상담내역을 삭제하시겠습니까?')) {
-      setConsultations(prev => prev.filter(c => c.id !== id));
-      toast.success('상담내역이 삭제되었습니다.');
+    try {
+      const response = await deleteConsultation(caseId, id);
+      if (response.status === 204 || !response.error) {
+        setConsultations(prev => prev.filter(c => c.id !== id));
+        toast.success('상담내역이 삭제되었습니다.');
+      } else if (response.error) {
+        toast.error(response.error);
+      }
+    } catch {
+      toast.error('삭제에 실패했습니다.');
     }
-  }, []);
+  }, [caseId]);
+
+  const formatTime = (time: string | null): string => {
+    if (!time) return '';
+    return time.substring(0, 5);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -184,7 +235,7 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
                           {consultation.time && (
                             <>
                               <Clock className="w-3 h-3 inline ml-2 mr-1" />
-                              {consultation.time}
+                              {formatTime(consultation.time)}
                             </>
                           )}
                         </span>
@@ -199,6 +250,11 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
                       {consultation.notes && (
                         <p className="text-sm text-[var(--color-text-secondary)] mt-2 p-2 bg-gray-50 dark:bg-neutral-900/50 rounded">
                           {consultation.notes}
+                        </p>
+                      )}
+                      {consultation.created_by_name && (
+                        <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+                          작성자: {consultation.created_by_name}
                         </p>
                       )}
                     </div>
@@ -287,7 +343,7 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
                 </label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as typeof formData.type }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ConsultationType }))}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                 >
                   <option value="phone">전화 상담</option>
@@ -344,14 +400,17 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg border border-gray-300 dark:border-neutral-600 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-lg border border-gray-300 dark:border-neutral-600 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-50 flex items-center"
                 >
+                  {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   {editingConsultation ? '수정' : '추가'}
                 </button>
               </div>

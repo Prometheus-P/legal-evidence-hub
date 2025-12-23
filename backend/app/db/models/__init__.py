@@ -57,6 +57,8 @@ from app.db.models.enums import (
     StageStatus,
     # Notification
     NotificationType,
+    # Consultation
+    ConsultationType,
 )
 
 # ============================================
@@ -139,6 +141,13 @@ from app.db.models.procedure import ProcedureStageRecord
 
 # Client Contact
 from app.db.models.client import ClientContact
+
+# Consultation
+from app.db.models.consultation import (
+    Consultation,
+    ConsultationParticipant,
+    ConsultationEvidence,
+)
 
 
 # Re-export all for backward compatibility
@@ -234,4 +243,10 @@ __all__ = [
     "ProcedureStageRecord",
     # Models - Client
     "ClientContact",
+    # Enums - Consultation
+    "ConsultationType",
+    # Models - Consultation
+    "Consultation",
+    "ConsultationParticipant",
+    "ConsultationEvidence",
 ]

@@ -488,6 +488,13 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         >
           📎 증거 연결
         </button>
+        {/* 017-party-graph-improvement: AI 자동 추출 상태 표시 */}
+        {partyNodes.some(p => p.is_auto_extracted) && (
+          <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg shadow dark:shadow-neutral-900/50 text-sm font-medium flex items-center gap-1.5">
+            <span>🤖</span>
+            <span>AI 추출 {partyNodes.filter(p => p.is_auto_extracted).length}명</span>
+          </div>
+        )}
       </div>
 
       {/* Save status */}

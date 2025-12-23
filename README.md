@@ -150,23 +150,34 @@ python -m handler
 ├── backend/              # FastAPI 백엔드 (H)
 │   ├── app/
 │   │   ├── api/          # 라우터 (auth, cases, evidence, admin)
+│   │   ├── core/         # 설정, 보안, 의존성
+│   │   ├── db/           # DB 연결, 세션
+│   │   ├── middleware/   # 보안, 로깅, 에러 핸들링
+│   │   ├── models/       # SQLAlchemy 모델
+│   │   ├── schemas/      # Pydantic 스키마
 │   │   ├── services/     # 비즈니스 로직
 │   │   ├── repositories/ # 데이터 접근
-│   │   └── utils/        # AWS 어댑터
+│   │   └── utils/        # AWS 어댑터 (S3, DynamoDB, Qdrant)
 │   └── tests/
 │
 ├── ai_worker/            # AI Lambda 워커 (L)
 │   ├── handler.py        # Lambda 엔트리포인트
 │   └── src/
-│       ├── parsers/      # 파일 타입별 파서
-│       ├── analysis/     # 분석 엔진
-│       └── storage/      # DynamoDB, Qdrant
+│       ├── parsers/      # 파일 타입별 파서 (PDF, 이미지, 오디오, 카카오톡)
+│       ├── analysis/     # 분석 엔진 (요약, 점수, 840조 태깅)
+│       ├── storage/      # DynamoDB, Qdrant 저장소
+│       ├── service_rag/  # 법률 지식 RAG
+│       ├── user_rag/     # 사건별 증거 RAG
+│       └── utils/        # 임베딩, 로깅 유틸
 │
 ├── frontend/             # Next.js 대시보드 (P)
 │   └── src/
 │       ├── app/          # Next.js App Router
 │       ├── components/   # React 컴포넌트
-│       └── lib/          # API 클라이언트
+│       ├── hooks/        # 커스텀 React Hooks
+│       ├── lib/          # API 클라이언트
+│       ├── services/     # 비즈니스 로직
+│       └── types/        # TypeScript 타입
 │
 ├── docs/                 # 설계 문서
 │   ├── specs/            # PRD, Architecture, API Spec

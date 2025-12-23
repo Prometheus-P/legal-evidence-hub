@@ -292,3 +292,13 @@ class NotificationType(str, enum.Enum):
     EVIDENCE = "evidence"
     DEADLINE = "deadline"
     SYSTEM = "system"
+
+
+# ============================================
+# Consultation Enums
+# ============================================
+class ConsultationType(str, enum.Enum):
+    """Consultation type enum"""
+    PHONE = "phone"           # 전화 상담
+    IN_PERSON = "in_person"   # 대면 상담
+    ONLINE = "online"         # 화상 상담

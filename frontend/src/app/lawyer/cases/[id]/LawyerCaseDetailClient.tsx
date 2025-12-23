@@ -57,6 +57,10 @@ import { MainWorkspace } from '@/components/case/MainWorkspace';
 import { ContextPanel } from '@/components/case/ContextPanel';
 import { FactSummaryEditor } from '@/components/legal-analysis/FactSummaryEditor';
 import { EvidenceListCompact, type LegalEvidence } from '@/components/case/EvidenceListCompact';
+// 016-draft-fact-summary: fact-summary 조회
+import { getFactSummary } from '@/lib/api/fact-summary';
+// Issue #423: Pipeline progress visualization
+import { PipelineProgressIndicator } from '@/components/case/PipelineProgressIndicator';
 
 interface CaseDetail {
   id: string;
@@ -135,15 +139,13 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [hasExistingDraft, setHasExistingDraft] = useState(false);
   const [draftProgress, setDraftProgress] = useState(0);
   const [draftStatus, setDraftStatus] = useState<DraftJobStatus | null>(null);
+  // 016-draft-fact-summary: fact-summary 존재 여부
+  const [hasFactSummary, setHasFactSummary] = useState(false);
 
   // Evidence state
   const [evidenceList, setEvidenceList] = useState<Evidence[]>([]);
   const [isLoadingEvidence, setIsLoadingEvidence] = useState(true);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
-
-  // AI Analysis state (Phase B.3)
-  const [lastAnalyzedAt, setLastAnalyzedAt] = useState<string | undefined>();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // 증거 필터 상태
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -259,6 +261,21 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
     fetchEvidence();
   }, [fetchEvidence]);
 
+  // 016-draft-fact-summary: fact-summary 존재 여부 확인
+  const checkFactSummary = useCallback(async () => {
+    if (!caseId) return;
+    try {
+      const response = await getFactSummary(caseId);
+      setHasFactSummary(!!(response.data?.ai_summary || response.data?.modified_summary));
+    } catch {
+      setHasFactSummary(false);
+    }
+  }, [caseId]);
+
+  useEffect(() => {
+    checkFactSummary();
+  }, [checkFactSummary]);
+
   // Auto-polling: silently check for status updates
   useEffect(() => {
     const hasProcessingItems = evidenceList.some(
@@ -311,7 +328,8 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   });
 
   // Draft generation handler (async with polling)
-  const handleGenerateDraft = useCallback(async (selectedEvidenceIds: string[]) => {
+  // 016-draft-fact-summary: 증거 선택 없이 fact-summary 기반 생성
+  const handleGenerateDraft = useCallback(async () => {
     if (!caseId) return;
 
     setIsGeneratingDraft(true);
@@ -383,24 +401,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const handleDraftRegenerate = useCallback(() => {
     setShowDraftModal(true);
   }, []);
-
-  // Phase B.3: AI Analysis request handler
-  const handleRequestAnalysis = useCallback(async () => {
-    if (!caseId) return;
-
-    setIsAnalyzing(true);
-    try {
-      // Trigger keypoint extraction from evidence
-      const response = await apiClient.post(`/lssp/cases/${caseId}/extract-keypoints`, {});
-      if (!response.error) {
-        setLastAnalyzedAt(new Date().toISOString());
-      }
-    } catch (err) {
-      logger.error('AI analysis request failed:', err);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [caseId]);
 
   // Phase B.4: Procedure Logic (Round 2 UX)
   const procedure = useProcedure(caseId || '');
@@ -526,6 +526,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
       {/* Tabs - 014-ui-settings-completion: Reduced to 4 main tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">
+        {/* Tab order follows data pipeline: 수집(Collection) → 분석(Analysis) → 구조화(Structuring) → 생성(Generation) */}
         <nav className="flex gap-6">
           {[
             { id: 'workspace', label: '워크스페이스', count: null, icon: <Scale className="w-4 h-4 mr-1" />, primary: true },
@@ -626,6 +627,18 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
         {activeTab === 'evidence' && (
           <div className="space-y-6">
+            {/* Issue #423: Pipeline Progress Indicator */}
+            {evidenceList.length > 0 && (
+              <PipelineProgressIndicator
+                totalEvidence={evidenceList.length}
+                completedEvidence={evidenceList.filter(e => e.status === 'completed').length}
+                processingEvidence={evidenceList.filter(e => e.status === 'processing' || e.status === 'queued').length}
+                hasDraft={hasExistingDraft}
+                hasRelations={false}
+                compact={false}
+              />
+            )}
+
             {/* Evidence Upload Section */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
@@ -893,10 +906,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                 setActiveTab('draft');
                 setShowDraftModal(true);
               }}
-              // Phase B.3: AI analysis status bar props
-              lastAnalyzedAt={lastAnalyzedAt}
-              onRequestAnalysis={handleRequestAnalysis}
-              isAnalyzing={isAnalyzing}
             />
           </div>
         )}
@@ -1084,11 +1093,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       />
 
       {/* Draft Generation Modal */}
+      {/* 016-draft-fact-summary: fact-summary 기반 초안 생성 */}
       <DraftGenerationModal
         isOpen={showDraftModal}
         onClose={() => setShowDraftModal(false)}
         onGenerate={handleGenerateDraft}
-        evidenceList={evidenceList}
+        hasFactSummary={hasFactSummary}
         progress={draftProgress}
         status={draftStatus}
       />

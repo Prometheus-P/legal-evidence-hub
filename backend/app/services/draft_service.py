@@ -42,6 +42,8 @@ from app.utils.qdrant import (
     search_evidence_by_semantic,
 )
 from app.utils.openai_client import generate_chat_completion
+from app.utils.gemini_client import generate_chat_completion_gemini
+from app.core.config import settings
 from app.services.document_renderer import DocumentRenderer
 from app.middleware import NotFoundError, PermissionError, ValidationError
 from app.services.precedent_service import PrecedentService
@@ -106,15 +108,15 @@ class DraftService:
         user_id: str
     ) -> DraftPreviewResponse:
         """
-        Generate draft preview using RAG + GPT-4o
+        Generate draft preview using Fact-Summary + GPT-4o
 
-        Process:
+        Process (016-draft-fact-summary):
         1. Validate case access
-        2. Retrieve evidence metadata from DynamoDB
-        3. Perform semantic search in Qdrant (RAG)
-        4. Build GPT-4o prompt with RAG context
+        2. Get fact summary context (REQUIRED)
+        3. Get legal knowledge and precedents (optional RAG)
+        4. Build GPT-4o prompt with fact summary as primary context
         5. Generate draft text
-        6. Extract citations
+        6. Return with empty citations (no evidence RAG)
 
         Args:
             case_id: Case ID
@@ -126,7 +128,7 @@ class DraftService:
 
         Raises:
             PermissionError: User does not have access (also for non-existent cases)
-            ValidationError: No evidence in case
+            ValidationError: No fact summary exists for case
         """
         # 1. Validate case access
         if not self.member_repo.has_access(case_id, user_id):
@@ -136,48 +138,69 @@ class DraftService:
         if not case:
             raise NotFoundError("Case")
 
-        # 2. Retrieve evidence metadata from DynamoDB
-        evidence_list = get_evidence_by_case(case_id)
+        # 2. Get fact summary context (REQUIRED - 016-draft-fact-summary)
+        fact_summary_context = self._get_fact_summary_context(case_id)
+        if not fact_summary_context:
+            raise ValidationError(
+                "사실관계 요약을 먼저 생성해주세요. "
+                "[사건 상세] → [사실관계 요약] 탭에서 생성할 수 있습니다."
+            )
 
-        if not evidence_list:
-            raise ValidationError("사건에 증거가 하나도 없습니다. 증거를 업로드한 후 초안을 생성해 주세요.")
-
-        # 3. Perform semantic RAG search in Qdrant (evidence + legal)
+        # 3. Get legal knowledge (keep RAG for legal references)
         rag_results = self.rag_orchestrator.perform_rag_search(case_id, request.sections)
-        evidence_results = rag_results.get("evidence", [])
         legal_results = rag_results.get("legal", [])
+        # Skip evidence RAG - use fact summary instead (016-draft-fact-summary)
+        evidence_results = []
 
         # 3.5 Search similar precedents
         precedent_results = self.rag_orchestrator.search_precedents(case_id)
 
-        # 3.6 Get fact summary context (014-case-fact-summary T023)
-        fact_summary_context = self._get_fact_summary_context(case_id)
+        # 3.6 Search consultation records (Issue #403)
+        consultation_results = self.rag_orchestrator.search_case_consultations(case_id)
 
-        # 4. Check if template exists for JSON output mode
+        # fact_summary_context already retrieved and validated above (016-draft-fact-summary)
+
+        # 4. Check if using Gemini (force text output) or OpenAI (can use JSON)
+        use_gemini = settings.USE_GEMINI_FOR_DRAFT and settings.GEMINI_API_KEY
+
+        # 5. Check if template exists for JSON output mode (only for OpenAI)
         template = get_template_by_type("이혼소장")
-        use_json_output = template is not None
+        use_json_output = template is not None and not use_gemini
 
-        # 5. Build GPT-4o prompt with RAG context + precedents + fact summary (T024)
+        # 6. Build GPT-4o prompt with RAG context + precedents + consultations + fact summary (Issue #403)
+        # For Gemini: force_text_output=True to get readable legal document (not JSON)
         prompt_messages = self.prompt_builder.build_draft_prompt(
             case=case,
             sections=request.sections,
             evidence_context=evidence_results,
             legal_context=legal_results,
             precedent_context=precedent_results,
+            consultation_context=consultation_results,
             fact_summary_context=fact_summary_context,
             language=request.language,
-            style=request.style
+            style=request.style,
+            force_text_output=use_gemini  # Gemini works better with text output
         )
 
-        # 6. Generate draft using GPT-4o-mini (faster response, optimized for 30s API Gateway limit)
-        raw_response = generate_chat_completion(
-            messages=prompt_messages,
-            model="gpt-4o-mini",
-            temperature=0.3,
-            max_tokens=2000
-        )
+        # 7. Generate draft using Gemini (faster) or GPT-4o-mini (fallback)
+        if use_gemini:
+            logger.info("[DRAFT] Using Gemini 2.0 Flash for draft generation")
+            raw_response = generate_chat_completion_gemini(
+                messages=prompt_messages,
+                model=settings.GEMINI_MODEL_CHAT,
+                temperature=0.3,
+                max_tokens=2000
+            )
+        else:
+            logger.info("[DRAFT] Using OpenAI GPT-4o-mini for draft generation")
+            raw_response = generate_chat_completion(
+                messages=prompt_messages,
+                model="gpt-4o-mini",
+                temperature=0.3,
+                max_tokens=2000
+            )
 
-        # 7. Process response based on output mode
+        # 8. Process response based on output mode
         if use_json_output:
             renderer = DocumentRenderer()
             json_doc = renderer.parse_json_response(raw_response)
@@ -189,10 +212,10 @@ class DraftService:
         else:
             draft_text = raw_response
 
-        # 8. Extract citations from RAG results
+        # 9. Extract citations from RAG results
         citations = self.citation_extractor.extract_evidence_citations(evidence_results)
 
-        # 8.5 Extract precedent citations
+        # 9.5 Extract precedent citations
         precedent_citations = self.citation_extractor.extract_precedent_citations(precedent_results)
 
         return DraftPreviewResponse(

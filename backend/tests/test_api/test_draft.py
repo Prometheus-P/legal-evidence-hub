@@ -18,7 +18,7 @@ class TestDraftPreview:
 
     def test_should_generate_draft_preview_with_rag(self, client, test_user, auth_headers):
         """
-        Given: User owns a case with processed evidence
+        Given: User owns a case with processed evidence and fact summary
         When: POST /cases/{case_id}/draft-preview is called
         Then:
             - Returns 200 OK
@@ -44,9 +44,11 @@ class TestDraftPreview:
         }]
 
         # When: POST /cases/{case_id}/draft-preview with mocked DynamoDB and RAG
-        with patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
+        with patch("app.services.draft_service.get_case_fact_summary") as mock_fact_summary, \
+             patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
              patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic") as mock_search, \
              patch("app.services.draft_service.generate_chat_completion") as mock_gpt:
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_get_evidence.return_value = mock_evidence
             mock_search.return_value = mock_evidence
             mock_gpt.return_value = "테스트 준비서면 초안입니다. [증거 1]을 기반으로 작성되었습니다."
@@ -69,21 +71,21 @@ class TestDraftPreview:
         # Draft text should not be empty
         assert len(data["draft_text"]) > 0
 
-    def test_should_return_400_when_no_evidence(self, client, test_user, auth_headers):
+    def test_should_return_400_when_no_fact_summary(self, client, test_user, auth_headers):
         """
-        Given: User owns a case with no evidence
+        Given: User owns a case with no fact summary (016-draft-fact-summary)
         When: POST /cases/{case_id}/draft-preview is called
         Then:
             - Returns 400 Bad Request
-            - Error message indicates evidence is required
+            - Error message indicates fact summary is required
         """
-        # Given: Create a case with no evidence
-        case_response = client.post("/cases", json={"title": "증거 없는 사건"}, headers=auth_headers)
+        # Given: Create a case with no fact summary
+        case_response = client.post("/cases", json={"title": "사실관계 요약 없는 사건"}, headers=auth_headers)
         case_id = case_response.json()["id"]
 
-        # When: POST /cases/{case_id}/draft-preview with empty evidence list
-        with patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence:
-            mock_get_evidence.return_value = []  # No evidence
+        # When: POST /cases/{case_id}/draft-preview with no fact summary
+        with patch("app.services.draft_service.get_case_fact_summary") as mock_fact_summary:
+            mock_fact_summary.return_value = None  # No fact summary
 
             draft_request = {"sections": ["청구취지"]}
             response = client.post(f"/cases/{case_id}/draft-preview", json=draft_request, headers=auth_headers)
@@ -92,11 +94,11 @@ class TestDraftPreview:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         data = response.json()
         assert "error" in data
-        assert "증거" in data["error"]["message"]
+        assert "사실관계 요약" in data["error"]["message"]
 
     def test_should_use_default_sections_when_not_specified(self, client, test_user, auth_headers):
         """
-        Given: User owns a case with evidence
+        Given: User owns a case with fact summary
         When: POST /cases/{case_id}/draft-preview with no sections specified
         Then:
             - Uses default sections ["청구취지", "청구원인"]
@@ -118,9 +120,11 @@ class TestDraftPreview:
         }]
 
         # When: POST with empty request body with mocked services
-        with patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
+        with patch("app.services.draft_service.get_case_fact_summary") as mock_fact_summary, \
+             patch("app.services.draft_service.get_evidence_by_case") as mock_get_evidence, \
              patch("app.services.draft.rag_orchestrator.search_evidence_by_semantic") as mock_search, \
              patch("app.services.draft_service.generate_chat_completion") as mock_gpt:
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_get_evidence.return_value = mock_evidence
             mock_search.return_value = mock_evidence
             mock_gpt.return_value = "기본 섹션으로 작성된 초안입니다."

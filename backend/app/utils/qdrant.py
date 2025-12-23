@@ -466,6 +466,198 @@ def get_template_example_for_prompt(template_type: str) -> Optional[str]:
     return None
 
 
+# ==================================================
+# Consultation Search (상담내용 검색 - Issue #403)
+# ==================================================
+
+def index_consultation_document(case_id: str, consultation: Dict) -> str:
+    """
+    Index a consultation document in Qdrant for RAG search
+
+    Args:
+        case_id: Case ID
+        consultation: Consultation data dict with id, summary, notes, date, type, participants
+
+    Returns:
+        Document ID in Qdrant
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Ensure collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            create_case_collection(case_id)
+
+        consultation_id = consultation.get("id")
+        if not consultation_id:
+            raise ValueError("Consultation must have 'id' field")
+
+        # Build content for embedding
+        summary = consultation.get("summary", "")
+        notes = consultation.get("notes", "") or ""
+        participants = consultation.get("participants", [])
+        consultation_date = consultation.get("date", "")
+        consultation_type = consultation.get("type", "")
+
+        # Combine for embedding
+        content = f"[상담내용] {consultation_date} ({consultation_type})\n"
+        content += f"참석자: {', '.join(participants) if participants else 'N/A'}\n"
+        content += f"요약: {summary}\n"
+        if notes:
+            content += f"메모: {notes}"
+
+        # Generate embedding
+        vector = generate_embedding(content)
+
+        # Prepare payload
+        payload = {
+            "consultation_id": consultation_id,
+            "case_id": case_id,
+            "doc_type": "consultation",
+            "document": content,
+            "summary": summary,
+            "notes": notes,
+            "date": str(consultation_date) if consultation_date else "",
+            "type": consultation_type,
+            "participants": participants,
+        }
+
+        # Use consultation ID hash as point ID
+        point_id = hash(f"consultation_{consultation_id}") % (2**63)
+
+        # Upsert point
+        client.upsert(
+            collection_name=collection_name,
+            points=[
+                PointStruct(
+                    id=point_id,
+                    vector=vector,
+                    payload=payload
+                )
+            ]
+        )
+
+        logger.info(f"Indexed consultation {consultation_id} in collection {collection_name}")
+        return consultation_id
+
+    except Exception as e:
+        logger.error(f"Qdrant index consultation error for case {case_id}: {e}")
+        raise
+
+
+def delete_consultation_document(case_id: str, consultation_id: str) -> bool:
+    """
+    Delete a consultation document from Qdrant
+
+    Args:
+        case_id: Case ID
+        consultation_id: Consultation ID to delete
+
+    Returns:
+        True if deleted successfully
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            logger.warning(f"Collection {collection_name} does not exist")
+            return False
+
+        # Calculate point ID (same hash as in index)
+        point_id = hash(f"consultation_{consultation_id}") % (2**63)
+
+        # Delete point
+        client.delete(
+            collection_name=collection_name,
+            points_selector=models.PointIdsList(
+                points=[point_id]
+            )
+        )
+
+        logger.info(f"Deleted consultation {consultation_id} from collection {collection_name}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Qdrant delete consultation error for case {case_id}: {e}")
+        return False
+
+
+def search_consultations(
+    case_id: str,
+    query: str = "",
+    top_k: int = 5
+) -> List[Dict]:
+    """
+    Search consultation documents for a case
+
+    Args:
+        case_id: Case ID
+        query: Optional search query (if empty, returns recent consultations)
+        top_k: Number of results to return
+
+    Returns:
+        List of consultation documents with similarity scores
+    """
+    client = _get_qdrant_client()
+    collection_name = _get_collection_name(case_id)
+
+    try:
+        # Check if collection exists
+        collections = client.get_collections().collections
+        if not any(c.name == collection_name for c in collections):
+            logger.warning(f"Collection {collection_name} does not exist")
+            return []
+
+        # Filter for consultation documents only
+        qdrant_filter = models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="doc_type",
+                    match=models.MatchValue(value="consultation")
+                )
+            ]
+        )
+
+        if query:
+            # Semantic search with query
+            query_embedding = generate_embedding(query)
+            results = client.query_points(
+                collection_name=collection_name,
+                query=query_embedding,
+                query_filter=qdrant_filter,
+                limit=top_k,
+                with_payload=True
+            ).points
+        else:
+            # Scroll to get all consultations (no semantic search)
+            results, _ = client.scroll(
+                collection_name=collection_name,
+                scroll_filter=qdrant_filter,
+                limit=top_k,
+                with_payload=True,
+                with_vectors=False
+            )
+
+        # Parse results
+        consultation_list = []
+        for hit in results:
+            doc = hit.payload.copy() if hit.payload else {}
+            doc["_score"] = getattr(hit, 'score', 1.0)
+            consultation_list.append(doc)
+
+        logger.info(f"Consultation search returned {len(consultation_list)} results for case {case_id}")
+        return consultation_list
+
+    except Exception as e:
+        logger.error(f"Consultation search error for case {case_id}: {e}")
+        return []
+
+
 # Backward compatibility aliases (for gradual migration)
 def delete_case_index(case_id: str) -> bool:
     """Alias for delete_case_collection (backward compatibility)"""

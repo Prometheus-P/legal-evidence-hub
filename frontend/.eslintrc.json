@@ -1,9 +1,19 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
   "rules": {
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
     "react/display-name": "off",
-    "jsx-a11y/role-supports-aria-props": "warn"
+    "jsx-a11y/role-supports-aria-props": "warn",
+    "jsx-a11y/alt-text": "warn"
   },
   "ignorePatterns": [
     "node_modules",
@@ -12,6 +22,7 @@
     "coverage",
     "playwright-report",
     "test-results",
-    "src/tests/**"
+    "src/tests/**",
+    "src/__tests__/**"
   ]
 }

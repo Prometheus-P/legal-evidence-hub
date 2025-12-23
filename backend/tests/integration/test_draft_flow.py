@@ -102,20 +102,24 @@ class TestDraftGenerationFlow:
 
         Flow:
         1. Create case (done in fixture)
-        2. Evidence exists (mocked DynamoDB)
-        3. RAG search finds relevant evidence (mocked Qdrant)
-        4. GPT-4o generates draft with citations (mocked OpenAI)
-        5. Response includes all required fields
+        2. Fact summary exists (mocked DynamoDB - 016-draft-fact-summary)
+        3. Evidence exists (mocked DynamoDB)
+        4. RAG search finds relevant legal docs (mocked Qdrant)
+        5. GPT-4o generates draft with citations (mocked OpenAI)
+        6. Response includes all required fields
         """
         case = case_with_evidence["case"]
         evidence = case_with_evidence["evidence"]
 
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant_evidence, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_qdrant_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            # Setup fact summary mock (016-draft-fact-summary)
+            mock_fact_summary.return_value = {"ai_summary": "피고는 2024년 1월 15일과 2월 20일에 원고에게 폭언 및 협박을 하였음."}
             # Setup DynamoDB mock - return evidence list
             mock_dynamo.return_value = evidence
 
@@ -211,24 +215,24 @@ class TestDraftGenerationFlow:
             assert "갑 제1호증" in data["draft_text"]
             assert "갑 제2호증" in data["draft_text"]
 
-            # Verify citations list
-            assert len(data["citations"]) == 2
-            assert data["citations"][0]["evidence_id"] == evidence[0]["evidence_id"]
+            # Verify citations is a list (016-draft-fact-summary uses fact summary,
+            # so evidence citations may be empty)
+            assert isinstance(data["citations"], list)
 
             # Verify disclaimer
             assert "미리보기" in data["preview_disclaimer"]
 
-    def test_draft_flow_with_empty_evidence(
+    def test_draft_flow_with_no_fact_summary(
         self, client, auth_headers, test_case
     ):
         """
-        Integration test: Draft generation fails gracefully with no evidence
+        Integration test: Draft generation fails gracefully with no fact summary
 
-        Expected: 400 Bad Request with helpful error message
+        Expected: 400 Bad Request with helpful error message (016-draft-fact-summary)
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo:
-            # No evidence
-            mock_dynamo.return_value = []
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary:
+            # No fact summary
+            mock_fact_summary.return_value = None
 
             response = client.post(
                 f"/cases/{test_case.id}/draft-preview",
@@ -239,31 +243,33 @@ class TestDraftGenerationFlow:
             assert response.status_code == status.HTTP_400_BAD_REQUEST
             data = response.json()
             # Error response structure: {"error": {"message": "..."}}
-            assert "증거" in data["error"]["message"]
+            assert "사실관계 요약" in data["error"]["message"]
 
-    def test_draft_flow_preserves_citation_order(
+    def test_draft_generation_uses_fact_summary(
         self, client, auth_headers, case_with_evidence
     ):
         """
-        Integration test: Citations are returned in RAG relevance order
+        Integration test: Draft generation uses fact summary (016-draft-fact-summary)
+
+        Note: 016-draft-fact-summary feature uses fact summary instead of evidence RAG,
+        so evidence_results = [] and citations will be empty.
         """
         case = case_with_evidence["case"]
         evidence = case_with_evidence["evidence"]
 
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant_evidence, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_qdrant_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "피고가 폭언과 협박을 함"}
             mock_dynamo.return_value = evidence
-            # Return in specific order (most relevant first)
-            mock_qdrant_evidence.return_value = [
-                {"id": "ev2", "evidence_id": "EV-002", "content": "협박", "labels": ["협박"]},
-                {"id": "ev1", "evidence_id": "EV-001", "content": "폭언", "labels": ["폭언"]},
-            ]
+            # Evidence RAG is skipped in 016-draft-fact-summary
+            mock_qdrant_evidence.return_value = []
             mock_qdrant_legal.return_value = []
-            mock_openai.return_value = "테스트 초안"
+            mock_openai.return_value = "테스트 초안 (사실관계 요약 기반)"
             mock_template.return_value = None
 
             response = client.post(
@@ -275,10 +281,10 @@ class TestDraftGenerationFlow:
             assert response.status_code == status.HTTP_200_OK
             data = response.json()
 
-            # Verify citation order matches RAG order
-            assert len(data["citations"]) == 2
-            assert data["citations"][0]["evidence_id"] == "EV-002"
-            assert data["citations"][1]["evidence_id"] == "EV-001"
+            # Verify citations is a list (empty in 016-draft-fact-summary)
+            assert isinstance(data["citations"], list)
+            # Verify draft text is returned
+            assert len(data["draft_text"]) > 0
 
 
 class TestDraftExportFlow:

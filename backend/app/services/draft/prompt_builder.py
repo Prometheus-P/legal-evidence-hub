@@ -29,12 +29,14 @@ class PromptBuilder:
         evidence_context: List[dict],
         legal_context: List[dict],
         precedent_context: List[dict],
+        consultation_context: List[dict] = None,
         fact_summary_context: str = "",
         language: str = "ko",
-        style: str = "formal"
+        style: str = "formal",
+        force_text_output: bool = False
     ) -> List[dict]:
         """
-        Build GPT-4o prompt with evidence, legal, precedent, and fact summary context
+        Build GPT-4o prompt with evidence, legal, precedent, consultation, and fact summary context
 
         Args:
             case: Case object
@@ -42,15 +44,20 @@ class PromptBuilder:
             evidence_context: Evidence RAG search results
             legal_context: Legal knowledge RAG search results
             precedent_context: Similar precedent search results
+            consultation_context: Consultation RAG search results (Issue #403)
             fact_summary_context: Lawyer-edited fact summary (014-case-fact-summary T025)
             language: Language (ko/en)
             style: Writing style
+            force_text_output: Force text output mode (disable JSON) - useful for Gemini
 
         Returns:
             List of messages for GPT-4o
         """
-        # Try to get template schema from Qdrant
-        template_schema = get_template_schema_for_prompt("이혼소장")
+        # Try to get template schema from Qdrant (skip if force_text_output)
+        if force_text_output:
+            template_schema = None
+        else:
+            template_schema = get_template_schema_for_prompt("이혼소장")
         use_json_output = template_schema is not None
 
         # Build context strings
@@ -58,10 +65,12 @@ class PromptBuilder:
             evidence_context_str = self.rag_orchestrator.format_evidence_context(evidence_context)
             legal_context_str = self.rag_orchestrator.format_legal_context(legal_context)
             precedent_context_str = self.rag_orchestrator.format_precedent_context(precedent_context)
+            consultation_context_str = self.rag_orchestrator.format_consultation_context(consultation_context or [])
         else:
             evidence_context_str = self._format_evidence_context(evidence_context)
             legal_context_str = self._format_legal_context(legal_context)
             precedent_context_str = self._format_precedent_context(precedent_context)
+            consultation_context_str = self._format_consultation_context(consultation_context or [])
 
         # System message - define role and constraints
         if use_json_output:
@@ -69,16 +78,16 @@ class PromptBuilder:
         else:
             system_message = self._build_text_system_message()
 
-        # User message - include case info, evidence, legal, precedent, and fact summary context
+        # User message - include case info, evidence, legal, precedent, consultation, and fact summary context
         if use_json_output:
             user_message = self._build_json_user_message(
                 case, sections, evidence_context_str, legal_context_str,
-                precedent_context_str, fact_summary_context, language, style
+                precedent_context_str, consultation_context_str, fact_summary_context, language, style
             )
         else:
             user_message = self._build_text_user_message(
                 case, sections, evidence_context_str, legal_context_str,
-                precedent_context_str, fact_summary_context, language, style
+                precedent_context_str, consultation_context_str, fact_summary_context, language, style
             )
 
         return [system_message, user_message]
@@ -161,7 +170,7 @@ class PromptBuilder:
         }
 
     def _build_json_user_message(
-        self, case, sections, evidence_str, legal_str, precedent_str, fact_summary_str, language, style
+        self, case, sections, evidence_str, legal_str, precedent_str, consultation_str, fact_summary_str, language, style
     ) -> dict:
         """Build user message for JSON output mode"""
         # Include fact summary if available (014-case-fact-summary T025)
@@ -169,6 +178,12 @@ class PromptBuilder:
 **사건 사실관계 요약 (변호사 검토/수정본):**
 {fact_summary_str}
 """ if fact_summary_str else ""
+
+        # Include consultation context if available (Issue #403)
+        consultation_section = f"""
+**상담 내역:**
+{consultation_str}
+""" if consultation_str and consultation_str != "(상담내역 없음)" else ""
 
         return {
             "role": "user",
@@ -180,7 +195,7 @@ class PromptBuilder:
 
 **생성할 섹션:**
 {", ".join(sections)}
-{fact_summary_section}
+{fact_summary_section}{consultation_section}
 **관련 법률 조문:**
 {legal_str}
 
@@ -194,6 +209,7 @@ class PromptBuilder:
 - 언어: {language}
 - 스타일: {style}
 - 사건 사실관계 요약이 제공된 경우, 이를 최우선으로 참조하여 작성하세요
+- 상담 내역이 제공된 경우, 의뢰인이 진술한 사실관계를 참조하세요
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
 - 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
@@ -204,7 +220,7 @@ class PromptBuilder:
         }
 
     def _build_text_user_message(
-        self, case, sections, evidence_str, legal_str, precedent_str, fact_summary_str, language, style
+        self, case, sections, evidence_str, legal_str, precedent_str, consultation_str, fact_summary_str, language, style
     ) -> dict:
         """Build user message for text output mode"""
         # Include fact summary if available (014-case-fact-summary T025)
@@ -212,6 +228,12 @@ class PromptBuilder:
 **사건 사실관계 요약 (변호사 검토/수정본):**
 {fact_summary_str}
 """ if fact_summary_str else ""
+
+        # Include consultation context if available (Issue #403)
+        consultation_section = f"""
+**상담 내역:**
+{consultation_str}
+""" if consultation_str and consultation_str != "(상담내역 없음)" else ""
 
         return {
             "role": "user",
@@ -223,7 +245,7 @@ class PromptBuilder:
 
 **생성할 섹션:**
 {", ".join(sections)}
-{fact_summary_section}
+{fact_summary_section}{consultation_section}
 **관련 법률 조문:**
 {legal_str}
 
@@ -237,6 +259,7 @@ class PromptBuilder:
 - 언어: {language}
 - 스타일: {style}
 - 사건 사실관계 요약이 제공된 경우, 이를 최우선으로 참조하여 작성하세요
+- 상담 내역이 제공된 경우, 의뢰인이 진술한 사실관계를 참조하세요
 - 위 법률 조문과 증거를 기반으로 법률적 논리를 구성해 주세요
 - 이혼 사유는 반드시 민법 제840조를 인용하여 작성하세요
 - 유사 판례를 참고하여 위자료/재산분할 청구 논리를 보강하세요
@@ -338,4 +361,19 @@ class PromptBuilder:
             case_ref = p.get("case_ref", "")
             summary = p.get("summary", "")[:200]
             parts.append(f"【판례 {i}】 {case_ref}\n{summary}")
+        return "\n\n".join(parts)
+
+    def _format_consultation_context(self, consultation_results: List[dict]) -> str:
+        """Fallback consultation formatting (Issue #403)"""
+        if not consultation_results:
+            return "(상담내역 없음)"
+
+        parts = []
+        for i, c in enumerate(consultation_results, 1):
+            summary = c.get("summary", "")[:300]
+            consultation_date = c.get("date", "")
+            consultation_type = c.get("type", "")
+            type_labels = {"phone": "전화", "in_person": "대면", "online": "화상"}
+            type_str = type_labels.get(consultation_type, consultation_type)
+            parts.append(f"[상담 {i}] ({consultation_date}, {type_str})\n{summary}")
         return "\n\n".join(parts)

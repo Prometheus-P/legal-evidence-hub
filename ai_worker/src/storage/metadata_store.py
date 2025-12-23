@@ -105,7 +105,13 @@ class MetadataStore:
             return dynamodb_value['S']
         elif 'N' in dynamodb_value:
             num_str = dynamodb_value['N']
-            return float(num_str) if '.' in num_str else int(num_str)
+            try:
+                if '.' not in num_str and 'e' not in num_str.lower():
+                    return int(num_str)
+                return float(num_str)
+            except ValueError:
+                logger.warning(f"Failed to parse number: {num_str}")
+                return float(num_str)
         elif 'L' in dynamodb_value:
             return [self._deserialize_value(v) for v in dynamodb_value['L']]
         elif 'M' in dynamodb_value:
@@ -699,35 +705,14 @@ class MetadataStore:
     def save_chunks(self, chunks: List[EvidenceChunk]) -> None:
         """
         여러 청크 일괄 저장
-        
+
         Note: BatchWriteItem 권한이 없을 경우 개별 PutItem으로 fallback
-        
+
         Args:
             chunks: EvidenceChunk 리스트
         """
         for chunk in chunks:
-            item_data = {
-                'evidence_id': f"chunk_{chunk.chunk_id}",
-                'chunk_id': chunk.chunk_id,
-                'file_id': chunk.file_id,
-                'content': chunk.content,
-                'score': chunk.score,
-                'timestamp': chunk.timestamp.isoformat(),
-                'sender': chunk.sender,
-                'vector_id': chunk.vector_id,
-                'case_id': chunk.case_id,
-                'record_type': 'chunk',
-                'created_at': datetime.now(timezone.utc).isoformat()
-            }
-            
-            try:
-                self.client.put_item(
-                    TableName=self.table_name,
-                    Item=self._serialize_item(item_data)
-                )
-            except ClientError as e:
-                logger.error(f"DynamoDB put_item error for chunk {chunk.chunk_id}: {e}")
-                raise
+            self.save_chunk(chunk)
 
     def get_chunk(self, chunk_id: str) -> Optional[EvidenceChunk]:
         """
@@ -1020,11 +1005,18 @@ class MetadataStore:
         vector_ids = [chunk.vector_id for chunk in chunks if chunk.vector_id]
 
         # 2. Delete vectors from VectorStore
+        failed_deletions = []
         for vector_id in vector_ids:
             try:
                 vector_store.delete_by_id(vector_id)
-            except Exception:
-                pass  # Ignore if already deleted
+            except Exception as e:
+                logger.warning(f"Failed to delete vector {vector_id}: {e}")
+                failed_deletions.append(vector_id)
+
+        if failed_deletions:
+            logger.error(
+                f"Failed to delete {len(failed_deletions)} vectors for case {case_id}: {failed_deletions}"
+            )
 
         # 3. Delete metadata
         self.delete_case(case_id)

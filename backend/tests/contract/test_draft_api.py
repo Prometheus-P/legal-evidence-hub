@@ -124,13 +124,15 @@ class TestDraftPreviewPermissions:
         # test_case fixture includes test_user as owner
 
         # Mock the external services (Qdrant, OpenAI, DynamoDB)
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
             # Setup mocks
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [
                 {"evidence_id": "ev1", "status": "done", "content": "test"}
             ]
@@ -163,12 +165,14 @@ class TestDraftPreviewRequest:
         Then:
             - Request is accepted (uses default sections)
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [{"evidence_id": "ev1", "status": "done"}]
             mock_qdrant.return_value = []
             mock_legal.return_value = []
@@ -193,12 +197,14 @@ class TestDraftPreviewRequest:
         Then:
             - Request is accepted
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [{"evidence_id": "ev1", "status": "done"}]
             mock_qdrant.return_value = []
             mock_legal.return_value = []
@@ -230,12 +236,14 @@ class TestDraftPreviewResponse:
             - Response contains generated_at timestamp
             - Response contains preview_disclaimer (FR-007 clarification)
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [{"evidence_id": "ev1", "status": "done"}]
             mock_qdrant.return_value = [
                 {"id": "ev1", "content": "폭언 내용", "labels": ["폭언"]}
@@ -272,28 +280,25 @@ class TestDraftPreviewResponse:
         self, client, auth_headers, test_case
     ):
         """
-        Given: Authenticated case member with evidence
-        When: POST /cases/{id}/draft-preview returns citations
+        Given: Authenticated case member with fact summary
+        When: POST /cases/{id}/draft-preview returns response
         Then:
-            - Each citation has evidence_id
-            - Each citation has snippet
-            - Each citation has labels list
+            - Response contains citations list (may be empty per 016-draft-fact-summary)
+            - citations is a list type
+
+        Note: 016-draft-fact-summary uses fact summary instead of evidence RAG,
+        so citations array may be empty as evidence_results = []
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [{"evidence_id": "ev1", "status": "done"}]
-            mock_qdrant.return_value = [
-                {
-                    "id": "ev1",
-                    "evidence_id": "EV-001",
-                    "content": "피고가 원고에게 폭언을 하였습니다.",
-                    "labels": ["폭언", "정서적 학대"]
-                }
-            ]
+            mock_qdrant.return_value = []  # Empty - using fact summary
             mock_legal.return_value = []
             mock_openai.return_value = "테스트 초안"
             mock_template.return_value = None
@@ -307,14 +312,8 @@ class TestDraftPreviewResponse:
             assert response.status_code == status.HTTP_200_OK
 
             data = response.json()
-            assert len(data["citations"]) > 0
-
-            # Verify citation structure
-            citation = data["citations"][0]
-            assert "evidence_id" in citation
-            assert "snippet" in citation
-            assert "labels" in citation
-            assert isinstance(citation["labels"], list)
+            # Citations is always a list (016-draft-fact-summary may result in empty list)
+            assert isinstance(data["citations"], list)
 
 
 class TestDraftPreviewErrors:
@@ -338,18 +337,18 @@ class TestDraftPreviewErrors:
         # Should return 403, not 404 (security: prevent case enumeration)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_draft_preview_400_no_evidence(
+    def test_draft_preview_400_no_fact_summary(
         self, client, auth_headers, test_case
     ):
         """
         Given: Authenticated case member
-        When: POST /cases/{id}/draft-preview for case without evidence
+        When: POST /cases/{id}/draft-preview for case without fact summary
         Then:
-            - Returns 400 Bad Request with helpful message
+            - Returns 400 Bad Request with helpful message (016-draft-fact-summary)
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo:
-            # No evidence in case
-            mock_dynamo.return_value = []
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary:
+            # No fact summary exists
+            mock_fact_summary.return_value = None
 
             response = client.post(
                 f"/cases/{test_case.id}/draft-preview",
@@ -364,8 +363,8 @@ class TestDraftPreviewErrors:
             # Error response structure: {"error": {"message": "..."}}
             assert "error" in data
             assert "message" in data["error"]
-            # Korean error message per spec
-            assert "증거" in data["error"]["message"]
+            # Korean error message per spec (016-draft-fact-summary)
+            assert "사실관계 요약" in data["error"]["message"]
 
 
 class TestDraftPreviewInlineCitations:
@@ -383,12 +382,14 @@ class TestDraftPreviewInlineCitations:
         Note: This test verifies the API accepts and returns inline citations,
         not that GPT-4o always produces them (that's model behavior)
         """
-        with patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
+        with patch('app.services.draft_service.get_case_fact_summary') as mock_fact_summary, \
+             patch('app.services.draft_service.get_evidence_by_case') as mock_dynamo, \
              patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic') as mock_qdrant, \
              patch('app.services.draft.rag_orchestrator.search_legal_knowledge') as mock_legal, \
              patch('app.services.draft_service.generate_chat_completion') as mock_openai, \
              patch('app.services.draft_service.get_template_by_type') as mock_template:
 
+            mock_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
             mock_dynamo.return_value = [{"evidence_id": "ev1", "status": "done"}]
             mock_qdrant.return_value = [
                 {"id": "ev1", "content": "폭언 내용", "labels": ["폭언"]}

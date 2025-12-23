@@ -6,36 +6,13 @@
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
-import { Evidence } from '@/types/evidence';
-
-const mockEvidence: Evidence[] = [
-  {
-    id: '1',
-    caseId: 'case-1',
-    type: 'text',
-    filename: 'chat_log.txt',
-    uploadDate: '2024-01-15',
-    status: 'completed',
-    size: 1024,
-    summary: '테스트 요약',
-  },
-  {
-    id: '2',
-    caseId: 'case-1',
-    type: 'image',
-    filename: 'evidence.jpg',
-    uploadDate: '2024-01-16',
-    status: 'processing',
-    size: 2048,
-  },
-];
 
 describe('DraftGenerationModal Accessibility', () => {
   const defaultProps = {
     isOpen: true,
     onClose: jest.fn(),
     onGenerate: jest.fn(),
-    evidenceList: mockEvidence,
+    hasFactSummary: true,
   };
 
   beforeEach(() => {
@@ -48,13 +25,6 @@ describe('DraftGenerationModal Accessibility', () => {
 
       const closeButton = screen.getByRole('button', { name: '닫기' });
       expect(closeButton).toHaveAttribute('type', 'button');
-    });
-
-    it('select all button should have type="button"', () => {
-      render(<DraftGenerationModal {...defaultProps} />);
-
-      const selectAllButton = screen.getByRole('button', { name: /전체 선택|전체 해제/i });
-      expect(selectAllButton).toHaveAttribute('type', 'button');
     });
 
     it('cancel button should have type="button"', () => {
@@ -94,13 +64,34 @@ describe('DraftGenerationModal Accessibility', () => {
     it('should not render when isOpen is false', () => {
       render(<DraftGenerationModal {...defaultProps} isOpen={false} />);
 
-      expect(screen.queryByText('Draft 생성 옵션')).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('should render modal title when isOpen is true', () => {
+    it('should render modal when isOpen is true', () => {
       render(<DraftGenerationModal {...defaultProps} />);
 
-      expect(screen.getByText('Draft 생성 옵션')).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+  });
+
+  describe('Fact summary status', () => {
+    it('should show warning when hasFactSummary is false', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={false} />);
+
+      expect(screen.getByText('사실관계 요약이 필요합니다')).toBeInTheDocument();
+    });
+
+    it('should show ready message when hasFactSummary is true', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={true} />);
+
+      expect(screen.getByText('사실관계 요약이 준비되었습니다')).toBeInTheDocument();
+    });
+
+    it('should disable generate button when hasFactSummary is false', () => {
+      render(<DraftGenerationModal {...defaultProps} hasFactSummary={false} />);
+
+      const generateButton = screen.getByRole('button', { name: /초안 생성/i });
+      expect(generateButton).toBeDisabled();
     });
   });
 });

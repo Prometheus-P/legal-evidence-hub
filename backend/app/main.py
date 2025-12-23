@@ -27,6 +27,7 @@ from app.api import (  # noqa: E402
     cases,
     client_portal,
     clients,
+    consultation,
     dashboard,
     detective_portal,
     detectives,
@@ -319,6 +320,9 @@ app.include_router(notifications.router, prefix=API_PREFIX, tags=["Notifications
 # Client/Detective Contact 라우터 (Issue #297, #298 - FR-009~012, FR-015~016)
 app.include_router(clients.router, prefix=API_PREFIX, tags=["Client Contacts"])
 app.include_router(detectives.router, prefix=API_PREFIX, tags=["Detective Contacts"])
+
+# Consultation 라우터 (Issue #399 - 상담내역)
+app.include_router(consultation.router, prefix=API_PREFIX, tags=["Consultations"])
 
 # LSSP 라우터 (Legal Service Standardization Protocol v2.01-v2.15)
 app.include_router(lssp_router, prefix=API_PREFIX, tags=["LSSP"])
