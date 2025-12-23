@@ -9,6 +9,10 @@ Features:
 - 키워드 기반 Fallback
 - 토큰 최적화 (시스템 프롬프트 캐싱)
 
+Note:
+    프롬프트 설정은 config/prompts/ai_system.yaml에서 관리
+    톤 가이드라인은 config/prompts/tone_guidelines.yaml에서 관리
+
 Usage:
     from src.analysis.ai_analyzer import AIAnalyzer
 
@@ -30,90 +34,58 @@ from src.schemas import (
     get_system_prompt_categories,
 )
 from src.exceptions import AnalysisError
-from src.prompts.tone_guidelines import OBJECTIVE_TONE_GUIDELINES
+from config import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
 
-# 시스템 프롬프트 (1024+ 토큰으로 캐싱 최적화)
-SYSTEM_PROMPT = """당신은 대한민국 가사소송 전문 법률 AI입니다.
+def _get_system_prompt() -> str:
+    """YAML 설정에서 시스템 프롬프트 로드"""
+    prompts = ConfigLoader.load("prompts/ai_system")
+    return prompts.get("system_prompt", "")
+
+
+def _get_tone_guidelines() -> str:
+    """YAML 설정에서 톤 가이드라인 로드"""
+    prompts = ConfigLoader.load("prompts/tone_guidelines")
+    return prompts.get("objective_tone_guidelines", "")
+
+
+# 시스템 프롬프트 (하위 호환성을 위해 유지, 실제로는 YAML에서 로드)
+SYSTEM_PROMPT = _get_system_prompt() or """당신은 대한민국 가사소송 전문 법률 AI입니다.
 주어진 메시지/증거를 분석하여 민법 제840조 이혼 사유에 해당하는지 판단합니다.
 
 {categories}
 
-## 신뢰도 기준 (confidence: 0.0-1.0)
-
-- 0.0-0.2: 관련성 불확실 - 이혼 사유와 무관하거나 맥락 불명확
-- 0.2-0.4: 약한 정황 - 간접적 암시, 단일 키워드만 존재
-- 0.4-0.6: 의심 정황 - 의심스러운 패턴, 맥락상 가능성 있음
-- 0.6-0.8: 강력한 정황 - 복수의 증거, 간접 인정 포함
-- 0.8-1.0: 확정적 증거 - 직접 인정, 명백한 증거
-
-## 분석 지침
-
-1. 메시지 내용을 주의 깊게 읽고 이혼 사유 해당 여부 판단
-2. 부정문/반어법 주의: "외도 안 했어" → 무관(부정), "외도 한 거 아니야?" → 의심(질문)
-3. 핵심 증거 문구(key_phrases) 정확히 추출
-4. 언급된 인물/장소/금액 추출
-5. 신뢰도가 낮지만 중요한 경우 requires_review=true 설정
-
-## Few-shot 예시
-
-### 예시 1: 외도 증거
-입력: "어제 호텔에서 그 사람 또 만났어"
-출력:
-- primary_ground: 부정행위
-- confidence: 0.75
-- key_phrases: ["호텔에서", "그 사람", "또 만났어"]
-- reasoning: 호텔 만남과 '또' 표현으로 반복적 외도 정황이 나타납니다
-
-### 예시 2: 가정폭력
-입력: "남편이 또 때렸어. 멍이 들었어."
-출력:
-- primary_ground: 가정폭력
-- confidence: 0.85
-- key_phrases: ["때렸어", "멍이 들었어"]
-- reasoning: 신체 폭력의 직접적 진술과 상해 증거가 확인됩니다
-
-### 예시 3: 무관한 메시지
-입력: "오늘 저녁 뭐 먹을까?"
-출력:
-- primary_ground: 무관
-- confidence: 0.95
-- key_phrases: []
-- reasoning: 일상 대화로 이혼 사유와 무관한 내용입니다
-
-### 예시 4: 부정문 (False Positive 방지)
-입력: "바람 안 피웠어. 오해야."
-출력:
-- primary_ground: 무관
-- confidence: 0.7
-- key_phrases: ["바람 안 피웠어", "오해"]
-- reasoning: 부정문으로 외도를 부인하는 내용입니다
-
 ## 출력 형식
-
-반드시 아래 JSON 스키마를 따르세요:
-{{
-    "primary_ground": "부정행위|악의의유기|배우자학대|시댁학대|직계존속학대|생사불명|가정폭력|재정비행|자녀학대|약물남용|기타중대사유|무관",
-    "secondary_grounds": [],
-    "confidence": 0.0-1.0,
-    "key_phrases": ["핵심 문구"],
-    "reasoning": "분류 이유 (한국어)",
-    "mentioned_entities": ["인물/장소/금액"],
-    "requires_review": true/false,
-    "review_reason": "검토 필요 시 이유 또는 null"
-}}"""
+반드시 JSON 스키마를 따르세요."""
 
 
 @dataclass
 class AIAnalyzerConfig:
-    """AI 분석기 설정"""
+    """AI 분석기 설정
+
+    Note:
+        기본값은 config/models.yaml의 default_analyzer에서 로드됩니다.
+    """
     model: str = "gpt-4o-mini"
     temperature: float = 0.1
     max_tokens: int = 500
     max_retries: int = 3
     use_instructor: bool = False  # Instructor 라이브러리 사용 여부
+
+    @classmethod
+    def from_config(cls) -> "AIAnalyzerConfig":
+        """config/models.yaml에서 설정 로드"""
+        models = ConfigLoader.load("models")
+        defaults = models.get("default_analyzer", {})
+        return cls(
+            model=defaults.get("model", "gpt-4o-mini"),
+            temperature=defaults.get("temperature", 0.1),
+            max_tokens=defaults.get("max_tokens", 500),
+            max_retries=defaults.get("max_retries", 3),
+            use_instructor=defaults.get("use_instructor", False),
+        )
 
 
 class AIAnalyzer:
@@ -137,11 +109,18 @@ class AIAnalyzer:
         self._system_prompt = self._build_system_prompt()
 
     def _build_system_prompt(self) -> str:
-        """시스템 프롬프트 생성 (톤 가이드라인 포함)"""
+        """시스템 프롬프트 생성 (톤 가이드라인 포함)
+
+        Note:
+            프롬프트는 config/prompts/ai_system.yaml에서 로드됩니다.
+            톤 가이드라인은 config/prompts/tone_guidelines.yaml에서 로드됩니다.
+        """
         categories = get_system_prompt_categories()
-        base_prompt = SYSTEM_PROMPT.format(categories=categories)
+        base_prompt = _get_system_prompt() or SYSTEM_PROMPT
+        base_prompt = base_prompt.format(categories=categories)
         # 톤앤매너 가이드라인 추가
-        return f"{base_prompt}\n\n{OBJECTIVE_TONE_GUIDELINES}"
+        tone_guidelines = _get_tone_guidelines()
+        return f"{base_prompt}\n\n{tone_guidelines}"
 
     def _get_client(self):
         """OpenAI 클라이언트 가져오기 (lazy initialization)"""

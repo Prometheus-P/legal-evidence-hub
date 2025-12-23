@@ -1,0 +1,318 @@
+
+# 인물 역할 키워드 매핑
+# Person Role Keywords Mapping
+#
+# 키워드 → (역할, 측면) 매핑
+# role: plaintiff, defendant, child, plaintiff_parent, defendant_parent, relative, third_party, friend, colleague, witness, unknown
+# side: plaintiff_side, defendant_side, neutral, unknown
+
+# ========================================
+# 원고 측
+# ========================================
+plaintiff_keywords:
+  의뢰인:
+    role: plaintiff
+    side: plaintiff_side
+  원고:
+    role: plaintiff
+    side: plaintiff_side
+  나:
+    role: plaintiff
+    side: plaintiff_side
+  저:
+    role: plaintiff
+    side: plaintiff_side
+  본인:
+    role: plaintiff
+    side: plaintiff_side
+
+# ========================================
+# 피고 측
+# ========================================
+defendant_keywords:
+  상대방:
+    role: defendant
+    side: defendant_side
+  피고:
+    role: defendant
+    side: defendant_side
+  남편:
+    role: defendant
+    side: defendant_side
+  아내:
+    role: defendant
+    side: defendant_side
+  배우자:
+    role: defendant
+    side: defendant_side
+  그 사람:
+    role: defendant
+    side: defendant_side
+  그 남자:
+    role: defendant
+    side: defendant_side
+  그 여자:
+    role: defendant
+    side: defendant_side
+
+# ========================================
+# 자녀
+# ========================================
+child_keywords:
+  아들:
+    role: child
+    side: neutral
+  딸:
+    role: child
+    side: neutral
+  자녀:
+    role: child
+    side: neutral
+  아이:
+    role: child
+    side: neutral
+  애:
+    role: child
+    side: neutral
+  큰애:
+    role: child
+    side: neutral
+  작은애:
+    role: child
+    side: neutral
+  첫째:
+    role: child
+    side: neutral
+  둘째:
+    role: child
+    side: neutral
+  막내:
+    role: child
+    side: neutral
+
+# ========================================
+# 원고 부모
+# ========================================
+plaintiff_parent_keywords:
+  친정어머니:
+    role: plaintiff_parent
+    side: plaintiff_side
+  친정아버지:
+    role: plaintiff_parent
+    side: plaintiff_side
+  친정엄마:
+    role: plaintiff_parent
+    side: plaintiff_side
+  친정아빠:
+    role: plaintiff_parent
+    side: plaintiff_side
+  우리 엄마:
+    role: plaintiff_parent
+    side: plaintiff_side
+  우리 아빠:
+    role: plaintiff_parent
+    side: plaintiff_side
+  저희 어머니:
+    role: plaintiff_parent
+    side: plaintiff_side
+  저희 아버지:
+    role: plaintiff_parent
+    side: plaintiff_side
+
+# ========================================
+# 피고 부모
+# ========================================
+defendant_parent_keywords:
+  시어머니:
+    role: defendant_parent
+    side: defendant_side
+  시아버지:
+    role: defendant_parent
+    side: defendant_side
+  시엄마:
+    role: defendant_parent
+    side: defendant_side
+  시아빠:
+    role: defendant_parent
+    side: defendant_side
+  시부모:
+    role: defendant_parent
+    side: defendant_side
+  장모:
+    role: defendant_parent
+    side: defendant_side
+  장인:
+    role: defendant_parent
+    side: defendant_side
+
+# ========================================
+# 친척
+# ========================================
+relative_keywords:
+  시누이:
+    role: relative
+    side: defendant_side
+  시동생:
+    role: relative
+    side: defendant_side
+  형님:
+    role: relative
+    side: unknown
+  동서:
+    role: relative
+    side: unknown
+  처남:
+    role: relative
+    side: plaintiff_side
+  처제:
+    role: relative
+    side: plaintiff_side
+  매형:
+    role: relative
+    side: plaintiff_side
+
+# ========================================
+# 제3자 (외도 상대 등)
+# ========================================
+third_party_keywords:
+  상간녀:
+    role: third_party
+    side: unknown
+  상간남:
+    role: third_party
+    side: unknown
+  바람상대:
+    role: third_party
+    side: unknown
+  외도상대:
+    role: third_party
+    side: unknown
+
+# ========================================
+# 친구/동료
+# ========================================
+social_keywords:
+  친구:
+    role: friend
+    side: unknown
+  동료:
+    role: colleague
+    side: unknown
+  직장동료:
+    role: colleague
+    side: unknown
+  회사동료:
+    role: colleague
+    side: unknown
+
+# ========================================
+# 한국 성씨 목록 (상위 빈도)
+# ========================================
+korean_surnames:
+  - "김"
+  - "이"
+  - "박"
+  - "최"
+  - "정"
+  - "강"
+  - "조"
+  - "윤"
+  - "장"
+  - "임"
+  - "한"
+  - "오"
+  - "서"
+  - "신"
+  - "권"
+  - "황"
+  - "안"
+  - "송"
+  - "류"
+  - "전"
+  - "홍"
+  - "고"
+  - "문"
+  - "양"
+  - "손"
+  - "배"
+  - "백"
+  - "허"
+  - "유"
+  - "남"
+  - "심"
+  - "노"
+  - "하"
+  - "곽"
+  - "성"
+  - "차"
+  - "주"
+  - "우"
+  - "구"
+  - "민"
+  - "진"
+  - "나"
+  - "지"
+  - "엄"
+  - "변"
+  - "채"
+  - "원"
+  - "천"
+  - "방"
+  - "공"
+
+# ========================================
+# 익명화 패턴 (정규식)
+# ========================================
+anonymized_patterns:
+  - "[가-힣]O{1,2}"      # 김OO, 이O
+  - "[가-힣]○{1,2}"     # 김○○
+  - "[가-힣]X{1,2}"      # 김XX
+  - "[가-힣]◯{1,2}"     # 김◯◯
+  - "[가-힣]\\*{1,2}"    # 김**
+
+# ========================================
+# 일반 단어 필터링 (이름으로 오인 방지)
+# ========================================
+common_words:
+  # 일반 명사
+  - "김치"
+  - "이상"
+  - "박수"
+  - "최고"
+  - "정리"
+  - "강조"
+  - "조금"
+  - "윤리"
+  - "장소"
+  - "임시"
+  - "한국"
+  - "오늘"
+  - "서울"
+  - "신청"
+  - "권리"
+  - "황금"
+  - "안녕"
+  - "송금"
+  - "전화"
+  - "홍보"
+  - "고민"
+  - "문제"
+  - "양식"
+  - "손해"
+  - "배달"
+  - "백화"
+  - "허락"
+  - "남자"
+  - "심리"
+  - "노력"
+  - "하루"
+  - "성공"
+  - "차이"
+  - "주의"
+  - "민원"
+  # 법률 용어
+  - "강제"
+  - "조정"
+  - "이혼"
+  - "양육"
+  - "재산"

@@ -102,19 +102,22 @@ class TestSystemPrompt(unittest.TestCase):
         self.assertIn("부정행위", SYSTEM_PROMPT)
         self.assertIn("가정폭력", SYSTEM_PROMPT)
 
-    def test_system_prompt_contains_examples(self):
+    def test_system_prompt_contains_confidence_guidelines(self):
         """Given: SYSTEM_PROMPT
         When: 내용 확인
-        Then: Few-shot 예시 포함"""
-        self.assertIn("예시 1", SYSTEM_PROMPT)
-        self.assertIn("호텔", SYSTEM_PROMPT)
+        Then: 신뢰도 기준 가이드라인 포함"""
+        self.assertIn("신뢰도", SYSTEM_PROMPT)
+        self.assertIn("confidence", SYSTEM_PROMPT)
+        self.assertIn("0.0-1.0", SYSTEM_PROMPT)
 
-    def test_system_prompt_length(self):
+    def test_system_prompt_contains_output_format(self):
         """Given: SYSTEM_PROMPT
         When: 길이 확인
-        Then: 1024자 이상 (캐싱 최적화)"""
-        # 토큰이 아닌 문자 수로 대략적 확인
-        self.assertGreater(len(SYSTEM_PROMPT), 1500)
+        Then: 최소 500자 이상 (구조화된 지침 포함)"""
+        # YAML 기반 외부화로 프롬프트가 간결해짐
+        # 핵심 구조만 포함하면 500자 이상
+        self.assertGreater(len(SYSTEM_PROMPT), 500)
+        self.assertIn("JSON", SYSTEM_PROMPT)
 
 
 class TestAIAnalyzerWithMock(unittest.TestCase):

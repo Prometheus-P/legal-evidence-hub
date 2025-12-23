@@ -7,6 +7,9 @@ RelationshipInferrer - 인물 간 관계 추론
 - 관계 그래프 생성
 
 LLM 의존 없이 규칙 기반으로 구현
+
+Note:
+    관계 키워드는 config/relationship_keywords.yaml에서 관리
 """
 
 import re
@@ -14,11 +17,107 @@ from dataclasses import dataclass
 from typing import List, Dict, Optional, Set
 from enum import Enum
 
+from config import ConfigLoader
 from .person_extractor import (
     PersonExtractor,
     ExtractedPerson,
     PersonRole,
 )
+
+
+# =============================================================================
+# 설정 로드 헬퍼 함수
+# =============================================================================
+
+def _load_relationship_keywords() -> Dict[str, "RelationshipType"]:
+    """YAML 설정에서 관계 키워드 로드"""
+    config = ConfigLoader.load("relationship_keywords")
+
+    # RelationshipType 문자열 → Enum 매핑 (런타임에 생성)
+    type_mapping = {
+        "spouse": RelationshipType.SPOUSE,
+        "ex_spouse": RelationshipType.EX_SPOUSE,
+        "parent": RelationshipType.PARENT,
+        "child": RelationshipType.CHILD,
+        "sibling": RelationshipType.SIBLING,
+        "in_law": RelationshipType.IN_LAW,
+        "relative": RelationshipType.RELATIVE,
+        "friend": RelationshipType.FRIEND,
+        "colleague": RelationshipType.COLLEAGUE,
+        "affair": RelationshipType.AFFAIR,
+        "acquaintance": RelationshipType.ACQUAINTANCE,
+        "unknown": RelationshipType.UNKNOWN,
+    }
+
+    result = {}
+    keywords_config = config.get("relationship_keywords", {})
+    for keyword, rel_type_str in keywords_config.items():
+        if rel_type_str in type_mapping:
+            result[keyword] = type_mapping[rel_type_str]
+
+    return result
+
+
+def _load_relationship_labels() -> Dict["RelationshipType", str]:
+    """YAML 설정에서 관계 라벨 로드"""
+    config = ConfigLoader.load("relationship_keywords")
+
+    type_mapping = {
+        "spouse": RelationshipType.SPOUSE,
+        "ex_spouse": RelationshipType.EX_SPOUSE,
+        "parent": RelationshipType.PARENT,
+        "child": RelationshipType.CHILD,
+        "sibling": RelationshipType.SIBLING,
+        "in_law": RelationshipType.IN_LAW,
+        "relative": RelationshipType.RELATIVE,
+        "friend": RelationshipType.FRIEND,
+        "colleague": RelationshipType.COLLEAGUE,
+        "affair": RelationshipType.AFFAIR,
+        "acquaintance": RelationshipType.ACQUAINTANCE,
+        "unknown": RelationshipType.UNKNOWN,
+    }
+
+    result = {}
+    labels_config = config.get("relationship_labels", {})
+    for type_str, label in labels_config.items():
+        if type_str in type_mapping:
+            result[type_mapping[type_str]] = label
+
+    return result
+
+
+def _load_relationship_colors() -> Dict["RelationshipType", str]:
+    """YAML 설정에서 관계 색상 로드"""
+    config = ConfigLoader.load("relationship_keywords")
+
+    type_mapping = {
+        "spouse": RelationshipType.SPOUSE,
+        "ex_spouse": RelationshipType.EX_SPOUSE,
+        "parent": RelationshipType.PARENT,
+        "child": RelationshipType.CHILD,
+        "sibling": RelationshipType.SIBLING,
+        "in_law": RelationshipType.IN_LAW,
+        "relative": RelationshipType.RELATIVE,
+        "friend": RelationshipType.FRIEND,
+        "colleague": RelationshipType.COLLEAGUE,
+        "affair": RelationshipType.AFFAIR,
+        "acquaintance": RelationshipType.ACQUAINTANCE,
+        "unknown": RelationshipType.UNKNOWN,
+    }
+
+    result = {}
+    colors_config = config.get("relationship_colors", {})
+    for type_str, color in colors_config.items():
+        if type_str in type_mapping:
+            result[type_mapping[type_str]] = color
+
+    return result
+
+
+def _load_role_colors() -> Dict[str, str]:
+    """YAML 설정에서 역할별 노드 색상 로드"""
+    config = ConfigLoader.load("relationship_keywords")
+    return config.get("role_colors", {})
 
 
 # =============================================================================
@@ -41,9 +140,9 @@ class RelationshipType(Enum):
     UNKNOWN = "unknown"               # 미상
 
 
-# 관계 키워드 → RelationshipType 매핑
-RELATIONSHIP_KEYWORDS: Dict[str, RelationshipType] = {
-    # 배우자
+# 관계 키워드 → RelationshipType 매핑 (YAML 설정에서 로드)
+RELATIONSHIP_KEYWORDS: Dict[str, RelationshipType] = _load_relationship_keywords() or {
+    # 배우자 (fallback)
     "남편": RelationshipType.SPOUSE,
     "아내": RelationshipType.SPOUSE,
     "배우자": RelationshipType.SPOUSE,
@@ -92,8 +191,8 @@ RELATIONSHIP_KEYWORDS: Dict[str, RelationshipType] = {
     "직장동료": RelationshipType.COLLEAGUE,
 }
 
-# 관계 라벨 (한글)
-RELATIONSHIP_LABELS: Dict[RelationshipType, str] = {
+# 관계 라벨 (한글) - YAML 설정에서 로드
+RELATIONSHIP_LABELS: Dict[RelationshipType, str] = _load_relationship_labels() or {
     RelationshipType.SPOUSE: "배우자",
     RelationshipType.EX_SPOUSE: "전 배우자",
     RelationshipType.PARENT: "부모",
@@ -108,8 +207,8 @@ RELATIONSHIP_LABELS: Dict[RelationshipType, str] = {
     RelationshipType.UNKNOWN: "관계 미상",
 }
 
-# 관계 색상 (시각화용)
-RELATIONSHIP_COLORS: Dict[RelationshipType, str] = {
+# 관계 색상 (시각화용) - YAML 설정에서 로드
+RELATIONSHIP_COLORS: Dict[RelationshipType, str] = _load_relationship_colors() or {
     RelationshipType.SPOUSE: "#2196F3",       # 파랑
     RelationshipType.EX_SPOUSE: "#9E9E9E",    # 회색
     RelationshipType.PARENT: "#4CAF50",       # 초록
@@ -221,8 +320,8 @@ class RelationshipGraph:
 class RelationshipInferrer:
     """인물 간 관계를 추론하는 클래스"""
 
-    # 역할별 노드 색상
-    ROLE_COLORS = {
+    # 역할별 노드 색상 (YAML 설정에서 로드)
+    ROLE_COLORS = _load_role_colors() or {
         "plaintiff": "#4CAF50",       # 초록 (원고)
         "defendant": "#F44336",       # 빨강 (피고)
         "child": "#2196F3",           # 파랑 (자녀)

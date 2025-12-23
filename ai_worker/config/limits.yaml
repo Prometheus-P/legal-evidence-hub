@@ -1,0 +1,87 @@
+# 파일 및 비용 제한 설정
+# File and Cost Limits Configuration
+#
+# Issue #84 기반 비용 제어 및 Rate Limiting 설정
+
+# ========================================
+# 파일 타입별 크기/처리 제한
+# ========================================
+file_limits:
+  image:
+    max_size_mb: 10.0
+    max_duration_sec: null
+    max_pages: null
+    chunk_size_mb: null
+
+  audio:
+    max_size_mb: 100.0
+    max_duration_sec: 1800  # 30분
+    max_pages: null
+    chunk_size_mb: 25.0
+
+  video:
+    max_size_mb: 500.0
+    max_duration_sec: 3600  # 60분
+    max_pages: null
+    chunk_size_mb: 50.0
+
+  pdf:
+    max_size_mb: 50.0
+    max_duration_sec: null
+    max_pages: 100
+    chunk_size_mb: null
+
+  text:
+    max_size_mb: 10.0
+    max_duration_sec: null
+    max_pages: null
+    chunk_size_mb: null
+
+# ========================================
+# 파일 확장자 → 타입 매핑
+# ========================================
+extension_mapping:
+  image:
+    - jpg
+    - jpeg
+    - png
+    - gif
+    - bmp
+    - webp
+  audio:
+    - mp3
+    - wav
+    - m4a
+    - aac
+    - ogg
+    - flac
+  video:
+    - mp4
+    - avi
+    - mov
+    - mkv
+    - webm
+  pdf:
+    - pdf
+  text:
+    - txt
+    - csv
+    - json
+    - md
+
+# ========================================
+# 비용 제한 설정
+# ========================================
+cost_limits:
+  # 케이스별 일일 제한
+  max_daily_tokens_per_case: 100000
+  max_daily_api_calls_per_case: 100
+  max_monthly_cost_per_case_usd: 50.0
+
+  # 테넌트별 제한
+  max_monthly_cost_per_tenant_usd: 500.0
+  max_daily_tokens_per_tenant: 1000000
+
+  # 글로벌 Rate Limiting
+  max_concurrent_jobs: 10
+  min_delay_between_api_calls_ms: 100

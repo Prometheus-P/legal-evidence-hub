@@ -12,11 +12,16 @@ LLM 미사용, 규칙 기반 계산.
 참고 판례:
 - 대법원 2013다96942: 외도 시 60:40 분할
 - 서울가정법원 2020드합1234: 폭력 시 65:35 분할
+
+Note:
+    영향도 규칙은 config/impact_rules.yaml에서 관리
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
+
+from config import ConfigLoader
 
 
 class FaultType(str, Enum):
@@ -61,10 +66,49 @@ class ImpactRule:
 
 
 # =============================================================================
-# 유책사유별 영향도 규칙
+# 설정 로드 헬퍼 함수
 # =============================================================================
 
-IMPACT_RULES: Dict[FaultType, ImpactRule] = {
+def _load_impact_rules() -> Dict["FaultType", ImpactRule]:
+    """YAML 설정에서 영향도 규칙 로드"""
+    config = ConfigLoader.load("impact_rules")
+    fault_types_config = config.get("fault_types", {})
+
+    fault_mapping = {
+        "adultery": FaultType.ADULTERY,
+        "violence": FaultType.VIOLENCE,
+        "verbal_abuse": FaultType.VERBAL_ABUSE,
+        "economic_abuse": FaultType.ECONOMIC_ABUSE,
+        "desertion": FaultType.DESERTION,
+        "financial_misconduct": FaultType.FINANCIAL_MISCONDUCT,
+        "child_abuse": FaultType.CHILD_ABUSE,
+        "substance_abuse": FaultType.SUBSTANCE_ABUSE,
+    }
+
+    result = {}
+    for fault_str, data in fault_types_config.items():
+        if fault_str in fault_mapping:
+            result[fault_mapping[fault_str]] = ImpactRule(
+                base_impact=data.get("base_impact", 0.0),
+                max_impact=data.get("max_impact", 0.0),
+                evidence_weights=data.get("evidence_weights", {}),
+                description=data.get("description", ""),
+            )
+
+    return result
+
+
+def _load_thresholds() -> Dict[str, Any]:
+    """YAML 설정에서 임계값 로드"""
+    config = ConfigLoader.load("impact_rules")
+    return config.get("thresholds", {})
+
+
+# =============================================================================
+# 유책사유별 영향도 규칙 (YAML 설정에서 로드)
+# =============================================================================
+
+IMPACT_RULES: Dict[FaultType, ImpactRule] = _load_impact_rules() or {
     FaultType.ADULTERY: ImpactRule(
         base_impact=5.0,
         max_impact=10.0,
@@ -176,10 +220,24 @@ CONTRIBUTION_FACTORS = {
 
 
 # =============================================================================
-# 신뢰도 레벨 기준
+# 신뢰도 레벨 기준 (YAML 설정에서 로드)
 # =============================================================================
 
+_thresholds_config = _load_thresholds()
 CONFIDENCE_THRESHOLDS = {
+    "high": {
+        "min_evidence_count": _thresholds_config.get("min_evidence_confidence", 0.3) * 10,
+        "min_avg_weight": 1.3,
+    },
+    "medium": {
+        "min_evidence_count": 2,
+        "min_avg_weight": 1.0,
+    },
+    "low": {
+        "min_evidence_count": 0,
+        "min_avg_weight": 0.0,
+    },
+} if not _thresholds_config else {
     "high": {
         "min_evidence_count": 5,
         "min_avg_weight": 1.3,

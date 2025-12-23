@@ -1,0 +1,335 @@
+# 이슈 분류 체계
+# Issue Taxonomy for Risk Assessment
+#
+# Source: lssp_divorce_module_pack_v2_08/data/issue_taxonomy.v2_08.json
+#         lssp_divorce_module_pack_v2_08/data/scoring_rules.v2_08.json
+# Version: 2.08
+
+version: "2.08"
+
+# =============================================================================
+# 이슈 그룹 정의
+# =============================================================================
+groups:
+  DEADLINE:
+    label: "기한/제척기간"
+    description: "기한 관련 이슈"
+    severity: "high"
+    issues:
+      - "DEADLINE_REPORTING"
+      - "DEADLINE_CONFIRMATION_EXPIRES"
+      - "LIMITATION_EXPIRED"
+
+  PROCEDURE:
+    label: "절차"
+    description: "법적 절차 관련 이슈"
+    severity: "medium"
+    issues:
+      - "MEDIATION_REQUIRED"
+      - "COOLING_OFF_PENDING"
+      - "APPEARANCE_REQUIRED"
+
+  EVIDENCE:
+    label: "증거"
+    description: "증거 부족/누락 관련 이슈"
+    severity: "high"
+    issues:
+      - "EVIDENCE_G1_GAP"
+      - "EVIDENCE_G2_GAP"
+      - "EVIDENCE_G3_GAP"
+      - "EVIDENCE_G4_GAP"
+      - "EVIDENCE_G5_GAP"
+      - "EVIDENCE_G6_GAP"
+
+  DRAFT:
+    label: "초안"
+    description: "초안 작성 관련 이슈"
+    severity: "low"
+    issues:
+      - "DRAFT_BLOCK_TODO"
+      - "DRAFT_CITATION_MISSING"
+
+  CHILD:
+    label: "자녀"
+    description: "자녀 관련 이슈"
+    severity: "high"
+    issues:
+      - "CHILD_CUSTODY_PENDING"
+      - "CHILD_SUPPORT_PENDING"
+      - "CHILD_VISITATION_PENDING"
+      - "CHILD_DOC_MISSING"
+
+  PROPERTY:
+    label: "재산분할"
+    description: "재산분할 관련 이슈"
+    severity: "medium"
+    issues:
+      - "PROPERTY_ASSET_LIST_INCOMPLETE"
+      - "PROPERTY_DEBT_LIST_INCOMPLETE"
+      - "PROPERTY_SPECIAL_ASSET_CLAIM_NEEDS_EVIDENCE"
+
+# =============================================================================
+# 개별 이슈 정의
+# =============================================================================
+issues:
+  # 기한 관련
+  DEADLINE_REPORTING:
+    id: "DEADLINE_REPORTING"
+    label: "신고기한 임박"
+    description: "법원/행정기관 신고기한이 임박함"
+    group: "DEADLINE"
+    penalty_type: "ADMIN_FINE"
+    action_required: true
+
+  DEADLINE_CONFIRMATION_EXPIRES:
+    id: "DEADLINE_CONFIRMATION_EXPIRES"
+    label: "확인서 유효기간 만료"
+    description: "법원 확인서 등의 유효기간이 만료됨"
+    group: "DEADLINE"
+    penalty_type: "EFFECT_LOSS"
+    action_required: true
+
+  LIMITATION_EXPIRED:
+    id: "LIMITATION_EXPIRED"
+    label: "제척기간/제소기간 경과"
+    description: "민법 841~842조 제소기간 경과"
+    group: "DEADLINE"
+    penalty_type: "CLAIM_BARRED"
+    action_required: true
+
+  # 절차 관련
+  MEDIATION_REQUIRED:
+    id: "MEDIATION_REQUIRED"
+    label: "조정전치 필요"
+    description: "재판상 이혼 전 조정절차 필요"
+    group: "PROCEDURE"
+    penalty_type: null
+    action_required: true
+
+  COOLING_OFF_PENDING:
+    id: "COOLING_OFF_PENDING"
+    label: "숙려기간 진행 중"
+    description: "협의이혼 숙려기간 경과 대기"
+    group: "PROCEDURE"
+    penalty_type: null
+    action_required: false
+
+  APPEARANCE_REQUIRED:
+    id: "APPEARANCE_REQUIRED"
+    label: "출석 필요"
+    description: "법원 출석이 필요함"
+    group: "PROCEDURE"
+    penalty_type: null
+    action_required: true
+
+  # 증거 관련
+  EVIDENCE_G1_GAP:
+    id: "EVIDENCE_G1_GAP"
+    label: "G1(부정행위) 증거 부족"
+    description: "외도 관련 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G1"
+
+  EVIDENCE_G2_GAP:
+    id: "EVIDENCE_G2_GAP"
+    label: "G2(악의의 유기) 증거 부족"
+    description: "유기 관련 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G2"
+
+  EVIDENCE_G3_GAP:
+    id: "EVIDENCE_G3_GAP"
+    label: "G3(부당대우) 증거 부족"
+    description: "폭행/학대 관련 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G3"
+
+  EVIDENCE_G4_GAP:
+    id: "EVIDENCE_G4_GAP"
+    label: "G4(직계존속 부당대우) 증거 부족"
+    description: "시부모/처부모 부당대우 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G4"
+
+  EVIDENCE_G5_GAP:
+    id: "EVIDENCE_G5_GAP"
+    label: "G5(생사불명) 증거 부족"
+    description: "3년 이상 생사불명 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G5"
+
+  EVIDENCE_G6_GAP:
+    id: "EVIDENCE_G6_GAP"
+    label: "G6(기타중대사유) 증거 부족"
+    description: "혼인유지불가 사유 증거가 부족함"
+    group: "EVIDENCE"
+    penalty_type: null
+    action_required: true
+    ground_code: "G6"
+
+  # 초안 관련
+  DRAFT_BLOCK_TODO:
+    id: "DRAFT_BLOCK_TODO"
+    label: "초안 블록 미완성"
+    description: "초안에 작성 필요한 블록이 있음"
+    group: "DRAFT"
+    penalty_type: null
+    action_required: true
+
+  DRAFT_CITATION_MISSING:
+    id: "DRAFT_CITATION_MISSING"
+    label: "법률 인용 누락"
+    description: "초안에 필요한 법률 인용이 누락됨"
+    group: "DRAFT"
+    penalty_type: null
+    action_required: true
+
+  # 자녀 관련
+  CHILD_CUSTODY_PENDING:
+    id: "CHILD_CUSTODY_PENDING"
+    label: "친권자 지정 미결정"
+    description: "자녀 친권자 지정이 필요함"
+    group: "CHILD"
+    penalty_type: null
+    action_required: true
+
+  CHILD_SUPPORT_PENDING:
+    id: "CHILD_SUPPORT_PENDING"
+    label: "양육비 미산정"
+    description: "양육비 산정이 필요함"
+    group: "CHILD"
+    penalty_type: null
+    action_required: true
+
+  CHILD_VISITATION_PENDING:
+    id: "CHILD_VISITATION_PENDING"
+    label: "면접교섭 미결정"
+    description: "면접교섭권 결정이 필요함"
+    group: "CHILD"
+    penalty_type: null
+    action_required: true
+
+  CHILD_DOC_MISSING:
+    id: "CHILD_DOC_MISSING"
+    label: "자녀 관련 서류 미비"
+    description: "자녀 관련 필수 서류가 누락됨"
+    group: "CHILD"
+    penalty_type: null
+    action_required: true
+
+  # 재산분할 관련
+  PROPERTY_ASSET_LIST_INCOMPLETE:
+    id: "PROPERTY_ASSET_LIST_INCOMPLETE"
+    label: "재산목록 불완전"
+    description: "재산목록 작성이 불완전함"
+    group: "PROPERTY"
+    penalty_type: null
+    action_required: true
+
+  PROPERTY_DEBT_LIST_INCOMPLETE:
+    id: "PROPERTY_DEBT_LIST_INCOMPLETE"
+    label: "채무목록 불완전"
+    description: "채무목록 작성이 불완전함"
+    group: "PROPERTY"
+    penalty_type: null
+    action_required: true
+
+  PROPERTY_SPECIAL_ASSET_CLAIM_NEEDS_EVIDENCE:
+    id: "PROPERTY_SPECIAL_ASSET_CLAIM_NEEDS_EVIDENCE"
+    label: "특유재산 주장 증거 필요"
+    description: "특유재산 주장에 대한 증거가 필요함"
+    group: "PROPERTY"
+    penalty_type: null
+    action_required: true
+
+# =============================================================================
+# 페널티 라벨
+# =============================================================================
+penalty_labels:
+  EFFECT_LOSS: "효력상실"
+  ADMIN_FINE: "과태료"
+  CLAIM_BARRED: "청구기각"
+
+# =============================================================================
+# 스코어링 규칙
+# =============================================================================
+scoring_rules:
+  # 기한 리스크 스코어링
+  deadline_risk:
+    weight_by_penalty:
+      EFFECT_LOSS: 1.3
+      CLAIM_BARRED: 1.2
+      ADMIN_FINE: 1.0
+      null: 1.0
+    breakpoints_days:
+      - days: 0
+        score: 100
+      - days: 1
+        score: 98
+      - days: 3
+        score: 90
+      - days: 7
+        score: 80
+      - days: 14
+        score: 60
+      - days: 30
+        score: 30
+      - days: 60
+        score: 10
+
+  # 증거 완성도 스코어링
+  evidence_completeness:
+    evidence_weight: 0.6
+    keypoint_weight: 0.4
+
+  # 초안 완성도 스코어링
+  draft_completeness:
+    todo_block_penalty: 1.0
+
+  # 절차 진행도 스코어링
+  procedure_progress:
+    step_weight: 1.0
+
+# =============================================================================
+# 리스크 레벨 정의
+# =============================================================================
+risk_levels:
+  critical:
+    min_score: 80
+    label: "심각"
+    color: "#DC2626"
+    description: "즉각적인 조치가 필요한 리스크"
+
+  high:
+    min_score: 60
+    label: "높음"
+    color: "#F97316"
+    description: "빠른 대응이 필요한 리스크"
+
+  medium:
+    min_score: 40
+    label: "중간"
+    color: "#EAB308"
+    description: "주의가 필요한 리스크"
+
+  low:
+    min_score: 20
+    label: "낮음"
+    color: "#22C55E"
+    description: "관리 가능한 리스크"
+
+  minimal:
+    min_score: 0
+    label: "최소"
+    color: "#6B7280"
+    description: "현재 리스크 없음"

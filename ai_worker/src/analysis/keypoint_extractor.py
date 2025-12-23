@@ -8,12 +8,16 @@ Keypoint Extractor - LSSP 핵심 쟁점 추출 모듈
 - 법적 근거(민법 840조 등)와 자동 매핑
 - 신뢰도 점수 계산
 - 증거 인용/요약 추출
+
+Note:
+    프롬프트 설정은 config/prompts/keypoint.yaml에서 관리
+    카테고리-코드 매핑은 config/prompts/keypoint.yaml의 category_to_ground_code에서 관리
 """
 
 import json
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from openai import OpenAI
 
@@ -28,13 +32,66 @@ from src.schemas.keypoint import (
     EvidenceExtractType,
     KeypointExtractionResult,
 )
-from src.prompts.tone_guidelines import OBJECTIVE_TONE_GUIDELINES
+from config import ConfigLoader
 
 logger = logging.getLogger(__name__)
 
 
-# 법적 카테고리 → 법적 근거 코드 매핑
-CATEGORY_TO_GROUND_CODE = {
+def _get_category_to_ground_code() -> Dict[LegalCategory, str]:
+    """YAML 설정에서 카테고리-코드 매핑 로드"""
+    prompts = ConfigLoader.load("prompts/keypoint")
+    mapping = prompts.get("category_to_ground_code", {})
+
+    # YAML 키 → LegalCategory 매핑
+    category_name_mapping = {
+        "adultery": LegalCategory.ADULTERY,
+        "desertion": LegalCategory.DESERTION,
+        "mistreatment_by_inlaws": LegalCategory.MISTREATMENT_BY_INLAWS,
+        "harm_to_own_parents": LegalCategory.HARM_TO_OWN_PARENTS,
+        "unknown_whereabouts": LegalCategory.UNKNOWN_WHEREABOUTS,
+        "irreconcilable_differences": LegalCategory.IRRECONCILABLE_DIFFERENCES,
+        "domestic_violence": LegalCategory.DOMESTIC_VIOLENCE,
+        "financial_misconduct": LegalCategory.FINANCIAL_MISCONDUCT,
+        "general": LegalCategory.GENERAL,
+    }
+
+    result = {}
+    for yaml_key, category_enum in category_name_mapping.items():
+        if yaml_key in mapping:
+            result[category_enum] = mapping[yaml_key]
+        else:
+            # 기본값
+            result[category_enum] = "840-6"
+
+    return result
+
+
+def _get_tone_guidelines() -> str:
+    """YAML 설정에서 톤 가이드라인 로드"""
+    prompts = ConfigLoader.load("prompts/tone_guidelines")
+    return prompts.get("objective_tone_guidelines", "")
+
+
+def _get_system_prompt() -> str:
+    """YAML 설정에서 시스템 프롬프트 로드"""
+    prompts = ConfigLoader.load("prompts/keypoint")
+    return prompts.get("system_prompt", "")
+
+
+def _get_user_prompt() -> str:
+    """YAML 설정에서 사용자 프롬프트 로드"""
+    prompts = ConfigLoader.load("prompts/keypoint")
+    return prompts.get("user_prompt", "")
+
+
+def _get_confidence_mapping() -> Dict[int, float]:
+    """YAML 설정에서 신뢰도 레벨 매핑 로드"""
+    prompts = ConfigLoader.load("prompts/keypoint")
+    return prompts.get("confidence_level_mapping", {1: 0.2, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.95})
+
+
+# 법적 카테고리 → 법적 근거 코드 매핑 (하위 호환성 유지)
+CATEGORY_TO_GROUND_CODE = _get_category_to_ground_code() or {
     LegalCategory.ADULTERY: "840-1",
     LegalCategory.DESERTION: "840-2",
     LegalCategory.MISTREATMENT_BY_INLAWS: "840-3",
@@ -46,56 +103,12 @@ CATEGORY_TO_GROUND_CODE = {
     LegalCategory.GENERAL: "840-6",
 }
 
-
-KEYPOINT_EXTRACTION_SYSTEM_PROMPT = """당신은 이혼 소송 전문 법률 AI 분석가입니다.
+# 시스템/유저 프롬프트 (하위 호환성 유지, 실제로는 YAML에서 로드)
+KEYPOINT_EXTRACTION_SYSTEM_PROMPT = _get_system_prompt() or """당신은 이혼 소송 전문 법률 AI 분석가입니다.
 제공된 증거 텍스트에서 법적으로 의미 있는 핵심 쟁점(Keypoint)을 추출합니다.
-
-{tone_guidelines}
-
-## 추출 기준
-1. **법적 관련성**: 민법 840조(이혼 사유) 또는 관련 법률과 연관된 사실
-2. **증거력**: 법정에서 증거로 사용 가능한 구체적 사실
-3. **시간적 특정성**: 가능한 한 시간, 날짜, 기간이 특정된 사실
-4. **인물 특정성**: 행위 주체와 객체가 명확한 사실
-
-## 법적 근거 코드
-- 840-1: 부정행위 (외도, 불륜)
-- 840-2: 악의의 유기 (동거 의무 위반)
-- 840-3: 배우자 또는 직계존속의 심히 부당한 대우
-- 840-4: 자기 직계존속에 대한 배우자의 심히 부당한 대우
-- 840-5: 배우자의 3년 이상 생사불명
-- 840-6: 기타 혼인을 계속하기 어려운 중대한 사유
-- DOMESTIC_VIOLENCE: 가정폭력
-- FINANCIAL: 재정 문제 (은닉, 낭비, 채무 등)
-- CHILD_CUSTODY: 자녀 양육 관련
-- PROPERTY_DIVISION: 재산 분할 관련
-
-## 응답 형식
-반드시 다음 JSON 형식으로 응답하세요:
-```json
-{{
-  "keypoints": [
-    {{
-      "statement": "핵심 쟁점 진술문 (한 문장)",
-      "confidence_score": 0.85,
-      "legal_ground_codes": ["840-1", "DOMESTIC_VIOLENCE"],
-      "evidence_extracts": [
-        {{
-          "content": "관련 증거 인용 또는 요약",
-          "extract_type": "quote|summary|inference",
-          "relevance_score": 0.9
-        }}
-      ],
-      "is_disputed": false,
-      "dispute_reason": null
-    }}
-  ],
-  "extraction_summary": "추출 결과 요약"
-}}
-```
 """
 
-KEYPOINT_EXTRACTION_USER_PROMPT = """다음 증거에서 핵심 쟁점을 추출하세요.
+KEYPOINT_EXTRACTION_USER_PROMPT = _get_user_prompt() or """다음 증거에서 핵심 쟁점을 추출하세요.
 
 ## 증거 정보
 - 증거 ID: {evidence_id}
@@ -104,12 +117,6 @@ KEYPOINT_EXTRACTION_USER_PROMPT = """다음 증거에서 핵심 쟁점을 추출
 
 ## 증거 내용
 {evidence_text}
-
----
-위 증거에서 법적으로 의미 있는 핵심 쟁점을 추출하고, 각 쟁점에 대해:
-1. 관련 법적 근거 코드 지정
-2. 신뢰도 점수 (0.0-1.0) 부여
-3. 핵심 인용/요약 추출
 
 JSON 형식으로 응답하세요."""
 
@@ -209,12 +216,10 @@ class KeypointExtractor:
             "840-6"
         )
         
-        # 신뢰도 레벨 → 점수 변환
-        confidence_map = {
-            1: 0.2, 2: 0.4, 3: 0.6, 4: 0.8, 5: 0.95
-        }
+        # 신뢰도 레벨 → 점수 변환 (YAML 설정에서 로드)
+        confidence_map = _get_confidence_mapping()
         confidence_score = confidence_map.get(
-            analysis.confidence_level.value if hasattr(analysis.confidence_level, 'value') 
+            analysis.confidence_level.value if hasattr(analysis.confidence_level, 'value')
             else int(analysis.confidence_level),
             0.5
         )
@@ -240,10 +245,12 @@ class KeypointExtractor:
         """GPT를 사용한 상세 쟁점 추출"""
         if not chunk.content or len(chunk.content.strip()) < 50:
             return []
-        
+
         try:
+            # 톤 가이드라인과 시스템 프롬프트 로드
+            tone_guidelines = _get_tone_guidelines()
             system_prompt = KEYPOINT_EXTRACTION_SYSTEM_PROMPT.format(
-                tone_guidelines=OBJECTIVE_TONE_GUIDELINES
+                tone_guidelines=tone_guidelines
             )
             
             # file_type이 Enum일 때와 string일 때 모두 처리
