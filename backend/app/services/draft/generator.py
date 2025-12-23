@@ -80,7 +80,9 @@ class DraftGenerator:
             raise ValidationError("사건에 증거가 하나도 없습니다. 증거를 업로드한 후 초안을 생성해 주세요.")
 
         # Filter for completed evidence only (status="done")
-        _ = [ev for ev in evidence_list if ev.get("status") == "done"]
+        completed_evidence = [ev for ev in evidence_list if ev.get("status") == "done"]
+        if not completed_evidence:
+            logger.warning(f"No completed evidence found for case {case_id}")
 
         # 3. Perform semantic RAG search in Qdrant
         rag_results = self._perform_rag_search(case_id, request.sections)
