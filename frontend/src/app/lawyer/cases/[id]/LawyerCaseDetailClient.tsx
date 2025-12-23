@@ -50,6 +50,13 @@ import { AssetSummaryTab } from '@/components/case/AssetSummaryTab';
 import { ConsultationHistoryTab } from '@/components/case/ConsultationHistoryTab';
 // 014-case-fact-summary: FactSummaryPanel
 import { FactSummaryPanel } from '@/components/fact-summary/FactSummaryPanel';
+// 014-ui-settings-completion: New 3-column layout components
+import { CaseWorkspace } from '@/components/case/CaseWorkspace';
+import { CaseDataPanel } from '@/components/case/DataPanel';
+import { MainWorkspace } from '@/components/case/MainWorkspace';
+import { ContextPanel } from '@/components/case/ContextPanel';
+import { FactSummaryEditor } from '@/components/legal-analysis/FactSummaryEditor';
+import { EvidenceListCompact, type LegalEvidence } from '@/components/case/EvidenceListCompact';
 // 016-draft-fact-summary: fact-summary 조회
 import { getFactSummary } from '@/lib/api/fact-summary';
 // Issue #423: Pipeline progress visualization
@@ -114,9 +121,11 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [caseDetail, setCaseDetail] = useState<CaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Tab order follows data pipeline flow: 수집 → 분석 → 구조화 → 생성
-  const [activeTab, setActiveTab] = useState<'evidence' | 'analysis' | 'relations' | 'draft' | 'timeline' | 'consultation' | 'assets'>('evidence');
+  // 014-ui-settings-completion: Tabs reduced to 4 with workspace as default
+  const [activeTab, setActiveTab] = useState<'workspace' | 'evidence' | 'timeline' | 'consultation' | 'analysis' | 'relations' | 'assets' | 'draft'>('workspace');
   const [showSummaryCard, setShowSummaryCard] = useState(false);
+  // 014-ui-settings-completion: Fact summary editor state
+  const [factSummaryContent, setFactSummaryContent] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showExpertPanel, setShowExpertPanel] = useState(false);
@@ -515,17 +524,14 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         onClose={() => setShowExpertPanel(false)}
       />
 
-      {/* Tabs */}
+      {/* Tabs - 014-ui-settings-completion: Reduced to 4 main tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">
         {/* Tab order follows data pipeline: 수집(Collection) → 분석(Analysis) → 구조화(Structuring) → 생성(Generation) */}
         <nav className="flex gap-6">
           {[
-            { id: 'evidence', label: '증거 자료', count: evidenceList.length, icon: null },
-            { id: 'analysis', label: '법률 분석', count: null, icon: <Scale className="w-4 h-4 mr-1" /> },
+            { id: 'workspace', label: '워크스페이스', count: null, icon: <Scale className="w-4 h-4 mr-1" />, primary: true },
             { id: 'relations', label: '관계도', count: null, icon: null },
-            { id: 'draft', label: '초안 생성', count: null, icon: <FileText className="w-4 h-4 mr-1" /> },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length, icon: null },
-            { id: 'consultation', label: '상담내역', count: null, icon: <MessageSquare className="w-4 h-4 mr-1" /> },
             { id: 'assets', label: '재산분할', count: null, icon: <Wallet className="w-4 h-4 mr-1" /> },
           ].map((tab) => (
             <button
@@ -554,6 +560,71 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
       {/* Tab Content */}
       <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
+        {/* 014-ui-settings-completion: 3-column workspace layout */}
+        {activeTab === 'workspace' && (
+          <CaseWorkspace
+            leftPanel={
+              <CaseDataPanel
+                evidenceContent={
+                  <EvidenceListCompact
+                    items={evidenceList.map((e): LegalEvidence => ({
+                      ...e,
+                      legalNumber: e.legalNumber || `${e.submittedBy === 'defendant' ? '을' : e.submittedBy === 'third_party' ? '병' : '갑'}제${evidenceList.indexOf(e) + 1}호증`,
+                    }))}
+                    onItemClick={(item) => console.log('Evidence clicked:', item)}
+                  />
+                }
+                evidenceCount={evidenceList.length}
+                onUploadEvidence={() => setActiveTab('evidence')}
+                consultationContent={<div className="p-4 text-sm text-gray-500">상담 내역 목록</div>}
+                consultationCount={0}
+                onAddConsultation={() => setActiveTab('consultation')}
+                assetsContent={<div className="p-4 text-sm text-gray-500">재산 목록</div>}
+                assetsCount={0}
+                onAddAsset={() => setActiveTab('assets')}
+              />
+            }
+            mainContent={
+              <MainWorkspace
+                factSummaryContent={
+                  <FactSummaryEditor
+                    content={factSummaryContent}
+                    onChange={setFactSummaryContent}
+                    placeholder="사실관계를 입력하세요..."
+                  />
+                }
+                analysisContent={
+                  <AnalysisTab
+                    caseId={caseId || ''}
+                    evidenceCount={evidenceList.length}
+                    onDraftGenerate={() => setShowDraftModal(true)}
+                  />
+                }
+                onGenerateDraft={() => setShowDraftModal(true)}
+                hasDraft={hasExistingDraft}
+                isGeneratingDraft={isGeneratingDraft}
+              />
+            }
+            rightPanel={
+              <ContextPanel
+                timelineEvents={caseDetail.recentActivities.slice(0, 5).map((a, i) => ({
+                  id: String(i),
+                  action: a.action,
+                  timestamp: a.timestamp,
+                  user: a.user,
+                }))}
+                onViewTimeline={() => setActiveTab('timeline')}
+                onViewRelations={() => setActiveTab('relations')}
+                onViewAssets={() => setActiveTab('assets')}
+              />
+            }
+            leftPanelTitle="자료"
+            rightPanelTitle="컨텍스트"
+            defaultLeftOpen={true}
+            defaultRightOpen={false}
+          />
+        )}
+
         {activeTab === 'evidence' && (
           <div className="space-y-6">
             {/* Issue #423: Pipeline Progress Indicator */}
