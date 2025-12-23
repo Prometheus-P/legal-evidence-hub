@@ -159,7 +159,9 @@ class FactSummaryService:
             logger.info(f"[FactSummary] Created new summary for case_id={case_id}")
 
         # 017-party-graph-improvement: Auto-extract parties from fact summary
-        self._auto_extract_parties(case_id, user_id, ai_summary)
+        # DISABLED: Gemini가 형태소를 인물로 오인식하는 문제로 일시 비활성화
+        # 프롬프트 개선 후 재활성화 예정
+        # self._auto_extract_parties(case_id, user_id, ai_summary)
 
         return FactSummaryGenerateResponse(
             case_id=case_id,
