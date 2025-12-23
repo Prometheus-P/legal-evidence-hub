@@ -13,6 +13,7 @@ import { Logo } from './Logo';
 import { NotificationDropdown } from './NotificationDropdown';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { ROLE_DISPLAY_NAMES } from '@/types/user';
 
 export interface NavItem {
   id: string;
@@ -42,7 +43,7 @@ export function PortalSidebar({
 }: PortalSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { role, roleDisplayName } = useRole();
+  const { role } = useRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
     new Set()
@@ -162,7 +163,7 @@ export function PortalSidebar({
               {user?.name || '사용자'}
             </p>
             <p className="text-xs text-gray-500 truncate">
-              {roleDisplayName}
+              {role ? ROLE_DISPLAY_NAMES[role] : ''}
             </p>
           </div>
         </div>

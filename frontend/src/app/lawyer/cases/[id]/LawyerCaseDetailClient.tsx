@@ -138,10 +138,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [isLoadingEvidence, setIsLoadingEvidence] = useState(true);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
 
-  // AI Analysis state (Phase B.3)
-  const [lastAnalyzedAt, setLastAnalyzedAt] = useState<string | undefined>();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
   // 증거 필터 상태
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [filterType, setFilterType] = useState<EvidenceType | 'all'>('all');
@@ -396,24 +392,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const handleDraftRegenerate = useCallback(() => {
     setShowDraftModal(true);
   }, []);
-
-  // Phase B.3: AI Analysis request handler
-  const handleRequestAnalysis = useCallback(async () => {
-    if (!caseId) return;
-
-    setIsAnalyzing(true);
-    try {
-      // Trigger keypoint extraction from evidence
-      const response = await apiClient.post(`/lssp/cases/${caseId}/extract-keypoints`, {});
-      if (!response.error) {
-        setLastAnalyzedAt(new Date().toISOString());
-      }
-    } catch (err) {
-      logger.error('AI analysis request failed:', err);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [caseId]);
 
   // Phase B.4: Procedure Logic (Round 2 UX)
   const procedure = useProcedure(caseId || '');
@@ -857,10 +835,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                 setActiveTab('draft');
                 setShowDraftModal(true);
               }}
-              // Phase B.3: AI analysis status bar props
-              lastAnalyzedAt={lastAnalyzedAt}
-              onRequestAnalysis={handleRequestAnalysis}
-              isAnalyzing={isAnalyzing}
             />
           </div>
         )}

@@ -249,23 +249,24 @@ class TestGenerateDraftPreview:
                 "user-123"
             )
 
-    @patch('app.services.draft_service.get_evidence_by_case')
-    def test_generate_draft_preview_no_evidence(self, mock_get_evidence):
-        """Raises ValidationError when no evidence in case"""
-        mock_get_evidence.return_value = []
+    @patch('app.services.draft_service.get_case_fact_summary')
+    def test_generate_draft_preview_no_fact_summary(self, mock_get_fact_summary):
+        """Raises ValidationError when no fact summary exists (016-draft-fact-summary)"""
+        mock_get_fact_summary.return_value = None
 
         service = create_mock_service()
         mock_case = MagicMock()
         service.case_repo.get_by_id.return_value = mock_case
         service.member_repo.has_access.return_value = True
 
-        with pytest.raises(ValidationError, match="증거가 하나도 없습니다"):
+        with pytest.raises(ValidationError, match="사실관계 요약을 먼저 생성해주세요"):
             service.generate_draft_preview(
                 "case-123",
                 DraftPreviewRequest(),
                 "user-123"
             )
 
+    @patch('app.services.draft_service.get_case_fact_summary')
     @patch('app.services.draft_service.generate_chat_completion')
     @patch('app.services.draft_service.get_template_by_type')
     @patch('app.services.draft.rag_orchestrator.search_legal_knowledge')
@@ -277,7 +278,8 @@ class TestGenerateDraftPreview:
         mock_search_evidence,
         mock_search_legal,
         mock_get_template,
-        mock_generate
+        mock_generate,
+        mock_get_fact_summary
     ):
         """Successfully generates draft preview"""
         mock_case = MagicMock()
@@ -289,6 +291,7 @@ class TestGenerateDraftPreview:
         mock_search_legal.return_value = []
         mock_get_template.return_value = None
         mock_generate.return_value = "이혼 소장 초안 내용"
+        mock_get_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
 
         service = create_mock_service()
         service.case_repo.get_by_id.return_value = mock_case
@@ -603,6 +606,7 @@ class TestExportDraftFormats:
         with pytest.raises(ValidationError, match="Unsupported export format"):
             service.export_draft("case-123", "user-123", mock_format)
 
+    @patch('app.services.draft_service.get_case_fact_summary')
     @patch('app.services.draft_service.generate_chat_completion')
     @patch('app.services.draft_service.get_template_by_type')
     @patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic')
@@ -614,7 +618,8 @@ class TestExportDraftFormats:
         mock_search_legal,
         mock_search_ev,
         mock_get_template,
-        mock_generate
+        mock_generate,
+        mock_get_fact_summary
     ):
         """Successfully exports as DOCX"""
         mock_case = MagicMock()
@@ -626,6 +631,7 @@ class TestExportDraftFormats:
         mock_search_legal.return_value = []
         mock_get_template.return_value = None
         mock_generate.return_value = "초안 내용"
+        mock_get_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
 
         service = create_mock_service()
         service.case_repo.get_by_id.return_value = mock_case
@@ -648,6 +654,7 @@ class TestExportDraftFormats:
         assert filename == "draft_test.docx"
         service.document_exporter.generate_docx.assert_called_once()
 
+    @patch('app.services.draft_service.get_case_fact_summary')
     @patch('app.services.draft_service.generate_chat_completion')
     @patch('app.services.draft_service.get_template_by_type')
     @patch('app.services.draft.rag_orchestrator.search_evidence_by_semantic')
@@ -659,7 +666,8 @@ class TestExportDraftFormats:
         mock_search_legal,
         mock_search_ev,
         mock_get_template,
-        mock_generate
+        mock_generate,
+        mock_get_fact_summary
     ):
         """Successfully exports as PDF"""
         mock_case = MagicMock()
@@ -671,6 +679,7 @@ class TestExportDraftFormats:
         mock_search_legal.return_value = []
         mock_get_template.return_value = None
         mock_generate.return_value = "초안 내용"
+        mock_get_fact_summary.return_value = {"ai_summary": "테스트 사실관계 요약"}
 
         service = create_mock_service()
         service.case_repo.get_by_id.return_value = mock_case

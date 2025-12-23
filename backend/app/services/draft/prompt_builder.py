@@ -32,7 +32,8 @@ class PromptBuilder:
         consultation_context: List[dict] = None,
         fact_summary_context: str = "",
         language: str = "ko",
-        style: str = "formal"
+        style: str = "formal",
+        force_text_output: bool = False
     ) -> List[dict]:
         """
         Build GPT-4o prompt with evidence, legal, precedent, consultation, and fact summary context
@@ -47,12 +48,16 @@ class PromptBuilder:
             fact_summary_context: Lawyer-edited fact summary (014-case-fact-summary T025)
             language: Language (ko/en)
             style: Writing style
+            force_text_output: Force text output mode (disable JSON) - useful for Gemini
 
         Returns:
             List of messages for GPT-4o
         """
-        # Try to get template schema from Qdrant
-        template_schema = get_template_schema_for_prompt("이혼소장")
+        # Try to get template schema from Qdrant (skip if force_text_output)
+        if force_text_output:
+            template_schema = None
+        else:
+            template_schema = get_template_schema_for_prompt("이혼소장")
         use_json_output = template_schema is not None
 
         # Build context strings

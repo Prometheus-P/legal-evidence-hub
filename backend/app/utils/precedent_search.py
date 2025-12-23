@@ -101,11 +101,13 @@ def search_similar_precedents(
         precedents = []
         for hit in results:
             payload = hit.payload or {}
+            # document 필드가 실제 판결 요지를 담고 있음 (Qdrant 데이터 구조)
+            summary = payload.get("summary") or payload.get("document") or payload.get("content", "")
             precedent = {
                 "case_ref": payload.get("case_number", payload.get("case_ref", "")),
                 "court": payload.get("court", ""),
                 "decision_date": payload.get("decision_date", ""),
-                "summary": payload.get("summary", payload.get("content", "")),
+                "summary": summary,
                 "division_ratio": payload.get("division_ratio"),
                 "key_factors": payload.get("key_factors", []),
                 "similarity_score": round(hit.score, 3) if hit.score else 0
