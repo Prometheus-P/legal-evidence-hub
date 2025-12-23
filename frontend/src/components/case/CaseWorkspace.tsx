@@ -45,7 +45,7 @@ export function CaseWorkspace({
           relative flex-shrink-0 bg-white dark:bg-neutral-800
           border-r border-gray-200 dark:border-neutral-700
           transition-all duration-300 ease-in-out
-          ${leftOpen ? 'w-60' : 'w-0'}
+          ${leftOpen ? 'w-72' : 'w-0'}
         `}
       >
         {leftOpen && (

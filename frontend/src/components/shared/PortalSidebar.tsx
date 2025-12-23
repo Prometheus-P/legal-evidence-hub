@@ -28,6 +28,7 @@ export interface NavGroup {
   label?: string;
   items: NavItem[];
   collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 interface PortalSidebarProps {
@@ -46,7 +47,7 @@ export function PortalSidebar({
   const { role } = useRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    new Set()
+    () => new Set(groups.filter(g => g.defaultCollapsed).map(g => g.id))
   );
 
   const toggleGroup = (groupId: string) => {
@@ -77,7 +78,7 @@ export function PortalSidebar({
         key={item.id}
         href={item.href}
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
           isActive
             ? 'bg-primary text-white shadow-sm'
             : 'text-gray-700 hover:bg-gray-100'
@@ -108,7 +109,7 @@ export function PortalSidebar({
         {group.label && (
           <button
             onClick={() => group.collapsible && toggleGroup(group.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${
+            className={`w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider ${
               group.collapsible ? 'hover:text-gray-700 cursor-pointer' : ''
             }`}
           >
@@ -146,7 +147,7 @@ export function PortalSidebar({
       )}
 
       {/* Navigation Groups */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 overflow-y-auto">
         {groups.map(renderNavGroup)}
       </nav>
 
@@ -186,7 +187,7 @@ export function PortalSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
+      <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
         {sidebarContent}
       </aside>
 

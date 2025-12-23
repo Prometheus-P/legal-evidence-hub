@@ -32,14 +32,14 @@ function WorkspaceSection({
   className = '',
 }: WorkspaceSectionProps) {
   return (
-    <section className={`bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 ${className}`}>
-      {/* Section Header */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+    <section className={`bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 shadow-sm ${className}`}>
+      {/* Section Header - Lightning Record Detail */}
+      <div className="px-4 py-2.5 border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-850">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-[var(--color-primary)]">{icon}</span>
             <div>
-              <h3 className="font-semibold text-[var(--color-text-primary)]">{title}</h3>
+              <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">{title}</h3>
               {description && (
                 <p className="text-xs text-[var(--color-text-secondary)]">{description}</p>
               )}
@@ -59,8 +59,9 @@ function WorkspaceSection({
 interface MainWorkspaceProps {
   // Fact Summary
   factSummaryContent: ReactNode;
-  // Issue Analysis
-  analysisContent: ReactNode;
+  // Issue Analysis (hidden by default as per Task 6)
+  analysisContent?: ReactNode;
+  showAnalysis?: boolean;
   // Draft Generation
   onGenerateDraft: () => void;
   hasDraft: boolean;
@@ -71,68 +72,68 @@ interface MainWorkspaceProps {
 export function MainWorkspace({
   factSummaryContent,
   analysisContent,
+  showAnalysis = false, // Hidden by default as per Task 6
   onGenerateDraft,
   hasDraft,
   isGeneratingDraft,
   draftContent,
 }: MainWorkspaceProps) {
   return (
-    <div className="space-y-6">
-      {/* Fact Summary Section */}
+    <div className="space-y-4">
+      {/* Fact Summary Section - Lightning Record Detail */}
       <WorkspaceSection
         id="fact-summary"
         title="사실관계 요약"
         icon={<FileText className="w-5 h-5" />}
         description="증거 자료를 기반으로 정리된 사건 사실관계"
+        className="min-h-[400px]"
       >
-        {factSummaryContent}
+        <div className="min-h-[300px]">
+          {factSummaryContent}
+        </div>
       </WorkspaceSection>
 
-      {/* Issue Analysis Section */}
-      <WorkspaceSection
-        id="analysis"
-        title="쟁점 분석"
-        icon={<Scale className="w-5 h-5" />}
-        description="핵심 쟁점 및 법률적 판단 근거"
-      >
-        {analysisContent}
-      </WorkspaceSection>
+      {/* Issue Analysis Section - Hidden by default (Task 6) */}
+      {showAnalysis && analysisContent && (
+        <WorkspaceSection
+          id="analysis"
+          title="쟁점 분석"
+          icon={<Scale className="w-5 h-5" />}
+          description="핵심 쟁점 및 법률적 판단 근거"
+        >
+          {analysisContent}
+        </WorkspaceSection>
+      )}
 
-      {/* Draft Generation Section */}
-      <WorkspaceSection
-        id="draft"
-        title="초안 생성"
-        icon={<Sparkles className="w-5 h-5" />}
-        description="사실관계와 쟁점 분석을 기반으로 법률 문서 초안 생성"
-        actions={
-          !hasDraft && !isGeneratingDraft ? (
-            <button
-              onClick={onGenerateDraft}
-              className="inline-flex items-center px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary-hover)] transition-colors"
-            >
-              <Sparkles className="w-4 h-4 mr-1" />
+      {/* Draft Generation - Lightning Action Bar */}
+      <div className="flex justify-end pt-2 border-t border-gray-200 dark:border-neutral-700">
+        <button
+          onClick={onGenerateDraft}
+          disabled={isGeneratingDraft}
+          className="inline-flex items-center px-4 py-2 text-sm font-medium bg-[var(--color-primary)] text-white rounded-md shadow-sm
+            hover:bg-[var(--color-primary-hover)] active:scale-[0.98]
+            transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGeneratingDraft ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              생성 중...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
               초안 생성
-            </button>
-          ) : null
-        }
-      >
-        {isGeneratingDraft ? (
-          <div className="text-center py-8">
-            <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mx-auto mb-3" />
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              AI가 법률 초안을 작성하고 있습니다...
-            </p>
-          </div>
-        ) : hasDraft && draftContent ? (
-          draftContent
-        ) : (
-          <div className="text-center py-8 text-[var(--color-text-secondary)]">
-            <p className="text-sm">
-              사실관계 요약이 완료되면 초안을 생성할 수 있습니다.
-            </p>
-          </div>
-        )}
-      </WorkspaceSection>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Draft Content (if exists) */}
+      {hasDraft && draftContent && (
+        <div className="mt-4">
+          {draftContent}
+        </div>
+      )}
     </div>
   );
 }

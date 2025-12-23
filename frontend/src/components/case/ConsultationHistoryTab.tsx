@@ -21,6 +21,10 @@ import {
 
 interface ConsultationHistoryTabProps {
   caseId: string;
+  /** External control to open the modal directly */
+  externalOpenModal?: boolean;
+  /** Callback when modal is closed externally */
+  onExternalModalClose?: () => void;
 }
 
 const CONSULTATION_TYPES: Record<ConsultationType, { label: string; icon: typeof Phone; color: string }> = {
@@ -29,7 +33,7 @@ const CONSULTATION_TYPES: Record<ConsultationType, { label: string; icon: typeof
   online: { label: '화상 상담', icon: Video, color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30' },
 };
 
-export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) {
+export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalModalClose }: ConsultationHistoryTabProps) {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,27 +47,6 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
     summary: '',
     notes: '',
   });
-
-  // Fetch consultations on mount
-  const fetchConsultations = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await getConsultations(caseId);
-      if (response.data) {
-        setConsultations(response.data.consultations);
-      } else if (response.error) {
-        toast.error(response.error);
-      }
-    } catch {
-      toast.error('상담내역을 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [caseId]);
-
-  useEffect(() => {
-    fetchConsultations();
-  }, [fetchConsultations]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -94,10 +77,40 @@ export function ConsultationHistoryTab({ caseId }: ConsultationHistoryTabProps) 
     setIsModalOpen(true);
   }, [resetForm]);
 
+  // Fetch consultations on mount
+  const fetchConsultations = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await getConsultations(caseId);
+      if (response.data) {
+        setConsultations(response.data.consultations);
+      } else if (response.error) {
+        toast.error(response.error);
+      }
+    } catch {
+      toast.error('상담내역을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [caseId]);
+
+  useEffect(() => {
+    fetchConsultations();
+  }, [fetchConsultations]);
+
+  // Handle external modal open
+  useEffect(() => {
+    if (externalOpenModal) {
+      handleOpenModal();
+    }
+  }, [externalOpenModal, handleOpenModal]);
+
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     resetForm();
-  }, [resetForm]);
+    // Notify parent when modal closes (for external control)
+    onExternalModalClose?.();
+  }, [resetForm, onExternalModalClose]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

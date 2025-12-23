@@ -27,6 +27,7 @@ import { AnalysisTab } from '@/components/case/AnalysisTab';
 import { CaseActionsDropdown } from '@/components/case/CaseActionsDropdown';
 // Evidence imports
 import EvidenceUpload from '@/components/evidence/EvidenceUpload';
+import EvidenceUploadModal from '@/components/evidence/EvidenceUploadModal';
 import EvidenceTable from '@/components/evidence/EvidenceTable';
 import { Evidence, EvidenceType, EvidenceStatus } from '@/types/evidence';
 import { getEvidence } from '@/lib/api/evidence';
@@ -129,6 +130,9 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showExpertPanel, setShowExpertPanel] = useState(false);
+  const [showEvidenceUploadModal, setShowEvidenceUploadModal] = useState(false);
+  const [showConsultationAddModal, setShowConsultationAddModal] = useState(false);
+  const [showAssetAddModal, setShowAssetAddModal] = useState(false);
 
   // Draft state
   const [showDraftModal, setShowDraftModal] = useState(false);
@@ -530,7 +534,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         <nav className="flex gap-6">
           {[
             { id: 'workspace', label: '워크스페이스', count: null, icon: <Scale className="w-4 h-4 mr-1" />, primary: true },
-            { id: 'relations', label: '관계도', count: null, icon: null },
+            { id: 'relations', label: '고객리포트', count: null, icon: null },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length, icon: null },
             { id: 'assets', label: '재산분할', count: null, icon: <Wallet className="w-4 h-4 mr-1" /> },
           ].map((tab) => (
@@ -575,13 +579,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                   />
                 }
                 evidenceCount={evidenceList.length}
-                onUploadEvidence={() => setActiveTab('evidence')}
-                consultationContent={<div className="p-4 text-sm text-gray-500">상담 내역 목록</div>}
-                consultationCount={0}
-                onAddConsultation={() => setActiveTab('consultation')}
-                assetsContent={<div className="p-4 text-sm text-gray-500">재산 목록</div>}
-                assetsCount={0}
-                onAddAsset={() => setActiveTab('assets')}
+                onUploadEvidence={() => setShowEvidenceUploadModal(true)}
               />
             }
             mainContent={
@@ -912,21 +910,81 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
 
         {activeTab === 'relations' && (
           <div className="space-y-6">
-            {/* Relations Header */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+            {/* Client Report Header - Task 7 */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 dark:bg-purple-800/50 rounded-lg">
-                  <UserPlus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-800/50 rounded-lg">
+                  <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-purple-800 dark:text-purple-200">인물 관계도</h3>
-                  <p className="text-sm text-purple-600 dark:text-purple-400">사건 관련 인물들의 관계를 시각적으로 파악합니다.</p>
+                  <h3 className="font-semibold text-indigo-800 dark:text-indigo-200">고객 리포트</h3>
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400">의뢰인 정보와 관계도를 한눈에 확인합니다.</p>
                 </div>
               </div>
             </div>
-            {/* Relations Content */}
+
+            {/* Client Information Card - Task 7 */}
+            <div className="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+                <h4 className="font-semibold text-[var(--color-text-primary)]">의뢰인 정보</h4>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">이름</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {caseDetail.clientName || '미입력'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">사건 번호</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {caseDetail.id.slice(0, 8).toUpperCase()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">사건 상태</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {statusConfig.label}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">담당 변호사</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {caseDetail.ownerName || caseDetail.ownerEmail || '미지정'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">접수일</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {new Date(caseDetail.createdAt).toLocaleDateString('ko-KR')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">증거 수</p>
+                    <p className="font-medium text-[var(--color-text-primary)]">
+                      {caseDetail.evidenceCount}건
+                    </p>
+                  </div>
+                </div>
+                {caseDetail.description && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-neutral-700">
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-1">사건 개요</p>
+                    <p className="text-sm text-[var(--color-text-primary)]">
+                      {caseDetail.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Relationship Graph - Kept from original */}
             <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
-              <div className="h-[550px]">
+              <div className="flex items-center gap-2 mb-3">
+                <UserPlus className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <h4 className="font-medium text-[var(--color-text-primary)]">인물 관계도</h4>
+              </div>
+              <div className="h-[450px]">
                 <PartyGraph caseId={caseId} />
               </div>
             </div>
@@ -949,7 +1007,11 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
             </div>
             {/* Consultation Content */}
             <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-6">
-              <ConsultationHistoryTab caseId={caseId} />
+              <ConsultationHistoryTab
+                caseId={caseId}
+                externalOpenModal={showConsultationAddModal}
+                onExternalModalClose={() => setShowConsultationAddModal(false)}
+              />
             </div>
           </div>
         )}
@@ -970,7 +1032,11 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
             </div>
             {/* Assets Content */}
             <div className="bg-white dark:bg-neutral-800/50 rounded-lg border border-gray-200 dark:border-neutral-700 p-6">
-              <AssetSummaryTab caseId={caseId} />
+              <AssetSummaryTab
+                caseId={caseId}
+                externalOpenAddForm={showAssetAddModal}
+                onExternalAddFormClose={() => setShowAssetAddModal(false)}
+              />
             </div>
           </div>
         )}
@@ -1101,6 +1167,20 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
         hasFactSummary={hasFactSummary}
         progress={draftProgress}
         status={draftStatus}
+      />
+
+      {/* Evidence Upload Modal */}
+      <EvidenceUploadModal
+        isOpen={showEvidenceUploadModal}
+        onClose={() => setShowEvidenceUploadModal(false)}
+        onUpload={async (files) => {
+          for (const fileData of files) {
+            await handleUpload([fileData.file]);
+          }
+          fetchEvidence();
+        }}
+        caseId={caseId}
+        isLoading={isUploading}
       />
     </div>
   );

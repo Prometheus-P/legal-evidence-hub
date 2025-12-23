@@ -110,7 +110,7 @@ export function EvidenceListCompact({
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-0.5">
       {items.map((item, index) => {
         // Generate legal number if not provided
         const legalNumber = item.legalNumber || generateLegalNumber(item.submittedBy || 'plaintiff', index + 1);
@@ -120,7 +120,10 @@ export function EvidenceListCompact({
           <li key={item.id}>
             <button
               onClick={() => onItemClick?.(item)}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-neutral-700 text-left transition-colors group"
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-sm text-left transition-all duration-100 group
+                hover:bg-gray-100 dark:hover:bg-neutral-700
+                active:bg-gray-200 dark:active:bg-neutral-600 active:scale-[0.99]
+                focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1"
             >
               {/* Status Indicator */}
               <span className="flex-shrink-0">
