@@ -143,7 +143,7 @@ jobs:
   # ============================================
   build-frontend:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    environment: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && 'production' || 'staging' }}
     outputs:
       s3_bucket: ${{ steps.env.outputs.S3_BUCKET }}
       cf_dist: ${{ steps.env.outputs.CF_DIST }}
@@ -207,7 +207,7 @@ jobs:
         (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev') ||
         (needs.build-backend.result == 'success' && needs.build-ai-worker.result == 'success')
       )
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    environment: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && 'production' || 'staging' }}
 
     steps:
       - name: Configure AWS Credentials
