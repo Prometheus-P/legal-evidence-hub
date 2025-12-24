@@ -146,10 +146,14 @@ const preserveSpaces = (html: string): string => {
 };
 
 const sanitizeDraftHtml = (html: string) => {
-    if (typeof window === 'undefined') return html;
-    // Pre-process: Convert &nbsp; text literals to actual spaces (AI sometimes outputs these)
+    // Pre-process: ALWAYS convert &nbsp; text literals to actual spaces (including SSR)
+    // AI (Gemini) sometimes outputs &nbsp; as literal text instead of HTML entity
     const cleanedInput = html.replace(/&nbsp;/g, ' ');
-    // First convert to HTML, then preserve spaces (order matters to avoid escaping)
+
+    // SSR: Return cleaned input without DOMPurify (window not available)
+    if (typeof window === 'undefined') return cleanedInput;
+
+    // Client-side: Full HTML processing with space preservation
     const converted = textToHtml(cleanedInput);
     const withPreservedSpaces = preserveSpaces(converted);
     return DOMPurify.sanitize(withPreservedSpaces, SANITIZE_OPTIONS);
