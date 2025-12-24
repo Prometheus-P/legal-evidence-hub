@@ -148,8 +148,28 @@ const textToHtml = (text: string): string => {
     return htmlParagraphs.join('\n');
 };
 
-const sanitizeDraftHtml = (html: string) =>
-    typeof window === 'undefined' ? html : DOMPurify.sanitize(textToHtml(html), SANITIZE_OPTIONS);
+/**
+ * Preserve leading spaces and multiple consecutive spaces for legal document formatting
+ * Converts spaces to &nbsp; for proper rendering in HTML
+ * Must be applied AFTER textToHtml to avoid escaping &nbsp; as &amp;nbsp;
+ */
+const preserveSpaces = (html: string): string => {
+    // Convert leading spaces at the start of each line to &nbsp;
+    // Also convert multiple consecutive spaces to preserve formatting
+    return html
+        .replace(/^( +)/gm, (match) => match.replace(/ /g, '\u00A0'))
+        .replace(/  +/g, (match) => match.replace(/ /g, '\u00A0'));
+};
+
+const sanitizeDraftHtml = (html: string) => {
+    if (typeof window === 'undefined') return html;
+    // Pre-process: Convert &nbsp; text literals to actual spaces (AI sometimes outputs these)
+    const cleanedInput = html.replace(/&nbsp;/g, ' ');
+    // First convert to HTML, then preserve spaces (order matters to avoid escaping)
+    const converted = textToHtml(cleanedInput);
+    const withPreservedSpaces = preserveSpaces(converted);
+    return DOMPurify.sanitize(withPreservedSpaces, SANITIZE_OPTIONS);
+};
 type IntervalHandle = ReturnType<typeof setInterval> | number;
 type TimeoutHandle = ReturnType<typeof setTimeout> | number;
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, '').trim();
