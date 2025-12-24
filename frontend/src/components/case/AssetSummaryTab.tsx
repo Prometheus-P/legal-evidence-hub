@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, DollarSign, TrendingDown, Scale, Plus, AlertCircle } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
 import type { LegacyAsset as Asset, AssetType, CreateAssetRequest } from '@/types/asset';
@@ -62,9 +62,17 @@ function SummaryCard({ icon, label, value, isNegative, bgColor, iconColor }: Sum
 
 interface AssetSummaryTabProps {
   caseId: string;
+  /** External control to show add form directly */
+  externalOpenAddForm?: boolean;
+  /** Callback when form is closed externally */
+  onExternalAddFormClose?: () => void;
 }
 
-export function AssetSummaryTab({ caseId }: AssetSummaryTabProps) {
+export function AssetSummaryTab({
+  caseId,
+  externalOpenAddForm,
+  onExternalAddFormClose,
+}: AssetSummaryTabProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -78,13 +86,27 @@ export function AssetSummaryTab({ caseId }: AssetSummaryTabProps) {
     updateDivisionRatio,
   } = useAssets({ caseId });
 
+  // Handle external add form trigger
+  useEffect(() => {
+    if (externalOpenAddForm) {
+      setIsExpanded(true);
+      setShowAddForm(true);
+    }
+  }, [externalOpenAddForm]);
+
   const handleAddAsset = async (data: CreateAssetRequest) => {
     try {
       await addAsset(data);
       setShowAddForm(false);
+      onExternalAddFormClose?.();
     } catch {
       // Error handling
     }
+  };
+
+  const handleCancelAddForm = () => {
+    setShowAddForm(false);
+    onExternalAddFormClose?.();
   };
 
   const handleDeleteAsset = async (assetId: string) => {
@@ -221,7 +243,7 @@ export function AssetSummaryTab({ caseId }: AssetSummaryTabProps) {
             {showAddForm && (
               <AddAssetFormInline
                 onSubmit={handleAddAsset}
-                onCancel={() => setShowAddForm(false)}
+                onCancel={handleCancelAddForm}
               />
             )}
 

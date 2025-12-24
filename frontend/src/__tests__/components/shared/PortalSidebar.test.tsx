@@ -2,6 +2,7 @@
  * PortalSidebar Active State Verification Tests
  * 005-lawyer-portal-pages Feature - T069
  * Updated for NavGroup-based interface
+ * Updated for LDS2 Slim Design (w-20, icon + short label)
  *
  * Tests for FR-009: Sidebar highlights active page on all lawyer portal routes
  */
@@ -134,8 +135,9 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const dashboardLink = within(sidebar as HTMLElement).getByRole('link', { name: /대시보드/i });
-      expect(dashboardLink).toHaveClass('bg-primary');
+      // LDS2 Slim: Uses bg-primary/10 for active state (Tailwind arbitrary value)
+      const dashboardLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/dashboard');
+      expect(dashboardLink).toHaveClass('text-primary');
     });
 
     it('should highlight "케이스" when on /lawyer/cases', () => {
@@ -143,8 +145,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-primary');
+      const casesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/cases');
+      expect(casesLink).toHaveClass('text-primary');
     });
 
     it('should highlight "케이스" when on /lawyer/cases/123 (nested route)', () => {
@@ -152,8 +154,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-primary');
+      const casesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/cases');
+      expect(casesLink).toHaveClass('text-primary');
     });
 
     it('should highlight "의뢰인" when on /lawyer/clients', () => {
@@ -161,8 +163,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const clientsLink = within(sidebar as HTMLElement).getByRole('link', { name: /의뢰인/i });
-      expect(clientsLink).toHaveClass('bg-primary');
+      const clientsLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/clients');
+      expect(clientsLink).toHaveClass('text-primary');
     });
 
     it('should highlight "탐정" when on /lawyer/investigators', () => {
@@ -170,8 +172,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const investigatorsLink = within(sidebar as HTMLElement).getByRole('link', { name: /탐정/i });
-      expect(investigatorsLink).toHaveClass('bg-primary');
+      const investigatorsLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/investigators');
+      expect(investigatorsLink).toHaveClass('text-primary');
     });
 
     it('should highlight "일정" when on /lawyer/calendar', () => {
@@ -179,8 +181,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const calendarLink = within(sidebar as HTMLElement).getByRole('link', { name: /일정/i });
-      expect(calendarLink).toHaveClass('bg-primary');
+      const calendarLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/calendar');
+      expect(calendarLink).toHaveClass('text-primary');
     });
 
     it('should highlight "메시지" when on /lawyer/messages', () => {
@@ -188,8 +190,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const messagesLink = within(sidebar as HTMLElement).getByRole('link', { name: /메시지/i });
-      expect(messagesLink).toHaveClass('bg-primary');
+      const messagesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/messages');
+      expect(messagesLink).toHaveClass('text-primary');
     });
 
     it('should highlight "청구/결제" when on /lawyer/billing', () => {
@@ -197,8 +199,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const billingLink = within(sidebar as HTMLElement).getByRole('link', { name: /청구\/결제/i });
-      expect(billingLink).toHaveClass('bg-primary');
+      const billingLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/billing');
+      expect(billingLink).toHaveClass('text-primary');
     });
   });
 
@@ -208,14 +210,14 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      // Cases should not be highlighted
-      const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).not.toHaveClass('bg-primary');
-      expect(casesLink).toHaveClass('text-gray-700');
+      // Cases should not be highlighted - LDS2 Slim uses text-gray-500 for inactive
+      const casesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/cases');
+      expect(casesLink).not.toHaveClass('text-primary');
+      expect(casesLink).toHaveClass('text-gray-500');
 
       // Calendar should not be highlighted
-      const calendarLink = within(sidebar as HTMLElement).getByRole('link', { name: /일정/i });
-      expect(calendarLink).not.toHaveClass('bg-primary');
+      const calendarLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/calendar');
+      expect(calendarLink).not.toHaveClass('text-primary');
     });
 
     it('should only highlight dashboard for exact match (not /lawyer/dashboard/something)', () => {
@@ -223,8 +225,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const dashboardLink = within(sidebar as HTMLElement).getByRole('link', { name: /대시보드/i });
-      expect(dashboardLink).toHaveClass('bg-primary');
+      const dashboardLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/dashboard');
+      expect(dashboardLink).toHaveClass('text-primary');
     });
   });
 
@@ -234,8 +236,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const casesLink = within(sidebar as HTMLElement).getByRole('link', { name: /케이스/i });
-      expect(casesLink).toHaveClass('bg-primary');
+      const casesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/cases');
+      expect(casesLink).toHaveClass('text-primary');
     });
 
     it('should highlight "의뢰인" for /lawyer/clients/456', () => {
@@ -243,8 +245,8 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const clientsLink = within(sidebar as HTMLElement).getByRole('link', { name: /의뢰인/i });
-      expect(clientsLink).toHaveClass('bg-primary');
+      const clientsLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/clients');
+      expect(clientsLink).toHaveClass('text-primary');
     });
 
     it('should highlight "메시지" for /lawyer/messages/thread/123', () => {
@@ -252,13 +254,13 @@ describe('PortalSidebar Active State - FR-009', () => {
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      const messagesLink = within(sidebar as HTMLElement).getByRole('link', { name: /메시지/i });
-      expect(messagesLink).toHaveClass('bg-primary');
+      const messagesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/messages');
+      expect(messagesLink).toHaveClass('text-primary');
     });
   });
 
   describe('Badge Display', () => {
-    it('should show badge on nav item when badge count is greater than 0', () => {
+    it('should show badge dot indicator when badge count is greater than 0', () => {
       mockPathname.mockReturnValue('/lawyer/dashboard');
       const groupsWithBadge: NavGroup[] = [
         {
@@ -277,8 +279,9 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const { container } = render(<PortalSidebar groups={groupsWithBadge} />);
       const sidebar = getDesktopSidebar(container);
-
-      expect(within(sidebar as HTMLElement).getByText('5')).toBeInTheDocument();
+      const messagesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/messages');
+      // LDS2 Slim: Badge is shown as a red dot, not a number
+      expect(messagesLink.querySelector('.bg-red-500.rounded-full')).toBeInTheDocument();
     });
 
     it('should not show badge when badge count is 0', () => {
@@ -287,38 +290,50 @@ describe('PortalSidebar Active State - FR-009', () => {
 
       const sidebar = getDesktopSidebar(container);
       // Messages badge should not be visible (badge is 0)
-      const messagesLink = within(sidebar as HTMLElement).getByRole('link', { name: /메시지/i });
-      // Check that there's no badge element (no number displayed)
-      expect(messagesLink.querySelector('.rounded-full')).not.toBeInTheDocument();
+      const messagesLink = within(sidebar as HTMLElement).getByTestId('nav-link-/lawyer/messages');
+      // Check that there's no badge element
+      expect(messagesLink.querySelector('.bg-red-500.rounded-full')).not.toBeInTheDocument();
     });
   });
 
   describe('User Info Display', () => {
-    it('should display user name', () => {
+    it('should display user initial in avatar (LDS2 Slim)', () => {
       mockPathname.mockReturnValue('/lawyer/dashboard');
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      expect(within(sidebar as HTMLElement).getByText('김변호사')).toBeInTheDocument();
+      // LDS2 Slim: Desktop only shows user's first initial in avatar
+      expect(within(sidebar as HTMLElement).getByText('김')).toBeInTheDocument();
     });
 
-    it('should display role display name', () => {
+    it('should display logout button with 나감 label', () => {
       mockPathname.mockReturnValue('/lawyer/dashboard');
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      expect(within(sidebar as HTMLElement).getByText('변호사')).toBeInTheDocument();
+      // LDS2 Slim: Desktop shows compact logout label
+      expect(within(sidebar as HTMLElement).getByText('나감')).toBeInTheDocument();
     });
   });
 
-  describe('Group Collapsibility', () => {
-    it('should render collapsible group label', () => {
+  describe('LDS2 Slim Design', () => {
+    it('should not render group labels in desktop sidebar (slim mode)', () => {
       mockPathname.mockReturnValue('/lawyer/dashboard');
       const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
 
       const sidebar = getDesktopSidebar(container);
-      // Management group should have a label
-      expect(within(sidebar as HTMLElement).getByText('관리')).toBeInTheDocument();
+      // LDS2 Slim: Group labels are hidden in desktop, using separators instead
+      expect(within(sidebar as HTMLElement).queryByText('관리')).not.toBeInTheDocument();
+    });
+
+    it('should render short labels for nav items', () => {
+      mockPathname.mockReturnValue('/lawyer/dashboard');
+      const { container } = render(<PortalSidebar groups={lawyerNavGroups} />);
+
+      const sidebar = getDesktopSidebar(container);
+      // LDS2 Slim: Uses abbreviated labels (대시보드 -> 대시)
+      expect(within(sidebar as HTMLElement).getByText('대시')).toBeInTheDocument();
+      expect(within(sidebar as HTMLElement).getByText('결제')).toBeInTheDocument(); // 청구/결제 -> 결제
     });
   });
 });

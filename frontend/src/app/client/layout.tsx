@@ -80,7 +80,7 @@ export default function ClientLayout({
         <PortalSidebar groups={clientNavGroups} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 min-h-screen">
+        <main className="flex-1 lg:ml-20 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 

@@ -31,58 +31,49 @@ export interface PartyEdgeData {
 
 export type PartyEdgeType = Edge<PartyEdgeData, 'relationship'>;
 
-// Style mapping for relationship types
+// Style mapping for relationship types - 이미지 기준 스타일
 const RELATIONSHIP_STYLES: Record<RelationshipType, {
   stroke: string;
   strokeDasharray?: string;
   strokeWidth: number;
-  label: string;
 }> = {
   marriage: {
     stroke: '#3B82F6', // blue-500
-    strokeWidth: 3,
-    label: '💍',
+    strokeWidth: 2,
   },
   affair: {
-    stroke: '#EF4444', // red-500
-    strokeDasharray: '5,5',
+    stroke: '#EC4899', // pink-500 (이미지 기준)
+    strokeDasharray: '6,4',
     strokeWidth: 2,
-    label: '💔',
   },
   parent_child: {
-    stroke: '#22C55E', // green-500
+    stroke: '#10B981', // emerald-500
     strokeWidth: 2,
-    label: '👶',
   },
   sibling: {
     stroke: '#6B7280', // gray-500
-    strokeDasharray: '3,3',
-    strokeWidth: 1,
-    label: '👫',
+    strokeDasharray: '4,4',
+    strokeWidth: 1.5,
   },
   in_law: {
     stroke: '#8B5CF6', // violet-500
-    strokeDasharray: '5,3',
-    strokeWidth: 1,
-    label: '🤝',
+    strokeDasharray: '6,3',
+    strokeWidth: 1.5,
   },
   cohabit: {
     stroke: '#F59E0B', // amber-500
     strokeDasharray: '8,4',
     strokeWidth: 2,
-    label: '🏠',
   },
   relative: {
     stroke: '#94A3B8', // slate-400
-    strokeDasharray: '2,2',
-    strokeWidth: 1,
-    label: '👨‍👩‍👦',
+    strokeDasharray: '3,3',
+    strokeWidth: 1.5,
   },
   other: {
     stroke: '#CBD5E1', // slate-300
     strokeDasharray: '4,4',
-    strokeWidth: 1,
-    label: '🔗',
+    strokeWidth: 1.5,
   },
 };
 
@@ -138,27 +129,21 @@ function PartyEdgeComponent({
           <button
             onClick={handleClick}
             className={`
-              px-2 py-1 rounded-full text-xs font-medium
-              bg-white dark:bg-neutral-800 border shadow-sm dark:shadow-neutral-900/50
-              hover:shadow-md dark:hover:shadow-neutral-900/70 transition-shadow cursor-pointer
-              text-gray-800 dark:text-gray-200
+              px-2.5 py-1 rounded-md text-xs font-medium
+              bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm
+              border border-gray-200 dark:border-neutral-600
+              shadow-sm hover:shadow-md transition-shadow cursor-pointer
+              text-gray-600 dark:text-gray-300
               ${selected ? 'ring-2 ring-blue-400' : ''}
             `}
-            style={{ borderColor: style.stroke }}
             title={data?.is_auto_extracted ? `AI 자동 추출 (신뢰도: ${Math.round((data.extraction_confidence || 0.7) * 100)}%)` : undefined}
           >
             {/* 012-precedent-integration: T048-T050 자동 추출 표시 */}
             {data?.is_auto_extracted && (
               <span className="mr-1 text-purple-500" title="AI 자동 추출">🤖</span>
             )}
-            <span className="mr-1">{style.label}</span>
             {typeLabel}
-            {data?.start_date && (
-              <span className="ml-1 text-gray-400 dark:text-gray-500">
-                ({new Date(data.start_date).getFullYear()}~
-                {data.end_date ? new Date(data.end_date).getFullYear() : ''})
-              </span>
-            )}
+            {data?.notes && <span className="ml-0.5 text-gray-400">?</span>}
           </button>
         </div>
       </EdgeLabelRenderer>

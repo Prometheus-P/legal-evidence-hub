@@ -47,6 +47,7 @@ const lawyerNavGroups: NavGroup[] = [
     id: 'management',
     label: '관리',
     collapsible: true,
+    defaultCollapsed: true,
     items: [
       {
         id: 'clients',
@@ -107,12 +108,12 @@ export default function LawyerLayout({
         <PortalSidebar groups={lawyerNavGroups} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 min-h-screen">
+        <main className="flex-1 lg:ml-20 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 
           {/* Page Content */}
-          <div className="p-4 lg:p-6">
+          <div className="p-2 lg:p-3">
             {children}
           </div>
         </main>

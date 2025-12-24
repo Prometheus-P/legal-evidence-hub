@@ -1,9 +1,24 @@
 'use client';
 
+/**
+ * PropertyDivisionDashboard - Simplified Property Division Dashboard
+ * 014-ui-settings-completion Feature
+ *
+ * Simplified version:
+ * - Property list with CRUD operations
+ * - Summary statistics (total assets, debts, net worth)
+ * - Manual ratio input (no AI prediction)
+ *
+ * Removed:
+ * - DivisionGauge (AI prediction gauge)
+ * - Evidence impacts section
+ * - Similar cases section
+ * - AI prediction calculation
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
-  RefreshCw,
   Trash2,
   Edit2,
   Building2,
@@ -14,14 +29,10 @@ import {
   CreditCard,
   HelpCircle,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import {
   Property,
   PropertyCreate,
-  PropertyListResponse,
-  DivisionPrediction,
   PropertyType,
   PROPERTY_TYPE_LABELS,
   PROPERTY_OWNER_LABELS,
@@ -30,10 +41,7 @@ import {
   getProperties,
   createProperty,
   deleteProperty,
-  getDivisionPrediction,
-  calculateDivisionPrediction,
 } from '@/lib/api/properties';
-import DivisionGauge from './DivisionGauge';
 import PropertyInputForm from './PropertyInputForm';
 
 interface PropertyDivisionDashboardProps {
@@ -71,14 +79,14 @@ export default function PropertyDivisionDashboard({
     total_debts: 0,
     net_value: 0,
   });
-  const [prediction, setPrediction] = useState<DivisionPrediction | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCalculating, setIsCalculating] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [expandedEvidence, setExpandedEvidence] = useState(false);
-  const [expandedSimilar, setExpandedSimilar] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 014-ui-settings-completion: Manual ratio input state
+  const [plaintiffRatio, setPlaintiffRatio] = useState('');
+  const [defendantRatio, setDefendantRatio] = useState('');
 
   // Format currency
   const formatAmount = (amount: number) => {
@@ -97,11 +105,7 @@ export default function PropertyDivisionDashboard({
     setError(null);
 
     try {
-      // Load properties and prediction in parallel
-      const [propertiesRes, predictionRes] = await Promise.all([
-        getProperties(caseId),
-        getDivisionPrediction(caseId),
-      ]);
+      const propertiesRes = await getProperties(caseId);
 
       if (propertiesRes.data) {
         setProperties(propertiesRes.data.properties);
@@ -110,10 +114,6 @@ export default function PropertyDivisionDashboard({
           total_debts: propertiesRes.data.total_debts,
           net_value: propertiesRes.data.net_value,
         });
-      }
-
-      if (predictionRes.data) {
-        setPrediction(predictionRes.data);
       }
     } catch {
       setError('데이터를 불러오는데 실패했습니다.');
@@ -155,23 +155,6 @@ export default function PropertyDivisionDashboard({
       await loadData();
     } catch {
       alert('삭제 중 오류가 발생했습니다.');
-    }
-  };
-
-  // Calculate prediction
-  const handleCalculatePrediction = async () => {
-    setIsCalculating(true);
-    try {
-      const response = await calculateDivisionPrediction(caseId, true);
-      if (response.error) {
-        alert(`예측 계산 실패: ${response.error}`);
-        return;
-      }
-      if (response.data) {
-        setPrediction(response.data);
-      }
-    } finally {
-      setIsCalculating(false);
     }
   };
 
@@ -227,129 +210,66 @@ export default function PropertyDivisionDashboard({
         </div>
       </div>
 
-      {/* Division Prediction Gauge */}
-      {prediction ? (
-        <DivisionGauge
-          plaintiffRatio={prediction.plaintiff_ratio}
-          defendantRatio={prediction.defendant_ratio}
-          plaintiffAmount={prediction.plaintiff_amount}
-          defendantAmount={prediction.defendant_amount}
-          confidenceLevel={prediction.confidence_level}
-          animated={true}
-        />
-      ) : (
-        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg p-6 text-center">
-          <p className="text-neutral-500 dark:text-neutral-400 mb-4">아직 예측이 없습니다</p>
-          <button
-            type="button"
-            onClick={handleCalculatePrediction}
-            disabled={isCalculating || properties.length === 0}
-            className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
-          >
-            {isCalculating ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                계산 중...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                예측 계산하기
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Evidence Impacts */}
-      {prediction && prediction.evidence_impacts.length > 0 && (
-        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
-          <button
-            type="button"
-            onClick={() => setExpandedEvidence(!expandedEvidence)}
-            className="w-full flex items-center justify-between"
-          >
-            <h3 className="font-bold text-neutral-800 dark:text-neutral-200">
-              증거 영향도 ({prediction.evidence_impacts.length}건)
-            </h3>
-            {expandedEvidence ? (
-              <ChevronUp className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-            )}
-          </button>
-          {expandedEvidence && (
-            <div className="mt-4 space-y-3">
-              {prediction.evidence_impacts.map((impact, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium text-neutral-800 dark:text-neutral-200">{impact.evidence_type}</p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{impact.reason}</p>
-                  </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      impact.direction === 'plaintiff'
-                        ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                        : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
-                    }`}
-                  >
-                    {impact.direction === 'plaintiff' ? '원고' : '피고'} +
-                    {impact.impact_percent}%
-                  </div>
-                </div>
-              ))}
+      {/* 014-ui-settings-completion: Manual Ratio Input */}
+      <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
+        <h3 className="font-bold text-neutral-800 dark:text-neutral-200 mb-4">예상 분할 비율</h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
+          재산분할 협상 또는 판결에서 예상되는 비율을 직접 입력하세요.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              원고 예상 비율
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={plaintiffRatio}
+                onChange={(e) => setPlaintiffRatio(e.target.value)}
+                placeholder="예: 50%"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg
+                         bg-white dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200
+                         focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded">
+                  원고
+                </span>
+              </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Similar Cases */}
-      {prediction && prediction.similar_cases.length > 0 && (
-        <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
-          <button
-            type="button"
-            onClick={() => setExpandedSimilar(!expandedSimilar)}
-            className="w-full flex items-center justify-between"
-          >
-            <h3 className="font-bold text-neutral-800 dark:text-neutral-200">
-              유사 판례 ({prediction.similar_cases.length}건)
-            </h3>
-            {expandedSimilar ? (
-              <ChevronUp className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-            )}
-          </button>
-          {expandedSimilar && (
-            <div className="mt-4 space-y-3">
-              {prediction.similar_cases.map((sc, idx) => (
-                <div key={idx} className="p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-neutral-800 dark:text-neutral-200">{sc.case_ref}</p>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      유사도: {(sc.similarity_score * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                  <p className="text-sm text-primary dark:text-primary-light font-medium">분할비율: {sc.division_ratio}</p>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {sc.key_factors.map((factor, i) => (
-                      <span
-                        key={i}
-                        className="text-xs px-2 py-1 bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded"
-                      >
-                        {factor}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+              피고 예상 비율
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={defendantRatio}
+                onChange={(e) => setDefendantRatio(e.target.value)}
+                placeholder="예: 50%"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg
+                         bg-white dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200
+                         focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <span className="px-2 py-0.5 text-xs bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded">
+                  피고
+                </span>
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      )}
+        {(plaintiffRatio || defendantRatio) && (
+          <div className="mt-4 p-3 bg-neutral-50 dark:bg-neutral-700/50 rounded-lg">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              예상 분할: 원고 <span className="font-bold text-blue-600 dark:text-blue-400">{plaintiffRatio || '-'}</span>
+              {' : '}
+              피고 <span className="font-bold text-orange-600 dark:text-orange-400">{defendantRatio || '-'}</span>
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Property List */}
       <div className="bg-white dark:bg-neutral-800 rounded-xl shadow p-5">
@@ -358,17 +278,6 @@ export default function PropertyDivisionDashboard({
             재산 목록 ({properties.length}건)
           </h3>
           <div className="flex gap-2">
-            {prediction && (
-              <button
-                type="button"
-                onClick={handleCalculatePrediction}
-                disabled={isCalculating}
-                className="px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1"
-              >
-                <RefreshCw className={`w-4 h-4 ${isCalculating ? 'animate-spin' : ''}`} />
-                재계산
-              </button>
-            )}
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
@@ -384,7 +293,7 @@ export default function PropertyDivisionDashboard({
           <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
             <Building2 className="w-12 h-12 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
             <p>등록된 재산이 없습니다</p>
-            <p className="text-sm mt-1">재산을 추가하여 분할 예측을 시작하세요</p>
+            <p className="text-sm mt-1">재산을 추가하여 목록을 관리하세요</p>
           </div>
         ) : (
           <div className="divide-y divide-neutral-100 dark:divide-neutral-700">

@@ -90,6 +90,11 @@ export interface Evidence {
     article840Tags?: Article840Tags;
     insights?: AIInsight[];
 
+    // 014-ui-settings-completion: Legal evidence numbering
+    legalNumber?: string;  // 갑제1호증, 을제2호증, etc.
+    submittedBy?: 'plaintiff' | 'defendant' | 'third_party';  // 갑/을/병
+    evidenceTimestamp?: string;  // ISO Date - when evidence was created (not uploaded)
+
     // 015-evidence-speaker-mapping: 화자 매핑 필드
     speakerMapping?: SpeakerMapping;
     speakerMappingUpdatedAt?: string;

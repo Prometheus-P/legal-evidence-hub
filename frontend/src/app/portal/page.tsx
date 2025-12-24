@@ -40,9 +40,7 @@ function PortalContent() {
       clearUploadTimer();
 
       if (files.length === 0) {
-        setStatus('error');
-        setUploadedFiles([]);
-        setUploadedCount(0);
+        // 사용자가 파일 선택을 취소한 경우 - 현재 상태 유지
         return;
       }
 

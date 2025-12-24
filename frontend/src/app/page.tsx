@@ -28,7 +28,7 @@ import LandingFooter from '@/components/landing/LandingFooter';
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { isAuthenticated, logout, isLoading } = useAuth();
+  const { isAuthenticated, logout, isLoading, user, role } = useAuth();
 
 
   useEffect(() => {
@@ -75,6 +75,8 @@ export default function LandingPage() {
         isScrolled={isScrolled}
         isAuthenticated={isAuthenticated}
         authLoading={isLoading}
+        userRole={role}
+        userName={user?.name}
         onLogout={logout}
       />
 
