@@ -135,23 +135,22 @@ const textToHtml = (text: string): string => {
 /**
  * Preserve leading spaces and multiple consecutive spaces for legal document formatting
  * Converts spaces to &nbsp; for proper rendering in HTML
+ * Must be applied AFTER textToHtml to avoid escaping &nbsp; as &amp;nbsp;
  */
-const preserveSpaces = (str: string): string => {
+const preserveSpaces = (html: string): string => {
     // Convert leading spaces at the start of each line to &nbsp;
-    return str.replace(/^( +)/gm, (match) => {
-        return match.replace(/ /g, '&nbsp;');
-    })
     // Also convert multiple consecutive spaces to preserve formatting
-    .replace(/  +/g, (match) => {
-        return match.replace(/ /g, '&nbsp;');
-    });
+    return html
+        .replace(/^( +)/gm, (match) => match.replace(/ /g, '\u00A0'))
+        .replace(/  +/g, (match) => match.replace(/ /g, '\u00A0'));
 };
 
 const sanitizeDraftHtml = (html: string) => {
     if (typeof window === 'undefined') return html;
-    // Apply space preservation before sanitization for legal document formatting
-    const withPreservedSpaces = preserveSpaces(html);
-    return DOMPurify.sanitize(textToHtml(withPreservedSpaces), SANITIZE_OPTIONS);
+    // First convert to HTML, then preserve spaces (order matters to avoid escaping)
+    const converted = textToHtml(html);
+    const withPreservedSpaces = preserveSpaces(converted);
+    return DOMPurify.sanitize(withPreservedSpaces, SANITIZE_OPTIONS);
 };
 type IntervalHandle = ReturnType<typeof setInterval> | number;
 type TimeoutHandle = ReturnType<typeof setTimeout> | number;
