@@ -21,7 +21,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 
-// Client navigation groups - simplified view (LDS2 Slim Icons)
+// Client navigation groups - simplified view
 const clientNavGroups: NavGroup[] = [
   {
     id: 'main',
@@ -30,25 +30,25 @@ const clientNavGroups: NavGroup[] = [
         id: 'dashboard',
         label: '내 현황',
         href: '/client/dashboard',
-        icon: <LayoutDashboard className="w-4 h-4" />,
+        icon: <LayoutDashboard className="w-5 h-5" />,
       },
       {
         id: 'cases',
         label: '케이스 상태',
         href: '/client/cases',
-        icon: <Briefcase className="w-4 h-4" />,
+        icon: <Briefcase className="w-5 h-5" />,
       },
       {
         id: 'messages',
         label: '변호사 소통',
         href: '/client/messages',
-        icon: <MessageSquare className="w-4 h-4" />,
+        icon: <MessageSquare className="w-5 h-5" />,
       },
       {
         id: 'billing',
         label: '청구/결제',
         href: '/client/billing',
-        icon: <CreditCard className="w-4 h-4" />,
+        icon: <CreditCard className="w-5 h-5" />,
       },
     ],
   },
@@ -80,7 +80,7 @@ export default function ClientLayout({
         <PortalSidebar groups={clientNavGroups} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-48 min-h-screen">
+        <main className="flex-1 lg:ml-20 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 

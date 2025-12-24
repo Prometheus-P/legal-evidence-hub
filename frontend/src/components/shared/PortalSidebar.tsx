@@ -1,14 +1,12 @@
 'use client';
 
 /**
- * PortalSidebar Component - LDS2 (Legal Design System 2)
- * Slim, minimal navigation sidebar with section grouping
+ * PortalSidebar Component - LDS2 Slim Design
+ * Compact sidebar with icon + short label (80px width)
  *
- * Design principles:
- * - Compact width (w-48) for more content space
- * - Subtle visual hierarchy
- * - Clean hover/active states
- * - Reduced visual noise
+ * Features:
+ * - Desktop: Icon + 축약 라벨, hover tooltip
+ * - Mobile: Full sidebar with labels (unchanged)
  */
 
 import { useState } from 'react';
@@ -20,6 +18,24 @@ import { NotificationDropdown } from './NotificationDropdown';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { ROLE_DISPLAY_NAMES } from '@/types/user';
+
+// 축약 라벨 매핑
+const SHORT_LABELS: Record<string, string> = {
+  '대시보드': '대시',
+  '케이스': '케이스',
+  '의뢰인': '의뢰인',
+  '탐정': '탐정',
+  '일정': '일정',
+  '메시지': '메시지',
+  '청구/결제': '결제',
+  '내 현황': '현황',
+  '케이스 상태': '상태',
+  '변호사 소통': '소통',
+  '의뢰 관리': '의뢰',
+  '정산/수익': '정산',
+};
+
+const getShortLabel = (label: string): string => SHORT_LABELS[label] || label.slice(0, 3);
 
 export interface NavItem {
   id: string;
@@ -41,6 +57,21 @@ interface PortalSidebarProps {
   groups: NavGroup[];
   headerContent?: React.ReactNode;
   footerContent?: React.ReactNode;
+}
+
+// Simple Tooltip component for icon-only mode
+function Tooltip({ children, content }: { children: React.ReactNode; content: string }) {
+  return (
+    <div className="relative group">
+      {children}
+      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+        transition-all duration-150 whitespace-nowrap z-50 top-1/2 -translate-y-1/2">
+        {content}
+        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+      </div>
+    </div>
+  );
 }
 
 export function PortalSidebar({
@@ -76,7 +107,81 @@ export function PortalSidebar({
     return pathname.startsWith(href);
   };
 
-  const renderNavItem = (item: NavItem) => {
+  // Desktop nav item with icon + short label
+  const renderDesktopNavItem = (item: NavItem) => {
+    const isActive = isActiveLink(item.href);
+
+    return (
+      <Tooltip key={item.id} content={item.label}>
+        <Link
+          href={item.href}
+          className={`relative flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg transition-all duration-150 w-full ${
+            isActive
+              ? 'bg-primary/10 text-primary'
+              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+          }`}
+        >
+          <span className="relative">
+            {item.icon}
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
+            )}
+          </span>
+          <span className={`text-[10px] font-medium leading-tight ${isActive ? 'text-primary' : 'text-gray-500'}`}>
+            {getShortLabel(item.label)}
+          </span>
+        </Link>
+      </Tooltip>
+    );
+  };
+
+  // Desktop sidebar content with icon + short label
+  const desktopSidebarContent = (
+    <div className="flex flex-col h-full py-3">
+      {/* Logo - compact */}
+      <Link href="/dashboard" className="flex justify-center mb-4">
+        <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-sm">L</span>
+        </div>
+      </Link>
+
+      {/* Navigation Items */}
+      <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+        {groups.map((group, groupIndex) => (
+          <div key={group.id} className="flex flex-col gap-0.5">
+            {group.items.map(renderDesktopNavItem)}
+            {/* Separator between groups */}
+            {groupIndex < groups.length - 1 && (
+              <div className="h-px bg-gray-100 my-2 mx-2" />
+            )}
+          </div>
+        ))}
+      </nav>
+
+      {/* User Avatar & Logout */}
+      <div className="flex flex-col items-center gap-1 pt-3 border-t border-gray-100 mx-2">
+        <Tooltip content={user?.name || '사용자'}>
+          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center cursor-default">
+            <span className="text-primary font-semibold text-xs">
+              {user?.name?.charAt(0) || 'U'}
+            </span>
+          </div>
+        </Tooltip>
+        <Tooltip content="로그아웃">
+          <button
+            onClick={logout}
+            className="flex flex-col items-center gap-0.5 py-1.5 px-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors w-full"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-[10px]">나감</span>
+          </button>
+        </Tooltip>
+      </div>
+    </div>
+  );
+
+  // Mobile nav item (with labels)
+  const renderMobileNavItem = (item: NavItem) => {
     const isActive = isActiveLink(item.href);
 
     return (
@@ -84,20 +189,20 @@ export function PortalSidebar({
         key={item.id}
         href={item.href}
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
+        className={`flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
           isActive
-            ? 'bg-primary/10 text-primary border-l-2 border-primary ml-0 pl-2'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            ? 'bg-primary text-white shadow-sm'
+            : 'text-gray-700 hover:bg-gray-100'
         }`}
       >
-        <span className={`flex-shrink-0 ${isActive ? 'text-primary' : 'text-gray-400'}`}>
+        <span className={isActive ? 'text-white' : 'text-gray-500'}>
           {item.icon}
         </span>
-        <span className="flex-1 truncate">{item.label}</span>
+        <span className="flex-1">{item.label}</span>
         {item.badge !== undefined && item.badge > 0 && (
           <span
-            className={`px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${
-              isActive ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
+            className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+              isActive ? 'bg-white/20 text-white' : 'bg-primary-light text-primary'
             }`}
           >
             {item.badge}
@@ -107,94 +212,43 @@ export function PortalSidebar({
     );
   };
 
-  const renderNavGroup = (group: NavGroup) => {
+  // Mobile nav group (with labels)
+  const renderMobileNavGroup = (group: NavGroup) => {
     const isCollapsed = collapsedGroups.has(group.id);
 
     return (
-      <div key={group.id} className="mb-3">
+      <div key={group.id} className="mb-4">
         {group.label && (
           <button
             onClick={() => group.collapsible && toggleGroup(group.id)}
-            className={`w-full flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-widest ${
-              group.collapsible ? 'hover:text-gray-600 cursor-pointer' : ''
+            className={`w-full flex items-center justify-between px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider ${
+              group.collapsible ? 'hover:text-gray-700 cursor-pointer' : ''
             }`}
           >
             <span>{group.label}</span>
             {group.collapsible && (
-              <span className="text-gray-300">
+              <span className="text-gray-400">
                 {isCollapsed ? (
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-4 h-4" />
                 ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
+                  <ChevronDown className="w-4 h-4" />
                 )}
               </span>
             )}
           </button>
         )}
         {!isCollapsed && (
-          <div className="space-y-0.5">{group.items.map(renderNavItem)}</div>
+          <div className="space-y-1">{group.items.map(renderMobileNavItem)}</div>
         )}
       </div>
     );
   };
 
-  const sidebarContent = (
-    <>
-      {/* Logo - Compact */}
-      <div className="px-3 py-3 border-b border-gray-100/80">
-        <Link href="/dashboard" className="block">
-          <Logo size="sm" />
-        </Link>
-      </div>
-
-      {/* Optional Header Content */}
-      {headerContent && (
-        <div className="px-3 py-2 border-b border-gray-100/80">{headerContent}</div>
-      )}
-
-      {/* Navigation Groups */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto">
-        {groups.map(renderNavGroup)}
-      </nav>
-
-      {/* User Info & Logout - Compact */}
-      <div className="px-3 py-3 border-t border-gray-100/80">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-primary font-semibold text-xs">
-              {user?.name?.charAt(0) || 'U'}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-medium text-gray-900 truncate">
-              {user?.name || '사용자'}
-            </p>
-            <p className="text-[11px] text-gray-400 truncate">
-              {role ? ROLE_DISPLAY_NAMES[role] : ''}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={logout}
-          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[12px] text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          로그아웃
-        </button>
-      </div>
-
-      {/* Optional Footer Content */}
-      {footerContent && (
-        <div className="px-3 py-2 border-t border-gray-100/80">{footerContent}</div>
-      )}
-    </>
-  );
-
   return (
     <>
-      {/* Desktop Sidebar - LDS2 Slim Design */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-48 lg:fixed lg:inset-y-0 bg-white border-r border-gray-100 z-30">
-        {sidebarContent}
+      {/* Desktop Sidebar - LDS2 Slim (80px) */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-20 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-gray-100 z-30">
+        {desktopSidebarContent}
       </aside>
 
       {/* Mobile Header */}
@@ -226,7 +280,7 @@ export function PortalSidebar({
         />
       )}
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - Full width with labels */}
       <aside
         className={`lg:hidden fixed top-0 right-0 bottom-0 w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
@@ -245,9 +299,24 @@ export function PortalSidebar({
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          {groups.map(renderNavGroup)}
+          {groups.map(renderMobileNavGroup)}
         </nav>
         <div className="px-4 py-4 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center">
+              <span className="text-primary font-semibold text-sm">
+                {user?.name?.charAt(0) || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.name || '사용자'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {role ? ROLE_DISPLAY_NAMES[role] : ''}
+              </p>
+            </div>
+          </div>
           <button
             onClick={() => {
               logout();

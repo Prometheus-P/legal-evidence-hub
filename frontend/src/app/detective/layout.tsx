@@ -21,7 +21,7 @@ import {
   Wallet,
 } from 'lucide-react';
 
-// Detective navigation groups (LDS2 Slim Icons)
+// Detective navigation groups
 const detectiveNavGroups: NavGroup[] = [
   {
     id: 'main',
@@ -30,25 +30,25 @@ const detectiveNavGroups: NavGroup[] = [
         id: 'dashboard',
         label: '대시보드',
         href: '/detective/dashboard',
-        icon: <LayoutDashboard className="w-4 h-4" />,
+        icon: <LayoutDashboard className="w-5 h-5" />,
       },
       {
         id: 'cases',
         label: '의뢰 관리',
         href: '/detective/cases',
-        icon: <Briefcase className="w-4 h-4" />,
+        icon: <Briefcase className="w-5 h-5" />,
       },
       {
         id: 'messages',
         label: '메시지',
         href: '/detective/messages',
-        icon: <MessageSquare className="w-4 h-4" />,
+        icon: <MessageSquare className="w-5 h-5" />,
       },
       {
         id: 'earnings',
         label: '정산/수익',
         href: '/detective/earnings',
-        icon: <Wallet className="w-4 h-4" />,
+        icon: <Wallet className="w-5 h-5" />,
       },
     ],
   },
@@ -80,7 +80,7 @@ export default function DetectiveLayout({
         <PortalSidebar groups={detectiveNavGroups} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-48 min-h-screen">
+        <main className="flex-1 lg:ml-20 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 

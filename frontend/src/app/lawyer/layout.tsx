@@ -24,7 +24,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 
-// Lawyer navigation groups with hierarchical structure - LDS2 Slim Icons
+// Lawyer navigation groups with hierarchical structure
 const lawyerNavGroups: NavGroup[] = [
   {
     id: 'core',
@@ -33,13 +33,13 @@ const lawyerNavGroups: NavGroup[] = [
         id: 'dashboard',
         label: '대시보드',
         href: '/lawyer/dashboard',
-        icon: <LayoutDashboard className="w-4 h-4" />,
+        icon: <LayoutDashboard className="w-5 h-5" />,
       },
       {
         id: 'cases',
         label: '케이스',
         href: '/lawyer/cases',
-        icon: <Briefcase className="w-4 h-4" />,
+        icon: <Briefcase className="w-5 h-5" />,
       },
     ],
   },
@@ -53,31 +53,31 @@ const lawyerNavGroups: NavGroup[] = [
         id: 'clients',
         label: '의뢰인',
         href: '/lawyer/clients',
-        icon: <Users className="w-4 h-4" />,
+        icon: <Users className="w-5 h-5" />,
       },
       {
         id: 'investigators',
         label: '탐정',
         href: '/lawyer/investigators',
-        icon: <Search className="w-4 h-4" />,
+        icon: <Search className="w-5 h-5" />,
       },
       {
         id: 'calendar',
         label: '일정',
         href: '/lawyer/calendar',
-        icon: <Calendar className="w-4 h-4" />,
+        icon: <Calendar className="w-5 h-5" />,
       },
       {
         id: 'messages',
         label: '메시지',
         href: '/lawyer/messages',
-        icon: <MessageSquare className="w-4 h-4" />,
+        icon: <MessageSquare className="w-5 h-5" />,
       },
       {
         id: 'billing',
         label: '청구/결제',
         href: '/lawyer/billing',
-        icon: <CreditCard className="w-4 h-4" />,
+        icon: <CreditCard className="w-5 h-5" />,
       },
     ],
   },
@@ -107,13 +107,13 @@ export default function LawyerLayout({
         {/* Sidebar */}
         <PortalSidebar groups={lawyerNavGroups} />
 
-        {/* Main Content - LDS2 adjusted for slim sidebar */}
-        <main className="flex-1 lg:ml-48 min-h-screen">
+        {/* Main Content */}
+        <main className="flex-1 lg:ml-20 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 
           {/* Page Content */}
-          <div className="p-4 lg:p-6">
+          <div className="p-2 lg:p-3">
             {children}
           </div>
         </main>
