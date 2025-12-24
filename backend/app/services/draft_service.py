@@ -212,6 +212,10 @@ class DraftService:
         else:
             draft_text = raw_response
 
+        # 8.5 Clean up any HTML entities that AI might output as text
+        # Double protection in case gemini_client doesn't catch all cases
+        draft_text = draft_text.replace('&nbsp;', ' ')
+
         # 9. Extract citations from RAG results
         citations = self.citation_extractor.extract_evidence_citations(evidence_results)
 

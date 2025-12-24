@@ -86,6 +86,10 @@ def generate_chat_completion_gemini(
         if not text:
             raise ValueError("Gemini API returned empty response")
 
+        # Clean up HTML entities that AI sometimes outputs as text
+        # Gemini may output "&nbsp;" as literal text instead of actual spaces
+        text = text.replace('&nbsp;', ' ')
+
         # Log token usage if available
         usage = result.get("usageMetadata", {})
         if usage:
