@@ -24,7 +24,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 
-// Lawyer navigation groups with hierarchical structure
+// Lawyer navigation groups with hierarchical structure - LDS2 Slim Icons
 const lawyerNavGroups: NavGroup[] = [
   {
     id: 'core',
@@ -33,13 +33,13 @@ const lawyerNavGroups: NavGroup[] = [
         id: 'dashboard',
         label: '대시보드',
         href: '/lawyer/dashboard',
-        icon: <LayoutDashboard className="w-5 h-5" />,
+        icon: <LayoutDashboard className="w-4 h-4" />,
       },
       {
         id: 'cases',
         label: '케이스',
         href: '/lawyer/cases',
-        icon: <Briefcase className="w-5 h-5" />,
+        icon: <Briefcase className="w-4 h-4" />,
       },
     ],
   },
@@ -53,31 +53,31 @@ const lawyerNavGroups: NavGroup[] = [
         id: 'clients',
         label: '의뢰인',
         href: '/lawyer/clients',
-        icon: <Users className="w-5 h-5" />,
+        icon: <Users className="w-4 h-4" />,
       },
       {
         id: 'investigators',
         label: '탐정',
         href: '/lawyer/investigators',
-        icon: <Search className="w-5 h-5" />,
+        icon: <Search className="w-4 h-4" />,
       },
       {
         id: 'calendar',
         label: '일정',
         href: '/lawyer/calendar',
-        icon: <Calendar className="w-5 h-5" />,
+        icon: <Calendar className="w-4 h-4" />,
       },
       {
         id: 'messages',
         label: '메시지',
         href: '/lawyer/messages',
-        icon: <MessageSquare className="w-5 h-5" />,
+        icon: <MessageSquare className="w-4 h-4" />,
       },
       {
         id: 'billing',
         label: '청구/결제',
         href: '/lawyer/billing',
-        icon: <CreditCard className="w-5 h-5" />,
+        icon: <CreditCard className="w-4 h-4" />,
       },
     ],
   },
@@ -107,8 +107,8 @@ export default function LawyerLayout({
         {/* Sidebar */}
         <PortalSidebar groups={lawyerNavGroups} />
 
-        {/* Main Content */}
-        <main className="flex-1 lg:ml-56 min-h-screen">
+        {/* Main Content - LDS2 adjusted for slim sidebar */}
+        <main className="flex-1 lg:ml-48 min-h-screen">
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 

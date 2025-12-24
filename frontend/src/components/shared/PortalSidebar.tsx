@@ -1,8 +1,14 @@
 'use client';
 
 /**
- * PortalSidebar Component
- * Navigation sidebar with section grouping support
+ * PortalSidebar Component - LDS2 (Legal Design System 2)
+ * Slim, minimal navigation sidebar with section grouping
+ *
+ * Design principles:
+ * - Compact width (w-48) for more content space
+ * - Subtle visual hierarchy
+ * - Clean hover/active states
+ * - Reduced visual noise
  */
 
 import { useState } from 'react';
@@ -78,20 +84,20 @@ export function PortalSidebar({
         key={item.id}
         href={item.href}
         onClick={() => setIsMobileMenuOpen(false)}
-        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
           isActive
-            ? 'bg-primary text-white shadow-sm'
-            : 'text-gray-700 hover:bg-gray-100'
+            ? 'bg-primary/10 text-primary border-l-2 border-primary ml-0 pl-2'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
         }`}
       >
-        <span className={isActive ? 'text-white' : 'text-gray-500'}>
+        <span className={`flex-shrink-0 ${isActive ? 'text-primary' : 'text-gray-400'}`}>
           {item.icon}
         </span>
-        <span className="flex-1">{item.label}</span>
+        <span className="flex-1 truncate">{item.label}</span>
         {item.badge !== undefined && item.badge > 0 && (
           <span
-            className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-              isActive ? 'bg-white/20 text-white' : 'bg-primary-light text-primary'
+            className={`px-1.5 py-0.5 text-[10px] font-semibold rounded-full ${
+              isActive ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
             }`}
           >
             {item.badge}
@@ -105,28 +111,28 @@ export function PortalSidebar({
     const isCollapsed = collapsedGroups.has(group.id);
 
     return (
-      <div key={group.id} className="mb-4">
+      <div key={group.id} className="mb-3">
         {group.label && (
           <button
             onClick={() => group.collapsible && toggleGroup(group.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${
-              group.collapsible ? 'hover:text-gray-700 cursor-pointer' : ''
+            className={`w-full flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-widest ${
+              group.collapsible ? 'hover:text-gray-600 cursor-pointer' : ''
             }`}
           >
             <span>{group.label}</span>
             {group.collapsible && (
-              <span className="text-gray-400">
+              <span className="text-gray-300">
                 {isCollapsed ? (
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 ) : (
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-3.5 h-3.5" />
                 )}
               </span>
             )}
           </button>
         )}
         {!isCollapsed && (
-          <div className="space-y-1">{group.items.map(renderNavItem)}</div>
+          <div className="space-y-0.5">{group.items.map(renderNavItem)}</div>
         )}
       </div>
     );
@@ -134,60 +140,60 @@ export function PortalSidebar({
 
   const sidebarContent = (
     <>
-      {/* Logo */}
-      <div className="px-4 py-4 border-b border-gray-100">
-        <Link href="/dashboard">
-          <Logo size="md" />
+      {/* Logo - Compact */}
+      <div className="px-3 py-3 border-b border-gray-100/80">
+        <Link href="/dashboard" className="block">
+          <Logo size="sm" />
         </Link>
       </div>
 
       {/* Optional Header Content */}
       {headerContent && (
-        <div className="px-4 py-3 border-b border-gray-100">{headerContent}</div>
+        <div className="px-3 py-2 border-b border-gray-100/80">{headerContent}</div>
       )}
 
       {/* Navigation Groups */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 overflow-y-auto">
         {groups.map(renderNavGroup)}
       </nav>
 
-      {/* User Info & Logout */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center">
-            <span className="text-primary font-semibold text-sm">
+      {/* User Info & Logout - Compact */}
+      <div className="px-3 py-3 border-t border-gray-100/80">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-primary font-semibold text-xs">
               {user?.name?.charAt(0) || 'U'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-[13px] font-medium text-gray-900 truncate">
               {user?.name || '사용자'}
             </p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-[11px] text-gray-400 truncate">
               {role ? ROLE_DISPLAY_NAMES[role] : ''}
             </p>
           </div>
         </div>
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-[12px] text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-3.5 h-3.5" />
           로그아웃
         </button>
       </div>
 
       {/* Optional Footer Content */}
       {footerContent && (
-        <div className="px-4 py-3 border-t border-gray-100">{footerContent}</div>
+        <div className="px-3 py-2 border-t border-gray-100/80">{footerContent}</div>
       )}
     </>
   );
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
+      {/* Desktop Sidebar - LDS2 Slim Design */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-48 lg:fixed lg:inset-y-0 bg-white border-r border-gray-100 z-30">
         {sidebarContent}
       </aside>
 

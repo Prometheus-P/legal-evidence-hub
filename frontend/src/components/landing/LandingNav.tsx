@@ -14,11 +14,15 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/shared/Logo';
 import { BRAND } from '@/config/brand';
+import { UserRole, getDashboardPath, ROLE_DISPLAY_NAMES } from '@/types/user';
+import { ArrowRight } from 'lucide-react';
 
 interface LandingNavProps {
   isScrolled?: boolean;
   isAuthenticated?: boolean;
   authLoading?: boolean;
+  userRole?: UserRole | null;
+  userName?: string | null;
   onLogout?: () => Promise<void> | void;
 }
 
@@ -26,6 +30,8 @@ export default function LandingNav({
   isScrolled = false,
   isAuthenticated = false,
   authLoading = false,
+  userRole = null,
+  userName = null,
   onLogout,
 }: LandingNavProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -97,31 +103,46 @@ export default function LandingNav({
             고객사례
           </a>
           {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut || authLoading}
-              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
-              aria-label="로그아웃"
-            >
-              {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-            </button>
+            <>
+              {/* Workspace Button */}
+              {userRole && (
+                <Link
+                  href={getDashboardPath(userRole)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark rounded-lg transition-colors shadow-sm"
+                  aria-label={`${ROLE_DISPLAY_NAMES[userRole]} 워크스페이스로 이동`}
+                >
+                  <span>{userName ? `${userName}님` : ROLE_DISPLAY_NAMES[userRole]}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut || authLoading}
+                className="text-sm px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
+                aria-label="로그아웃"
+              >
+                {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+              </button>
+            </>
           ) : (
-            <Link
-              href="/login"
-              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-              aria-label="로그인 페이지로 이동"
-            >
-              로그인
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-sm px-4 py-2 text-gray-700 hover:text-secondary transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="로그인 페이지로 이동"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/signup"
+                className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="회원가입 페이지로 이동"
+              >
+                회원가입
+              </Link>
+            </>
           )}
-          <Link
-            href="/signup"
-            className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-            aria-label="회원가입 페이지로 이동"
-          >
-            회원가입
-          </Link>
         </div>
       </div>
     </nav>
