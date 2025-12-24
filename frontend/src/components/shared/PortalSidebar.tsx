@@ -115,6 +115,7 @@ export function PortalSidebar({
       <Tooltip key={item.id} content={item.label}>
         <Link
           href={item.href}
+          data-testid={`nav-link-${item.href}`}
           className={`relative flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg transition-all duration-150 w-full ${
             isActive
               ? 'bg-primary/10 text-primary'
