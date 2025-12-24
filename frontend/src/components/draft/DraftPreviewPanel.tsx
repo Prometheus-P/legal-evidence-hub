@@ -132,8 +132,27 @@ const textToHtml = (text: string): string => {
     return htmlParagraphs.join('\n');
 };
 
-const sanitizeDraftHtml = (html: string) =>
-    typeof window === 'undefined' ? html : DOMPurify.sanitize(textToHtml(html), SANITIZE_OPTIONS);
+/**
+ * Preserve leading spaces and multiple consecutive spaces for legal document formatting
+ * Converts spaces to &nbsp; for proper rendering in HTML
+ */
+const preserveSpaces = (str: string): string => {
+    // Convert leading spaces at the start of each line to &nbsp;
+    return str.replace(/^( +)/gm, (match) => {
+        return match.replace(/ /g, '&nbsp;');
+    })
+    // Also convert multiple consecutive spaces to preserve formatting
+    .replace(/  +/g, (match) => {
+        return match.replace(/ /g, '&nbsp;');
+    });
+};
+
+const sanitizeDraftHtml = (html: string) => {
+    if (typeof window === 'undefined') return html;
+    // Apply space preservation before sanitization for legal document formatting
+    const withPreservedSpaces = preserveSpaces(html);
+    return DOMPurify.sanitize(textToHtml(withPreservedSpaces), SANITIZE_OPTIONS);
+};
 type IntervalHandle = ReturnType<typeof setInterval> | number;
 type TimeoutHandle = ReturnType<typeof setTimeout> | number;
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, '').trim();
@@ -866,7 +885,7 @@ export default function DraftPreviewPanel({
                     onClick={handleEditorClick}
                     onBeforeInput={handleBeforeInput}
                     onInput={handleEditorInput}
-                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none overflow-auto cursor-pointer [&_.evidence-ref]:underline [&_.evidence-ref]:text-secondary [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-primary [&_.evidence-ref]:decoration-dotted"
+                    className="w-full min-h-[320px] bg-transparent p-6 text-gray-800 dark:text-gray-200 leading-relaxed focus:outline-none overflow-auto cursor-pointer font-mono text-sm whitespace-pre-wrap [&_.evidence-ref]:underline [&_.evidence-ref]:text-secondary [&_.evidence-ref]:cursor-pointer [&_.evidence-ref:hover]:text-primary [&_.evidence-ref]:decoration-dotted"
                     dangerouslySetInnerHTML={{ __html: editorHtml }}
                 />
             </div>

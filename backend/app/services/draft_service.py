@@ -189,7 +189,7 @@ class DraftService:
                 messages=prompt_messages,
                 model=settings.GEMINI_MODEL_CHAT,
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=4000
             )
         else:
             logger.info("[DRAFT] Using OpenAI GPT-4o-mini for draft generation")
@@ -197,7 +197,7 @@ class DraftService:
                 messages=prompt_messages,
                 model="gpt-4o-mini",
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=4000
             )
 
         # 8. Process response based on output mode
