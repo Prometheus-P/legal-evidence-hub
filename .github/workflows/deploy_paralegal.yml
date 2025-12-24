@@ -26,7 +26,7 @@ permissions:
 
 env:
   AWS_REGION: ap-northeast-2
-  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/dev' && 'staging' || 'feature') }}
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
 
 jobs:
   # ============================================
@@ -143,7 +143,7 @@ jobs:
   # ============================================
   build-frontend:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/dev' && 'staging' || 'feature') }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     outputs:
       s3_bucket: ${{ steps.env.outputs.S3_BUCKET }}
       cf_dist: ${{ steps.env.outputs.CF_DIST }}
@@ -155,15 +155,16 @@ jobs:
       - name: Set environment variables
         id: env
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            # main, dev → 프로덕션 CloudFront (dpbf86zqulqfy)
             echo "ENV=production" >> $GITHUB_OUTPUT
             echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
             echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
           else
-            # dev 및 feature 브랜치 모두 staging 리소스 사용
+            # feature 브랜치 → staging CloudFront (d2ckxoo48ykttc)
             echo "ENV=staging" >> $GITHUB_OUTPUT
-            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING || secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
-            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING || secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Setup Node.js
@@ -224,15 +225,16 @@ jobs:
       - name: Set environment variables
         id: env
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+          if [ "${{ github.ref }}" == "refs/heads/main" ] || [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            # main, dev → 프로덕션 CloudFront (dpbf86zqulqfy)
             echo "ENV=production" >> $GITHUB_OUTPUT
             echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
             echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
           else
-            # dev 및 feature 브랜치 모두 staging 리소스 사용
+            # feature 브랜치 → staging CloudFront (d2ckxoo48ykttc)
             echo "ENV=staging" >> $GITHUB_OUTPUT
-            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING || secrets.S3_FRONTEND_BUCKET }}" >> $GITHUB_OUTPUT
-            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING || secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_OUTPUT
+            echo "S3_BUCKET=${{ secrets.S3_FRONTEND_BUCKET_STAGING }}" >> $GITHUB_OUTPUT
+            echo "CF_DIST=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_STAGING }}" >> $GITHUB_OUTPUT
           fi
 
       # Update Lambda functions (main/dev only)
