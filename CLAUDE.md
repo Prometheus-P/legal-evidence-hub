@@ -440,24 +440,24 @@ When implementing features, files typically go in:
 - **Type definition:** `frontend/src/types/{resource}.ts`
 
 ## Active Technologies
-- Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation) (001-draft-export)
+- Python 3.12+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation) (001-draft-export)
 - PostgreSQL (export job records), S3 (temporary file storage for large exports) (001-draft-export)
 - react-kakao-maps-sdk (Kakao Maps for GPS), react-big-calendar (calendar UI), Recharts (dashboard charts), jwt-decode (JWT parsing in middleware), WebSocket (real-time messaging) (003-role-based-ui)
 - react-hot-toast (toast notifications for error handling) (009-mvp-gap-closure - planned)
-- Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3 (009-mvp-gap-closure)
+- Python 3.12+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3 (009-mvp-gap-closure)
 - PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
-- TypeScript 5.x (Frontend), Python 3.11+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
+- TypeScript 5.x (Frontend), Python 3.12+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
 - PostgreSQL (cases, assets), Backend API (/cases/{id}/assets) (010-calm-control-design)
-- Python 3.11+ (Backend/AI Worker), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, boto3, qdrant-client, openai, react-hot-toast (009-mvp-gap-closure)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, jose (JWT), Tailwind CSS (011-production-bug-fixes)
+- Python 3.12+ (Backend/AI Worker), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, boto3, qdrant-client, openai, react-hot-toast (009-mvp-gap-closure)
+- Python 3.12+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, jose (JWT), Tailwind CSS (011-production-bug-fixes)
 - PostgreSQL (RDS), HTTP-only Cookies (JWT 토큰), CloudFront /api proxy (011-production-bug-fixes)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, Tailwind CSS, jose (JWT) (011-production-bug-fixes)
+- Python 3.12+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, Tailwind CSS, jose (JWT) (011-production-bug-fixes)
 - PostgreSQL (RDS), HTTP-only Cookies (JWT) (011-production-bug-fixes)
 - TypeScript 5.x + Next.js 14, React 18, Tailwind CSS, Lucide-React, clsx, tailwind-merge (013-ui-upgrade)
 - N/A (frontend-only, no new data persistence) (013-ui-upgrade)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o-mini), boto3 (014-case-fact-summary)
+- Python 3.12+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o-mini), boto3 (014-case-fact-summary)
 - DynamoDB (leh_case_summary 테이블), PostgreSQL (Case 메타데이터 참조) (014-case-fact-summary)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, boto3, Tailwind CSS (015-evidence-speaker-mapping)
+- Python 3.12+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, boto3, Tailwind CSS (015-evidence-speaker-mapping)
 - DynamoDB (leh_evidence 테이블 확장 - speaker_mapping 필드), PostgreSQL RDS (Party 참조) (015-evidence-speaker-mapping)
 
 ## Recent Changes
@@ -468,7 +468,7 @@ When implementing features, files typically go in:
 - 005-lawyer-portal-pages: (CORE COMPLETE) Fixed 404 errors on lawyer portal pages. All pages now render: `/lawyer/clients`, `/lawyer/investigators`, `/settings`, `/lawyer/cases`, `/lawyer/calendar`, `/lawyer/messages`, `/lawyer/billing`. Created frontend types (`client.ts`, `investigator.ts`, `settings.ts`) and API clients. Middleware `/cases` redirect verified. **Future enhancements**: Dedicated backend APIs for clients/investigators/settings, advanced filtering, detail views.
 - 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist, blocked case filtering. Backend: `ProgressService`, `staff_progress.py` router. Frontend: React dashboard with `ProgressCard`, `FeedbackChecklist` components.
 - 003-role-based-ui: Added react-kakao-maps-sdk, react-big-calendar, Recharts, jwt-decode, WebSocket support for real-time messaging
-- 001-draft-export: Added Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation)
+- 001-draft-export: Added Python 3.12+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation)
 
 ## Future Development (추후 개발)
 - **WCAG 접근성 지원**: Skip-to-content 링크, 키보드 네비게이션, 스크린 리더 지원 (현재 제거됨, 공공기관 납품 시 필요)

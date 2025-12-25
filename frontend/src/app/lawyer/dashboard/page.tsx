@@ -23,13 +23,13 @@ import { getCaseDetailPath } from '@/lib/portalPaths';
 
 // Icons for stats cards (simplified to 2)
 const ActiveIcon = () => (
-  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
   </svg>
 );
 
 const CompletedIcon = () => (
-  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
@@ -51,10 +51,10 @@ function RecentCaseItem({
   onClick: () => void;
 }) {
   const statusStyles: Record<string, string> = {
-    active: 'bg-green-100 text-green-700',
-    open: 'bg-blue-100 text-blue-700',
-    in_progress: 'bg-yellow-100 text-yellow-700',
-    closed: 'bg-gray-100 text-gray-500',
+    active: 'bg-success-light text-success',
+    open: 'bg-info-light text-info',
+    in_progress: 'bg-warning-light text-warning',
+    closed: 'bg-neutral-100 text-neutral-500',
   };
 
   const statusLabels: Record<string, string> = {
@@ -80,20 +80,20 @@ function RecentCaseItem({
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
+      className="flex items-center gap-4 p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{title}</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{client_name || '-'}</p>
+        <p className="font-medium text-neutral-900 dark:text-neutral-100 truncate">{title}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{client_name || '-'}</p>
       </div>
       <div className="flex items-center gap-3">
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusStyles[status] || statusStyles.active}`}>
           {statusLabels[status] || status}
         </span>
-        <span className="text-xs text-gray-400">{formatDate(updated_at)}</span>
+        <span className="text-xs text-neutral-400">{formatDate(updated_at)}</span>
       </div>
     </div>
   );
@@ -120,7 +120,7 @@ export default function LawyerDashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">대시보드</h1>
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">대시보드</h1>
           <p className="text-red-500 mt-1">오류: {error}</p>
         </div>
       </div>
@@ -133,8 +133,8 @@ export default function LawyerDashboardPage() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">대시보드</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">대시보드</h1>
+        <p className="text-neutral-500 dark:text-neutral-400 mt-1">
           환영합니다{user?.name ? `, ${user.name}님` : ''}. 오늘의 업무 현황을 확인하세요.
         </p>
       </div>
@@ -172,7 +172,7 @@ export default function LawyerDashboardPage() {
         {/* Recent Cases - Full width */}
         <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700">
           <div className="p-4 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-gray-100">최근 케이스</h2>
+            <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">최근 케이스</h2>
             <Link
               href="/lawyer/cases"
               className="text-sm text-blue-600 hover:underline"
@@ -197,7 +197,7 @@ export default function LawyerDashboardPage() {
                 );
               })
             ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+              <p className="text-center text-neutral-500 dark:text-neutral-400 py-8">
                 최근 케이스가 없습니다.
               </p>
             )}

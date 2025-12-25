@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useCaseList } from '@/hooks/useCaseList';
 import { CaseCard } from '@/components/lawyer/CaseCard';
 import { CaseTable } from '@/components/lawyer/CaseTable';
@@ -53,7 +54,7 @@ export default function LawyerCasesPage() {
     const results = await executeBulkAction(action, params);
     const failed = results.filter((r) => !r.success);
     if (failed.length > 0) {
-      alert(`${failed.length}개 케이스에서 오류가 발생했습니다.`);
+      toast.error(`${failed.length}개 케이스에서 오류가 발생했습니다.`);
     }
   };
 
@@ -70,7 +71,7 @@ export default function LawyerCasesPage() {
     if (success) {
       setDeleteConfirmId(null);
     } else {
-      alert('삭제에 실패했습니다.');
+      toast.error('삭제에 실패했습니다.');
     }
   };
 
@@ -133,7 +134,7 @@ export default function LawyerCasesPage() {
         >
           활성 사건
           {activeCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-info-light text-info dark:bg-info-light dark:text-info">
               {activeCount}
             </span>
           )}
@@ -149,7 +150,7 @@ export default function LawyerCasesPage() {
         >
           종료된 사건
           {closedCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-gray-300">
+            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300">
               {closedCount}
             </span>
           )}
@@ -240,7 +241,7 @@ export default function LawyerCasesPage() {
           )}
           {cases.length === 0 && showClosed && (
             <div className="text-center py-12">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 종료된 케이스가 없습니다.
               </p>
             </div>
