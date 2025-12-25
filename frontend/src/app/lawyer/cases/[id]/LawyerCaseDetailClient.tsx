@@ -477,20 +477,20 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
-      <nav className="text-sm text-[var(--color-text-secondary)]">
-        <Link href="/lawyer/cases" className="hover:text-[var(--color-primary)]">
+      <nav className="text-sm text-neutral-500 dark:text-neutral-400">
+        <Link href="/lawyer/cases" className="hover:text-primary transition-colors">
           케이스 관리
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-[var(--color-text-primary)]">{caseDetail.title}</span>
+        <span className="text-neutral-900 dark:text-neutral-100">{caseDetail.title}</span>
       </nav>
 
       {/* Header */}
       <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+            <div className="flex items-center gap-3 mb-3">
+              <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                 {caseDetail.title}
               </h1>
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusConfig.color}`}>
@@ -498,12 +498,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
               </span>
             </div>
             {caseDetail.clientName && (
-              <p className="text-[var(--color-text-secondary)]">
+              <p className="text-neutral-600 dark:text-neutral-400 font-medium">
                 의뢰인: {caseDetail.clientName}
               </p>
             )}
             {caseDetail.description && (
-              <p className="mt-2 text-[var(--color-text-secondary)]">
+              <p className="mt-3 text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 {caseDetail.description}
               </p>
             )}
@@ -575,7 +575,7 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                       ...e,
                       legalNumber: e.legalNumber || `${e.submittedBy === 'defendant' ? '을' : e.submittedBy === 'third_party' ? '병' : '갑'}제${evidenceList.indexOf(e) + 1}호증`,
                     }))}
-                    onItemClick={(item) => console.log('Evidence clicked:', item)}
+                    onItemClick={() => {}}
                   />
                 }
                 evidenceCount={evidenceList.length}

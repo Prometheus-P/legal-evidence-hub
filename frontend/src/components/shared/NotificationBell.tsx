@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { EmptyNotifications } from './EmptyStates';
+import { EmptyNotifications } from './EmptyState';
 
 export interface Notification {
   id: string;

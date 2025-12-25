@@ -436,9 +436,8 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
     setPopoverPosition(null);
   }, []);
 
-  const handleViewEvidence = useCallback((evidenceId: string) => {
-    // In production, this would navigate to evidence detail or open a viewer
-    console.log('View evidence:', evidenceId);
+  const handleViewEvidence = useCallback((_evidenceId: string) => {
+    // TODO: Navigate to evidence detail or open a viewer
   }, []);
 
   // Render states

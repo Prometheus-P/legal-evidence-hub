@@ -256,6 +256,29 @@ Each parser must:
 - PDF (.pdf): `PDFParser` (text extraction + OCR fallback)
 - Text (.txt, .csv): `TextParser` (KakaoTalk format detection)
 
+### LLM Alternatives (Gemini)
+The backend supports Google Gemini as an alternative to OpenAI for draft generation.
+
+**Setup:**
+1. Set `GEMINI_API_KEY` in your `.env` file
+2. The `gemini_client.py` utility converts OpenAI message format to Gemini format automatically
+
+**Usage:**
+```python
+from app.utils.gemini_client import generate_chat_completion_gemini
+
+response = generate_chat_completion_gemini(
+    messages=[
+        {"role": "system", "content": "You are a legal assistant."},
+        {"role": "user", "content": "Draft a divorce petition."}
+    ],
+    model="gemini-2.0-flash",  # Default
+    temperature=0.3
+)
+```
+
+**Note:** Gemini is optional and used as a fallback when OpenAI is unavailable or for cost optimization.
+
 ### Database Models (Backend)
 **Key Tables in RDS PostgreSQL:**
 - `users` - User accounts with role (lawyer/staff/admin)
