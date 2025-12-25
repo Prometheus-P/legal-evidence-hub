@@ -183,7 +183,7 @@ export default function NotificationBell({
 
         {/* Unread Badge */}
         {displayUnreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center">
             {displayUnreadCount > 9 ? '9+' : displayUnreadCount}
           </span>
         )}
@@ -215,7 +215,7 @@ export default function NotificationBell({
                 <p className="mt-2 text-sm">불러오는 중...</p>
               </div>
             ) : notifications.length > 0 ? (
-              <div className="divide-y divide-gray-100 dark:divide-neutral-700">
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-700">
                 {notifications.map((notification) => (
                   <NotificationItem
                     key={notification.id}
@@ -236,7 +236,7 @@ export default function NotificationBell({
 
           {/* Footer */}
           {notifications.length > 0 && (
-            <div className="px-4 py-3 border-t border-gray-200 dark:border-neutral-700 flex justify-between">
+            <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 flex justify-between">
               <button
                 onClick={() => {
                   setIsOpen(false);

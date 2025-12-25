@@ -21,6 +21,7 @@ import {
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import toast from 'react-hot-toast';
 
 import { usePartyGraph, type SaveStatus } from '@/hooks/usePartyGraph';
 import { getEvidence, type Evidence } from '@/lib/api/evidence';
@@ -270,6 +271,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         })
         .catch((err) => {
           console.error('Failed to fetch evidence:', err);
+          toast.error('증거 목록을 불러오지 못했습니다.');
         })
         .finally(() => {
           setIsLoadingEvidence(false);
