@@ -42,7 +42,6 @@ import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import { generateDraftPreviewAsync, DraftJobStatus } from '@/lib/api/draft';
 import { DraftCitation } from '@/types/draft';
 import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
-import { ExpertInsightsPanel } from '@/components/case/ExpertInsightsPanel';
 import { useProcedure } from '@/hooks/useProcedure';
 import { ProcedureTimeline } from '@/components/procedure';
 // New tab components
@@ -117,7 +116,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
   const [showSummaryCard, setShowSummaryCard] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showExpertPanel, setShowExpertPanel] = useState(false);
 
   // Draft state
   const [showDraftModal, setShowDraftModal] = useState(false);
@@ -497,21 +495,12 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
           <div className="flex items-center gap-2">
             {/* Secondary Actions in Dropdown */}
             <CaseActionsDropdown
-              assetsPath={assetsPath}
               onEdit={() => setShowEditModal(true)}
-              onSummaryCard={() => setShowSummaryCard(true)}
-              onExpertInsights={() => setShowExpertPanel(true)}
             />
           </div>
         </div>
 
       </div>
-
-      {/* Expert Insights Panel */}
-      <ExpertInsightsPanel
-        isOpen={showExpertPanel}
-        onClose={() => setShowExpertPanel(false)}
-      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-neutral-700">

@@ -15,7 +15,6 @@ import Link from 'next/link';
 import {
   MoreVertical,
   Edit3,
-  BookOpen,
 } from 'lucide-react';
 
 // =============================================================================
@@ -29,22 +28,9 @@ export interface CaseActionsDropdownProps {
   onEdit: () => void;
 
   /**
-   * Handler for expert insights button click
-   */
-  onExpertInsights?: () => void;
-
-  /**
    * Additional CSS classes
    */
   className?: string;
-
-  // Deprecated - kept for backwards compatibility but no longer used
-  /** @deprecated Assets tab is now inline - this prop is ignored */
-  assetsPath?: string;
-  /** @deprecated Summary tab is now inline - this prop is ignored */
-  onSummaryCard?: () => void;
-  /** @deprecated AI analysis is handled in Analysis tab */
-  onAIAnalysis?: () => void;
 }
 
 interface DropdownItem {
@@ -63,7 +49,6 @@ interface DropdownItem {
 
 export function CaseActionsDropdown({
   onEdit,
-  onExpertInsights,
   className = '',
 }: CaseActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -110,7 +95,7 @@ export function CaseActionsDropdown({
     setIsOpen(false);
   };
 
-  // Define dropdown items (assets and summary moved to main tabs)
+  // Define dropdown items
   const items: DropdownItem[] = [
     {
       id: 'edit',
@@ -121,18 +106,6 @@ export function CaseActionsDropdown({
       colorClass: 'text-gray-600 dark:text-gray-400',
     },
   ];
-
-  // Add Expert Insights if handler provided
-  if (onExpertInsights) {
-    items.push({
-      id: 'expert-insights',
-      label: '전문가 인사이트',
-      icon: <BookOpen className="w-4 h-4" />,
-      type: 'button',
-      onClick: onExpertInsights,
-      colorClass: 'text-teal-600 dark:text-teal-400',
-    });
-  }
 
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
