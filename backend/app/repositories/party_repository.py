@@ -256,7 +256,7 @@ class PartyRepository:
             self.session.query(PartyNode)
             .filter(
                 PartyNode.case_id == case_id,
-                PartyNode.is_auto_extracted == True
+                PartyNode.is_auto_extracted.is_(True)
             )
             .all()
         )
@@ -288,7 +288,7 @@ class PartyRepository:
             self.session.query(PartyRelationship)
             .filter(
                 PartyRelationship.source_party_id.in_(party_ids),
-                PartyRelationship.is_auto_extracted == True
+                PartyRelationship.is_auto_extracted.is_(True)
             )
             .all()
         )
