@@ -239,3 +239,63 @@ class PartyRepository:
         self.session.flush()
 
         return relationship
+
+    # ============================================
+    # 019-party-extraction-prompt: 자동추출 인물/관계 삭제
+    # ============================================
+
+    def delete_auto_extracted_parties(self, case_id: str) -> int:
+        """
+        Delete all auto-extracted parties for a case.
+        Also deletes related relationships (CASCADE).
+
+        Returns:
+            Number of deleted parties
+        """
+        parties = (
+            self.session.query(PartyNode)
+            .filter(
+                PartyNode.case_id == case_id,
+                PartyNode.is_auto_extracted == True
+            )
+            .all()
+        )
+
+        count = len(parties)
+        for party in parties:
+            self.session.delete(party)
+
+        self.session.flush()
+        return count
+
+    def delete_auto_extracted_relationships(self, case_id: str) -> int:
+        """
+        Delete all auto-extracted relationships for a case.
+
+        Returns:
+            Number of deleted relationships
+        """
+        # Get party IDs for this case
+        party_ids = [
+            p.id for p in
+            self.session.query(PartyNode.id).filter(PartyNode.case_id == case_id).all()
+        ]
+
+        if not party_ids:
+            return 0
+
+        relationships = (
+            self.session.query(PartyRelationship)
+            .filter(
+                PartyRelationship.source_party_id.in_(party_ids),
+                PartyRelationship.is_auto_extracted == True
+            )
+            .all()
+        )
+
+        count = len(relationships)
+        for rel in relationships:
+            self.session.delete(rel)
+
+        self.session.flush()
+        return count

@@ -209,3 +209,33 @@ export async function updatePartyPositions(
     throw new Error(response.error || '위치 저장에 실패했습니다.');
   }
 }
+
+// ============================================================
+// 019-party-extraction-prompt: 인물 관계도 재생성 API
+// ============================================================
+
+export interface RegeneratePartyGraphResponse {
+  success: boolean;
+  message: string;
+  new_parties_count: number;
+  merged_parties_count: number;
+  new_relationships_count: number;
+  total_persons: number;
+  total_relationships: number;
+}
+
+/**
+ * Regenerate party graph from fact summary using AI
+ * 사실관계 요약을 기반으로 인물 관계도를 재생성합니다.
+ */
+export async function regeneratePartyGraph(
+  caseId: string
+): Promise<RegeneratePartyGraphResponse> {
+  const response = await apiClient.post<RegeneratePartyGraphResponse>(
+    `/cases/${caseId}/parties/regenerate`
+  );
+  if (!response.data) {
+    throw new Error(response.error || '인물 관계도 재생성에 실패했습니다.');
+  }
+  return response.data;
+}

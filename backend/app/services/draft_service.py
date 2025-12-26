@@ -189,7 +189,7 @@ class DraftService:
                 messages=prompt_messages,
                 model=settings.GEMINI_MODEL_CHAT,
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=4000
             )
         else:
             logger.info("[DRAFT] Using OpenAI GPT-4o-mini for draft generation")
@@ -197,7 +197,7 @@ class DraftService:
                 messages=prompt_messages,
                 model="gpt-4o-mini",
                 temperature=0.3,
-                max_tokens=2000
+                max_tokens=4000
             )
 
         # 8. Process response based on output mode
@@ -211,6 +211,10 @@ class DraftService:
                 draft_text = raw_response
         else:
             draft_text = raw_response
+
+        # 8.5 Clean up any HTML entities that AI might output as text
+        # Double protection in case gemini_client doesn't catch all cases
+        draft_text = draft_text.replace('&nbsp;', ' ')
 
         # 9. Extract citations from RAG results
         citations = self.citation_extractor.extract_evidence_citations(evidence_results)

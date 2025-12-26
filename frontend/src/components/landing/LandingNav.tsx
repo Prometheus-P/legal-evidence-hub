@@ -97,31 +97,42 @@ export default function LandingNav({
             고객사례
           </a>
           {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut || authLoading}
-              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
-              aria-label="로그아웃"
-            >
-              {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-            </button>
+            <>
+              <Link
+                href="/lawyer/dashboard"
+                className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="대시보드로 이동"
+              >
+                대시보드
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut || authLoading}
+                className="text-sm px-4 py-2 font-medium text-neutral-700 hover:text-secondary transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
+                aria-label="로그아웃"
+              >
+                {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+              </button>
+            </>
           ) : (
-            <Link
-              href="/login"
-              className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-              aria-label="로그인 페이지로 이동"
-            >
-              로그인
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-sm px-4 py-2 font-medium text-neutral-700 hover:text-secondary transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="로그인 페이지로 이동"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/signup"
+                className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="회원가입 페이지로 이동"
+              >
+                회원가입
+              </Link>
+            </>
           )}
-          <Link
-            href="/signup"
-            className="btn-primary text-sm px-4 py-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
-            aria-label="회원가입 페이지로 이동"
-          >
-            회원가입
-          </Link>
         </div>
       </div>
     </nav>

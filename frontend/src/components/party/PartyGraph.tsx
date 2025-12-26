@@ -24,6 +24,7 @@ import '@xyflow/react/dist/style.css';
 
 import { usePartyGraph, type SaveStatus } from '@/hooks/usePartyGraph';
 import { getEvidence, type Evidence } from '@/lib/api/evidence';
+import { regeneratePartyGraph } from '@/lib/api/party';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useEvidenceLinks } from '@/hooks/useEvidenceLinks';
 import type {
@@ -116,7 +117,15 @@ function SaveStatusIndicator({ status }: { status: SaveStatus }) {
 }
 
 // Empty state component
-function EmptyState({ onAddParty }: { onAddParty: () => void }) {
+function EmptyState({
+  onAddParty,
+  onRegenerate,
+  isRegenerating
+}: {
+  onAddParty: () => void;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
+}) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900">
       <div className="text-center">
@@ -125,15 +134,38 @@ function EmptyState({ onAddParty }: { onAddParty: () => void }) {
           당사자 관계도
         </h3>
         <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-          당사자를 추가하여 관계도를 시작하세요.<br />
-          원고, 피고, 제3자 등을 추가하고 관계를 연결할 수 있습니다.
+          사실관계 요약에서 AI로 인물을 자동 추출하거나,<br />
+          수동으로 당사자를 추가할 수 있습니다.
         </p>
-        <button
-          onClick={onAddParty}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          원고/피고 추가하기
-        </button>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={onRegenerate}
+            disabled={isRegenerating}
+            className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 ${
+              isRegenerating
+                ? 'bg-gray-300 dark:bg-neutral-700 text-gray-500 cursor-not-allowed'
+                : 'bg-purple-600 text-white hover:bg-purple-700'
+            }`}
+          >
+            {isRegenerating ? (
+              <>
+                <span className="animate-spin">⏳</span>
+                <span>추출 중...</span>
+              </>
+            ) : (
+              <>
+                <span>🤖</span>
+                <span>AI로 인물 추출</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={onAddParty}
+            className="px-6 py-3 bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-neutral-600 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
+          >
+            수동 추가
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -257,6 +289,10 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   // Evidence list state for EvidenceLinkModal
   const [evidenceList, setEvidenceList] = useState<EvidenceItem[]>([]);
   const [isLoadingEvidence, setIsLoadingEvidence] = useState(false);
+
+  // 019-party-extraction-prompt: AI 재생성 상태
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [regenerateMessage, setRegenerateMessage] = useState<string | null>(null);
 
   // Fetch evidence when modal opens
   useEffect(() => {
@@ -441,6 +477,33 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
     console.log('View evidence:', evidenceId);
   }, []);
 
+  // 019-party-extraction-prompt: AI 인물 관계도 재생성
+  const handleRegenerateGraph = useCallback(async () => {
+    if (isRegenerating) return;
+
+    setIsRegenerating(true);
+    setRegenerateMessage(null);
+
+    try {
+      const result = await regeneratePartyGraph(caseId);
+      setRegenerateMessage(
+        `재생성 완료: 신규 ${result.new_parties_count}명, 병합 ${result.merged_parties_count}명, 관계 ${result.new_relationships_count}개`
+      );
+      // 그래프 새로고침
+      await refresh();
+      // 3초 후 메시지 숨기기
+      setTimeout(() => setRegenerateMessage(null), 3000);
+    } catch (error) {
+      console.error('Failed to regenerate party graph:', error);
+      setRegenerateMessage(
+        error instanceof Error ? error.message : '인물 관계도 재생성에 실패했습니다.'
+      );
+      setTimeout(() => setRegenerateMessage(null), 5000);
+    } finally {
+      setIsRegenerating(false);
+    }
+  }, [caseId, isRegenerating, refresh]);
+
   // Render states
   if (isLoading) {
     return (
@@ -461,7 +524,21 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   if (partyNodes.length === 0) {
     return (
       <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-        <EmptyState onAddParty={handleAddPartyClick} />
+        <EmptyState
+          onAddParty={handleAddPartyClick}
+          onRegenerate={handleRegenerateGraph}
+          isRegenerating={isRegenerating}
+        />
+        {/* 019-party-extraction-prompt: 재생성 결과 메시지 (Empty 상태에서도 표시) */}
+        {regenerateMessage && (
+          <div className={`absolute top-4 left-4 z-10 px-4 py-2 rounded-lg shadow text-sm font-medium ${
+            regenerateMessage.includes('실패') || regenerateMessage.includes('오류')
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+              : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+          }`}>
+            {regenerateMessage}
+          </div>
+        )}
         <PartyModal
           isOpen={partyModalOpen}
           onClose={handleClosePartyModal}
@@ -475,7 +552,7 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
   return (
     <div className="relative w-full h-[600px] border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="absolute top-4 left-4 z-10 flex gap-2">
+      <div className="absolute top-4 left-4 z-10 flex gap-2 flex-wrap">
         <button
           onClick={handleAddPartyClick}
           className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-200 rounded-lg shadow dark:shadow-neutral-900/50 hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors text-sm font-medium"
@@ -488,14 +565,46 @@ export function PartyGraph({ caseId }: PartyGraphProps) {
         >
           📎 증거 연결
         </button>
+        {/* 019-party-extraction-prompt: AI 인물 관계도 재생성 버튼 */}
+        <button
+          onClick={handleRegenerateGraph}
+          disabled={isRegenerating}
+          className={`px-4 py-2 rounded-lg shadow dark:shadow-neutral-900/50 text-sm font-medium flex items-center gap-1.5 transition-colors ${
+            isRegenerating
+              ? 'bg-gray-100 dark:bg-neutral-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'bg-purple-600 hover:bg-purple-700 text-white'
+          }`}
+        >
+          {isRegenerating ? (
+            <>
+              <span className="animate-spin">⏳</span>
+              <span>재생성 중...</span>
+            </>
+          ) : (
+            <>
+              <span>🤖</span>
+              <span>AI 재생성</span>
+            </>
+          )}
+        </button>
         {/* 017-party-graph-improvement: AI 자동 추출 상태 표시 */}
         {partyNodes.some(p => p.is_auto_extracted) && (
           <div className="px-3 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg shadow dark:shadow-neutral-900/50 text-sm font-medium flex items-center gap-1.5">
-            <span>🤖</span>
             <span>AI 추출 {partyNodes.filter(p => p.is_auto_extracted).length}명</span>
           </div>
         )}
       </div>
+
+      {/* 019-party-extraction-prompt: 재생성 결과 메시지 */}
+      {regenerateMessage && (
+        <div className={`absolute top-16 left-4 z-10 px-4 py-2 rounded-lg shadow text-sm font-medium ${
+          regenerateMessage.includes('실패') || regenerateMessage.includes('오류')
+            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+            : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+        }`}>
+          {regenerateMessage}
+        </div>
+      )}
 
       {/* Save status */}
       <SaveStatusIndicator status={saveStatus} />
