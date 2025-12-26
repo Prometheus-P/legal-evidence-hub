@@ -17,7 +17,7 @@ Tests:
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from app.services.party_extraction_service import (
     PartyExtractionService,
@@ -102,7 +102,6 @@ class TestIsValidName:
 
     def test_valid_korean_name_2_chars(self, service):
         """2글자 한국 이름도 유효"""
-        valid_names = ["김씨", "이랑", "박솔", "최원", "정민"]
         # "이랑"은 블랙리스트에 있으므로 제외
         for name in ["김씨", "박솔", "최원", "정민"]:
             assert service._is_valid_name(name) is True, f"'{name}' should be valid"

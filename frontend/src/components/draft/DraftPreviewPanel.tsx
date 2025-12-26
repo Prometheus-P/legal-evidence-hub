@@ -864,47 +864,7 @@ export default function DraftPreviewPanel({
                             <List className="w-4 h-4 text-neutral-700" />
                         </button>
                     </div>
-                    <div className="inline-flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => handleDownload('docx')}
-                            disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isExporting && exportingFormat === 'docx' ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Download className="w-4 h-4" />
-                            )}
-                            DOCX
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleDownload('pdf')}
-                            disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isExporting && exportingFormat === 'pdf' ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Download className="w-4 h-4" />
-                            )}
-                            PDF
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleDownload('hwp')}
-                            disabled={isExporting}
-                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isExporting && exportingFormat === 'hwp' ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Download className="w-4 h-4" />
-                            )}
-                            HWP
-                        </button>
-                    </div>
+                    {/* 다운로드 버튼 숨김 처리 - 추후 기능 완성 시 활성화 */}
                 </div>
             </div>
 

@@ -31,7 +31,7 @@ for font_path in FONT_PATHS:
             pdfmetrics.registerFont(TTFont('AppleGothic', font_path))
             KOREAN_FONT = 'AppleGothic'
             break
-        except:
+        except Exception:
             continue
 
 

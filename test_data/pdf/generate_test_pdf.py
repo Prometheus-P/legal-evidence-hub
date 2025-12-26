@@ -7,11 +7,10 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-from reportlab.graphics.shapes import Drawing, Line
 from pathlib import Path
 import os
 
@@ -32,7 +31,7 @@ for font_path in FONT_PATHS:
             pdfmetrics.registerFont(TTFont('AppleGothic', font_path))
             KOREAN_FONT = 'AppleGothic'
             break
-        except:
+        except Exception:
             continue
 
 
