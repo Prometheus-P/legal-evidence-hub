@@ -102,9 +102,11 @@ const DOCUMENT_TEMPLATES = [
 
 /**
  * Convert plain text (with \n newlines) to HTML
+ * - Preserves whitespace (spaces, indentation) for legal document formatting
  * - Double newlines become paragraph breaks
  * - Single newlines become <br>
  * - Escapes HTML entities
+ * - Converts multiple spaces to &nbsp; to preserve indentation
  */
 const textToHtml = (text: string): string => {
     if (!text) return '';
@@ -120,12 +122,26 @@ const textToHtml = (text: string): string => {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
+    // Preserve leading spaces and multiple consecutive spaces
+    // Convert 2+ spaces to &nbsp; pairs to maintain visual spacing
+    const preserveSpaces = (str: string): string => {
+        // First, preserve leading spaces in each line
+        return str.replace(/^( +)/gm, (match) => {
+            return match.replace(/ /g, '&nbsp;');
+        })
+        // Then preserve multiple consecutive spaces within text
+        .replace(/  +/g, (match) => {
+            return match.replace(/ /g, '&nbsp;');
+        });
+    };
+
     // Split by double newlines for paragraphs
     const paragraphs = escaped.split(/\n\n+/);
 
     // Convert single newlines to <br> within paragraphs
     const htmlParagraphs = paragraphs.map(p => {
-        const withBreaks = p.replace(/\n/g, '<br>');
+        const withSpaces = preserveSpaces(p);
+        const withBreaks = withSpaces.replace(/\n/g, '<br>');
         return `<p>${withBreaks}</p>`;
     });
 
@@ -712,6 +728,22 @@ export default function DraftPreviewPanel({
 
     return (
         <section className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-gray-100 dark:border-neutral-700 p-6 space-y-6" aria-label="Draft editor">
+            {/* Task 8: Red Review Warning Banner */}
+            <div className="bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <h4 className="text-base font-bold text-red-800 dark:text-red-200 mb-1">
+                            [검토 필요] AI 생성 초안
+                        </h4>
+                        <p className="text-sm text-red-700 dark:text-red-300">
+                            본 문서는 AI가 생성한 초안으로, <strong>변호사의 검토 및 수정이 필요합니다.</strong>
+                            실제 제출 전 반드시 모든 내용을 검토하고 사실 관계를 확인해 주세요.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-sm text-neutral-600 leading-relaxed">

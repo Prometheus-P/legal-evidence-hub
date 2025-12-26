@@ -28,6 +28,7 @@ export interface NavGroup {
   label?: string;
   items: NavItem[];
   collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 interface PortalSidebarProps {
@@ -46,7 +47,7 @@ export function PortalSidebar({
   const { role } = useRole();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
-    new Set()
+    () => new Set(groups.filter(g => g.defaultCollapsed).map(g => g.id))
   );
 
   const toggleGroup = (groupId: string) => {
@@ -186,7 +187,7 @@ export function PortalSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
+      <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
         {sidebarContent}
       </aside>
 
