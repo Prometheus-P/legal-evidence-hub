@@ -25,7 +25,6 @@ import { PrecedentReferenceList } from './PrecedentReferenceList';
 import { Evidence } from '@/types/evidence';
 import { Keypoint } from '@/lib/api/lssp';
 import { DraftCitation, PrecedentCitation } from '@/types/draft';
-import { DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 
 // =============================================================================
 // Types
@@ -68,14 +67,6 @@ export interface DraftSplitViewProps {
    * Handler for generating draft
    */
   onGenerate: () => void;
-
-  /**
-   * Handler for downloading draft
-   */
-  onDownload?: (data: {
-    format: DraftDownloadFormat;
-    content: string;
-  }) => Promise<DownloadResult> | void;
 
   /**
    * Handler for manual save
@@ -157,7 +148,6 @@ export function DraftSplitView({
   isGenerating,
   hasExistingDraft,
   onGenerate,
-  onDownload,
   onManualSave,
   evidenceItems = [],
   keypoints = [],
@@ -262,7 +252,6 @@ export function DraftSplitView({
             isGenerating={isGenerating}
             hasExistingDraft={hasExistingDraft}
             onGenerate={onGenerate}
-            onDownload={onDownload}
             onManualSave={onManualSave}
           />
         </div>
