@@ -9,7 +9,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { MessageSquare, Phone, Video, Users, Calendar, Clock, Edit2, Trash2, Plus, X, Loader2 } from 'lucide-react';
+import { MessageSquare, Phone, Video, Users, Calendar, Edit2, Trash2, Plus, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Consultation, ConsultationType } from '@/types/consultation';
 import {
@@ -41,21 +41,13 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
   const [editingConsultation, setEditingConsultation] = useState<Consultation | null>(null);
   const [formData, setFormData] = useState({
     date: '',
-    time: '',
-    type: 'phone' as ConsultationType,
-    participants: '',
     summary: '',
-    notes: '',
   });
 
   const resetForm = useCallback(() => {
     setFormData({
       date: '',
-      time: '',
-      type: 'phone',
-      participants: '',
       summary: '',
-      notes: '',
     });
     setEditingConsultation(null);
   }, []);
@@ -65,11 +57,7 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
       setEditingConsultation(consultation);
       setFormData({
         date: consultation.date,
-        time: consultation.time ? consultation.time.substring(0, 5) : '',
-        type: consultation.type,
-        participants: consultation.participants.join(', '),
         summary: consultation.summary,
-        notes: consultation.notes || '',
       });
     } else {
       resetForm();
@@ -116,14 +104,9 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
     e.preventDefault();
 
     if (!formData.date || !formData.summary) {
-      toast.error('날짜와 요약은 필수입니다.');
+      toast.error('날짜와 내용은 필수입니다.');
       return;
     }
-
-    const participantsList = formData.participants
-      .split(',')
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
 
     setIsSubmitting(true);
 
@@ -131,11 +114,9 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
       if (editingConsultation) {
         const response = await updateConsultation(caseId, editingConsultation.id, {
           date: formData.date,
-          time: formData.time || undefined,
-          type: formData.type,
-          participants: participantsList,
+          type: 'phone',
+          participants: [],
           summary: formData.summary,
-          notes: formData.notes || undefined,
         });
 
         if (response.data) {
@@ -150,11 +131,9 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
       } else {
         const response = await createConsultation(caseId, {
           date: formData.date,
-          time: formData.time || undefined,
-          type: formData.type,
-          participants: participantsList,
+          type: 'phone',
+          participants: [],
           summary: formData.summary,
-          notes: formData.notes || undefined,
         });
 
         if (response.data) {
@@ -322,89 +301,32 @@ export function ConsultationHistoryTab({ caseId, externalOpenModal, onExternalMo
             </div>
 
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              {/* Date and Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                    날짜 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                    시간
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  />
-                </div>
-              </div>
-
-              {/* Type */}
+              {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                  상담 유형
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ConsultationType }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                >
-                  <option value="phone">전화 상담</option>
-                  <option value="in_person">대면 상담</option>
-                  <option value="online">화상 상담</option>
-                </select>
-              </div>
-
-              {/* Participants */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                  참석자 (쉼표로 구분)
+                  날짜 <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="text"
-                  value={formData.participants}
-                  onChange={(e) => setFormData(prev => ({ ...prev, participants: e.target.value }))}
-                  placeholder="홍길동, 김변호사"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                />
-              </div>
-
-              {/* Summary */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                  요약 <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.summary}
-                  onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
-                  placeholder="상담 내용 요약을 입력하세요"
-                  rows={3}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
                   required
                 />
               </div>
 
-              {/* Notes */}
+              {/* Content */}
               <div>
                 <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
-                  메모
+                  내용 <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="추가 메모 (선택)"
-                  rows={2}
+                  value={formData.summary}
+                  onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
+                  placeholder="상담 내용을 입력하세요"
+                  rows={4}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
+                  required
                 />
               </div>
 
