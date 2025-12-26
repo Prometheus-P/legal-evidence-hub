@@ -511,7 +511,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
             { id: 'analysis', label: '법률 분석', count: null, icon: <Scale className="w-4 h-4 mr-1" /> },
             { id: 'draft', label: '초안 생성', count: null, icon: <FileText className="w-4 h-4 mr-1" /> },
             { id: 'relations', label: '관계도', count: null, icon: null },
-            { id: 'assets', label: '재산분할', count: null, icon: <Wallet className="w-4 h-4 mr-1" /> },
             { id: 'timeline', label: '타임라인', count: caseDetail.recentActivities.length, icon: null },
           ].map((tab) => (
             <button
