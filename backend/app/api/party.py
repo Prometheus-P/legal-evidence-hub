@@ -222,3 +222,46 @@ async def auto_extract_party(
     service = PartyService(db)
     # AI Worker에서 호출되므로 user_id 대신 "ai_worker" 사용
     return service.create_auto_extracted_party(case_id, data, "ai_worker")
+
+
+# ============================================
+# 019-party-extraction-prompt: 인물 관계도 재생성 엔드포인트
+# ============================================
+@router.post(
+    "/regenerate",
+    response_model=dict,
+    summary="Regenerate party graph from fact summary"
+)
+async def regenerate_party_graph(
+    case_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id)
+):
+    """
+    사실관계 요약을 기반으로 인물 관계도를 재생성합니다.
+
+    - 기존 자동 추출된 인물/관계는 유지됩니다 (이름 기반 병합)
+    - 수동 추가된 인물은 보존됩니다
+    - 사실관계 요약이 없으면 오류가 발생합니다
+
+    Requires write access to the case.
+    """
+    verify_case_write_access(case_id, db, user_id)
+
+    from app.services.party_extraction_service import PartyExtractionService
+
+    extraction_service = PartyExtractionService(db)
+    result = extraction_service.extract_from_fact_summary(
+        case_id=case_id,
+        user_id=user_id
+    )
+
+    return {
+        "success": True,
+        "message": "인물 관계도가 재생성되었습니다",
+        "new_parties_count": result.new_parties_count,
+        "merged_parties_count": result.merged_parties_count,
+        "new_relationships_count": result.new_relationships_count,
+        "total_persons": len(result.persons),
+        "total_relationships": len(result.relationships)
+    }
