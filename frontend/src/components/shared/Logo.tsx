@@ -114,7 +114,7 @@ export function Logo({ size = 'md', variant = 'icon', className = '' }: LogoProp
     <div className={`flex items-center gap-2 ${className}`} role="img" aria-label={`${BRAND.name} 로고`}>
       <LogoIcon size={pixelSize} />
       <span
-        className="font-bold text-secondary"
+        className="font-bold text-gray-900 dark:text-gray-100"
         style={{ fontSize: `${Math.max(pixelSize * 0.5, 14)}px` }}
       >
         {BRAND.name}
