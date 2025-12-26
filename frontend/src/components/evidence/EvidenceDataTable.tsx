@@ -344,11 +344,19 @@ export function EvidenceDataTable({ items, onRetry, parties = [], onSpeakerMappi
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200" aria-label="증거 자료 목록">
             <caption className="sr-only">
-              증거 자료 목록. 유형, 파일명, AI 요약, 업로드 날짜, 상태 열이 있습니다.
+              증거 자료 목록. 번호, 유형, 파일명, AI 요약, 업로드 날짜, 상태 열이 있습니다.
               파일명과 업로드 날짜는 정렬 가능합니다.
+              번호는 사실관계 요약의 [증거N] 형식과 일치합니다.
             </caption>
             <thead className="bg-gray-50">
               <tr>
+                {/* 증거 번호 열 - 사실관계 요약의 [증거N] 참조용 */}
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20"
+                >
+                  번호
+                </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -427,12 +435,23 @@ export function EvidenceDataTable({ items, onRetry, parties = [], onSpeakerMappi
               {table.getRowModel().rows.map((row, index) => {
                 const evidence = row.original;
                 const zebraBackground = index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70';
+                // 전체 정렬된 데이터에서의 순서 번호 계산 (페이지네이션 고려)
+                const pageIndex = table.getState().pagination.pageIndex;
+                const pageSize = table.getState().pagination.pageSize;
+                const evidenceNumber = pageIndex * pageSize + index + 1;
 
                 return (
                   <tr
                     key={evidence.id}
                     className={`group transition-colors ${zebraBackground} hover:bg-primary-light/50`}
                   >
+                    {/* 증거 번호 - 사실관계 요약의 [증거N] 참조용 */}
+                    <td className="px-4 py-4 whitespace-nowrap text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 text-sm font-bold text-primary bg-primary-light rounded-full">
+                        {evidenceNumber}
+                      </span>
+                    </td>
+
                     {/* Type Icon - 클릭하면 원문 보기 */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button

@@ -17,7 +17,10 @@ import {
 import { Evidence } from '@/types/evidence';
 
 export function useEvidenceTable(data: Evidence[]) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // 기본 정렬: uploadDate 오름차순 (사실관계 요약의 [증거N] 번호와 일치)
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'uploadDate', desc: false }
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
