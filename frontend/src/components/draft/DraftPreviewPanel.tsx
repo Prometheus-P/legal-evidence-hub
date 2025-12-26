@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
     Loader2,
     FileText,
-    Download,
     Sparkles,
     Bold,
     Italic,
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { DraftCitation, PrecedentCitation } from '@/types/draft';
-import { DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import EvidenceTraceabilityPanel from './EvidenceTraceabilityPanel';
 import {
     DraftVersionSnapshot,
@@ -251,8 +249,6 @@ export default function DraftPreviewPanel({
     const [changeLog, setChangeLog] = useState<DraftChangeLogEntry[]>([]);
     const [isTrackChangesEnabled, setIsTrackChangesEnabled] = useState(false);
     const [collabStatus, setCollabStatus] = useState<string | null>(null);
-    const [isExporting, setIsExporting] = useState(false);
-    const [exportingFormat, setExportingFormat] = useState<DraftDownloadFormat | null>(null);
     const [exportToast, setExportToast] = useState<ExportToast | null>(null);
     const editorRef = useRef<HTMLDivElement>(null);
     const autosaveTimerRef = useRef<IntervalHandle | null>(null);
@@ -470,44 +466,6 @@ export default function DraftPreviewPanel({
 
     const handleFormat = (command: string) => {
         document.execCommand(command, false, undefined);
-    };
-
-    const handleDownload = async (format: DraftDownloadFormat) => {
-        if (!onDownload) return;
-
-        setIsExporting(true);
-        setExportingFormat(format);
-        setExportToast(null);
-
-        try {
-            const result = await onDownload({ format, content: editorHtml });
-
-            if (result) {
-                if (result.success) {
-                    setExportToast({
-                        type: 'success',
-                        message: `${format.toUpperCase()} 파일이 다운로드되었습니다.`,
-                        filename: result.filename,
-                    });
-                } else {
-                    setExportToast({
-                        type: 'error',
-                        message: result.error || '다운로드에 실패했습니다.',
-                    });
-                }
-            }
-        } catch (error) {
-            setExportToast({
-                type: 'error',
-                message: error instanceof Error ? error.message : '다운로드 중 오류가 발생했습니다.',
-            });
-        } finally {
-            setIsExporting(false);
-            setExportingFormat(null);
-
-            // Auto-dismiss toast after 5 seconds
-            setTimeout(() => setExportToast(null), 5000);
-        }
     };
 
     const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
