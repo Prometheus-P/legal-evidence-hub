@@ -15,7 +15,7 @@ Returns exit code 1 if any secrets are found (for CI/CD)
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from dataclasses import dataclass
 
 
@@ -220,7 +220,7 @@ def main() -> int:
         return 1
 
     print(f"Scanning for hardcoded secrets in: {scan_path}")
-    print(f"Excludes: test fixtures, examples, templates, docs\n")
+    print("Excludes: test fixtures, examples, templates, docs\n")
 
     matches = scan_directory(scan_path)
     print_results(matches)

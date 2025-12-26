@@ -6,9 +6,7 @@ RED Phase: Verify script detects hardcoded secrets and ignores safe patterns
 
 import subprocess
 import tempfile
-import shutil
 from pathlib import Path
-import pytest
 
 
 class TestHardcodedSecretsDetection:
@@ -91,7 +89,7 @@ db_config = {
 
             # Debug output
             if exit_code != 1:
-                print(f"\nDEBUG - DB password test")
+                print("\nDEBUG - DB password test")
                 print(f"Exit code: {exit_code}")
                 print(f"STDOUT:\n{stdout}")
 
