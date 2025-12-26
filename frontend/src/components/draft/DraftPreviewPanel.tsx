@@ -43,7 +43,6 @@ interface DraftPreviewPanelProps {
     isGenerating: boolean;
     hasExistingDraft: boolean;
     onGenerate: () => void;
-    onDownload?: (data: { format: DraftDownloadFormat; content: string }) => Promise<DownloadResult> | void;
     onManualSave?: (content: string) => Promise<void> | void;
 }
 
@@ -230,7 +229,6 @@ export default function DraftPreviewPanel({
     isGenerating,
     hasExistingDraft,
     onGenerate,
-    onDownload,
     onManualSave,
 }: DraftPreviewPanelProps) {
     const buttonLabel = hasExistingDraft ? '초안 재생성' : '초안 생성';
