@@ -136,8 +136,8 @@ export function PortalSidebar({
     <>
       {/* Logo */}
       <div className="px-4 py-4 border-b border-gray-100">
-        <Link href="/dashboard">
-          <Logo size="md" />
+        <Link href="/">
+          <Logo size="sm" variant="full" />
         </Link>
       </div>
 
