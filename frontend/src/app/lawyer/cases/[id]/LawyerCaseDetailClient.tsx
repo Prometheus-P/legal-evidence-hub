@@ -41,7 +41,6 @@ import DraftGenerationModal from '@/components/draft/DraftGenerationModal';
 import DraftPreviewPanel from '@/components/draft/DraftPreviewPanel';
 import { generateDraftPreviewAsync, DraftJobStatus } from '@/lib/api/draft';
 import { DraftCitation } from '@/types/draft';
-import { downloadDraftAsDocx, DraftDownloadFormat, DownloadResult } from '@/services/documentService';
 import { useProcedure } from '@/hooks/useProcedure';
 import { ProcedureTimeline } from '@/components/procedure';
 // New tab components
@@ -367,20 +366,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       setIsGeneratingDraft(false);
       setDraftProgress(0);
       setDraftStatus(null);
-    }
-  }, [caseId]);
-
-  // Draft download handler
-  const handleDraftDownload = useCallback(async (data: { format: DraftDownloadFormat; content: string }): Promise<DownloadResult> => {
-    try {
-      const result = await downloadDraftAsDocx(data.content, caseId, data.format);
-      return result;
-    } catch (err) {
-      logger.error('Draft download error:', err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : '다운로드에 실패했습니다.',
-      };
     }
   }, [caseId]);
 
@@ -943,7 +928,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
                 isGenerating={isGeneratingDraft}
                 hasExistingDraft={hasExistingDraft}
                 onGenerate={handleDraftRegenerate}
-                onDownload={handleDraftDownload}
               />
             )}
           </div>
