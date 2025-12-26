@@ -52,8 +52,6 @@ import { ConsultationHistoryTab } from '@/components/case/ConsultationHistoryTab
 import { FactSummaryPanel } from '@/components/fact-summary/FactSummaryPanel';
 // 016-draft-fact-summary: fact-summary 조회
 import { getFactSummary } from '@/lib/api/fact-summary';
-// Issue #423: Pipeline progress visualization
-import { PipelineProgressIndicator } from '@/components/case/PipelineProgressIndicator';
 
 interface CaseDetail {
   id: string;
@@ -556,18 +554,6 @@ export default function LawyerCaseDetailClient({ id: paramId }: LawyerCaseDetail
       <div className="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg p-6">
         {activeTab === 'evidence' && (
           <div className="space-y-6">
-            {/* Issue #423: Pipeline Progress Indicator */}
-            {evidenceList.length > 0 && (
-              <PipelineProgressIndicator
-                totalEvidence={evidenceList.length}
-                completedEvidence={evidenceList.filter(e => e.status === 'completed').length}
-                processingEvidence={evidenceList.filter(e => e.status === 'processing' || e.status === 'queued').length}
-                hasDraft={hasExistingDraft}
-                hasRelations={false}
-                compact={false}
-              />
-            )}
-
             {/* Evidence Upload Section */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
