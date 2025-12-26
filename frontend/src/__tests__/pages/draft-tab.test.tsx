@@ -239,7 +239,8 @@ describe('Plan 3.6 - Draft Tab requirements on the case detail page', () => {
         });
     });
 
-    describe('Plan 3.12 - Download Functionality', () => {
+    // Download buttons are currently hidden (다운로드 버튼 숨김 처리)
+    describe.skip('Plan 3.12 - Download Functionality', () => {
         test('DOCX 다운로드 버튼 클릭 시 onDownload 핸들러가 호출되어야 한다', () => {
             const onDownload = jest.fn();
             const { getByText } = render(
