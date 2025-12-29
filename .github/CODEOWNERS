@@ -2,36 +2,36 @@
 # Team H·P·L (CHAGOK)
 
 # 기본 리뷰어 (모든 파일) - PM이 최종 승인
-* @Prometheus-P
+* @x-ordo
 
 # Backend (FastAPI) - H 담당
-backend/** @leaf446 @Prometheus-P
+backend/** @leaf446 @x-ordo
 
 # Frontend (Next.js) - P 담당
-frontend/** @Prometheus-P
+frontend/** @x-ordo
 
 # AI Worker (Lambda) - L 담당
-ai_worker/** @vsun410 @Prometheus-P
+ai_worker/** @vsun410 @x-ordo
 
 # Infrastructure & CI/CD - H 담당
-.github/** @leaf446 @Prometheus-P
-infra/** @leaf446 @Prometheus-P
-docker-compose*.yml @leaf446 @Prometheus-P
-Makefile @leaf446 @Prometheus-P
+.github/** @leaf446 @x-ordo
+infra/** @leaf446 @x-ordo
+docker-compose*.yml @leaf446 @x-ordo
+Makefile @leaf446 @x-ordo
 
 # Documentation - PM 승인
-docs/** @Prometheus-P
-*.md @Prometheus-P
+docs/** @x-ordo
+*.md @x-ordo
 
 # Specifications - 전원 리뷰
-specs/** @Prometheus-P @leaf446 @vsun410
+specs/** @x-ordo @leaf446 @vsun410
 
 # Configuration files - 전원 리뷰
-.env.example @Prometheus-P @leaf446 @vsun410
-.env.production @Prometheus-P @leaf446 @vsun410
+.env.example @x-ordo @leaf446 @vsun410
+.env.production @x-ordo @leaf446 @vsun410
 
 # Security-sensitive files - 전원 필수 리뷰
-**/auth*.py @Prometheus-P @leaf446
-**/security*.py @Prometheus-P @leaf446
-LICENSE @Prometheus-P
-COPYRIGHT @Prometheus-P
+**/auth*.py @x-ordo @leaf446
+**/security*.py @x-ordo @leaf446
+LICENSE @x-ordo
+COPYRIGHT @x-ordo
