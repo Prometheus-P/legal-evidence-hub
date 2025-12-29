@@ -1,6 +1,6 @@
 # Development & Operation Environment Documentation
 
-This document outlines the technical environment, dependencies, and infrastructure for the Legal Evidence Hub (LEH) project.
+This document outlines the technical environment, dependencies, and infrastructure for the CHAGOK project.
 
 **Last Updated:** 2025-12-01
 
@@ -57,7 +57,7 @@ This document outlines the technical environment, dependencies, and infrastructu
 
 ### 3.1 Unified `.env` Structure
 
-LEH uses a **single unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
+CHAGOK uses a **single unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
 
 ```
 project-root/
@@ -117,7 +117,7 @@ Some variables have different names between services for historical reasons. The
 - **NEVER commit `.env` to Git** - it's in `.gitignore`
 - Use `.env.example` as a reference template
 - For production, use GitHub Actions Secrets/Variables or AWS Secrets Manager
-- See [Issue #33](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/issues/33) for GitHub Actions setup
+- See [Issue #33](https://github.com/x-ordo/CHAGOK/issues/33) for GitHub Actions setup
 
 ---
 

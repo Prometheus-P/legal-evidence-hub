@@ -1,9 +1,9 @@
 ================================================================================
                         COPYRIGHT NOTICE
-                     Legal Evidence Hub (LEH)
+                            CHAGOK
 ================================================================================
 
-Copyright (c) 2024-2025 Legal Evidence Hub
+Copyright (c) 2024-2025 Team H·P·L
 All Rights Reserved.
 
 ================================================================================
@@ -11,7 +11,7 @@ All Rights Reserved.
 ================================================================================
 
 This software and associated documentation files (the "Software") are the
-exclusive intellectual property of Legal Evidence Hub.
+exclusive intellectual property of Team H·P·L (CHAGOK).
 
 The Software includes, but is not limited to:
 - Source code (Python, TypeScript, JavaScript)
@@ -100,7 +100,7 @@ the leak. Legal action will be pursued to the fullest extent of the law.
                         ENFORCEMENT
 ================================================================================
 
-Legal Evidence Hub actively monitors for unauthorized use of its software.
+CHAGOK actively monitors for unauthorized use of its software.
 Violations will result in:
 
 1. Immediate legal action including:
@@ -123,16 +123,16 @@ Violations will result in:
 ================================================================================
 
 For licensing inquiries:
-Email: legal@legalevidence.hub
+Email: legal@chagok.io
 
 To report unauthorized use:
-Email: security@legalevidence.hub
+Email: security@chagok.io
 
 ================================================================================
                         ACKNOWLEDGMENTS
 ================================================================================
 
-Legal Evidence Hub acknowledges the use of the following open-source components,
+CHAGOK acknowledges the use of the following open-source components,
 which are licensed separately under their respective licenses:
 
 - FastAPI (MIT License)

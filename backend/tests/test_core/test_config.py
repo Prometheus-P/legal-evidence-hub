@@ -37,7 +37,7 @@ class TestSettings:
             from app.core.config import Settings
             settings = Settings()
 
-            assert settings.APP_NAME == "legal-evidence-hub"
+            assert settings.APP_NAME == "chagok"
             assert settings.APP_ENV == "local"
             assert settings.APP_DEBUG is True
             assert settings.BACKEND_HOST == "0.0.0.0"

@@ -126,6 +126,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/releases/tag/v0.1.0
+[Unreleased]: https://github.com/x-ordo/CHAGOK/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/x-ordo/CHAGOK/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/x-ordo/CHAGOK/releases/tag/v0.1.0

@@ -1,5 +1,5 @@
 # .github/workflows/ci.yml
-# LEH CI Pipeline - Lint, Test, Build (No AWS required)
+# CHAGOK CI Pipeline - Lint, Test, Build (No AWS required)
 # Optimized: APT caching, artifact reuse
 
 name: CI

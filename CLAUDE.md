@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Legal Evidence Hub (LEH) is an AI-powered paralegal system for divorce cases. The platform processes legal evidence (images, audio, video, text, PDFs) using AWS infrastructure, analyzes them with AI, and generates draft legal documents.
+CHAGOK is an AI-powered paralegal system for divorce cases. The platform processes legal evidence (images, audio, video, text, PDFs) using AWS infrastructure, analyzes them with AI, and generates draft legal documents.
 
 **Architecture:** Three-tier AWS system with Next.js frontend, FastAPI backend, and Lambda-based AI Worker pipeline.
 
@@ -294,7 +294,7 @@ Backend uses custom exception handlers in `app/middleware/error_handler.py`:
 
 ## Environment Variables
 
-LEH uses a **unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
+CHAGOK uses a **unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
 
 ```
 project-root/

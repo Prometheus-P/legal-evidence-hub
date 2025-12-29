@@ -1,6 +1,6 @@
 # Documentation Index
 
-LEH 프로젝트의 모든 문서를 역할별로 정리했습니다.
+CHAGOK 프로젝트의 모든 문서를 역할별로 정리했습니다.
 
 **Last Updated:** 2025-12-12 _(Sprint: 011-production-bug-fixes)_
 

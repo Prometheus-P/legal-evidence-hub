@@ -142,7 +142,7 @@ async def lifespan(_app: FastAPI):
 # FastAPI Application Instance
 # ============================================
 app = FastAPI(
-    title="Legal Evidence Hub API",
+    title="CHAGOK API",
     description="AI 파라리걸 & 증거 허브 백엔드 API - 이혼 사건 전용 증거 분석 및 초안 생성 시스템",
     version="0.2.0",
     docs_url="/docs" if settings.APP_DEBUG else None,  # Disable in production
@@ -150,7 +150,7 @@ app = FastAPI(
     lifespan=lifespan,  # Modern lifespan handler (replaces on_event)
     contact={
         "name": "Team H·P·L",
-        "url": "https://github.com/ORG/REPO",
+        "url": "https://github.com/x-ordo/CHAGOK",
     }
 )
 
