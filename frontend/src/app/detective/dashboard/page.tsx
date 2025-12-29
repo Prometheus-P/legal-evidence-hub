@@ -10,6 +10,7 @@
  */
 
 import { Metadata } from 'next';
+import Link from 'next/link';
 import { BRAND } from '@/config/brand';
 
 export const metadata: Metadata = {
@@ -258,12 +259,12 @@ export default function DetectiveDashboardPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-[var(--color-text-primary)]">진행중 의뢰</h2>
-            <a
+            <Link
               href="/detective/cases"
               className="text-sm text-[var(--color-primary)] hover:underline"
             >
               전체보기
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {investigations.map((inv) => (

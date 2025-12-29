@@ -1,5 +1,5 @@
 """
-Legal Evidence Hub (LEH) - Security Middleware
+CHAGOK - Security Middleware
 Security headers and HTTPS enforcement
 """
 
