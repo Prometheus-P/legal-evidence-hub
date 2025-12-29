@@ -51,8 +51,8 @@ MVP 이전에는 `0.x.y` 버전을 사용합니다:
 ### 2.2 현재 버전
 
 ```
-Frontend:   0.2.0
-Backend:    0.2.0
+Frontend:   0.4.0
+Backend:    0.4.0
 AI Worker:  0.1.0
 ```
 
@@ -66,7 +66,7 @@ npm version minor  # 또는 major, patch
 
 # Backend
 # backend/app/__init__.py 수정
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # AI Worker
 # ai_worker/src/__init__.py 수정

@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- (예정) AI Worker: Qdrant 벡터 저장소 통합 (#21)
+
+### Changed
+- (예정) 케이스 삭제 시 Qdrant 컬렉션 삭제 로직 (#13)
+
+---
+
+## [0.4.0] - 2025-12-30
+
+### Added
+
+#### CHAGOK Rebranding
+- **프로젝트 리브랜딩**: Legal Evidence Hub (LEH) → CHAGOK
+- **GitHub 조직 이전**: KernelAcademy-AICamp → x-ordo/CHAGOK
+- **전체 문서 업데이트**: 83개 마크다운 파일 리브랜딩
 
 #### 003-role-based-ui Feature (Complete)
 - **역할 시스템 확장**: CLIENT, DETECTIVE 역할 추가
@@ -21,11 +36,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **청구 시스템**: 청구서 생성, 결제 추적, 의뢰인 결제 페이지
 - **반응형 UI**: 모바일 드로어, 햄버거 메뉴, 반응형 그리드
 
-#### Infrastructure
-- AI Worker: Qdrant 벡터 저장소 통합 예정 (#21)
-
 ### Changed
-- 케이스 삭제 시 Qdrant 컬렉션 삭제 로직 추가 예정 (#13)
+
+#### Infrastructure
+- **폴더 구조 개선**: `infrastructure/` → `infra/` 통합
+- **문서 정리**: 루트 레벨 문서 파일을 `docs/` 하위로 이동
+- **스크립트 테스트**: `tests/` → `scripts/tests/` 이동
+
+### Security
+- **Next.js 업그레이드**: 14.1.0 → 14.2.35 (13개 CVE 수정)
+- **eslint-config-next 업그레이드**: 15.1.0 (Command injection 수정)
+- **xlsx 패키지 제거**: 사용하지 않는 취약 패키지 제거
+- **npm 취약점**: 5개 → 0개
+
+### Fixed
+- ISO 8601 타임스탬프 'Z' 접미사 파싱 오류 수정
+- 테스트 기대값 CHAGOK 리브랜딩 반영
 
 ---
 
@@ -113,6 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.4.0 | 2025-12-30 | CHAGOK 리브랜딩, 보안 업데이트, 폴더 구조 개선 |
 | 0.2.0 | 2025-11-27 | AWS 실서비스 연동, Qdrant 전환, Design System |
 | 0.1.0 | 2025-11-20 | MVP 기능 완성, 핵심 API 및 UI 구현 |
 
@@ -126,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/x-ordo/CHAGOK/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/x-ordo/CHAGOK/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/x-ordo/CHAGOK/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/x-ordo/CHAGOK/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/x-ordo/CHAGOK/releases/tag/v0.1.0
