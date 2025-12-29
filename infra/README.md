@@ -1,23 +1,29 @@
-# Infra and Deployment
-
-`infra/` is the home for deployment automation, Oracle Cloud (OCI) IaC, GitHub Actions workflows, and all operational artifacts.
-
-## Suggested layout
-
-- `ci-cd/` – GitHub Actions or other pipeline definitions that build, test, and release services.
-- `terraform/` – Oracle Cloud (OCI) or other cloud module definitions and environment-specific stacks.
-- `scripts/` – Helper scripts for deployments, migrations, or diagnostics.
-- `docs/` – Architecture diagrams, IAM policy tables, runbooks, or other supporting material.
-
-As the platform grows, add the relevant folder (e.g., `infra/terraform/`), log intended usage here, and keep this README synced with the new pieces.
 # Infra
 
-이 디렉터리에는 Terraform, CDK, GitHub Actions 배포 스크립트 등 인프라/배포 관련 리소스를 저장합니다.
+이 디렉터리에는 Terraform, CloudFront Functions, 배포 스크립트 등 인프라/배포 관련 리소스를 저장합니다.
 
-## 제안 구조
+## 현재 구조
 
-- `terraform/` – AWS 계정별 IaC 모듈
-- `scripts/` – 배포 또는 마이그레이션 자동화 스크립트
-- `docs/` – 다이어그램, IAM 정책 표 등 추가 자료
+```
+infra/
+├── cloudfront-functions/     # CloudFront Edge Functions
+│   ├── dynamic-route-handler.js
+│   └── README.md
+├── terraform/                # AWS IaC 모듈 (진행 중)
+├── docs/                     # 인프라 다이어그램, 가이드
+├── cloudwatch-dashboard.json # CloudWatch 대시보드 설정
+└── s3-lifecycle-policy.json  # S3 버킷 수명 주기 정책
+```
 
-초기에는 비어 있지만, 인프라 작업을 시작하면 관련 파일을 추가하고 README 를 업데이트하세요.
+## 주요 구성 요소
+
+### CloudFront Functions
+- `dynamic-route-handler.js` - Next.js 정적 내보내기의 동적 라우팅 처리
+- 자세한 배포 방법은 `cloudfront-functions/README.md` 참조
+
+### Terraform
+- AWS 인프라 IaC 모듈 (구성 중)
+
+### 운영 설정
+- `cloudwatch-dashboard.json` - 모니터링 대시보드 JSON 템플릿
+- `s3-lifecycle-policy.json` - S3 객체 수명 주기 정책
