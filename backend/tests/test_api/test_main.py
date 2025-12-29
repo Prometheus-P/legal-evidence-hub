@@ -24,7 +24,7 @@ class TestApplicationStartup:
         assert response.status_code == 200
 
         openapi_schema = response.json()
-        assert openapi_schema["info"]["title"] == "Legal Evidence Hub API"
+        assert openapi_schema["info"]["title"] == "CHAGOK API"
         assert openapi_schema["info"]["version"] == "0.2.0"
 
     def test_docs_enabled_in_debug_mode(self, raw_client):
@@ -50,7 +50,7 @@ class TestRootEndpoint:
         data = response.json()
 
         assert "service" in data
-        assert data["service"] == "Legal Evidence Hub API"
+        assert data["service"] == "CHAGOK API"
         assert "version" in data
         assert data["version"] == "0.2.0"
         assert "environment" in data
@@ -98,7 +98,7 @@ class TestHealthCheckEndpoint:
         data = response.json()
 
         assert "service" in data
-        assert data["service"] == "Legal Evidence Hub API"
+        assert data["service"] == "CHAGOK API"
         assert "version" in data
         assert data["version"] == "0.2.0"
 

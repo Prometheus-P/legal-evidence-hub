@@ -184,7 +184,7 @@ async def readiness(db: Session = Depends(get_db)) -> Dict[str, Any]:
 
     return {
         "status": overall_status,
-        "service": "Legal Evidence Hub API",
+        "service": "CHAGOK API",
         "version": "0.2.0",
         "environment": settings.APP_ENV,
         "checks": checks,

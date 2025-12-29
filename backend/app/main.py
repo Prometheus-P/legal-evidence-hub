@@ -117,7 +117,7 @@ async def lifespan(_app: FastAPI):
     Handles startup and shutdown events
     """
     # Startup
-    logger.info("🚀 Legal Evidence Hub API starting...")
+    logger.info("🚀 CHAGOK API starting...")
     logger.info("📍 Environment: %s", settings.APP_ENV)
     logger.info("📍 Debug mode: %s", settings.APP_DEBUG)
     logger.info("📍 CORS origins: %s", settings.cors_origins_list)
@@ -132,7 +132,7 @@ async def lifespan(_app: FastAPI):
     yield  # Application runs here
 
     # Shutdown
-    logger.info("👋 Legal Evidence Hub API shutting down...")
+    logger.info("👋 CHAGOK API shutting down...")
     # Note: Database connections and logs are automatically cleaned up by FastAPI/SQLAlchemy
 
     logger.info("✅ Shutdown complete")
@@ -209,7 +209,7 @@ async def root():
     루트 엔드포인트 - API 정보
     """
     return {
-        "service": "Legal Evidence Hub API",
+        "service": "CHAGOK API",
         "version": "0.2.0",
         "environment": settings.APP_ENV,
         "docs": "/docs" if settings.APP_DEBUG else "disabled",
