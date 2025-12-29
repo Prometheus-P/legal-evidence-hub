@@ -130,7 +130,7 @@
 
 **Recommendation**: Verify issues exist:
 ```bash
-gh issue list --repo KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd --label "011-production-bug-fixes"
+gh issue list --repo x-ordo/CHAGOK --label "011-production-bug-fixes"
 ```
 
 ---

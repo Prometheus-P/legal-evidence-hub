@@ -117,7 +117,7 @@ Some variables have different names between services for historical reasons. The
 - **NEVER commit `.env` to Git** - it's in `.gitignore`
 - Use `.env.example` as a reference template
 - For production, use GitHub Actions Secrets/Variables or AWS Secrets Manager
-- See [Issue #33](https://github.com/KernelAcademy-AICamp/ai-camp-2nd-llm-agent-service-project-2nd/issues/33) for GitHub Actions setup
+- See [Issue #33](https://github.com/x-ordo/CHAGOK/issues/33) for GitHub Actions setup
 
 ---
 
