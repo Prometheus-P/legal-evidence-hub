@@ -1,4 +1,4 @@
-# CONTRIBUTING.md — Legal Evidence Hub (LEH)
+# CONTRIBUTING.md — CHAGOK
 
 ### *GitHub 협업 규칙 (Team H · P · L)*
 
@@ -14,7 +14,7 @@
 
 # 📌 0. 목적 (Purpose)
 
-이 문서는 **LEH 레포에서 최소한의 규칙만으로 빠르게 협업**하기 위한 가이드이다.
+이 문서는 **CHAGOK 레포에서 최소한의 규칙만으로 빠르게 협업**하기 위한 가이드이다.
 
 - 복잡한 GitFlow **금지**
 - **main 안정성 최우선**

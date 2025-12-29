@@ -1,7 +1,7 @@
 # .github/workflows/deploy-paralegal.yml
 # CI/CD: 단일 production 환경 배포
 
-name: Deploy LEH to AWS
+name: Deploy CHAGOK to AWS
 
 on:
   # main, dev 브랜치 푸시 시 자동 배포

@@ -1,4 +1,4 @@
-# Team H·P·L - Legal Evidence Hub (LEH)
+# Team H·P·L - CHAGOK
 
 [![CI](https://github.com/x-ordo/CHAGOK/actions/workflows/ci.yml/badge.svg)](https://github.com/x-ordo/CHAGOK/actions/workflows/ci.yml)
 [![Deploy](https://github.com/x-ordo/CHAGOK/actions/workflows/deploy_paralegal.yml/badge.svg)](https://github.com/x-ordo/CHAGOK/actions/workflows/deploy_paralegal.yml)
@@ -9,7 +9,7 @@
 > AI는 AWS 안에서 증거를 정리·분석해 '소장 초안 후보'를 보여준다.
 > 최종 문서는 언제나 변호사가 직접 결정한다."
 
-LEH는 **이혼 사건 전용 AI 파라리걸 & 증거 허브** 플랫폼입니다.
+CHAGOK은 **이혼 사건 전용 AI 파라리걸 & 증거 허브** 플랫폼입니다.
 
 ---
 
@@ -35,7 +35,7 @@ LEH는 **이혼 사건 전용 AI 파라리걸 & 증거 허브** 플랫폼입니�
 
 ### 2.2 해결하는 문제
 
-| 기존 문제 | LEH 솔루션 |
+| 기존 문제 | CHAGOK 솔루션 |
 |-----------|-----------|
 | 카톡/이메일/USB로 중구난방 도착 | S3 Presigned URL 업로드 |
 | 수작업 정리 1~2주 소요 | AI 자동 분석 파이프라인 |
@@ -93,7 +93,7 @@ make dev-frontend  # http://localhost:3000
 
 ### 4.3 환경 변수 설정
 
-LEH는 **통합 `.env` 파일**을 사용합니다:
+CHAGOK은 **통합 `.env` 파일**을 사용합니다:
 
 ```bash
 # 템플릿 복사

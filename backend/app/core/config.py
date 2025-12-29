@@ -1,5 +1,5 @@
 """
-Legal Evidence Hub (LEH) - Configuration
+CHAGOK - Configuration
 Environment variables and application settings using Pydantic Settings
 """
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # ============================================
     # Application Settings
     # ============================================
-    APP_NAME: str = Field(default="legal-evidence-hub", env="APP_NAME")
+    APP_NAME: str = Field(default="chagok", env="APP_NAME")
     APP_ENV: str = Field(default="local", env="APP_ENV")  # local | dev | prod
     APP_DEBUG: bool = Field(default=True, env="APP_DEBUG")
 

@@ -1,6 +1,6 @@
 # Development & Operation Environment Documentation
 
-This document outlines the technical environment, dependencies, and infrastructure for the Legal Evidence Hub (LEH) project.
+This document outlines the technical environment, dependencies, and infrastructure for the CHAGOK project.
 
 **Last Updated:** 2025-12-01
 
@@ -57,7 +57,7 @@ This document outlines the technical environment, dependencies, and infrastructu
 
 ### 3.1 Unified `.env` Structure
 
-LEH uses a **single unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
+CHAGOK uses a **single unified `.env` file** at the project root. Each service directory has a symlink pointing to this root file:
 
 ```
 project-root/
