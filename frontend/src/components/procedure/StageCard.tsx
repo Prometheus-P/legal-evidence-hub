@@ -63,26 +63,20 @@ function StageCardComponent({
   };
 
   return (
-    <div
+    <button
+      type="button"
       className={`
-        relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-200
+        relative w-full text-left p-4 rounded-lg border-2 transition-all duration-200
         ${statusColor.bg} ${statusColor.border}
         ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
         ${isActive ? 'shadow-md' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}
-        dark:bg-opacity-20
+        dark:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-blue-500
       `}
-      onClick={() => !disabled && onClick(stage)}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      onKeyDown={(e) => {
-        if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onClick(stage);
-        }
-      }}
+      onClick={() => onClick(stage)}
+      disabled={disabled}
       aria-label={`${STAGE_LABELS[stage.stage]} - ${STATUS_LABELS[stage.status]}`}
-      aria-selected={isSelected}
+      aria-pressed={isSelected}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
@@ -175,7 +169,7 @@ function StageCardComponent({
           )}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 

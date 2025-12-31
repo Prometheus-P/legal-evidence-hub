@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, useId } from 'react';
 import { X, Users, AlertCircle, Loader2, Save, Trash2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { PartyNode } from '@/types/party';
@@ -30,6 +30,22 @@ interface SpeakerMappingModalProps {
   onSaveSuccess?: () => void;
 }
 
+/**
+ * Get all focusable elements within a container
+ */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const focusableSelectors = [
+    'button:not([disabled])',
+    '[href]',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(', ');
+
+  return Array.from(container.querySelectorAll<HTMLElement>(focusableSelectors));
+}
+
 export function SpeakerMappingModal({
   isOpen,
   onClose,
@@ -39,6 +55,8 @@ export function SpeakerMappingModal({
   onSaveSuccess,
 }: SpeakerMappingModalProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   // Extract speakers from evidence content
   const detectedSpeakers = useMemo(() => {
@@ -66,6 +84,60 @@ export function SpeakerMappingModal({
       resetMapping();
     }
   }, [isOpen, evidence.id, resetMapping]);
+
+  // Focus trap and keyboard handling
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!isOpen || !modalRef.current) return;
+
+      // Skip if IME composition is in progress
+      if (event.isComposing || event.keyCode === 229) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusableElements = getFocusableElements(modalRef.current);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    },
+    [isOpen, onClose]
+  );
+
+  // Setup keyboard listener and initial focus
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Focus first focusable element
+      requestAnimationFrame(() => {
+        if (modalRef.current) {
+          const focusableElements = getFocusableElements(modalRef.current);
+          if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+          }
+        }
+      });
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, handleKeyDown]);
 
   // Handle save
   const handleSave = async () => {
@@ -119,20 +191,28 @@ export function SpeakerMappingModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+            <h2 id={titleId} className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               화자 매핑
             </h2>
           </div>
           <button
+            type="button"
             onClick={handleClose}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition-colors"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="닫기"
           >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
           </button>
         </div>
 

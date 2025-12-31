@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
 import { Logo } from './Logo';
 import { NotificationDropdown } from './NotificationDropdown';
+import { SkipLink } from './SkipLink';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { ROLE_DISPLAY_NAMES } from '@/types/user';
@@ -186,8 +187,14 @@ export function PortalSidebar({
 
   return (
     <>
+      {/* Skip Link for keyboard navigation */}
+      <SkipLink />
+
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-56 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30">
+      <aside
+        className="hidden lg:flex lg:flex-col lg:w-56 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 z-30"
+        aria-label="메인 네비게이션"
+      >
         {sidebarContent}
       </aside>
 
@@ -225,6 +232,8 @@ export function PortalSidebar({
         className={`lg:hidden fixed top-0 right-0 bottom-0 w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        aria-label="모바일 네비게이션"
+        aria-hidden={!isMobileMenuOpen}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
           <Link href="/dashboard">

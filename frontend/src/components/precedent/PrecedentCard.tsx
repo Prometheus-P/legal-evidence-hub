@@ -16,16 +16,10 @@ export function PrecedentCard({ precedent, onClick }: PrecedentCardProps) {
   const scorePercentage = Math.round(precedent.similarity_score * 100);
 
   return (
-    <div
-      className="border rounded-lg p-4 hover:border-blue-500 cursor-pointer transition-colors bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-blue-500"
+    <button
+      type="button"
+      className="w-full text-left border rounded-lg p-4 hover:border-blue-500 transition-colors bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          onClick?.();
-        }
-      }}
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-2">
@@ -83,6 +77,6 @@ export function PrecedentCard({ precedent, onClick }: PrecedentCardProps) {
           ))}
         </div>
       )}
-    </div>
+    </button>
   );
 }

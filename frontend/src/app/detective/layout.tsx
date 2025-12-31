@@ -80,7 +80,11 @@ export default function DetectiveLayout({
         <PortalSidebar groups={detectiveNavGroups} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 min-h-screen">
+        <main
+          id="main-content"
+          className="flex-1 lg:ml-64 min-h-screen"
+          tabIndex={-1}
+        >
           {/* Mobile header spacing */}
           <div className="h-16 lg:hidden" />
 

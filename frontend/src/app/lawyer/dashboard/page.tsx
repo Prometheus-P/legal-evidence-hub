@@ -78,12 +78,10 @@ function RecentCaseItem({
   };
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded-lg transition-colors cursor-pointer"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded-lg transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
     >
       <div className="flex-1 min-w-0">
         <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{title}</p>
@@ -95,7 +93,7 @@ function RecentCaseItem({
         </span>
         <span className="text-xs text-gray-400">{formatDate(updated_at)}</span>
       </div>
-    </div>
+    </button>
   );
 }
 

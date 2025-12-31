@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import type {
   PartyNode,
   PartyRelationship,
@@ -36,6 +36,22 @@ const RELATIONSHIP_TYPES: RelationshipType[] = [
   'cohabit',
 ];
 
+/**
+ * Get all focusable elements within a container
+ */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const focusableSelectors = [
+    'button:not([disabled])',
+    '[href]',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ].join(', ');
+
+  return Array.from(container.querySelectorAll<HTMLElement>(focusableSelectors));
+}
+
 export function RelationshipModal({
   isOpen,
   onClose,
@@ -47,6 +63,13 @@ export function RelationshipModal({
   targetPartyId,
 }: RelationshipModalProps) {
   const isEditMode = !!relationship;
+  const modalRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const sourcePartySelectId = useId();
+  const targetPartySelectId = useId();
+  const startDateInputId = useId();
+  const endDateInputId = useId();
+  const notesTextareaId = useId();
 
   const [formData, setFormData] = useState<{
     source_party_id: string;
@@ -93,6 +116,60 @@ export function RelationshipModal({
       setError(null);
     }
   }, [isOpen, relationship, sourcePartyId, targetPartyId]);
+
+  // Focus trap and keyboard handling
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!isOpen || !modalRef.current) return;
+
+      // Skip if IME composition is in progress
+      if (event.isComposing || event.keyCode === 229) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusableElements = getFocusableElements(modalRef.current);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    },
+    [isOpen, onClose]
+  );
+
+  // Setup keyboard listener and initial focus
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Focus first focusable element
+      requestAnimationFrame(() => {
+        if (modalRef.current) {
+          const focusableElements = getFocusableElements(modalRef.current);
+          if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+          }
+        }
+      });
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, handleKeyDown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,20 +241,28 @@ export function RelationshipModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
             {isEditMode ? '관계 수정' : '관계 추가'}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            aria-label="닫기"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -197,10 +282,11 @@ export function RelationshipModal({
             {!isEditMode && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor={sourcePartySelectId} className="block text-sm font-medium text-gray-700 mb-1">
                     출발 당사자 <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id={sourcePartySelectId}
                     value={formData.source_party_id}
                     onChange={(e) =>
                       setFormData({ ...formData, source_party_id: e.target.value })
@@ -217,10 +303,11 @@ export function RelationshipModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor={targetPartySelectId} className="block text-sm font-medium text-gray-700 mb-1">
                     도착 당사자 <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id={targetPartySelectId}
                     value={formData.target_party_id}
                     onChange={(e) =>
                       setFormData({ ...formData, target_party_id: e.target.value })
@@ -279,10 +366,11 @@ export function RelationshipModal({
             {/* Date range */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor={startDateInputId} className="block text-sm font-medium text-gray-700 mb-1">
                   시작일
                 </label>
                 <input
+                  id={startDateInputId}
                   type="date"
                   value={formData.start_date}
                   onChange={(e) =>
@@ -292,10 +380,11 @@ export function RelationshipModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor={endDateInputId} className="block text-sm font-medium text-gray-700 mb-1">
                   종료일
                 </label>
                 <input
+                  id={endDateInputId}
                   type="date"
                   value={formData.end_date}
                   onChange={(e) =>
@@ -308,10 +397,11 @@ export function RelationshipModal({
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor={notesTextareaId} className="block text-sm font-medium text-gray-700 mb-1">
                 메모
               </label>
               <textarea
+                id={notesTextareaId}
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
