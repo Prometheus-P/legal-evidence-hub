@@ -59,85 +59,47 @@ These rules must NEVER be violated under any circumstances:
 
 ## Common Development Commands
 
+### Quick Start (Makefile)
+```bash
+make setup              # Install all dependencies
+make dev-backend        # Run Backend (http://localhost:8000)
+make dev-frontend       # Run Frontend (http://localhost:3000)
+make test               # Run all tests
+make lint               # Run all linters
+make clean              # Remove venvs and node_modules
+make help               # Show all commands
+```
+
 ### Backend (FastAPI)
 ```bash
-# From project root
 cd backend
-
-# Run development server
-uvicorn app.main:app --reload
-# Or: python -m app.main
-
-# Run tests
+uvicorn app.main:app --reload            # Dev server
 pytest                                    # All tests
 pytest tests/test_api/                   # API tests only
 pytest -m unit                           # Unit tests only
-pytest -m integration                    # Integration tests only
 pytest -k test_auth                      # Specific test pattern
-
-# Run with coverage
-pytest --cov=app --cov-report=html
+pytest --cov=app --cov-report=html       # With coverage
 
 # Database migrations (Alembic)
 alembic upgrade head                     # Apply migrations
-alembic downgrade -1                     # Rollback one migration
 alembic revision --autogenerate -m "msg" # Create new migration
 ```
 
 ### AI Worker (Lambda/Local)
 ```bash
-# From project root
 cd ai_worker
-
-# Run handler locally (for testing)
-python -m handler
-
-# Run tests
-pytest                                   # All tests with 80% coverage requirement
-pytest tests/src/test_parsers.py        # Specific parser tests
-pytest -m unit                           # Unit tests only
-pytest -m integration                    # Integration tests only
-
-# Run with verbose coverage
+python -m handler                        # Run locally
+pytest                                   # All tests (80% coverage required)
 pytest --cov=src --cov-report=term-missing
 ```
 
 ### Frontend (Next.js)
 ```bash
-# From project root
 cd frontend
-
-# Development server
-npm run dev                              # http://localhost:3000
-
-# Production build
-npm run build
-npm start
-
-# Tests
-npm test                                 # Run Jest tests
-npm run test:watch                       # Watch mode
-
-# Linting
-npm run lint
-```
-
-### Full Stack Development
-```bash
-# Install all dependencies (from root)
-cd backend && pip install -r requirements.txt && cd ..
-cd ai_worker && pip install -r requirements.txt && cd ..
-cd frontend && npm install && cd ..
-
-# Run all services (use separate terminals)
-# Terminal 1: Backend
-cd backend && uvicorn app.main:app --reload
-
-# Terminal 2: AI Worker (if testing locally)
-cd ai_worker && python -m handler
-
-# Terminal 3: Frontend
-cd frontend && npm run dev
+npm run dev                              # Dev server (http://localhost:3000)
+npm run build && npm start               # Production build
+npm test                                 # Jest tests
+npm run lint                             # ESLint
 ```
 
 ## High-Level Architecture
@@ -416,148 +378,50 @@ When implementing features, files typically go in:
 - **API client:** `frontend/src/lib/api/{resource}.ts`
 - **Type definition:** `frontend/src/types/{resource}.ts`
 
-## Active Technologies
-- Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation) (001-draft-export)
-- PostgreSQL (export job records), S3 (temporary file storage for large exports) (001-draft-export)
-- react-kakao-maps-sdk (Kakao Maps for GPS), react-big-calendar (calendar UI), Recharts (dashboard charts), jwt-decode (JWT parsing in middleware), WebSocket (real-time messaging) (003-role-based-ui)
-- react-hot-toast (toast notifications for error handling) (009-mvp-gap-closure - planned)
-- Python 3.11+ (Backend/AI Worker), TypeScript (Frontend) + FastAPI, Next.js 14, AWS Lambda, OpenAI (GPT-4o, Whisper, Vision), Qdrant, boto3 (009-mvp-gap-closure)
-- PostgreSQL (RDS), AWS S3, DynamoDB, Qdrant Cloud (009-mvp-gap-closure)
-- TypeScript 5.x (Frontend), Python 3.11+ (Backend API) + Next.js 14, React 18, React Flow, Tailwind CSS (010-calm-control-design)
-- PostgreSQL (cases, assets), Backend API (/cases/{id}/assets) (010-calm-control-design)
-- Python 3.11+ (Backend/AI Worker), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, boto3, qdrant-client, openai, react-hot-toast (009-mvp-gap-closure)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, jose (JWT), Tailwind CSS (011-production-bug-fixes)
-- PostgreSQL (RDS), HTTP-only Cookies (JWT 토큰), CloudFront /api proxy (011-production-bug-fixes)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, Tailwind CSS, jose (JWT) (011-production-bug-fixes)
-- PostgreSQL (RDS), HTTP-only Cookies (JWT) (011-production-bug-fixes)
-- TypeScript 5.x + Next.js 14, React 18, Tailwind CSS, Lucide-React, clsx, tailwind-merge (013-ui-upgrade)
-- N/A (frontend-only, no new data persistence) (013-ui-upgrade)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, OpenAI (GPT-4o-mini), boto3 (014-case-fact-summary)
-- DynamoDB (leh_case_summary 테이블), PostgreSQL (Case 메타데이터 참조) (014-case-fact-summary)
-- Python 3.11+ (Backend), TypeScript 5.x (Frontend) + FastAPI, Next.js 14, React 18, boto3, Tailwind CSS (015-evidence-speaker-mapping)
-- DynamoDB (leh_evidence 테이블 확장 - speaker_mapping 필드), PostgreSQL RDS (Party 참조) (015-evidence-speaker-mapping)
+## Technology Stack
+
+### Core Technologies
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 14, TypeScript 5.x, React 18, Tailwind CSS |
+| Backend | FastAPI, Python 3.11+, SQLAlchemy |
+| AI Worker | AWS Lambda, Python 3.11+, OpenAI (GPT-4o, Whisper, Vision) |
+| Database | PostgreSQL (RDS), DynamoDB, Qdrant Cloud |
+| Storage | AWS S3 |
+| CDN | CloudFront |
+
+### Key Libraries
+- **Frontend**: React Flow (인물관계도), Recharts (차트), react-hot-toast (알림), jose (JWT), Lucide-React (아이콘)
+- **Backend**: boto3 (AWS), qdrant-client, openai, python-docx (Word 생성)
+- **AI Worker**: openai, boto3, qdrant-client
 
 ## Recent Changes
-- 015-evidence-speaker-mapping: (COMPLETE) 증거 화자 매핑 기능. 대화형 증거(카톡, 문자)에서 "나/상대방" 화자를 인물관계도의 실제 인물과 매핑하여 사실관계 생성 정확도 향상. Backend: EvidenceService.update_speaker_mapping, PATCH /evidence/{id}/speaker-mapping API, FactSummaryService 프롬프트에 화자 정보 주입, SPEAKER_MAPPING_UPDATE 감사 로그. Frontend: SpeakerMappingModal, useSpeakerMapping hook, SpeakerMappingBadge, has_speaker_mapping 필드. Key features: 선택적 화자 매핑 (최대 10명), 사실관계 프롬프트에 화자 정보 통합, 증거 목록 매핑 상태 뱃지 표시, Case Isolation 검증.
-- 012-precedent-integration: (COMPLETE) Precedent search and auto-extraction integration. Backend: PrecedentService with Qdrant vector search, DraftService precedent citation integration, auto-extract endpoints for parties/relationships. AI Worker: BackendAPIClient with retry logic, PersonExtractor/RelationshipInferrer integration. Frontend: PrecedentPanel with search/modal, PartyNode/PartyEdge auto-extraction badges with confidence indicators. Key features: 유사 판례 검색, 초안 판례 인용, 인물/관계 자동 추출.
-- 011-production-bug-fixes: (IN PROGRESS) Production bug fixes for US1 & US2. Backend: Cookie authentication fix, security hardening. Frontend: Login redirect fix, middleware improvements.
-- 009-mvp-gap-closure: (PLANNING) MVP production readiness. AI Worker 100% code complete (awaiting S3 IAM permissions), Backend RAG/Draft 90% complete (fully functional), Frontend error handling 70% (needs toast + retry). CI coverage at 65% (target 80%). Key tasks: S3 permission setup, enable AI Worker deployment, unify error handling, increase test coverage.
-- 005-lawyer-portal-pages: (CORE COMPLETE) Fixed 404 errors on lawyer portal pages. All pages now render: `/lawyer/clients`, `/lawyer/investigators`, `/settings`, `/lawyer/cases`, `/lawyer/calendar`, `/lawyer/messages`, `/lawyer/billing`. Created frontend types (`client.ts`, `investigator.ts`, `settings.ts`) and API clients. Middleware `/cases` redirect verified. **Future enhancements**: Dedicated backend APIs for clients/investigators/settings, advanced filtering, detail views.
-- 004-paralegal-progress: Added staff progress dashboard (`/staff/progress`) - case throughput monitoring, 16-item mid-demo feedback checklist, blocked case filtering. Backend: `ProgressService`, `staff_progress.py` router. Frontend: React dashboard with `ProgressCard`, `FeedbackChecklist` components.
-- 003-role-based-ui: Added react-kakao-maps-sdk, react-big-calendar, Recharts, jwt-decode, WebSocket support for real-time messaging
-- 001-draft-export: Added Python 3.11+ (Backend), TypeScript (Frontend) + FastAPI, Next.js 14, python-docx (Word generation), WeasyPrint or ReportLab (PDF generation)
+
+| Feature | Status | Summary |
+|---------|--------|---------|
+| 015-evidence-speaker-mapping | ✅ COMPLETE | 대화형 증거 화자 매핑 (카톡/문자 → 인물관계도 연결) |
+| 012-precedent-integration | ✅ COMPLETE | 판례 검색 + 인물/관계 자동 추출 |
+| 011-production-bug-fixes | 🔄 IN PROGRESS | Cookie auth 수정, 로그인 리다이렉트 개선 |
+| 009-mvp-gap-closure | 📋 PLANNING | MVP 프로덕션 준비 (AI Worker 배포, 에러 핸들링) |
+
+> Full changelog: See `docs/IMPLEMENTATION_STATUS.md`
 
 ## Future Development (추후 개발)
 - **WCAG 접근성 지원**: Skip-to-content 링크, 키보드 네비게이션, 스크린 리더 지원 (현재 제거됨, 공공기관 납품 시 필요)
 
 ---
 
-## Vibe Coding: Effective AI Collaboration
+## AI Collaboration Guidelines
 
-### Philosophy
-
-**"AI is a Pair Programming Partner, Not Just a Tool"**
-
-Collaboration with Claude is not mere code generation—it's a process of sharing thought processes and solving problems together.
-
-### 1. Context Provision Principles
-
-**Provide Sufficient Background:**
-```markdown
-# BAD: No context
-"Create a login feature"
-
-# GOOD: Rich context
-"Our project uses Next.js 14 + Supabase.
-Auth-related code is in /app/auth folder.
-Following existing patterns, add OAuth login.
-Reference: src/app/auth/login/page.tsx"
-```
-
-**Context Checklist:**
-- [ ] Specify project tech stack
-- [ ] Provide relevant file paths
-- [ ] Mention existing patterns/conventions
-- [ ] Describe expected output format
-- [ ] State constraints and considerations
-
-### 2. Iterative Refinement Cycle
-
-```
-VIBE CODING CYCLE
-
-1. SPECIFY    → Describe desired functionality specifically
-2. GENERATE   → Claude generates initial code
-3. REVIEW     → Review generated code yourself
-4. REFINE     → Provide feedback for modifications
-5. VERIFY     → Run tests and verify edge cases
-
-Repeat 2-5 as needed
-```
-
-### 3. Effective Prompt Patterns
-
-**Pattern 1: Role Assignment**
-```
-"You are a senior React developer with 10 years experience.
-Review this component and suggest improvements."
-```
-
-**Pattern 2: Step-by-Step Requests**
-```
-"Proceed in this order:
-1. Analyze current code problems
-2. Present 3 improvement options
-3. Refactor using the most suitable option
-4. Explain the changes"
-```
-
-**Pattern 3: Constraint Specification**
-```
-"Implement with these constraints:
-- Maintain existing API contract
-- No new dependencies
-- Test coverage >= 80%"
-```
-
-**Pattern 4: Example-Based Requests**
-```
-"Create OrderService.ts following the same pattern as
-UserService.ts. Especially follow the error handling approach."
-```
-
-### 4. Boundaries
-
-**DO NOT delegate to Claude:**
-- Security credential generation/management
-- Direct production DB manipulation
-- Code deployment without verification
-- Sensitive business logic full delegation
-
-**Human verification REQUIRED:**
+**Human verification REQUIRED for:**
 - Security-related code (auth, permissions)
 - Financial transaction logic
 - Personal data processing code
 - Irreversible operations
 - External API integration code
 
-### 5. Vibe Coding Checklist
-
-```
-Before Starting:
-- [ ] Shared CLAUDE.md file with Claude?
-- [ ] Explained project structure and conventions?
-- [ ] Clearly defined task objectives?
-
-During Coding:
-- [ ] Providing sufficient context?
-- [ ] Understanding generated code?
-- [ ] Giving specific feedback?
-
-After Coding:
-- [ ] Personally reviewed generated code?
-- [ ] Ran tests?
-- [ ] Verified security-related code?
-- [ ] Removed AI mentions from commit messages?
-```
+**Before committing:**
+- Review generated code personally
+- Run tests (`make test`)
+- Remove AI mentions from commit messages (see ABSOLUTE RULES #7)
 
