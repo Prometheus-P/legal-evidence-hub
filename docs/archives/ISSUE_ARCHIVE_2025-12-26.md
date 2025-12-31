@@ -11,15 +11,15 @@
 
 | Issue # | Title | Priority | Status |
 |---------|-------|----------|--------|
-| #469 | AWS Secrets Manager로 시크릿 마이그레이션 | P1 | Archived |
-| #467 | API Gateway CORS와 Backend CORS 동기화 | P1 | Archived |
-| #465 | Enable GitHub branch protection rules | P0 | Archived |
+| #469 | AWS Secrets Manager로 시크릿 마이그레이션 | P1 | Archived → **#9** |
+| #467 | API Gateway CORS와 Backend CORS 동기화 | P1 | ✅ **Resolved** |
+| #465 | Enable GitHub branch protection rules | P0 | Archived → **#8** |
 | #471 | Internal API Key 인증 강화 | P2 | Archived |
 | #470 | CSRF 보호 추가 | P2 | Archived |
 | #488 | 화이트 해커 관점: 불필요한 공격 표면 제거 및 보안 강화 | - | Archived |
 | #275 | AI Worker print() 문이 로깅 필터 우회 - S3 키 노출 | P1 | Archived |
 | #134 | Presigned URL 및 AI API 데이터 전송 보호 | P1 | Archived |
-| #132 | 분산 데이터 일관성 보장 - DynamoDB/Qdrant 트랜잭션 처리 | P1 | Archived |
+| #132 | 분산 데이터 일관성 보장 - DynamoDB/Qdrant 트랜잭션 처리 | P1 | Archived → **#14** |
 | #133 | AI 분석 신뢰성 강화 - 환각 방지 및 Confidence Score 시각화 | P1 | Archived |
 | #135 | 법적 리스크 완화 - 변호사법 준수 및 증거 무결성 | P1 | Archived |
 | #136 | Lambda 확장성 - 대용량 미디어 파일 처리 개선 | P2 | Archived |
@@ -28,9 +28,9 @@
 
 | Issue # | Title | Priority | Status |
 |---------|-------|----------|--------|
-| #483 | 개인정보 열람 API 구현 (GET /users/me/data) | P1 | Archived |
-| #484 | 개인정보 삭제 요청 API 구현 (DELETE /users/{id}/data) | P1 | Archived |
-| #485 | 개인정보처리방침 제7조 이후 완성 | P2 | Archived |
+| #483 | 개인정보 열람 API 구현 (GET /users/me/data) | P1 | Archived → **#10** |
+| #484 | 개인정보 삭제 요청 API 구현 (DELETE /users/{id}/data) | P1 | Archived → **#11** |
+| #485 | 개인정보처리방침 제7조 이후 완성 | P2 | Archived → **#12** |
 
 ### 3. 문서화 (Documentation) - 13개
 
@@ -56,7 +56,7 @@
 
 | Issue # | Title | Priority | Status |
 |---------|-------|----------|--------|
-| #468 | 테스트 커버리지 80% 달성 | P1 | Archived |
+| #468 | 테스트 커버리지 80% 달성 | P1 | Archived → **#13** |
 | #91 | Comprehensive Test Strategy Implementation | P2 | Archived |
 | #351 | Mock Lawyer 테스트 케이스 목록 표시 실패 | - | Archived |
 | #350 | Evidence Processing 테스트에 @real-api 태그 추가 필요 | - | Archived |
@@ -137,24 +137,24 @@
 
 ---
 
-## 핵심 미해결 과제 (추후 고려사항)
+## 핵심 미해결 과제 (2025-12-31 검토 결과)
 
 ### 보안 관련 (반드시 프로덕션 전 해결)
-1. AWS Secrets Manager 마이그레이션 (#469)
-2. GitHub branch protection 활성화 (#465)
-3. CORS 설정 동기화 (#467)
+1. ~~AWS Secrets Manager 마이그레이션 (#469)~~ → **#9로 재등록**
+2. ~~GitHub branch protection 활성화 (#465)~~ → **#8로 재등록**
+3. ~~CORS 설정 동기화 (#467)~~ → ✅ **해결됨** (commit 8c20055)
 
 ### 개인정보보호 (법적 필수)
-1. 개인정보 열람/삭제 API (#483, #484)
-2. 개인정보처리방침 완성 (#485)
+1. ~~개인정보 열람/삭제 API (#483, #484)~~ → **#10, #11로 재등록**
+2. ~~개인정보처리방침 완성 (#485)~~ → **#12로 재등록**
 
 ### 품질 보증
-1. 테스트 커버리지 80% 달성 (#468)
-2. DynamoDB/Qdrant 트랜잭션 일관성 (#132)
+1. ~~테스트 커버리지 80% 달성 (#468)~~ → **#13으로 재등록**
+2. ~~DynamoDB/Qdrant 트랜잭션 일관성 (#132)~~ → **#14로 재등록**
 
-### 사용자 경험
-1. OAuth 소셜 로그인 (#94)
-2. 모바일 반응형 개선 (#349)
+### 사용자 경험 (P3, 추후 고려)
+1. OAuth 소셜 로그인 (#94) - 미등록 (선택사항)
+2. 모바일 반응형 개선 (#349) - 미등록 (선택사항)
 
 ---
 
@@ -163,7 +163,29 @@
 - **아카이브 일자**: 2025-12-26
 - **총 이슈 수**: 64개
 - **아카이브 사유**: 프로젝트 정리 및 이슈 통합
-- **관리자**: Claude Code (자동화 처리)
+- **최종 검토**: 2025-12-31
+
+---
+
+## 2025-12-31 검토 이력
+
+### 정리된 이슈
+| 기존 이슈 | 조치 | 신규 이슈 |
+|----------|------|----------|
+| #4 | 이미 구현됨 → 닫음 | - |
+| #5 | 기능 폐기됨 → 닫음 | - |
+| #467 | CORS 해결됨 | - |
+
+### 재등록된 이슈
+| 기존 이슈 | 신규 이슈 | 제목 |
+|----------|----------|------|
+| #465 | **#8** | GitHub Branch Protection |
+| #469 | **#9** | AWS Secrets Manager |
+| #483 | **#10** | 개인정보 열람 API |
+| #484 | **#11** | 개인정보 삭제 API |
+| #485 | **#12** | 개인정보처리방침 완성 |
+| #468 | **#13** | 테스트 커버리지 80% |
+| #132 | **#14** | DynamoDB/Qdrant 일관성 |
 
 ---
 
